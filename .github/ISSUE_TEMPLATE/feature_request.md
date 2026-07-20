@@ -1,19 +1,15 @@
 ---
 name: Feature Request
-about: Suggest an idea for this project
+about: Suggest an idea
 title: '[FEATURE] '
 labels: enhancement
-assignees: ''
 ---
 
 ## Problem Statement
-<!-- What problem does this feature solve? -->
+<!-- What problem does this solve? -->
 
 ## Proposed Solution
-<!-- How should this feature work? -->
+<!-- How should it work? -->
 
 ## Alternatives Considered
-<!-- What alternatives did you consider? -->
-
-## Additional Context
-<!-- Add any other context about the feature request here -->
+<!-- Any other ideas? -->

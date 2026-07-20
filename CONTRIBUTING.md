@@ -2,44 +2,36 @@
 
 Thank you for your interest in contributing to Mithqal.
 
----
-
 ## Areas of Contribution
 
-### 1. Constitutional Review
-- Review the 15 Articles and governance framework
-- Propose improvements to constitutional language
-- Ensure constitutional consistency
-
-### 2. Sharia Review
-- Review Sharia compliance structures
-- Ensure AAOIFI standards are met
-- Identify potential Sharia issues
-
-### 3. Technical Development
-- Smart contract development
-- Testnet deployment
-- Formal verification
-- Security auditing
-
-### 4. Documentation
-- Improve blueprint clarity and accessibility
-- Create educational content
-- Translate technical concepts
-
-### 5. Community
-- Help build the Mithqal community
-- Engage with potential participants
-- Share knowledge and insights
-
-### 6. Regulatory Research
-- Analyze regulatory developments
-- Identify regulatory pathways
-- Prepare regulatory engagement materials
-
----
+- **Constitutional Review** – review the 15 Articles and governance framework
+- **Sharia Review** – ensure AAOIFI compliance
+- **Technical Development** – smart contracts, testnet, formal verification
+- **Documentation** – improve clarity and accessibility
+- **Community** – help build the ecosystem
+- **Regulatory Research** – analyse regulatory developments
 
 ## How to Contribute
 
-### 1. Fork the Repository
-...
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/your-feature`)
+3. Make your changes (follow coding and style standards)
+4. Commit and push
+5. Open a pull request
+
+### Code Style
+- Solidity: 0.8.23
+- Use OpenZeppelin libraries
+- Write comprehensive NatSpec comments
+- Include unit tests
+
+### Language Standards
+Avoid hype words (best, revolutionary, disruptive, future of finance, etc.). Use: prudence, resilience, stability, constitutional, institutional, neutral, auditable, transparent, interoperable.
+
+## Code of Conduct
+All contributors must adhere to our [Code of Conduct](CODE_OF_CONDUCT.md).
+
+## Recognition
+Contributors will be acknowledged in the project documentation.
+
+Thank you for contributing to Mithqal.
