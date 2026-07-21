@@ -1,6 +1,6 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
+import { useSyncExternalStore, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { BookOpen, Landmark, FlaskConical, Presentation, ScrollText, LayoutDashboard, Eye } from "lucide-react";
 import Playbook from "@/components/playbook";
@@ -61,6 +61,22 @@ function writeView(v: View) {
 
 export default function Page() {
   const view = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+
+  // Support deep-linking via ?view=<id> — used by the sitemap and shared
+  // URLs. On first mount, if a valid view is present in the query string,
+  // it takes precedence over the stored preference.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const q = params.get("view");
+    if (q && (VALID_VIEWS as string[]).includes(q)) {
+      writeView(q as View);
+      // Clean the URL (replaceState avoids a history entry / scroll).
+      const url = new URL(window.location.href);
+      url.searchParams.delete("view");
+      window.history.replaceState({}, "", url.toString());
+    }
+  }, []);
 
   const setView = (v: View) => {
     writeView(v);

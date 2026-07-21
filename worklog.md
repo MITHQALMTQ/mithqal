@@ -132,3 +132,23 @@ Stage Summary:
 - Files: src/app/api/transparency/route.ts, src/components/transparency.tsx, src/hooks/use-notify.ts, mini-services/notify-service/{package.json,index.ts}, src/app/api/formation-interest/route.ts (emit call added), src/components/admin.tsx (live notifications + badge), src/app/page.tsx (7th view).
 - Verified end-to-end via Agent Browser: 0 hydration errors. Transparency renders live KPIs (51.5M MTQ, 100% ratio, $1.00 NAV, PoR hash, 50% formation progress, 14 milestones, recent ops). All 7 views toggle cleanly. Admin login → "Live" badge connected. Submitting a new Formation Committee interest (Yusuf Rahman) → WebSocket emitted → Admin received toast "New submission received" → table auto-refreshed → Yusuf appeared → count 4→5. Lint clean.
 - Architecture: public transparency is unauthenticated (by design — verifiable ops); admin remains auth-gated; the notify mini-service is a stateless relay (no DB, no auth — it only forwards events the Next.js API emits, and only the operator client receives them).
+
+---
+Task ID: 6
+Agent: main (COO/PM)
+Task: Make the project share-ready — professional link previews, SEO discoverability, branded 404, deep-linkable views.
+
+Work Log:
+- Generated a branded OG share image (1344x768) via the image-generation skill: gold MTQ monogram on dark charcoal, "Mithqal" + "Constitutional Settlement Institution" in gold/cream. Verified via VLM it contains the brand text. Saved to public/og-image.png (172KB).
+- Rewrote layout.tsx metadata: metadataBase (https://mithqal.io), title template ("%s · Mithqal"), enhanced description, openGraph (type/locale/url/siteName/title/desc/images 1344x768), twitter (summary_large_image + image), canonical, manifest link, robots directives (index/follow, googleBot max-image-preview large), category finance.
+- Added src/app/sitemap.ts: 5 public URLs (/, ?view=transparency, ?view=constitution, ?view=testnet, ?view=deck) with lastmod/changefreq/priority. Admin + Playbook intentionally excluded (internal).
+- Added src/app/robots.ts: allow /, disallow /api/admin + /api/auth, host + sitemap directive.
+- Added public/manifest.webmanifest: PWA manifest with name/short_name/theme_color(#c9a227 gold)/background_color/icons.
+- Added src/app/not-found.tsx: branded 404 with the Logo, "404" in gold, a constitutional-flavored message, and two CTAs (Return to the Institution / Read the Constitution).
+- Added ?view=<id> deep-linking support to page.tsx: on mount, reads the query param, validates against the view list, applies it, then strips the param via replaceState. Sitemap links now resolve to the correct view.
+- Removed the conflicting static public/robots.txt (leftover from scaffold) so the dynamic robots.ts route handler serves it.
+
+Stage Summary:
+- Files: src/app/layout.tsx (metadata rewrite), src/app/sitemap.ts, src/app/robots.ts, src/app/not-found.tsx, public/og-image.png, public/manifest.webmanifest, src/app/page.tsx (deep-link support), public/robots.txt (deleted).
+- Verified via Agent Browser + curl: robots.txt → 200 (correct content: allow /, disallow /api/admin + /api/auth, host + sitemap). sitemap.xml → 200 (5 URLs). manifest → valid JSON. og-image → 200 (172KB). All meta tags present in <head>: title, og:title, og:image (mithqal.io/og-image.png), og:url, twitter:card=summary_large_image, twitter:image, canonical, manifest link. Deep link ?view=transparency → active view "Transparency" ✓. 404 page → branded, has logo + return link ✓. 0 hydration errors. All 7 views render. Lint clean.
+- The project is now share-ready: when mithqal.io is shared on Twitter/LinkedIn/WhatsApp, it shows the branded gold-on-dark OG image with the proper title/description. Search engines can crawl the sitemap and respect the robots directives. Mobile install shows the gold theme + logo. Missing routes get a branded 404. Every view is deep-linkable.
