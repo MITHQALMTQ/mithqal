@@ -70,15 +70,20 @@ interface TransparencyState {
   monetary?: {
     goldUsd: number;
     goldUsd12moAgo: number;
+    // v2.0 §1.4 — Target NAV (SDR-based)
+    navTarget: number;
+    sdrValueUsd: number;
     reserveUsd: number;
     reserveGold: number;
     reserveTotal: number;
     nav: number;
-    reserveRatio: number;
-    reserveCoverage: number;
+    reserveRatio: number; // v2.0 FIXED
+    reserveCoverage: number; // v2.0 FIXED
+    reserveCoveragePct: number;
+    redemptionLiability: number;
     volatility: number;
     shockAbsorber: number;
-    sdp: { triggered: boolean; trigger: string | null; currency: string | null; details: string | null };
+    sdp: { triggered: boolean; trigger: string | null; currency: string | null; details: string | null; delta: number | null };
     mintingPaused: boolean;
     weights: CurrencyWeight[];
     fees: {
@@ -96,6 +101,7 @@ interface CurrencyWeight {
   name: string;
   combinedShare: number;
   momentumRaw: number;
+  momentumAdjusted?: number; // v2.0 §6.3
   momentum: number;
   meanReversion: number;
   momentumFactor: number;
@@ -104,6 +110,8 @@ interface CurrencyWeight {
   goldPrice: number;
   goldPrice12moAgo: number;
   isCapped: boolean;
+  emergencyWeight?: number; // v2.0 §7
+  smoothedWeight?: number; // v2.0 §11
 }
 
 const fmtUsd = (n: number) => "$" + n.toLocaleString("en-US", { maximumFractionDigits: 0 });
@@ -430,14 +438,14 @@ export default function TransparencyDashboard() {
           </div>
         </Reveal>
 
-        {/* Monetary Engine — full basket mechanics */}
+        {/* Monetary Engine — full basket mechanics (v2.0 CORRECTED) */}
         {state?.monetary ? (
           <Reveal>
             <div className="mt-6 rounded-2xl border border-gold/30 bg-gradient-to-br from-gold/[0.06] to-ink-soft p-6 sm:p-7">
               <div className="flex items-center gap-2 text-gold">
                 <TrendingUp className="h-4 w-4" />
                 <span className="text-[11px] font-semibold uppercase tracking-[0.22em]">
-                  Monetary Engine · Mathematical Specification v1.0
+                  Monetary Engine · Mathematical Specification v2.0 (CORRECTED)
                 </span>
               </div>
               <h2 className="font-display mt-3 text-xl text-foreground sm:text-2xl">
@@ -445,12 +453,52 @@ export default function TransparencyDashboard() {
               </h2>
               <p className="mt-2 text-sm text-fg-muted">
                 The gold-currency connection, momentum, mean-reversion, shock absorber and SDP —
-                every formula from the spec, computed live. Gold:{" "}
+                every formula from the v2.0 spec, computed live. Gold:{" "}
                 <span className="text-gold">{fmtUsd2(state.monetary.goldUsd)}/oz</span> (12mo ago:{" "}
-                {fmtUsd2(state.monetary.goldUsd12moAgo)}). Shock absorber{" "}
-                <span className="text-gold">{state.monetary.shockAbsorber.toFixed(3)}</span> ·
+                {fmtUsd2(state.monetary.goldUsd12moAgo)}). SDR value:{" "}
+                <span className="text-gold">${state.monetary.sdrValueUsd.toFixed(2)}</span> →
+                NAV_target: <span className="text-gold">{fmtUsd2(state.monetary.navTarget)}</span>.
+                Shock absorber <span className="text-gold">{state.monetary.shockAbsorber.toFixed(3)}</span> ·
                 Volatility {(state.monetary.volatility * 100).toFixed(2)}%.
               </p>
+
+              {/* v2.0 §1.2/1.3 — corrected reserve metrics (no longer tautological) */}
+              <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                {[
+                  {
+                    label: "Reserve ratio (§1.2)",
+                    value: state.monetary.reserveRatio.toFixed(2) + "%",
+                    sub: `vs NAV_target × Supply`,
+                    tone: state.monetary.reserveRatio >= 102 ? "text-reserve" : state.monetary.reserveRatio >= 100 ? "text-gold" : "text-destructive",
+                  },
+                  {
+                    label: "Reserve coverage (§1.3)",
+                    value: fmtUsd(state.monetary.reserveCoverage),
+                    sub: `${state.monetary.reserveCoveragePct.toFixed(2)}% of NAV`,
+                    tone: state.monetary.reserveCoverage >= 0 ? "text-reserve" : "text-destructive",
+                  },
+                  {
+                    label: "Redemption liability",
+                    value: fmtUsd(state.monetary.redemptionLiability),
+                    sub: `NAV_target × ${state.monetary.supply.toLocaleString("en-US", { maximumFractionDigits: 0 })} MTQ`,
+                    tone: "text-foreground",
+                  },
+                  {
+                    label: "Current NAV (market)",
+                    value: fmtUsd2(state.monetary.nav),
+                    sub: `per MTQ`,
+                    tone: "text-foreground",
+                  },
+                ].map((k) => (
+                  <div key={k.label} className="rounded-lg border border-line bg-ink p-3">
+                    <div className="text-[10px] font-semibold uppercase tracking-wider text-fg-muted">
+                      {k.label}
+                    </div>
+                    <div className={`font-display mt-1 text-lg ${k.tone}`}>{k.value}</div>
+                    <div className="text-[10px] text-fg-muted">{k.sub}</div>
+                  </div>
+                ))}
+              </div>
 
               {/* SDP status */}
               <div
@@ -468,25 +516,27 @@ export default function TransparencyDashboard() {
                 <div className="text-sm">
                   <div className="font-semibold text-foreground">
                     SDP {state.monetary.sdp.triggered ? "TRIGGERED" : "inactive"}
+                    {state.monetary.sdp.triggered && state.monetary.sdp.trigger ? ` · ${state.monetary.sdp.trigger}` : ""}
                   </div>
                   <div className="text-fg-muted">
                     {state.monetary.sdp.triggered
                       ? state.monetary.sdp.details
-                      : "No severe deviation detected. All currencies within normal bounds."}
+                      : "No severe deviation detected. All currencies within normal bounds (7-day < 5%, 24h < 3%, idiosyncratic < 2.5%)."}
                   </div>
                 </div>
               </div>
 
-              {/* Basket weights table */}
+              {/* Basket weights table (v2.0 — with momentumAdjusted column) */}
               <div className="mt-5 overflow-x-auto rounded-xl border border-line">
-                <table className="w-full min-w-[640px] text-sm">
+                <table className="w-full min-w-[760px] text-sm">
                   <thead className="bg-ink-card text-left text-[10px] uppercase tracking-wider text-fg-muted">
                     <tr>
                       <th className="px-3 py-2.5 font-semibold">Currency</th>
                       <th className="px-3 py-2.5 text-right font-semibold">Structural (Cᵢ)</th>
-                      <th className="px-3 py-2.5 text-right font-semibold">Momentum (Mᵢ)</th>
+                      <th className="px-3 py-2.5 text-right font-semibold">M_raw</th>
+                      <th className="px-3 py-2.5 text-right font-semibold">M_adj (§6.3)</th>
                       <th className="px-3 py-2.5 text-right font-semibold">Mean Rev (Bᵢ)</th>
-                      <th className="px-3 py-2.5 text-right font-semibold">K-factor</th>
+                      <th className="px-3 py-2.5 text-right font-semibold">K = M×B</th>
                       <th className="px-3 py-2.5 text-right font-semibold">Weight (Wᵢ)</th>
                       <th className="px-3 py-2.5 text-right font-semibold">Gold/oz</th>
                     </tr>
@@ -501,13 +551,21 @@ export default function TransparencyDashboard() {
                               CAPPED
                             </span>
                           ) : null}
+                          {w.emergencyWeight !== undefined ? (
+                            <span className="ml-1.5 rounded bg-destructive/20 px-1.5 py-0.5 text-[9px] font-bold text-destructive">
+                              SDP
+                            </span>
+                          ) : null}
                           <span className="ml-1.5 text-xs text-fg-muted">{w.name}</span>
                         </td>
                         <td className="px-3 py-2.5 text-right text-fg-muted">
                           {(w.combinedShare * 100).toFixed(2)}%
                         </td>
                         <td className="px-3 py-2.5 text-right text-fg-muted">
-                          {w.momentum.toFixed(4)}
+                          {w.momentumRaw.toFixed(4)}
+                        </td>
+                        <td className="px-3 py-2.5 text-right text-gold">
+                          {(w.momentumAdjusted ?? w.momentum).toFixed(4)}
                         </td>
                         <td className="px-3 py-2.5 text-right text-fg-muted">
                           {w.meanReversion.toFixed(4)}
@@ -530,7 +588,7 @@ export default function TransparencyDashboard() {
                   </tbody>
                   <tfoot>
                     <tr className="border-t-2 border-line bg-ink-card">
-                      <td className="px-3 py-2.5 font-semibold text-foreground" colSpan={5}>
+                      <td className="px-3 py-2.5 font-semibold text-foreground" colSpan={6}>
                         Total
                       </td>
                       <td className="px-3 py-2.5 text-right font-semibold text-gold">

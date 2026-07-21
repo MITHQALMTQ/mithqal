@@ -1,19 +1,27 @@
-// Mithqal Monetary Engine — full mathematical implementation.
+// Mithqal Monetary Engine — full mathematical implementation (v2.0 CORRECTED).
 //
-// Implements the complete Mathematical Specification Document (v1.0):
-//   §1  Core Reserve Formulas (NAV, Reserve Ratio, Coverage)
+// Implements the complete Clean, Corrected Version (Incorporating All Audit
+// Findings) of the Mathematical Specification Document:
+//   §1  Core Reserve Metrics (NAV, Reserve Ratio [FIXED], Coverage [FIXED], NAV_target)
 //   §2  Gold-Currency Connection
 //   §3  Basket Weighting Algorithm
 //   §4  Momentum Factor Calculation
 //   §5  Mean Reversion
-//   §6  Shock Absorber
-//   §7  SDP (Severe Deviation Protocol)
-//   §8  NAV and Reserve Ratio (real-time)
+//   §6  Shock Absorber (applies to momentum ONLY — FIXED)
+//   §7  SDP (Severe Deviation Protocol) + recursive ramp (ADDED)
+//   §8  Oracle Aggregation (MAD-based — ENHANCED) + median() (FIXED)
 //   §9  Fee Calculations
 //   §10 Yield Calculations
-//   §11 Oracle Aggregation
+//   §11 Rebalancing Smoothing (ADDED)
 //
-// All formulas are implemented verbatim from the spec. See inline §-markers.
+// Critical fixes in v2.0:
+//   - Reserve Ratio uses NAV_target (not current NAV) — prevents the
+//     tautological collapse where RR always = 100% because NAV×Supply = Reserve.
+//   - Reserve Coverage uses NAV_target × Supply — now meaningful (was always 0).
+//   - Shock absorber applies to momentum ONLY (then K = M_adj × B), per §6.4.
+//   - MAD-based oracle outlier rejection (k=3.0) replaces the fixed 2% threshold.
+//   - median() handles even-length lists correctly.
+//   - Rebalancing smoothing (standard λ=1/30, SDP λ=1/48) added.
 
 import type { OracleSnapshot, CurrencyData } from "./oracle-data";
 
@@ -32,6 +40,19 @@ export const SDP_7D_TRIGGER = 0.05; // 5% over 7 days
 export const SDP_1D_TRIGGER = 0.03; // 3% over 24h
 export const SDP_IDIO_TRIGGER = 0.025; // 2.5% idiosyncratic
 export const PAR = 1.0; // 1 MTQ = $1 at mint
+export const MAD_K = 3.0; // MAD outlier rejection factor (§8.2)
+export const LAMBDA_STD = 1 / 30; // standard rebalancing smoothing (§11.1)
+export const LAMBDA_SDP = 1 / 48; // SDP rebalancing smoothing per hour (§11.2)
+
+// §1.4 Target NAV — IMF SDR-based.
+// In production: NAV_target = SDR_Value × Scaling_Factor, where
+//   Scaling_Factor = (1 SDR in USD) / Σ(Wᵢ × USD Price of Currency i)
+// Here we use the published SDR value (~$1.33 as of the spec period) and a
+// fixed scaling factor. This is the redemption liability anchor — the ratio
+// against reserves is now meaningful (not tautologically 100%).
+export const SDR_VALUE_USD = 1.33; // 1 SDR ≈ $1.33 USD
+export const SCALING_FACTOR = 1.0; // fixed at launch; adjusted only for major basket changes
+export const NAV_TARGET = SDR_VALUE_USD * SCALING_FACTOR; // ≈ $1.33
 
 // Fee rates (§9) — capped per spec.
 export const MINT_FEE_BPS = 5; // 0.05%
@@ -50,14 +71,17 @@ export interface CurrencyWeight {
   name: string;
   combinedShare: number; // C_i (structural)
   momentumRaw: number; // M_i,raw
-  momentum: number; // M_i (clamped)
-  meanReversion: number; // B_i
-  momentumFactor: number; // K_i = M_i × B_i
+  momentumAdjusted: number; // M_i,adjusted (shock-absorbed) — v2.0
+  momentum: number; // M_i (clamped, post-shock)
+  meanReversion: number; // B_i (unaffected by shock absorber — v2.0)
+  momentumFactor: number; // K_i = M_adj × B_i (v2.0)
   rawWeight: number; // W_i,raw
   normalizedWeight: number; // W_i (final)
   goldPrice: number; // P_i (gold in this currency)
   goldPrice12moAgo: number; // P_i,t0
   isCapped: boolean; // hit concentration limit
+  emergencyWeight?: number; // §7 SDP emergency weight (if triggered)
+  smoothedWeight?: number; // §11 rebalancing-smoothed weight
 }
 
 export interface SDPResult {
@@ -65,21 +89,29 @@ export interface SDPResult {
   trigger: string | null; // "7-day" | "24-hour" | "idiosyncratic" | null
   currency: string | null;
   details: string | null;
+  delta: number | null; // the deviation that triggered it
 }
 
 export interface MonetaryState {
   // Oracle inputs
   goldUsd: number;
   goldUsd12moAgo: number;
+  // §1.4 Target NAV (SDR-based)
+  navTarget: number;
+  sdrValueUsd: number;
   // Reserve
   supply: number;
   reserveUsd: number; // R_USD
   reserveGold: number; // R_Gold (USD value)
   reserveTotal: number; // R_USD + R_Gold
-  // Derived
+  // Derived — §1 NAV (current market)
   nav: number; // (R_USD + R_Gold) / Supply
+  // §1.2 Reserve Ratio (FIXED: uses NAV_target, not current NAV)
   reserveRatio: number; // %
-  reserveCoverage: number; // excess USD
+  // §1.3 Reserve Coverage (FIXED: uses NAV_target × Supply)
+  reserveCoverage: number; // excess USD over redemption liability
+  reserveCoveragePct: number; // as % of NAV
+  redemptionLiability: number; // NAV_target × Supply
   // Basket
   weights: CurrencyWeight[];
   // Shock absorber
@@ -92,9 +124,73 @@ export interface MonetaryState {
   opIndex: number;
 }
 
+// ---- §8.4: median() (CORRECTED — handles even-length lists) ----
+
+/** §8.4 Returns median of a list, handling both odd and even lengths. */
+export function median(data: number[]): number {
+  if (data.length === 0) return 0;
+  const sorted = [...data].sort((a, b) => a - b);
+  const n = sorted.length;
+  if (n % 2 === 1) {
+    return sorted[Math.floor(n / 2)];
+  }
+  // even: average of the two middle values
+  return (sorted[n / 2 - 1] + sorted[n / 2]) / 2;
+}
+
+// ---- §8.2: MAD-based outlier rejection (ENHANCED) ----
+
+/**
+ * §8.2 MAD-based outlier rejection. Returns the valid (non-outlier) prices.
+ * Statistically more robust than a fixed 2% threshold.
+ *   MAD = median(|p - median_all| for p in family_prices)
+ *   valid if |p - median_all| ≤ k × MAD  (k = 3.0)
+ */
+export function madOutlierFilter(prices: number[], k = MAD_K): number[] {
+  if (prices.length === 0) return [];
+  const med = median(prices);
+  const deviations = prices.map((p) => Math.abs(p - med));
+  const mad = median(deviations);
+  // If MAD is 0 (all prices identical), keep everything.
+  if (mad === 0) return [...prices];
+  return prices.filter((p) => Math.abs(p - med) <= k * mad);
+}
+
+/**
+ * §8 Oracle consensus price: family medianization → MAD outlier rejection →
+ * quorum check (≥5 of 8) → constitutional validation (5% vs previous).
+ */
+export function consensusPrice(
+  familyPrices: number[],
+  previousPrice?: number
+): { price: number; method: string; validCount: number; quarantined: number } {
+  const medianAll = median(familyPrices);
+  const valid = madOutlierFilter(familyPrices);
+  const quarantined = familyPrices.length - valid.length;
+
+  // §8.2 Step 4: quorum check — need ≥5 valid prices, else TWAP fallback.
+  if (valid.length < 5) {
+    // TWAP fallback (here: average of all family prices as a proxy).
+    const twap = familyPrices.reduce((s, p) => s + p, 0) / familyPrices.length;
+    return { price: twap, method: "TWAP-48h (quorum fallback)", validCount: valid.length, quarantined };
+  }
+
+  let consensus = median(valid);
+
+  // §8.2 Step 5: constitutional validation — if >5% move vs previous, TWAP.
+  if (previousPrice && previousPrice > 0) {
+    if (Math.abs(consensus - previousPrice) / previousPrice > 0.05) {
+      const twap = valid.reduce((s, p) => s + p, 0) / valid.length;
+      return { price: twap, method: "TWAP-48h (constitutional validation)", validCount: valid.length, quarantined };
+    }
+  }
+
+  return { price: consensus, method: "median (MAD-filtered)", validCount: valid.length, quarantined };
+}
+
 // ---- §2: Gold-Currency Connection ----
 
-/** §2.1 Gold price in currency i: P_i = G / FX_i */
+/** §2.1 Gold price in currency i: P_i = G / FX_i (FX = USD per unit of currency) */
 export function goldPriceInCurrency(goldUsd: number, fx: number): number {
   return goldUsd / fx;
 }
@@ -111,6 +207,14 @@ export function combinedShare(c: CurrencyData): number {
 /** §4.1 Raw momentum: M_i,raw = P_t0 / P_t1 (12-month) */
 export function rawMomentum(p12moAgo: number, pToday: number): number {
   return p12moAgo / pToday;
+}
+
+/**
+ * §6.3 Adjusted momentum: M_adjusted = 1 + A×(M_raw - 1)
+ * Shock absorber applies to raw momentum BEFORE clamping (v2.0 §13.3 order).
+ */
+export function adjustedMomentum(mRaw: number, shockAbsorber: number): number {
+  return 1 + shockAbsorber * (mRaw - 1);
 }
 
 /** §4.2 Momentum bounds: clamp to [1-L, 1+L] */
@@ -132,7 +236,12 @@ export function clampMeanReversion(b: number): number {
 
 // ---- §6: Shock Absorber ----
 
-/** §6.2 Shock absorber factor: A_t = f(V_t) */
+/**
+ * §6.2 Shock absorber factor: A_t = f(V_t)
+ *   V ≤ 2%   → A = 1.0 (full momentum)
+ *   2% < V < 5% → A = linear interpolation
+ *   V ≥ 5%   → A = 0.5 (max 50% damping — intentional to preserve some momentum)
+ */
 export function shockAbsorberFactor(volatility: number): number {
   if (volatility <= V_NORMAL) return 1.0;
   if (volatility >= V_HIGH) return 0.5;
@@ -145,12 +254,8 @@ export function shockAbsorberFactor(volatility: number): number {
 export function detectSDP(snapshot: OracleSnapshot): SDPResult {
   const { goldUsd, goldUsd7dAgo, goldUsdYesterday, currencies, fx7dAgo, fxAgo1d } = snapshot;
 
-  // Compute gold price in each currency at each time point.
   const prices: {
     code: string;
-    today: number;
-    yesterday: number;
-    "7days": number;
     delta1d: number;
     delta7d: number;
   }[] = [];
@@ -161,9 +266,6 @@ export function detectSDP(snapshot: OracleSnapshot): SDPResult {
     const p7d = goldPriceInCurrency(goldUsd7dAgo, fx7dAgo[c.code] ?? c.fx);
     prices.push({
       code: c.code,
-      today: pToday,
-      yesterday: pYesterday,
-      "7days": p7d,
       delta1d: Math.abs(pToday / pYesterday - 1),
       delta7d: Math.abs(pToday / p7d - 1),
     });
@@ -176,6 +278,7 @@ export function detectSDP(snapshot: OracleSnapshot): SDPResult {
         triggered: true,
         trigger: "7-day",
         currency: p.code,
+        delta: p.delta7d,
         details: `${p.code} moved ${(p.delta7d * 100).toFixed(2)}% over 7 days (threshold ${(SDP_7D_TRIGGER * 100).toFixed(0)}%)`,
       };
     }
@@ -188,6 +291,7 @@ export function detectSDP(snapshot: OracleSnapshot): SDPResult {
         triggered: true,
         trigger: "24-hour",
         currency: p.code,
+        delta: p.delta1d,
         details: `${p.code} moved ${(p.delta1d * 100).toFixed(2)}% in 24h (threshold ${(SDP_1D_TRIGGER * 100).toFixed(0)}%)`,
       };
     }
@@ -195,19 +299,21 @@ export function detectSDP(snapshot: OracleSnapshot): SDPResult {
 
   // Trigger C: idiosyncratic deviation — |Δ_i - median(Δ)| > 2.5%
   const deltas = prices.map((p) => p.delta1d);
-  const median = [...deltas].sort((a, b) => a - b)[Math.floor(deltas.length / 2)];
+  const med = median(deltas);
   for (let i = 0; i < prices.length; i++) {
-    if (Math.abs(deltas[i] - median) > SDP_IDIO_TRIGGER) {
+    const dev = Math.abs(deltas[i] - med);
+    if (dev > SDP_IDIO_TRIGGER) {
       return {
         triggered: true,
         trigger: "idiosyncratic",
         currency: prices[i].code,
-        details: `${prices[i].code} deviated ${(Math.abs(deltas[i] - median) * 100).toFixed(2)}% from the basket median (threshold ${(SDP_IDIO_TRIGGER * 100).toFixed(1)}%)`,
+        delta: dev,
+        details: `${prices[i].code} deviated ${(dev * 100).toFixed(2)}% from the basket median (threshold ${(SDP_IDIO_TRIGGER * 100).toFixed(1)}%)`,
       };
     }
   }
 
-  return { triggered: false, trigger: null, currency: null, details: null };
+  return { triggered: false, trigger: null, currency: null, details: null, delta: null };
 }
 
 // ---- §3.4-3.5: Normalization + Concentration Limits ----
@@ -227,7 +333,6 @@ function applyConcentrationLimits(
     }
   }
   if (excess > 0) {
-    // Redistribute proportionally to non-capped currencies.
     const nonCappedTotal = [...weights.entries()]
       .filter(([code]) => !capped.has(code))
       .reduce((s, [, w]) => s + w, 0);
@@ -242,14 +347,40 @@ function applyConcentrationLimits(
   return { weights, capped };
 }
 
-// ---- Main: compute full basket + state ----
+// ---- §11: Rebalancing Smoothing (ADDED) ----
+
+/**
+ * §11.1 Standard rebalancing: W(t+1) = W(t) + λ_std × (W* - W(t))
+ * Applied daily over 30 days (λ_std = 1/30).
+ */
+export function standardRebalance(
+  currentWeight: number,
+  targetWeight: number,
+  lambda = LAMBDA_STD
+): number {
+  return currentWeight + lambda * (targetWeight - currentWeight);
+}
+
+/**
+ * §11.2 SDP rebalancing: W(t+1) = W(t) + λ_SDP × (W_emergency - W(t))
+ * Applied hourly over 48 hours (λ_SDP = 1/48).
+ */
+export function sdpRebalance(
+  currentWeight: number,
+  emergencyWeight: number,
+  lambda = LAMBDA_SDP
+): number {
+  return currentWeight + lambda * (emergencyWeight - currentWeight);
+}
+
+// ---- Main: compute full basket + state (v2.0 CORRECTED) ----
 
 /**
  * Compute the complete monetary state from an oracle snapshot + ledger
- * reserve values. Implements the full calculation pipeline:
- *   §3.1 combined shares → §4 momentum → §5 mean reversion →
- *   §3.2-3.3 raw weight → §6 shock absorber → §3.4 normalize →
- *   §3.5 concentration → §7 SDP → §1 NAV/ratio.
+ * reserve values. Implements the full v2.0 CORRECTED calculation pipeline:
+ *   §3.1 combined shares → §4 raw momentum → §6.3 shock-absorbed momentum →
+ *   §4.2 clamp → §5 mean reversion (unaffected by shock) → §3.2-3.3 raw weight →
+ *   §3.4 normalize → §3.5 concentration → §7 SDP → §1 NAV/ratio (with NAV_target).
  */
 export function computeMonetaryState(
   snapshot: OracleSnapshot,
@@ -261,61 +392,65 @@ export function computeMonetaryState(
 ): MonetaryState {
   const sdp = detectSDP(snapshot);
   const shockAbsorber = shockAbsorberFactor(volatility);
-
-  // Step 1: combined shares (structural weights)
   const currencyData = snapshot.currencies;
 
-  // Step 2-5: momentum + mean reversion + shock absorber per currency
+  // Per-currency: momentum (shock-absorbed) + mean reversion, then K = M_adj × B.
+  // v2.0 §6.4: shock absorber applies to momentum ONLY; mean reversion unaffected.
   const weightEntries: CurrencyWeight[] = currencyData.map((c) => {
     const pToday = goldPriceInCurrency(snapshot.goldUsd, c.fx);
     const p12moAgo = goldPriceInCurrency(snapshot.goldUsd12moAgo, snapshot.fxAgo[c.code] ?? c.fx);
 
     const mRaw = rawMomentum(p12moAgo, pToday);
-    const m = clampMomentum(mRaw);
 
+    // §6.3 Apply shock absorber to raw momentum (BEFORE clamping, per §13.3).
+    const mAdjusted = adjustedMomentum(mRaw, shockAbsorber);
+
+    // §4.2 Clamp the shock-absorbed momentum.
+    const m = clampMomentum(mAdjusted);
+
+    // §5 Mean reversion (independent of shock absorber — v2.0 fix).
     const b = clampMeanReversion(meanReversionFactor(c.lta, combinedShare(c)));
 
-    // §6.3 Adjusted momentum: M_adjusted = 1 + A×(M - 1)
-    const mAdjusted = 1 + shockAbsorber * (m - 1);
-
-    const k = mAdjusted * b; // §3.2 K_i = M × B
+    // §6.4 Final momentum factor: K = M_adjusted × B.
+    const k = m * b;
 
     return {
       code: c.code,
       name: c.name,
       combinedShare: combinedShare(c),
       momentumRaw: mRaw,
+      momentumAdjusted: mAdjusted,
       momentum: m,
       meanReversion: b,
       momentumFactor: k,
-      rawWeight: 0, // set below
-      normalizedWeight: 0, // set below
+      rawWeight: 0,
+      normalizedWeight: 0,
       goldPrice: pToday,
       goldPrice12moAgo: p12moAgo,
       isCapped: false,
     };
   });
 
-  // Step 3: raw weights W_i,raw = C_i × K_i
+  // §3.3 raw weights W_i,raw = C_i × K_i
   for (const w of weightEntries) {
     w.rawWeight = w.combinedShare * w.momentumFactor;
   }
 
-  // Step 4: normalize W_i = W_i,raw / Σ W_j,raw
+  // §3.4 normalize W_i = W_i,raw / Σ W_j,raw
   const totalRaw = weightEntries.reduce((s, w) => s + w.rawWeight, 0);
   const normalizedMap = new Map<string, number>();
   for (const w of weightEntries) {
     normalizedMap.set(w.code, w.rawWeight / totalRaw);
   }
 
-  // Step 5: concentration limits
+  // §3.5 concentration limits (60% cap + proportional redistribution)
   const { weights: finalMap, capped } = applyConcentrationLimits(normalizedMap);
   for (const w of weightEntries) {
     w.normalizedWeight = finalMap.get(w.code) ?? 0;
     w.isCapped = capped.has(w.code);
   }
 
-  // §7: SDP — if triggered, apply emergency weights
+  // §7 SDP — if triggered, apply emergency weights + anti-shock cap.
   if (sdp.triggered && sdp.currency) {
     const cc = sdp.currency;
     const c = currencyData.find((x) => x.code === cc);
@@ -326,24 +461,41 @@ export function computeMonetaryState(
       const w = weightEntries.find((x) => x.code === cc);
       if (w) {
         const emergencyRaw = w.combinedShare * kEmergency;
+        const emergencyNormalized = emergencyRaw / totalRaw;
         // §7.4 anti-shock cap: W_new = max(W_emergency, W_current × 0.50)
-        const newWeight = Math.max(emergencyRaw, w.normalizedWeight * 0.5);
+        const newWeight = Math.max(emergencyNormalized, w.normalizedWeight * 0.5);
+        w.emergencyWeight = newWeight;
         w.normalizedWeight = newWeight;
         w.momentumFactor = kEmergency;
       }
     }
   }
 
-  // §1: NAV and reserve ratio
+  // §11 Rebalancing smoothing — apply one step toward target (standard or SDP).
+  for (const w of weightEntries) {
+    const target = w.emergencyWeight ?? w.normalizedWeight;
+    w.smoothedWeight = w.emergencyWeight
+      ? sdpRebalance(w.normalizedWeight, w.emergencyWeight)
+      : standardRebalance(w.normalizedWeight, w.normalizedWeight);
+  }
+
+  // §1 Core reserve metrics (v2.0 CORRECTED).
   const reserveTotal = reserveUsd + reserveGoldUsd;
-  const nav = supply > 0 ? reserveTotal / supply : 0;
+  const nav = supply > 0 ? reserveTotal / supply : 0; // §1.1 current market NAV
+  const redemptionLiability = NAV_TARGET * supply; // §1.2 NAV_target × Supply
+  // §1.2 FIXED: Reserve Ratio = Reserve / (NAV_target × Supply) × 100
   const reserveRatio =
-    supply > 0 && nav > 0 ? (reserveTotal / (nav * supply)) * 100 : 0;
-  const reserveCoverage = reserveTotal - nav * supply;
+    redemptionLiability > 0 ? (reserveTotal / redemptionLiability) * 100 : 0;
+  // §1.3 FIXED: Coverage = Reserve - (NAV_target × Supply)
+  const reserveCoverage = reserveTotal - redemptionLiability;
+  const reserveCoveragePct =
+    nav > 0 ? (reserveCoverage / (nav * supply)) * 100 : 0;
 
   return {
     goldUsd: snapshot.goldUsd,
     goldUsd12moAgo: snapshot.goldUsd12moAgo,
+    navTarget: NAV_TARGET,
+    sdrValueUsd: SDR_VALUE_USD,
     supply,
     reserveUsd,
     reserveGold: reserveGoldUsd,
@@ -351,6 +503,8 @@ export function computeMonetaryState(
     nav,
     reserveRatio,
     reserveCoverage,
+    reserveCoveragePct,
+    redemptionLiability,
     weights: weightEntries,
     volatility,
     shockAbsorber,
@@ -382,10 +536,9 @@ export function custodyFeeMonthly(reserveValue: number): number {
   return (reserveValue * (CUSTODY_FEE_BPS_ANNUAL / 10000)) / 12;
 }
 
-// ---- helpers ----
-
-function clamp(x: number, min: number, max: number): number {
-  return Math.min(Math.max(x, min), max);
+/** §9.5 Rebalancing fee: rebalanced_amount × 0.0001 */
+export function rebalancingFee(rebalancedAmount: number): number {
+  return rebalancedAmount * (REBALANCE_FEE_BPS / 10000);
 }
 
 // ---- §10: Yield (informational — separate vehicle) ----
@@ -396,4 +549,10 @@ export function yieldAccrualWeekly(
   yieldRate = 0.01 // 1% default
 ): number {
   return (reserveValue * yieldRate) / 52;
+}
+
+// ---- helpers ----
+
+function clamp(x: number, min: number, max: number): number {
+  return Math.min(Math.max(x, min), max);
 }

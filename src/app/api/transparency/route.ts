@@ -35,7 +35,7 @@ export async function GET() {
         createdAt: o.createdAt.toISOString(),
       }));
 
-    // Compute the full Monetary Engine state from the spec.
+    // Compute the full Monetary Engine state from the v2.0 CORRECTED spec.
     const opIndex = ops.length;
     const oracle = getOracleSnapshot(opIndex);
     const reserveUsd = state.reserveValue * 0.90; // 90% in stablecoins/securities
@@ -62,16 +62,24 @@ export async function GET() {
         tiers: state.tiers,
         recentOperations: recent,
       },
-      // Full Monetary Engine (Mathematical Specification v1.0)
+      // Full Monetary Engine (Mathematical Specification v2.0 CORRECTED)
       monetary: {
         goldUsd: monetary.goldUsd,
         goldUsd12moAgo: monetary.goldUsd12moAgo,
+        // §1.4 Target NAV (SDR-based) — the redemption liability anchor
+        navTarget: monetary.navTarget,
+        sdrValueUsd: monetary.sdrValueUsd,
         reserveUsd: monetary.reserveUsd,
         reserveGold: monetary.reserveGold,
         reserveTotal: monetary.reserveTotal,
+        // §1.1 Current market NAV
         nav: monetary.nav,
+        // §1.2 FIXED: Reserve Ratio = Reserve / (NAV_target × Supply)
         reserveRatio: monetary.reserveRatio,
+        // §1.3 FIXED: Coverage = Reserve - (NAV_target × Supply)
         reserveCoverage: monetary.reserveCoverage,
+        reserveCoveragePct: monetary.reserveCoveragePct,
+        redemptionLiability: monetary.redemptionLiability,
         volatility: monetary.volatility,
         shockAbsorber: monetary.shockAbsorber,
         sdp: monetary.sdp,
@@ -81,6 +89,7 @@ export async function GET() {
           name: w.name,
           combinedShare: w.combinedShare,
           momentumRaw: w.momentumRaw,
+          momentumAdjusted: w.momentumAdjusted,
           momentum: w.momentum,
           meanReversion: w.meanReversion,
           momentumFactor: w.momentumFactor,
@@ -89,6 +98,8 @@ export async function GET() {
           goldPrice: w.goldPrice,
           goldPrice12moAgo: w.goldPrice12moAgo,
           isCapped: w.isCapped,
+          emergencyWeight: w.emergencyWeight,
+          smoothedWeight: w.smoothedWeight,
         })),
         // Fee schedule (§9)
         fees: {

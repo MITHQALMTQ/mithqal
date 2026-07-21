@@ -111,11 +111,22 @@ export function getOracleSnapshot(opIndex: number): OracleSnapshot {
 }
 
 /**
- * Oracle price aggregation per Section 11.
- * median of family prices with 2% outlier exclusion. Here we simulate
- * 6 oracle families with small deterministic variance around the true price.
+ * Oracle price aggregation per §8 (v2.0 CORRECTED).
+ * Simulates 6 oracle families (Chainlink, Pyth, Chronicle, RedStone, LBMA, CB FX)
+ * with small deterministic variance around the true price. Uses MAD-based
+ * outlier rejection (k=3.0) — statistically more robust than the fixed 2%
+ * threshold in v1.0. Delegates to consensusPrice() in monetary-engine.ts.
  */
-export function aggregateOraclePrice(truePrice: number, opIndex: number): number {
+export function aggregateOraclePrice(
+  truePrice: number,
+  opIndex: number,
+  previousPrice?: number
+): { price: number; method: string; validCount: number; quarantined: number } {
+  // We import lazily to avoid a circular import at module load.
+  // (oracle-data is imported by monetary-engine; monetary-engine is
+  // imported here only at call-time.)
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { consensusPrice } = require("./monetary-engine") as typeof import("./monetary-engine");
   // Simulate 6 family reports with small deterministic variance.
   const families = 6;
   const reports: number[] = [];
@@ -125,13 +136,5 @@ export function aggregateOraclePrice(truePrice: number, opIndex: number): number
     const variance = (u - 0.5) * 0.006; // ±0.3%
     reports.push(truePrice * (1 + variance));
   }
-  const sorted = [...reports].sort((a, b) => a - b);
-  const medianAll = sorted[Math.floor(sorted.length / 2)];
-  // Outlier exclusion: keep prices within 2% of the median.
-  const valid = reports.filter(
-    (p) => Math.abs(p - medianAll) / medianAll <= 0.02
-  );
-  const finalValid = valid.length >= 5 ? valid : reports;
-  const sortedFinal = [...finalValid].sort((a, b) => a - b);
-  return sortedFinal[Math.floor(sortedFinal.length / 2)];
+  return consensusPrice(reports, previousPrice);
 }
