@@ -24,6 +24,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
+import { useNotify } from "@/hooks/use-notify";
 import { Logo } from "@/components/logo";
 
 type Role = "investor" | "advisor" | "anchor" | "council-nominee" | "partner" | "other";
@@ -310,6 +311,18 @@ function Console({ email }: { email: string }) {
     fetchList();
   }, [fetchList]);
 
+  // Live notifications — when a new Formation Committee submission lands,
+  // the mini-service (port 3003) emits "submission:new". Show a toast and
+  // refresh the list so the operator sees it immediately.
+  const { connected: notifyConnected } = useNotify((_event, payload) => {
+    const p = payload as { fullName?: string; role?: Role; org?: string };
+    toast({
+      title: "New submission received",
+      description: `${p.fullName ?? "Someone"} (${ROLE_META[p.role ?? "other"].label}${p.org ? `, ${p.org}` : ""}) just joined the pipeline.`,
+    });
+    fetchList();
+  });
+
   const exportCsv = () => {
     if (!data?.rows.length) return;
     const header = ["Name", "Email", "Organisation", "Role", "Submitted (ISO)", "Message"];
@@ -367,6 +380,20 @@ function Console({ email }: { email: string }) {
               </Badge>
               <Badge className="border-reserve/40 bg-reserve/10 text-reserve hover:bg-reserve/10">
                 <ShieldCheck className="mr-1 h-3 w-3" /> Authenticated
+              </Badge>
+              <Badge
+                className={
+                  notifyConnected
+                    ? "border-reserve/40 bg-reserve/10 text-reserve hover:bg-reserve/10"
+                    : "border-line bg-ink-card text-fg-muted hover:bg-ink-card"
+                }
+              >
+                <span
+                  className={`mr-1.5 inline-block h-1.5 w-1.5 rounded-full ${
+                    notifyConnected ? "animate-pulse bg-reserve" : "bg-fg-muted"
+                  }`}
+                />
+                {notifyConnected ? "Live" : "Offline"}
               </Badge>
             </div>
             <h1 className="font-display mt-4 text-3xl leading-tight sm:text-5xl">

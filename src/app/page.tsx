@@ -2,15 +2,16 @@
 
 import { useSyncExternalStore } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { BookOpen, Landmark, FlaskConical, Presentation, ScrollText, LayoutDashboard } from "lucide-react";
+import { BookOpen, Landmark, FlaskConical, Presentation, ScrollText, LayoutDashboard, Eye } from "lucide-react";
 import Playbook from "@/components/playbook";
 import PublicSite from "@/components/public-site";
 import TestnetDashboard from "@/components/testnet";
 import InvestorDeck from "@/components/deck";
 import ConstitutionDocs from "@/components/constitution";
 import AdminConsole from "@/components/admin";
+import TransparencyDashboard from "@/components/transparency";
 
-type View = "institution" | "playbook" | "testnet" | "deck" | "constitution" | "admin";
+type View = "institution" | "transparency" | "playbook" | "testnet" | "deck" | "constitution" | "admin";
 
 const STORAGE_KEY = "mithqal.view";
 const CHANGE_EVENT = "mithqal:view-change";
@@ -18,6 +19,7 @@ const DEFAULT_VIEW: View = "institution";
 
 const VIEWS: { id: View; label: string; icon: typeof BookOpen; hint: string }[] = [
   { id: "institution", label: "Institution", icon: Landmark, hint: "Public-facing" },
+  { id: "transparency", label: "Transparency", icon: Eye, hint: "Live · build in public" },
   { id: "constitution", label: "Constitution", icon: ScrollText, hint: "v18 spec · citable" },
   { id: "testnet", label: "Testnet", icon: FlaskConical, hint: "MTQ simulator" },
   { id: "deck", label: "Deck", icon: Presentation, hint: "Investor teaser" },
@@ -37,7 +39,7 @@ function subscribe(cb: () => void) {
   };
 }
 
-const VALID_VIEWS: View[] = ["institution", "constitution", "testnet", "deck", "playbook", "admin"];
+const VALID_VIEWS: View[] = ["institution", "transparency", "constitution", "testnet", "deck", "playbook", "admin"];
 
 function getSnapshot(): View {
   const v = window.localStorage.getItem(STORAGE_KEY);
@@ -89,6 +91,8 @@ export default function Page() {
               <ConstitutionDocs />
             ) : view === "admin" ? (
               <AdminConsole />
+            ) : view === "transparency" ? (
+              <TransparencyDashboard />
             ) : (
               <PublicSite />
             )}

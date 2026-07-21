@@ -53,6 +53,31 @@ export async function POST(req: Request) {
       },
       select: { id: true, createdAt: true },
     });
+
+    // Notify the operator in real time via the notification mini-service
+    // (port 3003). Fire-and-forget — a failed notification must never block
+    // the public submission.
+    try {
+      await fetch("http://localhost:3003/emit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          event: "submission:new",
+          payload: {
+            id: record.id,
+            fullName,
+            role,
+            org,
+            createdAt: record.createdAt.toISOString(),
+          },
+        }),
+        // Don't let this hang the response.
+        signal: AbortSignal.timeout(2000),
+      });
+    } catch {
+      /* notification service unavailable — submission still succeeds */
+    }
+
     return NextResponse.json({ ok: true, id: record.id });
   } catch (err) {
     console.error("formation-interest create failed", err);

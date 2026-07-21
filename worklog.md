@@ -113,3 +113,22 @@ Stage Summary:
 - Files: src/components/logo.tsx (new), src/lib/auth.ts (new), src/app/api/auth/[...nextauth]/route.ts (new), src/components/providers.tsx (new), src/components/admin.tsx (rewritten with auth gate), src/app/layout.tsx (favicon + SessionProvider), public/mithqal-logo.png + icon set.
 - Verified: 0 hydration errors, logo renders (800px), favicon loads, all 6 views toggle cleanly. Auth: login form shows when unauthenticated, API returns 401 without session, 200 with session. Direct browser fetch login → session cookie set → reload → Admin console renders with real data (Omar Farouk, Amira El-Sayed). Sign out works. Lint clean.
 - Operator credentials: coo@mithqal.io / Mithqal2026! (change in .env for production).
+
+---
+Task ID: 5
+Agent: main (COO/PM)
+Task: Build the public Transparency dashboard + real-time admin notification mini-service (WebSocket).
+
+Work Log:
+- Added GET /api/transparency (public, unauthenticated): returns live testnet state (supply, reserves, NAV, ratio, PoR, op count, tiers, recent 8 ops) + Formation Committee submission count (number only, no PII) + 14-milestone formation checklist.
+- Built src/components/transparency.tsx: live public dashboard — hero ("Live · build in public", auto-refresh 30s), 4 KPI cards (Supply/Reserve/NAV/Ratio), Proof of Reserves card with hash + op count + last-update, formation submission count card, 4-tier reserve composition with share-vs-target bars + price drift, recent operations ledger (last 8), formation progress with SVG progress ring (7/14 = 50%), transparency cadence (real-time/daily/quarterly/annual/5-year), disclaimer + CTA to Constitution.
+- Added Transparency as 7th view in page.tsx toggle (Eye icon, "Live · build in public" hint).
+- Built mini-services/notify-service (port 3003): socket.io server + internal /emit POST endpoint + /health. Path is default /socket.io/ so HTTP routes (/emit, /health) aren't intercepted. Independent bun project with bun --hot dev.
+- Wired POST /api/formation-interest to fire-and-forget POST to localhost:3003/emit {event:"submission:new", payload} after each create — a failed notification never blocks the public submission (AbortSignal.timeout 2s).
+- Built src/hooks/use-notify.ts: client socket.io hook with auto-reconnect. Connects directly to port 3003 (hostname:3003) — the Next.js App Router intercepts /socket.io/ at port 3000 and 308-redirects, breaking the gateway path. Direct cross-origin works via the notify-service CORS config.
+- Integrated useNotify into Admin Console: on "submission:new" → toast "New submission received" + fetchList() auto-refresh. Added a "Live"/"Offline" badge in the header (pulsing dot when connected).
+
+Stage Summary:
+- Files: src/app/api/transparency/route.ts, src/components/transparency.tsx, src/hooks/use-notify.ts, mini-services/notify-service/{package.json,index.ts}, src/app/api/formation-interest/route.ts (emit call added), src/components/admin.tsx (live notifications + badge), src/app/page.tsx (7th view).
+- Verified end-to-end via Agent Browser: 0 hydration errors. Transparency renders live KPIs (51.5M MTQ, 100% ratio, $1.00 NAV, PoR hash, 50% formation progress, 14 milestones, recent ops). All 7 views toggle cleanly. Admin login → "Live" badge connected. Submitting a new Formation Committee interest (Yusuf Rahman) → WebSocket emitted → Admin received toast "New submission received" → table auto-refreshed → Yusuf appeared → count 4→5. Lint clean.
+- Architecture: public transparency is unauthenticated (by design — verifiable ops); admin remains auth-gated; the notify mini-service is a stateless relay (no DB, no auth — it only forwards events the Next.js API emits, and only the operator client receives them).
