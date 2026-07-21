@@ -45,3 +45,22 @@ model FormationInterest {
   @@index([role])
   @@index([createdAt])
 }
+
+// MTQ testnet simulator — append-only ledger of mint/redeem operations.
+// State (supply, reserves by tier, NAV, reserve ratio) is derived from this
+// immutable log on every read. This mirrors the Constitution's own
+// auditability principle: every claim verifiable from the ledger.
+model TestnetOperation {
+  id           String   @id @default(cuid())
+  type         String   // mint | redeem
+  amountUsd    Float    // USD value of the deposit (mint) or claim (redeem)
+  mtq          Float    // MTQ minted or burned
+  participant  String   // label for the simulated participant
+  nav          Float    // NAV (USD per MTQ) at time of op
+  reserveRatio Float    // reserve ratio (%) after op
+  porHash      String   // proof-of-reserves hash after op
+  createdAt    DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([type])
+}
