@@ -79,3 +79,19 @@ Stage Summary:
 - Files: src/lib/testnet-engine.ts, src/app/api/testnet/{route,mint/route,redeem/route,seed/route}.ts, src/components/testnet.tsx.
 - Smoke test passed: seed→state (49M supply, 100% ratio, NAV $1.00, tiers with drifting prices); mint $2M→51M supply, ratio held 100%; redeem 500K MTQ→net $499,750 (fee $250 = 0.05%); PoR hash changes per op.
 - Lint clean.
+
+---
+Task ID: 3 (both)
+Agent: main
+Task: Build the public Constitution docs site (citable v18 reference) + the Admin Formation Committee pipeline console.
+
+Work Log:
+- Mapped the full v18 blueprint structure: 4 layers + 1 operations layer, ~47 articles (Layer 1 Institutional I–XVII, Layer 2 Monetary I–VII, Layer 3 Governance & Policy I–VIII, Layer 4 Technical I–VIII, Layer 5 Operations I–VII).
+- Extended page.tsx toggle from 4→6 views (added Constitution + Admin) with ScrollText / LayoutDashboard icons. useSyncExternalStore + localStorage persists view.
+- Constitution docs: src/lib/constitution-data.ts (5 layers, 47 articles; detailed sections for Layer 1 core articles I–V + XIV; index entries for the rest). src/components/constitution.tsx: sticky sidebar TOC grouped by layer (mobile hamburger + backdrop), search filter, Preamble view (identity/mission/humility/not), ArticleView with frozen badges + provisions, prev/next nav, citation footer.
+- Admin: GET /api/admin/interests (overall totals + byRole always unfiltered; ?role= filter applies only to rows; returns filtered count). src/components/admin.tsx: 5 stat cards (total/investors/advisors/anchors/nominees), role filter pills with counts, scrollable table (time/name/org/role-badge/contact-mailto/message-clamped), CSV export (Blob download), refresh. Stats stay stable across filters.
+
+Stage Summary:
+- Files: src/lib/constitution-data.ts, src/components/constitution.tsx, src/app/api/admin/interests/route.ts, src/components/admin.tsx; page.tsx updated to 6 views.
+- Verified via Agent Browser: all 6 views toggle cleanly, zero errors. Constitution: 47 articles in sidebar, search works (cryptography→1 match, x→19), Article V shows "Permanently frozen" badge, prev/next nav works, mobile hamburger opens sidebar. Admin: loads real DB data (2 submissions — Omar investor, Amira anchor), stats stable [2,1,0,1,0] across filters, filter to Investor→1 row, CSV export present, mobile table scrolls horizontally.
+- Lint clean. Dev log shows GET /api/admin/interests 200 with Prisma groupBy + count queries.

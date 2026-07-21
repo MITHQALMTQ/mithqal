@@ -1,0 +1,350 @@
+"use client";
+
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { motion } from "framer-motion";
+import {
+  Users,
+  Crown,
+  Building2,
+  Handshake,
+  Wrench,
+  Inbox,
+  Download,
+  RefreshCw,
+  ExternalLink,
+  Loader2,
+  ShieldCheck,
+} from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useToast } from "@/hooks/use-toast";
+
+type Role = "investor" | "advisor" | "anchor" | "council-nominee" | "partner" | "other";
+
+interface Row {
+  id: string;
+  fullName: string;
+  email: string;
+  org: string;
+  role: Role;
+  message: string;
+  createdAt: string;
+}
+
+interface Payload {
+  total: number;
+  byRole: Record<string, number>;
+  filtered: number;
+  rows: Row[];
+  error?: string;
+}
+
+const ROLE_META: Record<Role, { label: string; icon: typeof Users; tone: string }> = {
+  investor: { label: "Investor", icon: Crown, tone: "border-gold/40 bg-gold/10 text-gold" },
+  advisor: { label: "Advisor", icon: ShieldCheck, tone: "border-reserve/40 bg-reserve/10 text-reserve" },
+  anchor: { label: "Anchor", icon: Building2, tone: "border-gold/40 bg-gold/10 text-gold" },
+  "council-nominee": { label: "Council nominee", icon: Crown, tone: "border-reserve/40 bg-reserve/10 text-reserve" },
+  partner: { label: "Partner", icon: Handshake, tone: "border-line bg-ink-card text-foreground" },
+  other: { label: "Other", icon: Wrench, tone: "border-line bg-ink-card text-fg-muted" },
+};
+
+const ALL_ROLES: (Role | "all")[] = [
+  "all",
+  "investor",
+  "advisor",
+  "anchor",
+  "council-nominee",
+  "partner",
+  "other",
+];
+
+function fmtDate(iso: string) {
+  const d = new Date(iso);
+  return d.toLocaleString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+function timeAgo(iso: string) {
+  const diff = Date.now() - new Date(iso).getTime();
+  if (diff < 60_000) return Math.max(1, Math.round(diff / 1000)) + "s ago";
+  if (diff < 3_600_000) return Math.round(diff / 60_000) + "m ago";
+  if (diff < 86_400_000) return Math.round(diff / 3_600_000) + "h ago";
+  return Math.round(diff / 86_400_000) + "d ago";
+}
+
+function csvEscape(v: string) {
+  if (/[",\n]/.test(v)) return `"${v.replace(/"/g, '""')}"`;
+  return v;
+}
+
+export default function AdminConsole() {
+  const { toast } = useToast();
+  const [data, setData] = useState<Payload | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState<Role | "all">("all");
+
+  const fetchList = useCallback(async () => {
+    setLoading(true);
+    try {
+      const url = filter === "all" ? "/api/admin/interests" : `/api/admin/interests?role=${filter}`;
+      const res = await fetch(url, { cache: "no-store" });
+      const json = (await res.json()) as Payload;
+      if (!res.ok) throw new Error(json.error || "load failed");
+      setData(json);
+    } catch (e) {
+      toast({
+        title: "Could not load submissions",
+        description: e instanceof Error ? e.message : "Try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [filter, toast]);
+
+  useEffect(() => {
+    fetchList();
+  }, [fetchList]);
+
+  const exportCsv = () => {
+    if (!data?.rows.length) return;
+    const header = ["Name", "Email", "Organisation", "Role", "Submitted (ISO)", "Message"];
+    const lines = data.rows.map((r) =>
+      [r.fullName, r.email, r.org, ROLE_META[r.role].label, r.createdAt, r.message]
+        .map(csvEscape)
+        .join(",")
+    );
+    const csv = [header.join(","), ...lines].join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `mithqal-formation-committee-${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast({ title: "Exported", description: `${data.rows.length} submissions → CSV.` });
+  };
+
+  const byRole = data?.byRole ?? {};
+  const total = data?.total ?? 0;
+  const filtered = data?.filtered ?? 0;
+  const rows = data?.rows ?? [];
+
+  const stats = useMemo(() => {
+    const investors = byRole.investor ?? 0;
+    const advisors = byRole.advisor ?? 0;
+    const anchors = byRole.anchor ?? 0;
+    const nominees = byRole["council-nominee"] ?? 0;
+    return [
+      { label: "Total submissions", value: total, icon: Inbox, tone: "text-foreground" },
+      { label: "Investors", value: investors, icon: Crown, tone: "text-gold" },
+      { label: "Advisors", value: advisors, icon: ShieldCheck, tone: "text-reserve" },
+      { label: "Anchor participants", value: anchors, icon: Building2, tone: "text-gold" },
+      { label: "Council nominees", value: nominees, icon: Users, tone: "text-reserve" },
+    ];
+  }, [byRole, total]);
+
+  return (
+    <div className="grain-bg min-h-screen">
+      {/* Header */}
+      <section className="relative overflow-hidden border-b border-line/60 px-5 py-10 sm:px-8 sm:py-14">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,color-mix(in_oklch,var(--gold)_10%,transparent),transparent_60%)]" />
+        <div className="relative mx-auto w-full max-w-6xl">
+          <motion.div
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.45 }}
+          >
+            <Badge className="border-gold/40 bg-gold/10 text-gold hover:bg-gold/10">
+              Operator console
+            </Badge>
+            <h1 className="font-display mt-4 text-3xl leading-tight sm:text-5xl">
+              Formation Committee <span className="gold-text">pipeline</span>
+            </h1>
+            <p className="mt-3 max-w-2xl text-sm text-fg-muted sm:text-base">
+              Every submission to the Formation Committee intake — investors, advisors, anchor
+              participants and Council nominees. Filter, review and export. This is your
+              private operator view; never linked from the public site.
+            </p>
+          </motion.div>
+        </div>
+      </section>
+
+      <div className="mx-auto w-full max-w-6xl px-5 py-10 sm:px-8">
+        {/* Stats */}
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5 sm:gap-4">
+          {loading
+            ? Array.from({ length: 5 }).map((_, i) => (
+                <Skeleton key={i} className="h-[92px] rounded-xl" />
+              ))
+            : stats.map((s) => {
+                const Icon = s.icon;
+                return (
+                  <div key={s.label} className="rounded-xl border border-line bg-ink-soft p-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-fg-muted">
+                        {s.label}
+                      </span>
+                      <Icon className={`h-4 w-4 ${s.tone}`} />
+                    </div>
+                    <div className={`font-display mt-2 text-3xl ${s.tone}`}>{s.value}</div>
+                  </div>
+                );
+              })}
+        </div>
+
+        {/* Toolbar */}
+        <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-wrap items-center gap-1.5">
+            {ALL_ROLES.map((r) => {
+              const active = filter === r;
+              const label = r === "all" ? "All" : ROLE_META[r].label;
+              const count = r === "all" ? total : byRole[r] ?? 0;
+              return (
+                <button
+                  key={r}
+                  onClick={() => setFilter(r)}
+                  className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition ${
+                    active
+                      ? "border-gold/50 bg-gold/15 text-gold"
+                      : "border-line bg-ink-card text-fg-muted hover:text-foreground"
+                  }`}
+                >
+                  {label}
+                  <span className="rounded-full bg-ink px-1.5 py-0.5 text-[10px] text-fg-muted">
+                    {count}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              onClick={fetchList}
+              className="border-line bg-ink-card text-foreground hover:text-gold"
+            >
+              <RefreshCw className="h-3.5 w-3.5" /> Refresh
+            </Button>
+            <Button
+              onClick={exportCsv}
+              disabled={!rows.length}
+              className="bg-gold text-ink hover:bg-gold-soft disabled:opacity-50"
+            >
+              <Download className="h-3.5 w-3.5" /> Export CSV
+            </Button>
+          </div>
+        </div>
+
+        {/* Table */}
+        <div className="mt-6 overflow-hidden rounded-2xl border border-line">
+          <div className="max-h-[60vh] overflow-y-auto overflow-x-auto">
+            <table className="w-full min-w-[820px] text-sm">
+              <thead className="sticky top-0 z-10 bg-ink-card text-left text-[10px] uppercase tracking-wider text-fg-muted">
+                <tr>
+                  <th className="px-4 py-3 font-semibold">Submitted</th>
+                  <th className="px-4 py-3 font-semibold">Name</th>
+                  <th className="px-4 py-3 font-semibold">Organisation</th>
+                  <th className="px-4 py-3 font-semibold">Role</th>
+                  <th className="px-4 py-3 font-semibold">Contact</th>
+                  <th className="px-4 py-3 font-semibold">Message</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-line">
+                {loading ? (
+                  Array.from({ length: 4 }).map((_, i) => (
+                    <tr key={i}>
+                      {Array.from({ length: 6 }).map((__, j) => (
+                        <td key={j} className="px-4 py-4">
+                          <Skeleton className="h-4 w-full" />
+                        </td>
+                      ))}
+                    </tr>
+                  ))
+                ) : rows.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="px-4 py-16 text-center">
+                      <Inbox className="mx-auto h-8 w-8 text-fg-muted" />
+                      <p className="mt-3 text-sm text-fg-muted">
+                        No submissions yet for this filter.
+                      </p>
+                      <p className="mt-1 text-xs text-fg-muted">
+                        The pipeline fills as the Formation Committee intake is exercised.
+                      </p>
+                    </td>
+                  </tr>
+                ) : (
+                  rows.map((r) => {
+                    const meta = ROLE_META[r.role];
+                    const Icon = meta.icon;
+                    return (
+                      <tr key={r.id} className="hover:bg-ink-card/50">
+                        <td className="whitespace-nowrap px-4 py-4 text-xs text-fg-muted">
+                          <div>{timeAgo(r.createdAt)}</div>
+                          <div className="text-[10px] opacity-70">{fmtDate(r.createdAt)}</div>
+                        </td>
+                        <td className="px-4 py-4 font-medium text-foreground">{r.fullName}</td>
+                        <td className="px-4 py-4 text-fg-muted">
+                          {r.org || <span className="text-fg-muted/50">—</span>}
+                        </td>
+                        <td className="px-4 py-4">
+                          <Badge className={`${meta.tone} hover:opacity-90`}>
+                            <Icon className="mr-1 h-3 w-3" /> {meta.label}
+                          </Badge>
+                        </td>
+                        <td className="px-4 py-4">
+                          <a
+                            href={`mailto:${r.email}`}
+                            className="text-gold hover:underline"
+                          >
+                            {r.email}
+                          </a>
+                        </td>
+                        <td className="max-w-[320px] px-4 py-4 text-xs text-fg-muted">
+                          {r.message ? (
+                            <span className="line-clamp-3">{r.message}</span>
+                          ) : (
+                            <span className="text-fg-muted/50">—</span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <Separator className="my-8 bg-line" />
+        <div className="flex flex-col gap-3 rounded-xl border border-line bg-ink-soft/50 p-5 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-2 text-sm text-fg-muted">
+            <ShieldCheck className="h-4 w-4 text-gold" />
+            <span>
+              Showing <span className="text-foreground">{filtered}</span> of{" "}
+              <span className="text-foreground">{total}</span> submissions
+              {filter !== "all" ? ` · filtered to ${ROLE_META[filter].label}` : null}.
+            </span>
+          </div>
+          <a
+            href="https://x.com/MithqalMTQ"
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-1.5 text-xs text-fg-muted transition hover:text-gold"
+          >
+            <ExternalLink className="h-3.5 w-3.5" /> @MithqalMTQ
+          </a>
+        </div>
+      </div>
+    </div>
+  );
+}
