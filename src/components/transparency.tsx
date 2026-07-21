@@ -480,7 +480,7 @@ export default function TransparencyDashboard() {
                   {
                     label: "Redemption liability",
                     value: fmtUsd(state.monetary.redemptionLiability),
-                    sub: `NAV_target × ${state.monetary.supply.toLocaleString("en-US", { maximumFractionDigits: 0 })} MTQ`,
+                    sub: `NAV_target × ${state.testnet.supply.toLocaleString("en-US", { maximumFractionDigits: 0 })} MTQ`,
                     tone: "text-foreground",
                   },
                   {
