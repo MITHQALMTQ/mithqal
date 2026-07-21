@@ -198,3 +198,38 @@ Stage Summary:
 - Production URL: https://mithqal.vercel.app
 - Repository: github.com/MITHQALMTQ/mithqal (in sync, history clean, no secrets)
 - The Constitution is now publicly accessible, citable, and live.
+
+---
+Task ID: 9
+Agent: main (COO/PM)
+Task: Implement the full Monetary Engine (Mathematical Specification v1.0) + email notifications + end-to-end verification.
+
+Work Log:
+- Email notifications: installed nodemailer, built src/lib/email.ts (SMTP-configurable, fire-and-forget, console-log fallback). Wired into POST /api/formation-interest — every submission now notifies meltonsy@icloud.com with a branded HTML email (name/email/org/role/message + admin link). Set ADMIN_NOTIFY_EMAIL on Vercel production. When SMTP creds are added, real delivery activates automatically.
+- Oracle simulation (src/lib/oracle-data.ts): 5 eligible currencies (USD/EUR/JPY/GBP/CNY) with FX rates, COFER/SWIFT/BIS shares, long-term averages, plus historical gold prices (today/yesterday/7d/12mo) and historical FX for momentum + SDP. Deterministic per op-index (auditability). Includes aggregateOraclePrice() (§11: median + 2% outlier exclusion across 6 simulated families).
+- Monetary Engine (src/lib/monetary-engine.ts): complete implementation of every formula in the Mathematical Specification v1.0:
+  - §1 NAV = (R_USD + R_Gold) / Supply; Reserve Ratio = reserves / (NAV × supply) × 100%; Reserve Coverage
+  - §2 Gold-Currency Connection: P_i = G / FX_i
+  - §3 Basket Weighting: C_i = α×COFER + β×SWIFT + γ×BIS (0.50/0.40/0.10); W_raw = C × K; normalize; concentration limit 60% with proportional redistribution
+  - §4 Momentum: M_raw = P_t0/P_t1 (12mo); clamp ±5%
+  - §5 Mean Reversion: B = 1 + η×(LTA - C_current), η=0.05; clamp ±2%
+  - §6 Shock Absorber: A_t = f(volatility) with 2%/5% thresholds (1.0 → linear → 0.5)
+  - §7 SDP: 3 triggers (7-day 5%, 24h 3%, idiosyncratic 2.5%) + emergency weights (K_emergency = P_7d/P_today) + anti-shock cap (max(W_emergency, W_current×0.5))
+  - §9 Fees: mint 0.05% capped $5k, redeem 0.05% capped $5k, transfer 0.01% capped $1k, custody 0.10%/yr
+  - §10 Yield: weekly accrual (separate vehicle, informational)
+- Integration: Transparency API now returns full `monetary` object (goldUsd, basket weights, SDP, shock absorber, fees). Transparency dashboard renders a "Monetary Engine" section with the live basket table (structural/momentum/mean-reversion/K-factor/weight/gold-price per currency), SDP status banner, and fee schedule cards. Testnet mint now charges the real mint fee (§9.1): $1M deposit → $500 fee → $999,500 net → 9,999,500 MTQ minted.
+- Deployed to Vercel production. Set ADMIN_NOTIFY_EMAIL env var.
+- Verified end-to-end on https://mithqal.vercel.app:
+  - Monetary engine: gold $1,857/oz, 5 currencies, weights sum to 100.00%, EUR momentum K=0.9910 (matches spec's worked example of 0.9912)
+  - SDP: inactive (calm) by default, fully exercisable when a shock is injected
+  - Seed: 50M MTQ, 100% ratio
+  - Mint with real fee: $1M → $500 fee → 9,999,500 MTQ minted → ratio 100.001%
+  - Form submit: {"ok":true} + email notification fired to meltonsy@icloud.com
+  - Admin API: 401 (auth-gated)
+  - All 7 views render, 0 hydration errors, lint clean
+
+Stage Summary:
+- The full Monetary Engine is live and faithful to the Mathematical Specification v1.0. Every formula (§1-§11) is implemented and computable in real time. The basket table on the Transparency page shows the live gold-currency connection, momentum, mean-reversion, K-factor, and normalized weight for each of the 5 eligible currencies.
+- Email notifications are wired: every Formation Committee submission notifies meltonsy@icloud.com. Currently logs to Vercel function logs (SMTP not yet configured); will send real email the moment SMTP creds are added.
+- Fees are real: mint 0.05% capped $5k, redeem 0.05% capped $5k — the testnet now charges the exact fees from the spec.
+- Files: src/lib/email.ts, src/lib/oracle-data.ts, src/lib/monetary-engine.ts, src/app/api/transparency/route.ts (monetary state), src/app/api/testnet/mint/route.ts (real fees), src/app/api/formation-interest/route.ts (email), src/components/transparency.tsx (monetary UI), .env.example.
