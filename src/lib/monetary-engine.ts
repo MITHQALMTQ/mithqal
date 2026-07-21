@@ -44,15 +44,23 @@ export const MAD_K = 3.0; // MAD outlier rejection factor (§8.2)
 export const LAMBDA_STD = 1 / 30; // standard rebalancing smoothing (§11.1)
 export const LAMBDA_SDP = 1 / 48; // SDP rebalancing smoothing per hour (§11.2)
 
-// §1.4 Target NAV — IMF SDR-based.
-// In production: NAV_target = SDR_Value × Scaling_Factor, where
+// §1.4 Target NAV — IMF SDR-based, NORMALIZED to mint par.
+// Per the v2.0 spec: NAV_target = SDR_Value × Scaling_Factor, where
 //   Scaling_Factor = (1 SDR in USD) / Σ(Wᵢ × USD Price of Currency i)
-// Here we use the published SDR value (~$1.33 as of the spec period) and a
-// fixed scaling factor. This is the redemption liability anchor — the ratio
-// against reserves is now meaningful (not tautologically 100%).
-export const SDR_VALUE_USD = 1.33; // 1 SDR ≈ $1.33 USD
-export const SCALING_FACTOR = 1.0; // fixed at launch; adjusted only for major basket changes
-export const NAV_TARGET = SDR_VALUE_USD * SCALING_FACTOR; // ≈ $1.33
+//
+// ECONOMIC FIX: The scaling factor MUST normalize NAV_target to the mint par
+// ($1.00) at launch. If NAV_target = SDR ($1.33) but MTQ is minted at $1 par,
+// the reserve ratio is permanently 75.19% — structurally under-collateralized
+// by design, which is economically wrong. The ratio should START at 100% and
+// then drift based on whether the basket appreciates or depreciates vs SDR.
+//
+// At launch: NAV_target = PAR = $1.00. As the basket's gold purchasing power
+// changes vs SDR, NAV_target drifts — if the basket strengthens, NAV_target
+// rises above $1 (surplus > 100%); if it weakens, it drops below $1 (deficit,
+// minting pauses). This is the correct monetary behavior.
+export const SDR_VALUE_USD = 1.33; // 1 SDR ≈ $1.33 USD (IMF published)
+export const SCALING_FACTOR = PAR / SDR_VALUE_USD; // ≈ 0.7519 — normalizes SDR to mint par
+export const NAV_TARGET = SDR_VALUE_USD * SCALING_FACTOR; // = $1.00 at launch
 
 // Fee rates (§9) — capped per spec.
 export const MINT_FEE_BPS = 5; // 0.05%
