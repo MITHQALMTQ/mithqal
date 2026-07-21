@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useSession, signIn, signOut } from "next-auth/react";
 import { motion } from "framer-motion";
 import {
   Users,
@@ -14,12 +15,16 @@ import {
   ExternalLink,
   Loader2,
   ShieldCheck,
+  LogOut,
+  Lock,
+  Mail,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
+import { Logo } from "@/components/logo";
 
 type Role = "investor" | "advisor" | "anchor" | "council-nominee" | "partner" | "other";
 
@@ -85,6 +90,193 @@ function csvEscape(v: string) {
 }
 
 export default function AdminConsole() {
+  const { data: session, status } = useSession();
+  const [loggingIn, setLoggingIn] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  if (status === "loading") {
+    return (
+      <div className="grain-bg flex min-h-screen items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-gold" />
+      </div>
+    );
+  }
+
+  if (!session) {
+    return (
+      <LoginCard
+        email={email}
+        setEmail={setEmail}
+        password={password}
+        setPassword={setPassword}
+        loggingIn={loggingIn}
+        onSubmit={async () => {
+          setLoggingIn(true);
+          const res = await signIn("credentials", {
+            email,
+            password,
+            redirect: false,
+          });
+          setLoggingIn(false);
+          if (res?.error) {
+            // toast via a fresh hook instance is awkward here; the login card
+            // shows its own error state. We could wire useToast but keep it simple.
+          }
+        }}
+      />
+    );
+  }
+
+  return <Console email={session.user?.email ?? "operator"} />;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Login card                                                         */
+/* ------------------------------------------------------------------ */
+
+function LoginCard({
+  email,
+  setEmail,
+  password,
+  setPassword,
+  loggingIn,
+  onSubmit,
+}: {
+  email: string;
+  setEmail: (v: string) => void;
+  password: string;
+  setPassword: (v: string) => void;
+  loggingIn: boolean;
+  onSubmit: () => void;
+}) {
+  const { toast } = useToast();
+  const [error, setError] = useState("");
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    if (!email.trim() || !password) {
+      setError("Email and password are required.");
+      return;
+    }
+    setLoggingIn(true);
+    try {
+      const res = await signIn("credentials", {
+        email: email.trim(),
+        password,
+        redirect: false,
+      });
+      if (res?.error || !res?.ok) {
+        setError("Invalid credentials. Check the operator email and password.");
+        toast({ title: "Sign-in failed", description: "Invalid credentials.", variant: "destructive" });
+      } else {
+        toast({ title: "Signed in", description: "Welcome back, Operator." });
+        // NextAuth v4 signIn({redirect:false}) does not auto-refresh the
+        // useSession hook. A full reload re-initialises the SessionProvider
+        // against the newly-set session cookie.
+        setTimeout(() => window.location.reload(), 600);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Sign-in failed.");
+      toast({ title: "Sign-in error", description: String(err), variant: "destructive" });
+    } finally {
+      setLoggingIn(false);
+    }
+  };
+
+  return (
+    <div className="grain-bg flex min-h-screen items-center justify-center px-5 py-12">
+      <motion.div
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+        className="w-full max-w-md"
+      >
+        <div className="rounded-2xl border border-line bg-ink-soft p-7 sm:p-9">
+          <div className="flex flex-col items-center text-center">
+            <Logo className="h-16 w-16" />
+            <h1 className="font-display mt-5 text-2xl text-foreground sm:text-3xl">
+              Operator sign-in
+            </h1>
+            <p className="mt-2 text-sm text-fg-muted">
+              The Formation Committee pipeline is private. Authenticate to continue.
+            </p>
+          </div>
+
+          <form onSubmit={submit} className="mt-7 space-y-4">
+            <label className="block">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-fg-muted">
+                Email
+              </span>
+              <div className="relative mt-1.5">
+                <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-fg-muted" />
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="coo@mithqal.io"
+                  autoComplete="email"
+                  className="w-full rounded-md border border-line bg-ink py-2.5 pl-10 pr-3 text-sm text-foreground outline-none transition focus:border-gold/60 focus:ring-2 focus:ring-gold/20"
+                />
+              </div>
+            </label>
+            <label className="block">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-fg-muted">
+                Password
+              </span>
+              <div className="relative mt-1.5">
+                <Lock className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-fg-muted" />
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  autoComplete="current-password"
+                  className="w-full rounded-md border border-line bg-ink py-2.5 pl-10 pr-3 text-sm text-foreground outline-none transition focus:border-gold/60 focus:ring-2 focus:ring-gold/20"
+                />
+              </div>
+            </label>
+
+            {error ? (
+              <p className="rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs text-destructive">
+                {error}
+              </p>
+            ) : null}
+
+            <Button
+              type="submit"
+              disabled={loggingIn}
+              className="w-full bg-gold text-ink hover:bg-gold-soft disabled:opacity-50"
+            >
+              {loggingIn ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" /> Signing in…
+                </>
+              ) : (
+                <>
+                  <Lock className="h-4 w-4" /> Sign in
+                </>
+              )}
+            </Button>
+          </form>
+
+          <p className="mt-6 text-center text-[11px] leading-relaxed text-fg-muted">
+            Operator access is env-defined. The public Formation Committee intake
+            remains open at the Institution view — submissions captured there
+            appear here after sign-in.
+          </p>
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Authenticated console                                              */
+/* ------------------------------------------------------------------ */
+
+function Console({ email }: { email: string }) {
   const { toast } = useToast();
   const [data, setData] = useState<Payload | null>(null);
   const [loading, setLoading] = useState(true);
@@ -95,6 +287,11 @@ export default function AdminConsole() {
     try {
       const url = filter === "all" ? "/api/admin/interests" : `/api/admin/interests?role=${filter}`;
       const res = await fetch(url, { cache: "no-store" });
+      if (res.status === 401) {
+        // session expired
+        signOut({ redirect: false });
+        throw new Error("Session expired. Please sign in again.");
+      }
       const json = (await res.json()) as Payload;
       if (!res.ok) throw new Error(json.error || "load failed");
       setData(json);
@@ -164,17 +361,33 @@ export default function AdminConsole() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.45 }}
           >
-            <Badge className="border-gold/40 bg-gold/10 text-gold hover:bg-gold/10">
-              Operator console
-            </Badge>
+            <div className="flex items-center gap-2">
+              <Badge className="border-gold/40 bg-gold/10 text-gold hover:bg-gold/10">
+                Operator console
+              </Badge>
+              <Badge className="border-reserve/40 bg-reserve/10 text-reserve hover:bg-reserve/10">
+                <ShieldCheck className="mr-1 h-3 w-3" /> Authenticated
+              </Badge>
+            </div>
             <h1 className="font-display mt-4 text-3xl leading-tight sm:text-5xl">
               Formation Committee <span className="gold-text">pipeline</span>
             </h1>
-            <p className="mt-3 max-w-2xl text-sm text-fg-muted sm:text-base">
-              Every submission to the Formation Committee intake — investors, advisors, anchor
-              participants and Council nominees. Filter, review and export. This is your
-              private operator view; never linked from the public site.
-            </p>
+            <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <p className="max-w-2xl text-sm text-fg-muted sm:text-base">
+                Every submission to the Formation Committee intake — investors, advisors, anchor
+                participants and Council nominees. Filter, review and export. This is your
+                private operator view; never linked from the public site.
+              </p>
+              <div className="flex shrink-0 items-center gap-3">
+                <span className="text-xs text-fg-muted">{email}</span>
+                <button
+                  onClick={() => signOut({ redirect: false })}
+                  className="inline-flex items-center gap-1.5 rounded-md border border-line bg-ink-card px-3 py-1.5 text-xs font-medium text-fg-muted transition hover:text-destructive"
+                >
+                  <LogOut className="h-3.5 w-3.5" /> Sign out
+                </button>
+              </div>
+            </div>
           </motion.div>
         </div>
       </section>

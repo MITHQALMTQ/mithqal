@@ -95,3 +95,21 @@ Stage Summary:
 - Files: src/lib/constitution-data.ts, src/components/constitution.tsx, src/app/api/admin/interests/route.ts, src/components/admin.tsx; page.tsx updated to 6 views.
 - Verified via Agent Browser: all 6 views toggle cleanly, zero errors. Constitution: 47 articles in sidebar, search works (cryptography→1 match, x→19), Article V shows "Permanently frozen" badge, prev/next nav works, mobile hamburger opens sidebar. Admin: loads real DB data (2 submissions — Omar investor, Amira anchor), stats stable [2,1,0,1,0] across filters, filter to Investor→1 row, CSV export present, mobile table scrolls horizontally.
 - Lint clean. Dev log shows GET /api/admin/interests 200 with Prisma groupBy + count queries.
+
+---
+Task ID: 4
+Agent: main
+Task: Fix hydration mismatch, add auth-gating to Admin, wire the official Mithqal logo as favicon.
+
+Work Log:
+- Fixed hydration mismatch: the procedural SVG Seal component computed line coordinates via Math.cos/sin, producing floating-point values that serialized differently on server vs client (e.g. 25.351767721859176 vs .183). Replaced the Seal across all 4 view components (playbook, public-site, testnet, constitution) with a shared Logo component (src/components/logo.tsx) that renders the official gold MTQ monogram PNG. No more procedural geometry = no hydration drift.
+- Logo + favicon: copied the uploaded ChatGPT logo to public/mithqal-logo.png (800x800 RGBA). Generated favicon set via sharp: favicon.png (32px), icon-192.png, icon-512.png, apple-touch-icon.png (180px). Wired into layout.tsx metadata.icons. Updated page title to "Mithqal — Constitutional Settlement Institution".
+- Auth: NextAuth v4 with Credentials provider + JWT strategy (no DB user table needed — operator defined by env vars). src/lib/auth.ts: scrypt password verification (Node crypto, no external deps). POST /api/auth/callback/credentials handler at src/app/api/auth/[...nextauth]/route.ts. SessionProvider wrapper (src/components/providers.tsx) added to layout. Gated GET /api/admin/interests with getServerSession → 401 if no session.
+- Operator account: ADMIN_EMAIL=coo@mithqal.io, password=Mithqal2026! (scrypt-hashed in ADMIN_PASSWORD_HASH env var). Generated via scripts; salt:hash format, verified round-trip.
+- Admin component (src/components/admin.tsx) rewritten with auth gate: useSession() → if unauthenticated, render LoginCard (email/password form); if authenticated, render the console with a "Sign out" button. After successful signIn, window.location.reload() to refresh the SessionProvider (NextAuth v4 quirk: signIn({redirect:false}) doesn't auto-update useSession).
+- Bug found + fixed during testing: the initial scrypt hash was generated with salt-as-string but verified with salt-as-Buffer (different salt bytes → verify always false). Regenerated with Buffer salt in both generation and verification.
+
+Stage Summary:
+- Files: src/components/logo.tsx (new), src/lib/auth.ts (new), src/app/api/auth/[...nextauth]/route.ts (new), src/components/providers.tsx (new), src/components/admin.tsx (rewritten with auth gate), src/app/layout.tsx (favicon + SessionProvider), public/mithqal-logo.png + icon set.
+- Verified: 0 hydration errors, logo renders (800px), favicon loads, all 6 views toggle cleanly. Auth: login form shows when unauthenticated, API returns 401 without session, 200 with session. Direct browser fetch login → session cookie set → reload → Admin console renders with real data (Omar Farouk, Amira El-Sayed). Sign out works. Lint clean.
+- Operator credentials: coo@mithqal.io / Mithqal2026! (change in .env for production).

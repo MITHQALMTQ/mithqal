@@ -21,6 +21,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
+import { Logo } from "@/components/logo";
 
 /* ---- types ---- */
 
@@ -105,32 +106,6 @@ const Eyebrow = ({ children }: { children: React.ReactNode }) => (
   </div>
 );
 
-function Seal({ className = "" }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 120 120" className={className} aria-hidden="true">
-      <defs>
-        <linearGradient id="gldT" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="var(--gold-soft)" />
-          <stop offset="55%" stopColor="var(--gold)" />
-          <stop offset="100%" stopColor="var(--gold-deep)" />
-        </linearGradient>
-      </defs>
-      <circle cx="60" cy="60" r="57" fill="none" stroke="url(#gldT)" strokeWidth="1.2" />
-      <circle cx="60" cy="60" r="49" fill="none" stroke="url(#gldT)" strokeWidth="0.7" opacity="0.6" />
-      <text
-        x="60"
-        y="63"
-        textAnchor="middle"
-        fontFamily="var(--font-fraunces), Georgia, serif"
-        fontSize="34"
-        fontWeight="600"
-        fill="url(#gldT)"
-      >
-        M
-      </text>
-    </svg>
-  );
-}
 
 /* ---- KPI card ---- */
 
@@ -319,7 +294,7 @@ export default function TestnetDashboard() {
           </Reveal>
           <Reveal delay={0.05}>
             <div className="mt-6 flex items-center gap-4">
-              <Seal className="h-14 w-14 shrink-0 sm:h-16 sm:w-16" />
+              <Logo className="h-14 w-14 shrink-0 sm:h-16 sm:w-16" />
               <div>
                 <h1 className="font-display text-4xl leading-[0.95] tracking-tight sm:text-6xl">
                   <span className="gold-text">MTQ Testnet</span>

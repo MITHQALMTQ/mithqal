@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { motion, useScroll, useSpring } from "framer-motion";
+import { Logo } from "@/components/logo";
 import {
   Shield,
   Landmark,
@@ -117,54 +118,6 @@ function SectionShell({
 /*  Seal                                                               */
 /* ------------------------------------------------------------------ */
 
-function Seal({ className = "" }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 120 120" className={className} aria-hidden="true">
-      <defs>
-        <linearGradient id="gld" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="var(--gold-soft)" />
-          <stop offset="55%" stopColor="var(--gold)" />
-          <stop offset="100%" stopColor="var(--gold-deep)" />
-        </linearGradient>
-      </defs>
-      <circle cx="60" cy="60" r="57" fill="none" stroke="url(#gld)" strokeWidth="1.2" />
-      <circle cx="60" cy="60" r="49" fill="none" stroke="url(#gld)" strokeWidth="0.7" opacity="0.6" />
-      <g stroke="url(#gld)" strokeWidth="0.8" opacity="0.85">
-        {Array.from({ length: 48 }).map((_, i) => {
-          const a = (i / 48) * Math.PI * 2;
-          const x1 = 60 + Math.cos(a) * 49;
-          const y1 = 60 + Math.sin(a) * 49;
-          const x2 = 60 + Math.cos(a) * 44;
-          const y2 = 60 + Math.sin(a) * 44;
-          return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} />;
-        })}
-      </g>
-      <text
-        x="60"
-        y="63"
-        textAnchor="middle"
-        fontFamily="var(--font-fraunces), Georgia, serif"
-        fontSize="34"
-        fontWeight="600"
-        fill="url(#gld)"
-      >
-        M
-      </text>
-      <text
-        x="60"
-        y="82"
-        textAnchor="middle"
-        fontFamily="var(--font-geist-sans), sans-serif"
-        fontSize="6"
-        letterSpacing="3"
-        fill="url(#gld)"
-        opacity="0.8"
-      >
-        MITHQAL
-      </text>
-    </svg>
-  );
-}
 
 /* ------------------------------------------------------------------ */
 /*  Top nav                                                            */
@@ -221,7 +174,7 @@ function TopNav() {
           className="flex items-center gap-2.5"
           aria-label="Mithqal — top"
         >
-          <Seal className="h-8 w-8" />
+          <Logo className="h-8 w-8" />
           <span className="font-display text-lg font-semibold tracking-wide text-foreground">
             MITHQAL
           </span>
@@ -307,7 +260,7 @@ function Hero() {
 
         <Reveal delay={0.05}>
           <div className="mt-8 flex flex-col items-start gap-6 sm:flex-row sm:items-center">
-            <Seal className="h-20 w-20 shrink-0 sm:h-24 sm:w-24" />
+            <Logo className="h-20 w-20 shrink-0 sm:h-24 sm:w-24" />
             <h1 className="font-display text-5xl leading-[0.95] tracking-tight sm:text-7xl">
               <span className="gold-text">Mithqal</span>
               <span className="block text-2xl font-normal text-fg-muted sm:text-3xl">
@@ -988,7 +941,7 @@ function Footer() {
       <div className="mx-auto w-full max-w-7xl px-5 py-10 sm:px-8">
         <div className="flex flex-col items-start justify-between gap-6 sm:flex-row sm:items-center">
           <div className="flex items-center gap-3">
-            <Seal className="h-9 w-9" />
+            <Logo className="h-9 w-9" />
             <div>
               <div className="font-display text-base font-semibold text-foreground">
                 MITHQAL

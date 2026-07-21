@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Fraunces } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
+import { Providers } from "@/components/providers";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -21,9 +22,9 @@ const fraunces = Fraunces({
 });
 
 export const metadata: Metadata = {
-  title: "Mithqal — Strategic Execution Playbook",
+  title: "Mithqal — Constitutional Settlement Institution",
   description:
-    "Zero-to-launch playbook for Mithqal — a constitutional, fully-reserved, neutral settlement institution. Built from the v18 FINAL specification.",
+    "Mithqal — a constitutional, fully-reserved, neutral settlement institution for international trade. Built on the v18 FINAL specification.",
   keywords: [
     "Mithqal",
     "MTQ",
@@ -34,6 +35,14 @@ export const metadata: Metadata = {
     "constitutional monetary institution",
   ],
   authors: [{ name: "Mithqal" }],
+  icons: {
+    icon: [
+      { url: "/favicon.png", type: "image/png", sizes: "32x32" },
+      { url: "/icon-192.png", type: "image/png", sizes: "192x192" },
+      { url: "/icon-512.png", type: "image/png", sizes: "512x512" },
+    ],
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180" }],
+  },
 };
 
 export default function RootLayout({
@@ -46,8 +55,10 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${fraunces.variable} antialiased bg-background text-foreground`}
       >
-        {children}
-        <Toaster />
+        <Providers>
+          {children}
+          <Toaster />
+        </Providers>
       </body>
     </html>
   );

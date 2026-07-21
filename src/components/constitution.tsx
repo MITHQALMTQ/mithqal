@@ -16,6 +16,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { LAYERS, ALL_ARTICLES, PREAMBLE, type Article } from "@/lib/constitution-data";
+import { Logo } from "@/components/logo";
 
 const Reveal = ({
   children,
@@ -36,32 +37,6 @@ const Reveal = ({
   </motion.div>
 );
 
-function Seal({ className = "" }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 120 120" className={className} aria-hidden="true">
-      <defs>
-        <linearGradient id="gldC" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="var(--gold-soft)" />
-          <stop offset="55%" stopColor="var(--gold)" />
-          <stop offset="100%" stopColor="var(--gold-deep)" />
-        </linearGradient>
-      </defs>
-      <circle cx="60" cy="60" r="57" fill="none" stroke="url(#gldC)" strokeWidth="1.2" />
-      <circle cx="60" cy="60" r="49" fill="none" stroke="url(#gldC)" strokeWidth="0.7" opacity="0.6" />
-      <text
-        x="60"
-        y="63"
-        textAnchor="middle"
-        fontFamily="var(--font-fraunces), Georgia, serif"
-        fontSize="34"
-        fontWeight="600"
-        fill="url(#gldC)"
-      >
-        M
-      </text>
-    </svg>
-  );
-}
 
 export default function ConstitutionDocs() {
   const [activeId, setActiveId] = useState<string>("preamble");
@@ -315,7 +290,7 @@ function Preamble() {
   return (
     <Reveal>
       <div className="flex items-center gap-4">
-        <Seal className="h-14 w-14 shrink-0" />
+        <Logo className="h-14 w-14 shrink-0" />
         <div>
           <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-gold">
             Preamble

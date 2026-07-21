@@ -1,11 +1,18 @@
 import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 
 // GET /api/admin/interests — list Formation Committee submissions.
-// Optional ?role= filter applies ONLY to the rows returned; the totals
-// and byRole breakdown always reflect the FULL dataset so the dashboard
-// stats remain stable as the operator filters the table.
+// Auth-gated: requires an authenticated operator session. The public
+// cannot reach this endpoint. Optional ?role= filter applies ONLY to the
+// rows returned; the totals and byRole breakdown always reflect the FULL
+// dataset so the dashboard stats remain stable as the operator filters.
 export async function GET(req: Request) {
+  const session = await getServerSession(authOptions);
+  if (!session) {
+    return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
+  }
   const url = new URL(req.url);
   const role = url.searchParams.get("role")?.trim();
   const where = role && role !== "all" ? { role } : undefined;
