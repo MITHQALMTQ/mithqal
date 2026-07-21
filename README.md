@@ -1,61 +1,95 @@
-# Mithqal — Constitutional Settlement Institution
+# Mithqal — Constitutional Monetary Institution
 
-> A constitutional, fully-reserved, neutral settlement institution for international trade. Built on the v18 FINAL specification.
+> A constitutional, 100%+ reserved, gold-disciplined, Sharia-compliant settlement infrastructure for international trade.
+>
+> **One Currency. Every Trade.**
 
 **Website:** [mithqal.io](https://mithqal.io) · **X:** [@MithqalMTQ](https://x.com/MithqalMTQ) · **Docs:** [Constitution](https://mithqal.io/?view=constitution)
 
 ---
 
-## What Mithqal is
+## Core Principles
 
-Mithqal is **not** a token, a platform, a bank, or a DeFi protocol. It is a constitutional monetary institution whose sole function is to issue and redeem a fully-reserved settlement unit (**MTQ**) against verified reserves.
+- **100%+ Reserves** — every unit is fully backed
+- **No Discretionary Minting** — supply is demand-driven (no token sale, ever)
+- **Gold Discipline** — self-cleansing hard money mechanism
+- **Sharia Compliance** — AAOIFI-certified
+- **Anti-Platform** — the Institution operates no commercial services
+- **Neutrality** — no political, economic, or jurisdictional alignment
 
-The Constitution is the foundation. It is immutable where it matters most — and adaptive where it must be. Every MTQ in circulation is backed by eligible reserves. Reserves are held in custody, never lent. The Institution is permanently prohibited from operating as a platform (no lending, no exchange, no brokerage, no DeFi — permanently frozen).
+## Architecture
 
-## The Constitution (v18 FINAL)
+- **Single Settlement Token** (MTQ)
+- **Separate Yield Vehicle** for institutional investors
+- **Physical Gold Redemption** (1 kg minimum)
+- **ISO 20022** interoperability
+- **10-minute soft finality, 7-day hard finality**
 
-The full specification is structured across five layers:
+## Repository Structure
 
-| Layer | Articles | Scope |
-|---|---|---|
-| **1. Institutional** | I–XVII | Identity, objectives, principles, decision hierarchy, neutrality, anti-platform, lifecycle |
-| **2. Monetary** | I–VII | Invariants, reserve principles, currency framework, monetary engine, proof of reserves |
-| **3. Governance & Policy** | I–VIII | Committee mandates, fee schedules, sanctions mechanics, risk tolerances |
-| **4. Technical** | I–VIII | Smart contracts, cryptography (post-quantum), oracle architecture, interoperability, formal verification |
-| **5. Operations** | I–VII | Reserve management, transaction processing, participant services, vendor management |
+```
+.
+├── docs/blueprint/            # The complete v18 specification
+│   ├── blueprint.txt           #   Full text
+│   ├── v18-blueprint-complete.md
+│   ├── executive-summary.md
+│   └── one-pager.md
+├── src/
+│   ├── contracts/             # Smart contract source (Solidity)
+│   │   ├── core/MTQ.sol        #   The settlement token
+│   │   └── governance/Governance.sol
+│   ├── app/                    # Next.js 16 App Router (institutional web app)
+│   │   ├── api/                 #   formation-interest, transparency, testnet, admin, auth
+│   │   ├── page.tsx             #   7-view toggle
+│   │   ├── layout.tsx           #   Metadata, fonts, SessionProvider
+│   │   ├── sitemap.ts · robots.ts · not-found.tsx
+│   ├── components/              #   institution, transparency, constitution, testnet, deck, playbook, admin
+│   ├── lib/                     #   auth.ts, db.ts, testnet-engine.ts, constitution-data.ts
+│   └── hooks/                   #   use-notify.ts (WebSocket), use-toast.ts
+├── formal-verification/         # Invariant proofs
+├── infrastructure/               # Cloud + deployment (k8s, terraform, monitoring)
+├── operations/                  # Runbooks, procedures, templates
+├── mini-services/
+│   └── notify-service/           # Real-time notification relay (socket.io, port 3003)
+├── prisma/                       # Database schema
+└── README.md
+```
 
-**Read the Constitution:** [mithqal.io/?view=constitution](https://mithqal.io/?view=constitution)
+## The Working Surface
 
-## Five invariants (permanently frozen)
-
-1. **100%+ reserve mandate** — reserves always equal or exceed supply
-2. **No discretionary minting** — MTQ is minted only on verified deposit (no token sale, ever)
-3. **No lending of reserves** — held in custody, never rehypothecated
-4. **No commingling** — settlement reserves are segregated from all operational activity
-5. **No redemption suspension** — the right to redeem is absolute
-
-## Tech stack
-
-- **Framework:** Next.js 16 (App Router) · TypeScript 5
-- **Styling:** Tailwind CSS 4 · shadcn/ui (New York) · Lucide icons
-- **Database:** Prisma ORM · SQLite
-- **Auth:** NextAuth.js v4 (credentials provider, JWT sessions)
-- **Real-time:** WebSocket mini-service (socket.io)
-- **Fonts:** Fraunces (display) · Geist (sans)
-
-## The working surface
+The Next.js application exposes seven views — the public-facing institutional surfaces, the investor artifacts, and the operator's internal tooling:
 
 | View | Audience | Purpose |
 |---|---|---|
 | **Institution** | Public | The credibility site + Formation Committee intake |
 | **Transparency** | Public | Live state — verifiable operations, build in public |
-| **Constitution** | Public | The citable v18 spec (47 articles) |
-| **Testnet** | Technical investors | Live reserve simulator |
-| **Deck** | First-meeting investors | 10-slide teaser → PDF |
+| **Constitution** | Public | The citable v18 spec (47 articles across 5 layers) |
+| **Testnet** | Technical investors | Live reserve simulator (mint/redeem/PoR/NAV) |
+| **Deck** | First-meeting investors | 10-slide teaser → downloadable PDF |
 | **Playbook** | Internal | The A-to-Z strategic execution plan |
 | **Admin** | Operator (auth-gated) | Pipeline + live notifications + CSV export |
 
-## Getting started
+## Five Invariants (permanently frozen)
+
+1. **100%+ reserve mandate** — reserves always equal or exceed supply
+2. **No discretionary minting** — MTQ is minted only on verified deposit
+3. **No lending of reserves** — held in custody, never rehypothecated
+4. **No commingling** — settlement reserves are segregated from all operational activity
+5. **No redemption suspension** — the right to redeem is absolute
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Framework | Next.js 16 (App Router) · TypeScript 5 |
+| Styling | Tailwind CSS 4 · shadcn/ui (New York) · Lucide icons |
+| Database | Prisma ORM · SQLite |
+| Auth | NextAuth.js v4 (credentials provider, JWT sessions, scrypt) |
+| Real-time | WebSocket mini-service (socket.io, port 3003) |
+| Contracts | Solidity (MTQ.sol, Governance.sol) |
+| Fonts | Fraunces (display) · Geist (sans) |
+
+## Getting Started
 
 ```bash
 # Install dependencies
@@ -77,39 +111,7 @@ cd mini-services/notify-service && bun install && bun run dev
 
 The app runs at `http://localhost:3000`.
 
-## Architecture
-
-```
-src/
-├── app/
-│   ├── api/
-│   │   ├── formation-interest/   # Public Formation Committee intake
-│   │   ├── transparency/         # Public live state
-│   │   ├── testnet/              # Mint/redeem/seed (simulator)
-│   │   ├── admin/interests/      # Auth-gated admin API
-│   │   └── auth/[...nextauth]/   # NextAuth handler
-│   ├── page.tsx                 # 7-view toggle (Institution/Transparency/Constitution/Testnet/Deck/Playbook/Admin)
-│   ├── layout.tsx               # Metadata, fonts, SessionProvider
-│   ├── sitemap.ts · robots.ts · not-found.tsx
-├── components/
-│   ├── institution/             # Public site
-│   ├── transparency/             # Live dashboard
-│   ├── constitution/             # v18 docs viewer
-│   ├── testnet/                  # Reserve simulator
-│   ├── deck/                     # Investor teaser
-│   ├── playbook/                 # Strategic plan
-│   └── admin/                    # Auth-gated console
-├── lib/
-│   ├── auth.ts                  # NextAuth config (scrypt credentials)
-│   ├── db.ts                    # Prisma client
-│   ├── testnet-engine.ts        # Pure reserve mechanics
-│   └── constitution-data.ts      # 47 structured articles
-└── hooks/
-    ├── use-notify.ts             # WebSocket subscription
-    └── use-toast.ts
-```
-
-## Constitutional principles
+## Constitutional Principles
 
 This repository is governed by the same principles as the Institution:
 
@@ -119,9 +121,16 @@ This repository is governed by the same principles as the Institution:
 - **Auditability** — every claim verifiable
 - **Simplicity** — complexity is a liability
 
+## Getting Involved
+
+- Read the [full specification](docs/blueprint/blueprint.txt)
+- Review the [executive summary](docs/blueprint/executive-summary.md)
+- Read the [one-pager](docs/blueprint/one-pager.md)
+- Submit a Formation Committee interest at [mithqal.io](https://mithqal.io/?view=institution)
+
 ## License
 
-All rights reserved. The Mithqal Constitution is the intellectual property of the Institution. No part of this repository grants a license to mint, redeem, or represent MTQ. MTQ is minted exclusively by the Institution against verified reserves.
+All rights reserved. The Mithqal Constitution and all source code are the intellectual property of the Institution. No part of this repository grants a license to mint, redeem, or represent MTQ. MTQ is minted exclusively by the Institution against verified reserves. See [LICENSE](LICENSE).
 
 ---
 
