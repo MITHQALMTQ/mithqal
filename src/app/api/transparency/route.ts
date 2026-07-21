@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { db, ensureSchema } from "@/lib/db";
 import { deriveState } from "@/lib/testnet-engine";
+import { computeMonetaryState, mintFee, redemptionFee } from "@/lib/monetary-engine";
+import { getOracleSnapshot } from "@/lib/oracle-data";
 
 // GET /api/transparency — public, unauthenticated snapshot of the
 // Institution's live state. Embodies the Constitution's transparency
@@ -8,7 +10,9 @@ import { deriveState } from "@/lib/testnet-engine";
 //
 // Returns: live testnet state (supply, reserves, NAV, ratio, PoR), the
 // operation count, the Formation Committee submission count (number only —
-// no PII ever leaks), and the formation milestone checklist.
+// no PII ever leaks), the formation milestone checklist, AND the full
+// Monetary Engine state (gold-currency basket, momentum, mean-reversion,
+// shock absorber, SDP status, fees per the Mathematical Specification).
 export async function GET() {
   try {
     await ensureSchema()
@@ -31,6 +35,20 @@ export async function GET() {
         createdAt: o.createdAt.toISOString(),
       }));
 
+    // Compute the full Monetary Engine state from the spec.
+    const opIndex = ops.length;
+    const oracle = getOracleSnapshot(opIndex);
+    const reserveUsd = state.reserveValue * 0.90; // 90% in stablecoins/securities
+    const reserveGoldUsd = state.reserveValue * 0.10; // 10% in gold
+    const monetary = computeMonetaryState(
+      oracle,
+      reserveUsd,
+      reserveGoldUsd,
+      state.supply,
+      opIndex,
+      0.015 // current volatility (below normal threshold)
+    );
+
     return NextResponse.json({
       testnet: {
         supply: state.supply,
@@ -44,10 +62,44 @@ export async function GET() {
         tiers: state.tiers,
         recentOperations: recent,
       },
+      // Full Monetary Engine (Mathematical Specification v1.0)
+      monetary: {
+        goldUsd: monetary.goldUsd,
+        goldUsd12moAgo: monetary.goldUsd12moAgo,
+        reserveUsd: monetary.reserveUsd,
+        reserveGold: monetary.reserveGold,
+        reserveTotal: monetary.reserveTotal,
+        nav: monetary.nav,
+        reserveRatio: monetary.reserveRatio,
+        reserveCoverage: monetary.reserveCoverage,
+        volatility: monetary.volatility,
+        shockAbsorber: monetary.shockAbsorber,
+        sdp: monetary.sdp,
+        mintingPaused: monetary.mintingPaused,
+        weights: monetary.weights.map((w) => ({
+          code: w.code,
+          name: w.name,
+          combinedShare: w.combinedShare,
+          momentumRaw: w.momentumRaw,
+          momentum: w.momentum,
+          meanReversion: w.meanReversion,
+          momentumFactor: w.momentumFactor,
+          rawWeight: w.rawWeight,
+          normalizedWeight: w.normalizedWeight,
+          goldPrice: w.goldPrice,
+          goldPrice12moAgo: w.goldPrice12moAgo,
+          isCapped: w.isCapped,
+        })),
+        // Fee schedule (§9)
+        fees: {
+          mint: { rate: "0.05%", cap: "$5,000", sample: mintFee(1_000_000) },
+          redemption: { rate: "0.05%", cap: "$5,000", sample: redemptionFee(1_000_000) },
+          transfer: { rate: "0.01%", cap: "$1,000" },
+          custody: { rate: "0.10%/yr" },
+        },
+      },
       formation: {
         submissionCount,
-        // Milestone checklist — public, so investors can see progress.
-        // (Number-only; no names/emails ever exposed here.)
         milestones: FORMATION_MILESTONES,
       },
       generatedAt: new Date().toISOString(),

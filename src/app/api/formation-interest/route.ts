@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { db, ensureSchema } from "@/lib/db";
+import { notifyNewSubmission } from "@/lib/email";
 
 // Public Formation Committee interest capture.
 // This is the credibility-layer intake: investors, advisors, anchor
@@ -77,6 +78,21 @@ export async function POST(req: Request) {
       });
     } catch {
       /* notification service unavailable — submission still succeeds */
+    }
+
+    // Send an email notification to the operator (ADMIN_NOTIFY_EMAIL).
+    // Fire-and-forget — never blocks the public submission.
+    try {
+      await notifyNewSubmission({
+        submissionId: record.id,
+        fullName,
+        email,
+        org,
+        role,
+        message,
+      });
+    } catch {
+      /* email send failed — submission still succeeds */
     }
 
     return NextResponse.json({ ok: true, id: record.id });

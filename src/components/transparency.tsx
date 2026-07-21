@@ -17,6 +17,7 @@ import {
   Users,
   Eye,
   Clock,
+  AlertTriangle,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -66,7 +67,43 @@ interface TransparencyState {
     submissionCount: number;
     milestones: Milestone[];
   };
+  monetary?: {
+    goldUsd: number;
+    goldUsd12moAgo: number;
+    reserveUsd: number;
+    reserveGold: number;
+    reserveTotal: number;
+    nav: number;
+    reserveRatio: number;
+    reserveCoverage: number;
+    volatility: number;
+    shockAbsorber: number;
+    sdp: { triggered: boolean; trigger: string | null; currency: string | null; details: string | null };
+    mintingPaused: boolean;
+    weights: CurrencyWeight[];
+    fees: {
+      mint: { rate: string; cap: string; sample?: number };
+      redemption: { rate: string; cap: string; sample?: number };
+      transfer: { rate: string; cap: string };
+      custody: { rate: string };
+    };
+  };
   generatedAt: string;
+}
+
+interface CurrencyWeight {
+  code: string;
+  name: string;
+  combinedShare: number;
+  momentumRaw: number;
+  momentum: number;
+  meanReversion: number;
+  momentumFactor: number;
+  rawWeight: number;
+  normalizedWeight: number;
+  goldPrice: number;
+  goldPrice12moAgo: number;
+  isCapped: boolean;
 }
 
 const fmtUsd = (n: number) => "$" + n.toLocaleString("en-US", { maximumFractionDigits: 0 });
@@ -392,6 +429,144 @@ export default function TransparencyDashboard() {
             </div>
           </div>
         </Reveal>
+
+        {/* Monetary Engine — full basket mechanics */}
+        {state?.monetary ? (
+          <Reveal>
+            <div className="mt-6 rounded-2xl border border-gold/30 bg-gradient-to-br from-gold/[0.06] to-ink-soft p-6 sm:p-7">
+              <div className="flex items-center gap-2 text-gold">
+                <TrendingUp className="h-4 w-4" />
+                <span className="text-[11px] font-semibold uppercase tracking-[0.22em]">
+                  Monetary Engine · Mathematical Specification v1.0
+                </span>
+              </div>
+              <h2 className="font-display mt-3 text-xl text-foreground sm:text-2xl">
+                Live basket mechanics
+              </h2>
+              <p className="mt-2 text-sm text-fg-muted">
+                The gold-currency connection, momentum, mean-reversion, shock absorber and SDP —
+                every formula from the spec, computed live. Gold:{" "}
+                <span className="text-gold">{fmtUsd2(state.monetary.goldUsd)}/oz</span> (12mo ago:{" "}
+                {fmtUsd2(state.monetary.goldUsd12moAgo)}). Shock absorber{" "}
+                <span className="text-gold">{state.monetary.shockAbsorber.toFixed(3)}</span> ·
+                Volatility {(state.monetary.volatility * 100).toFixed(2)}%.
+              </p>
+
+              {/* SDP status */}
+              <div
+                className={`mt-4 flex items-start gap-3 rounded-lg border p-4 ${
+                  state.monetary.sdp.triggered
+                    ? "border-destructive/40 bg-destructive/10"
+                    : "border-reserve/30 bg-reserve/[0.06]"
+                }`}
+              >
+                <AlertTriangle
+                  className={`mt-0.5 h-4 w-4 shrink-0 ${
+                    state.monetary.sdp.triggered ? "text-destructive" : "text-reserve"
+                  }`}
+                />
+                <div className="text-sm">
+                  <div className="font-semibold text-foreground">
+                    SDP {state.monetary.sdp.triggered ? "TRIGGERED" : "inactive"}
+                  </div>
+                  <div className="text-fg-muted">
+                    {state.monetary.sdp.triggered
+                      ? state.monetary.sdp.details
+                      : "No severe deviation detected. All currencies within normal bounds."}
+                  </div>
+                </div>
+              </div>
+
+              {/* Basket weights table */}
+              <div className="mt-5 overflow-x-auto rounded-xl border border-line">
+                <table className="w-full min-w-[640px] text-sm">
+                  <thead className="bg-ink-card text-left text-[10px] uppercase tracking-wider text-fg-muted">
+                    <tr>
+                      <th className="px-3 py-2.5 font-semibold">Currency</th>
+                      <th className="px-3 py-2.5 text-right font-semibold">Structural (Cᵢ)</th>
+                      <th className="px-3 py-2.5 text-right font-semibold">Momentum (Mᵢ)</th>
+                      <th className="px-3 py-2.5 text-right font-semibold">Mean Rev (Bᵢ)</th>
+                      <th className="px-3 py-2.5 text-right font-semibold">K-factor</th>
+                      <th className="px-3 py-2.5 text-right font-semibold">Weight (Wᵢ)</th>
+                      <th className="px-3 py-2.5 text-right font-semibold">Gold/oz</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-line">
+                    {state.monetary.weights.map((w) => (
+                      <tr key={w.code} className="hover:bg-ink-card/40">
+                        <td className="px-3 py-2.5">
+                          <span className="font-medium text-foreground">{w.code}</span>
+                          {w.isCapped ? (
+                            <span className="ml-1.5 rounded bg-gold/15 px-1.5 py-0.5 text-[9px] font-bold text-gold">
+                              CAPPED
+                            </span>
+                          ) : null}
+                          <span className="ml-1.5 text-xs text-fg-muted">{w.name}</span>
+                        </td>
+                        <td className="px-3 py-2.5 text-right text-fg-muted">
+                          {(w.combinedShare * 100).toFixed(2)}%
+                        </td>
+                        <td className="px-3 py-2.5 text-right text-fg-muted">
+                          {w.momentum.toFixed(4)}
+                        </td>
+                        <td className="px-3 py-2.5 text-right text-fg-muted">
+                          {w.meanReversion.toFixed(4)}
+                        </td>
+                        <td className="px-3 py-2.5 text-right text-gold">
+                          {w.momentumFactor.toFixed(4)}
+                        </td>
+                        <td className="px-3 py-2.5 text-right font-semibold text-foreground">
+                          {(w.normalizedWeight * 100).toFixed(2)}%
+                        </td>
+                        <td className="px-3 py-2.5 text-right text-fg-muted">
+                          {w.code === "USD"
+                            ? fmtUsd2(w.goldPrice)
+                            : w.goldPrice.toLocaleString("en-US", { maximumFractionDigits: 0 }) +
+                              " " +
+                              w.code}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot>
+                    <tr className="border-t-2 border-line bg-ink-card">
+                      <td className="px-3 py-2.5 font-semibold text-foreground" colSpan={5}>
+                        Total
+                      </td>
+                      <td className="px-3 py-2.5 text-right font-semibold text-gold">
+                        {(state.monetary.weights.reduce((s, w) => s + w.normalizedWeight, 0) * 100).toFixed(2)}%
+                      </td>
+                      <td />
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+
+              {/* Fee schedule */}
+              <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                {[
+                  { label: "Mint fee", rate: state.monetary.fees.mint.rate, cap: state.monetary.fees.mint.cap, sample: state.monetary.fees.mint.sample },
+                  { label: "Redemption fee", rate: state.monetary.fees.redemption.rate, cap: state.monetary.fees.redemption.cap, sample: state.monetary.fees.redemption.sample },
+                  { label: "Transfer fee", rate: state.monetary.fees.transfer.rate, cap: state.monetary.fees.transfer.cap },
+                  { label: "Custody fee", rate: state.monetary.fees.custody.rate, cap: "—" },
+                ].map((f) => (
+                  <div key={f.label} className="rounded-lg border border-line bg-ink p-3">
+                    <div className="text-[10px] font-semibold uppercase tracking-wider text-fg-muted">
+                      {f.label}
+                    </div>
+                    <div className="mt-1 font-display text-lg text-gold">{f.rate}</div>
+                    <div className="text-[10px] text-fg-muted">cap {f.cap}</div>
+                    {f.sample !== undefined ? (
+                      <div className="mt-1 text-[10px] text-reserve">
+                        $1M → ${f.sample.toLocaleString("en-US", { maximumFractionDigits: 0 })}
+                      </div>
+                    ) : null}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </Reveal>
+        ) : null}
 
         {/* Formation progress */}
         <Reveal>

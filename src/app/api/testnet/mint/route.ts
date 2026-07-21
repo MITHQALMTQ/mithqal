@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { db, ensureSchema } from "@/lib/db";
 import { deriveState, canMint, PAR } from "@/lib/testnet-engine";
+import { mintFee } from "@/lib/monetary-engine";
 
 // POST /api/testnet/mint — mint MTQ 1:1 against a verified (simulated)
 // reserve deposit. Enforces the 100%+ reserve invariant: minting is paused
@@ -39,8 +40,10 @@ export async function POST(req: Request) {
       );
     }
 
-    // 1 MTQ per $1 deposited at par.
-    const mtq = amountUsd / PAR;
+    // 1 MTQ per $1 deposited at par. Mint fee (§9.1): min(amount × 0.05%, $5,000).
+    const fee = mintFee(amountUsd);
+    const netDeposit = amountUsd - fee;
+    const mtq = netDeposit / PAR;
 
     const created = await db.testnetOperation.create({
       data: {
@@ -69,7 +72,12 @@ export async function POST(req: Request) {
     });
 
     const recent = await recentOps();
-    return NextResponse.json({ ok: true, state: { ...stateAfter, operations: recent } });
+    return NextResponse.json({
+      ok: true,
+      feeUsd: fee,
+      netDepositUsd: netDeposit,
+      state: { ...stateAfter, operations: recent },
+    });
   } catch (err) {
     console.error("testnet mint failed", err);
     return NextResponse.json({ error: "Mint failed." }, { status: 500 });
