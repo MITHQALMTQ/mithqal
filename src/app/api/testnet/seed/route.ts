@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { db, ensureSchema } from "@/lib/db";
 import { deriveState, GENESIS, PAR } from "@/lib/testnet-engine";
 
 // POST /api/testnet/seed — seed a genesis deposit so the dashboard isn't
 // empty on first visit. Idempotent: only inserts if the ledger is empty.
 export async function POST() {
   try {
+    await ensureSchema()
     const count = await db.testnetOperation.count();
     if (count > 0) {
       const ops = await db.testnetOperation.findMany({ orderBy: { createdAt: "asc" } });

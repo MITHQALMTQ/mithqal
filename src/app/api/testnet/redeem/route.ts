@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { db, ensureSchema } from "@/lib/db";
 import { deriveState, computeRedemption, PAR } from "@/lib/testnet-engine";
 
 // POST /api/testnet/redeem — burn MTQ for proportional reserves.
@@ -25,6 +25,7 @@ export async function POST(req: Request) {
   }
 
   try {
+    await ensureSchema();
     const ops = await db.testnetOperation.findMany({ orderBy: { createdAt: "asc" } });
     const stateBefore = deriveState(ops);
     const outcome = computeRedemption(stateBefore, mtq);

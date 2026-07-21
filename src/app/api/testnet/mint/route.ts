@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { db, ensureSchema } from "@/lib/db";
 import { deriveState, canMint, PAR } from "@/lib/testnet-engine";
 
 // POST /api/testnet/mint — mint MTQ 1:1 against a verified (simulated)
@@ -28,6 +28,7 @@ export async function POST(req: Request) {
   }
 
   try {
+    await ensureSchema();
     const ops = await db.testnetOperation.findMany({ orderBy: { createdAt: "asc" } });
     const stateBefore = deriveState(ops);
     const guard = canMint(stateBefore);

@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { db, ensureSchema } from "@/lib/db";
 import { deriveState } from "@/lib/testnet-engine";
 
 // GET /api/testnet — derived reserve state + recent operations ledger.
 export async function GET() {
   try {
+    await ensureSchema()
     const ops = await db.testnetOperation.findMany({
       orderBy: { createdAt: "asc" },
       take: 1000,

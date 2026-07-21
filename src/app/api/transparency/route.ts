@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { db, ensureSchema } from "@/lib/db";
 import { deriveState } from "@/lib/testnet-engine";
 
 // GET /api/transparency — public, unauthenticated snapshot of the
@@ -11,6 +11,7 @@ import { deriveState } from "@/lib/testnet-engine";
 // no PII ever leaks), and the formation milestone checklist.
 export async function GET() {
   try {
+    await ensureSchema()
     const [ops, submissionCount] = await Promise.all([
       db.testnetOperation.findMany({ orderBy: { createdAt: "asc" } }),
       db.formationInterest.count(),

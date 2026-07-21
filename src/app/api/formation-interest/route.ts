@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { db, ensureSchema } from "@/lib/db";
 
 // Public Formation Committee interest capture.
 // This is the credibility-layer intake: investors, advisors, anchor
@@ -43,6 +43,7 @@ export async function POST(req: Request) {
   }
 
   try {
+    await ensureSchema();
     const record = await db.formationInterest.create({
       data: {
         fullName,

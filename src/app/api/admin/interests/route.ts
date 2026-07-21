@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { db } from "@/lib/db";
+import { db, ensureSchema } from "@/lib/db";
 
 // GET /api/admin/interests — list Formation Committee submissions.
 // Auth-gated: requires an authenticated operator session. The public
@@ -18,6 +18,7 @@ export async function GET(req: Request) {
   const where = role && role !== "all" ? { role } : undefined;
 
   try {
+    await ensureSchema()
     // Overall totals — always unfiltered.
     const [rows, overallTotal, overallByRoleAgg] = await Promise.all([
       db.formationInterest.findMany({
