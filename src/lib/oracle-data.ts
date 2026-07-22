@@ -42,13 +42,16 @@ export interface OracleSnapshot {
   fxAgo1d: Record<string, number>;
 }
 
-// The 5 eligible basket currencies per the worked example in the spec.
+// The 8 eligible basket currencies per the v19.0 worked example (Part III).
 export const BASE_CURRENCIES: CurrencyData[] = [
-  { code: "USD", name: "US Dollar",      fx: 1.00,  cofer: 0.585, swift: 0.400, bis: 0.550, lta: 0.520 },
-  { code: "EUR", name: "Euro",            fx: 1.10,  cofer: 0.195, swift: 0.220, bis: 0.200, lta: 0.210 },
-  { code: "JPY", name: "Japanese Yen",    fx: 0.0067, cofer: 0.058, swift: 0.080, bis: 0.070, lta: 0.065 },
-  { code: "GBP", name: "Pound Sterling",  fx: 1.27,  cofer: 0.049, swift: 0.075, bis: 0.060, lta: 0.055 },
-  { code: "CNY", name: "Chinese Yuan",    fx: 0.139, cofer: 0.030, swift: 0.150, bis: 0.040, lta: 0.050 },
+  { code: "USD", name: "US Dollar",      fx: 1.00,    cofer: 0.585, swift: 0.400, bis: 0.550, lta: 0.5110 },
+  { code: "EUR", name: "Euro",            fx: 1.10,    cofer: 0.195, swift: 0.220, bis: 0.200, lta: 0.2100 },
+  { code: "JPY", name: "Japanese Yen",    fx: 0.0067,  cofer: 0.050, swift: 0.180, bis: 0.150, lta: 0.1080 },
+  { code: "GBP", name: "Pound Sterling",  fx: 1.27,    cofer: 0.040, swift: 0.200, bis: 0.180, lta: 0.1100 },
+  { code: "CNY", name: "Chinese Yuan",    fx: 0.139,   cofer: 0.035, swift: 0.120, bis: 0.080, lta: 0.0830 },
+  { code: "CHF", name: "Swiss Franc",     fx: 1.12,    cofer: 0.008, swift: 0.040, bis: 0.020, lta: 0.0230 },
+  { code: "AUD", name: "Australian Dollar", fx: 0.66,  cofer: 0.005, swift: 0.035, bis: 0.020, lta: 0.0145 },
+  { code: "CAD", name: "Canadian Dollar", fx: 0.73,    cofer: 0.005, swift: 0.030, bis: 0.020, lta: 0.0125 },
 ];
 
 const BASE_GOLD = 1850; // USD/oz
@@ -59,16 +62,19 @@ const GOLD_YESTERDAY = 1845;
 // Historical FX (12 months ago) — for momentum calculation.
 const FX_12MO_AGO: Record<string, number> = {
   USD: 1.00, EUR: 1.05, JPY: 0.0072, GBP: 1.22, CNY: 0.145,
+  CHF: 1.08, AUD: 0.68, CAD: 0.75,
 };
 // FX 7 days ago — for SDP 7-day trigger.
 const FX_7D_AGO: Record<string, number> = {
   USD: 1.00, EUR: 1.095, JPY: 0.0068, GBP: 1.265, CNY: 0.140,
+  CHF: 1.115, AUD: 0.655, CAD: 0.725,
 };
 // FX yesterday — for SDP 24h trigger. Kept close to today so SDP doesn't
 // fire on every snapshot; the protocol is still fully exercisable when a
 // large shock is injected.
 const FX_YESTERDAY: Record<string, number> = {
   USD: 1.00, EUR: 1.099, JPY: 0.00668, GBP: 1.269, CNY: 0.1392,
+  CHF: 1.118, AUD: 0.658, CAD: 0.728,
 };
 
 /**
