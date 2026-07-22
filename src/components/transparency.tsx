@@ -68,24 +68,29 @@ interface TransparencyState {
     milestones: Milestone[];
   };
   monetary?: {
+    specVersion?: string;
     goldUsd: number;
-    goldUsd12moAgo: number;
-    // v2.0 §1.4 — Target NAV (SDR-based)
-    navTarget: number;
-    sdrValueUsd: number;
-    reserveUsd: number;
-    reserveGold: number;
-    reserveTotal: number;
-    nav: number;
-    reserveRatio: number; // v2.0 FIXED
-    reserveCoverage: number; // v2.0 FIXED
-    reserveCoveragePct: number;
-    redemptionLiability: number;
+    // v19.0 §2 Three-layer reserves
+    reserves: { market: number; adjusted: number; liquidation: number; hierarchyValid: boolean };
+    // v19.0 §3 Three NAVs
+    nav: { market: number; prudential: number; stress: number; hierarchyValid: boolean };
+    // v19.0 §4 Reserve Ratio
+    reserveRatio: { ratio: number; redemptionLiability: number; adjustedReserve: number; marketReserve: number; compliant: boolean; policyTarget: boolean };
+    // v19.0 §5 LCR
+    lcr: { ratio: number; hqla: number; netOutflow: number; compliant: boolean; strong: boolean };
+    // v19.0 §8 Duration
+    portfolioDuration: number;
+    durationCompliant: boolean;
+    maxDuration?: number;
+    // v19.0 §9 CRI
+    cri: { cri: number; level: string; components: { liquidity: number; fx: number; custody: number; counterparty: number; operational: number } };
+    // v19.0 §17 Shock absorber
     volatility: number;
     shockAbsorber: number;
-    sdp: { triggered: boolean; trigger: string | null; currency: string | null; details: string | null; delta: number | null };
-    mintingPaused: boolean;
+    // v19.0 §22A Basket verification
+    basketVerification: { sumIsOne: boolean; allAboveFloor: boolean; allBelowCap: boolean; passed: boolean };
     weights: CurrencyWeight[];
+    haircuts?: Record<string, number>;
     fees: {
       mint: { rate: string; cap: string; sample?: number };
       redemption: { rate: string; cap: string; sample?: number };
@@ -99,19 +104,18 @@ interface TransparencyState {
 interface CurrencyWeight {
   code: string;
   name: string;
-  combinedShare: number;
+  structuralWeight: number;
   momentumRaw: number;
-  momentumAdjusted?: number; // v2.0 §6.3
   momentum: number;
   meanReversion: number;
-  momentumFactor: number;
+  liquidity?: number;
+  kFactor: number;
   rawWeight: number;
   normalizedWeight: number;
+  isCapped: boolean;
+  belowFloor?: boolean;
   goldPrice: number;
   goldPrice12moAgo: number;
-  isCapped: boolean;
-  emergencyWeight?: number; // v2.0 §7
-  smoothedWeight?: number; // v2.0 §11
 }
 
 const fmtUsd = (n: number) => "$" + n.toLocaleString("en-US", { maximumFractionDigits: 0 });
@@ -438,105 +442,127 @@ export default function TransparencyDashboard() {
           </div>
         </Reveal>
 
-        {/* Monetary Engine — full basket mechanics (v2.0 CORRECTED) */}
+        {/* Monetary Engine v19.0 — Constitutional Monetary Infrastructure */}
         {state?.monetary ? (
           <Reveal>
             <div className="mt-6 rounded-2xl border border-gold/30 bg-gradient-to-br from-gold/[0.06] to-ink-soft p-6 sm:p-7">
               <div className="flex items-center gap-2 text-gold">
                 <TrendingUp className="h-4 w-4" />
                 <span className="text-[11px] font-semibold uppercase tracking-[0.22em]">
-                  Monetary Engine · Mathematical Specification v2.0 (CORRECTED)
+                  Monetary Engine · v19.0 Constitutional Specification
                 </span>
               </div>
               <h2 className="font-display mt-3 text-xl text-foreground sm:text-2xl">
-                Live basket mechanics
+                Three-layer reserves · Three NAVs · Prudential solvency
               </h2>
               <p className="mt-2 text-sm text-fg-muted">
-                The gold-currency connection, momentum, mean-reversion, shock absorber and SDP —
-                every formula from the v2.0 spec, computed live. Gold:{" "}
-                <span className="text-gold">{fmtUsd2(state.monetary.goldUsd)}/oz</span> (12mo ago:{" "}
-                {fmtUsd2(state.monetary.goldUsd12moAgo)}). SDR value:{" "}
-                <span className="text-gold">${state.monetary.sdrValueUsd.toFixed(2)}</span> →
-                NAV_target: <span className="text-gold">{fmtUsd2(state.monetary.navTarget)}</span>.
-                Shock absorber <span className="text-gold">{state.monetary.shockAbsorber.toFixed(3)}</span> ·
-                Volatility {(state.monetary.volatility * 100).toFixed(2)}%.
+                Gold: <span className="text-gold">{fmtUsd2(state.monetary.goldUsd)}/oz</span> ·
+                EWMA Volatility: {(state.monetary.volatility * 100).toFixed(2)}% ·
+                Shock Absorber A_t: <span className="text-gold">{state.monetary.shockAbsorber.toFixed(3)}</span>
               </p>
 
-              {/* v2.0 §1.2/1.3 — corrected reserve metrics (no longer tautological) */}
-              <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              {/* §2 Three-Layer Reserves + §3 Three NAVs */}
+              <div className="mt-4 grid gap-3 sm:grid-cols-3">
                 {[
                   {
-                    label: "Reserve ratio (§1.2)",
-                    value: state.monetary.reserveRatio.toFixed(2) + "%",
-                    sub: `vs NAV_target × Supply`,
-                    tone: state.monetary.reserveRatio >= 102 ? "text-reserve" : state.monetary.reserveRatio >= 100 ? "text-gold" : "text-destructive",
-                  },
-                  {
-                    label: "Reserve coverage (§1.3)",
-                    value: fmtUsd(state.monetary.reserveCoverage),
-                    sub: `${state.monetary.reserveCoveragePct.toFixed(2)}% of NAV`,
-                    tone: state.monetary.reserveCoverage >= 0 ? "text-reserve" : "text-destructive",
-                  },
-                  {
-                    label: "Redemption liability",
-                    value: fmtUsd(state.monetary.redemptionLiability),
-                    sub: `NAV_target × ${state.testnet.supply.toLocaleString("en-US", { maximumFractionDigits: 0 })} MTQ`,
+                    label: "Market Reserve (R_m)",
+                    value: fmtUsd(state.monetary.reserves.market),
+                    sub: "Mark-to-market accounting value",
                     tone: "text-foreground",
                   },
                   {
-                    label: "Current NAV (market)",
-                    value: fmtUsd2(state.monetary.nav),
-                    sub: `per MTQ`,
-                    tone: "text-foreground",
+                    label: "Adjusted Reserve (R_a)",
+                    value: fmtUsd(state.monetary.reserves.adjusted),
+                    sub: "After haircuts + counterparty risk",
+                    tone: "text-gold",
+                  },
+                  {
+                    label: "Liquidation Reserve (R_l)",
+                    value: fmtUsd(state.monetary.reserves.liquidation),
+                    sub: "Extreme stress realizable value",
+                    tone: "text-destructive",
                   },
                 ].map((k) => (
                   <div key={k.label} className="rounded-lg border border-line bg-ink p-3">
-                    <div className="text-[10px] font-semibold uppercase tracking-wider text-fg-muted">
-                      {k.label}
-                    </div>
+                    <div className="text-[10px] font-semibold uppercase tracking-wider text-fg-muted">{k.label}</div>
                     <div className={`font-display mt-1 text-lg ${k.tone}`}>{k.value}</div>
                     <div className="text-[10px] text-fg-muted">{k.sub}</div>
                   </div>
                 ))}
               </div>
 
-              {/* SDP status */}
+              {/* §4 Reserve Ratio + §5 LCR + §8 Duration + §9 CRI */}
+              <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                {[
+                  {
+                    label: "§4 Reserve Ratio (RR)",
+                    value: state.monetary.reserveRatio.ratio.toFixed(2) + "%",
+                    sub: "R_a / (S × NAV_m)",
+                    tone: state.monetary.reserveRatio.compliant ? "text-reserve" : "text-destructive",
+                  },
+                  {
+                    label: "§5 LCR",
+                    value: state.monetary.lcr.ratio.toFixed(2),
+                    sub: state.monetary.lcr.compliant ? "Compliant (≥1.00)" : "Action needed",
+                    tone: state.monetary.lcr.compliant ? "text-reserve" : "text-destructive",
+                  },
+                  {
+                    label: "§8 Duration",
+                    value: state.monetary.portfolioDuration.toFixed(3) + "y",
+                    sub: state.monetary.durationCompliant ? "Compliant (≤0.75)" : "Breach",
+                    tone: state.monetary.durationCompliant ? "text-reserve" : "text-destructive",
+                  },
+                  {
+                    label: "§9 CRI",
+                    value: state.monetary.cri.cri.toFixed(1),
+                    sub: "Level: " + state.monetary.cri.level,
+                    tone: state.monetary.cri.cri < 50 ? "text-reserve" : state.monetary.cri.cri < 70 ? "text-gold" : "text-destructive",
+                  },
+                ].map((k) => (
+                  <div key={k.label} className="rounded-lg border border-line bg-ink p-3">
+                    <div className="text-[10px] font-semibold uppercase tracking-wider text-fg-muted">{k.label}</div>
+                    <div className={`font-display mt-1 text-lg ${k.tone}`}>{k.value}</div>
+                    <div className="text-[10px] text-fg-muted">{k.sub}</div>
+                  </div>
+                ))}
+              </div>
+
+              {/* §22A Basket verification gate */}
               <div
                 className={`mt-4 flex items-start gap-3 rounded-lg border p-4 ${
-                  state.monetary.sdp.triggered
-                    ? "border-destructive/40 bg-destructive/10"
-                    : "border-reserve/30 bg-reserve/[0.06]"
+                  state.monetary.basketVerification.passed
+                    ? "border-reserve/30 bg-reserve/[0.06]"
+                    : "border-destructive/40 bg-destructive/10"
                 }`}
               >
-                <AlertTriangle
+                <Shield
                   className={`mt-0.5 h-4 w-4 shrink-0 ${
-                    state.monetary.sdp.triggered ? "text-destructive" : "text-reserve"
+                    state.monetary.basketVerification.passed ? "text-reserve" : "text-destructive"
                   }`}
                 />
                 <div className="text-sm">
                   <div className="font-semibold text-foreground">
-                    SDP {state.monetary.sdp.triggered ? "TRIGGERED" : "inactive"}
-                    {state.monetary.sdp.triggered && state.monetary.sdp.trigger ? ` · ${state.monetary.sdp.trigger}` : ""}
+                    §22A Basket Verification: {state.monetary.basketVerification.passed ? "PASSED" : "FAILED"}
                   </div>
                   <div className="text-fg-muted">
-                    {state.monetary.sdp.triggered
-                      ? state.monetary.sdp.details
-                      : "No severe deviation detected. All currencies within normal bounds (7-day < 5%, 24h < 3%, idiosyncratic < 2.5%)."}
+                    Σ W = 1.0: {state.monetary.basketVerification.sumIsOne ? "✓" : "✗"} ·
+                    Floor (≥0.5%): {state.monetary.basketVerification.allAboveFloor ? "✓" : "✗"} ·
+                    Cap (≤60%): {state.monetary.basketVerification.allBelowCap ? "✓" : "✗"}
                   </div>
                 </div>
               </div>
 
-              {/* Basket weights table (v2.0 — with momentumAdjusted column) */}
+              {/* 8-currency basket table */}
               <div className="mt-5 overflow-x-auto rounded-xl border border-line">
                 <table className="w-full min-w-[760px] text-sm">
                   <thead className="bg-ink-card text-left text-[10px] uppercase tracking-wider text-fg-muted">
                     <tr>
                       <th className="px-3 py-2.5 font-semibold">Currency</th>
                       <th className="px-3 py-2.5 text-right font-semibold">Structural (Cᵢ)</th>
-                      <th className="px-3 py-2.5 text-right font-semibold">M_raw</th>
-                      <th className="px-3 py-2.5 text-right font-semibold">M_adj (§6.3)</th>
-                      <th className="px-3 py-2.5 text-right font-semibold">Mean Rev (Bᵢ)</th>
-                      <th className="px-3 py-2.5 text-right font-semibold">K = M×B</th>
+                      <th className="px-3 py-2.5 text-right font-semibold">M (§15)</th>
+                      <th className="px-3 py-2.5 text-right font-semibold">R (§16)</th>
+                      <th className="px-3 py-2.5 text-right font-semibold">L (§18)</th>
+                      <th className="px-3 py-2.5 text-right font-semibold">K (§17)</th>
                       <th className="px-3 py-2.5 text-right font-semibold">Weight (Wᵢ)</th>
                       <th className="px-3 py-2.5 text-right font-semibold">Gold/oz</th>
                     </tr>
@@ -547,50 +573,28 @@ export default function TransparencyDashboard() {
                         <td className="px-3 py-2.5">
                           <span className="font-medium text-foreground">{w.code}</span>
                           {w.isCapped ? (
-                            <span className="ml-1.5 rounded bg-gold/15 px-1.5 py-0.5 text-[9px] font-bold text-gold">
-                              CAPPED
-                            </span>
+                            <span className="ml-1.5 rounded bg-gold/15 px-1.5 py-0.5 text-[9px] font-bold text-gold">CAP</span>
                           ) : null}
-                          {w.emergencyWeight !== undefined ? (
-                            <span className="ml-1.5 rounded bg-destructive/20 px-1.5 py-0.5 text-[9px] font-bold text-destructive">
-                              SDP
-                            </span>
+                          {w.belowFloor ? (
+                            <span className="ml-1.5 rounded bg-destructive/20 px-1.5 py-0.5 text-[9px] font-bold text-destructive">FLOOR</span>
                           ) : null}
                           <span className="ml-1.5 text-xs text-fg-muted">{w.name}</span>
                         </td>
+                        <td className="px-3 py-2.5 text-right text-fg-muted">{(w.structuralWeight * 100).toFixed(2)}%</td>
+                        <td className="px-3 py-2.5 text-right text-fg-muted">{w.momentum.toFixed(4)}</td>
+                        <td className="px-3 py-2.5 text-right text-fg-muted">{w.meanReversion.toFixed(4)}</td>
+                        <td className="px-3 py-2.5 text-right text-fg-muted">{(w.liquidity ?? 1).toFixed(4)}</td>
+                        <td className="px-3 py-2.5 text-right text-gold">{w.kFactor.toFixed(5)}</td>
+                        <td className="px-3 py-2.5 text-right font-semibold text-foreground">{(w.normalizedWeight * 100).toFixed(2)}%</td>
                         <td className="px-3 py-2.5 text-right text-fg-muted">
-                          {(w.combinedShare * 100).toFixed(2)}%
-                        </td>
-                        <td className="px-3 py-2.5 text-right text-fg-muted">
-                          {w.momentumRaw.toFixed(4)}
-                        </td>
-                        <td className="px-3 py-2.5 text-right text-gold">
-                          {(w.momentumAdjusted ?? w.momentum).toFixed(4)}
-                        </td>
-                        <td className="px-3 py-2.5 text-right text-fg-muted">
-                          {w.meanReversion.toFixed(4)}
-                        </td>
-                        <td className="px-3 py-2.5 text-right text-gold">
-                          {w.momentumFactor.toFixed(4)}
-                        </td>
-                        <td className="px-3 py-2.5 text-right font-semibold text-foreground">
-                          {(w.normalizedWeight * 100).toFixed(2)}%
-                        </td>
-                        <td className="px-3 py-2.5 text-right text-fg-muted">
-                          {w.code === "USD"
-                            ? fmtUsd2(w.goldPrice)
-                            : w.goldPrice.toLocaleString("en-US", { maximumFractionDigits: 0 }) +
-                              " " +
-                              w.code}
+                          {w.code === "USD" ? fmtUsd2(w.goldPrice) : w.goldPrice.toLocaleString("en-US", { maximumFractionDigits: 0 }) + " " + w.code}
                         </td>
                       </tr>
                     ))}
                   </tbody>
                   <tfoot>
                     <tr className="border-t-2 border-line bg-ink-card">
-                      <td className="px-3 py-2.5 font-semibold text-foreground" colSpan={6}>
-                        Total
-                      </td>
+                      <td className="px-3 py-2.5 font-semibold text-foreground" colSpan={6}>Total</td>
                       <td className="px-3 py-2.5 text-right font-semibold text-gold">
                         {(state.monetary.weights.reduce((s, w) => s + w.normalizedWeight, 0) * 100).toFixed(2)}%
                       </td>
@@ -609,15 +613,11 @@ export default function TransparencyDashboard() {
                   { label: "Custody fee", rate: state.monetary.fees.custody.rate, cap: "—" },
                 ].map((f) => (
                   <div key={f.label} className="rounded-lg border border-line bg-ink p-3">
-                    <div className="text-[10px] font-semibold uppercase tracking-wider text-fg-muted">
-                      {f.label}
-                    </div>
+                    <div className="text-[10px] font-semibold uppercase tracking-wider text-fg-muted">{f.label}</div>
                     <div className="mt-1 font-display text-lg text-gold">{f.rate}</div>
                     <div className="text-[10px] text-fg-muted">cap {f.cap}</div>
                     {f.sample !== undefined ? (
-                      <div className="mt-1 text-[10px] text-reserve">
-                        $1M → ${f.sample.toLocaleString("en-US", { maximumFractionDigits: 0 })}
-                      </div>
+                      <div className="mt-1 text-[10px] text-reserve">$1M → ${f.sample.toLocaleString("en-US", { maximumFractionDigits: 0 })}</div>
                     ) : null}
                   </div>
                 ))}
