@@ -129,12 +129,12 @@ function ViewSwitcher({
   setView: (v: View) => void;
 }) {
   return (
-    <div className="no-print sticky top-0 z-[60] flex justify-center border-b border-line/60 bg-ink/90 backdrop-blur-xl">
+    <div className="no-print sticky top-0 z-[60] flex justify-center border-b border-line/40 glass">
       <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-3 px-4 py-2 sm:px-8 sm:py-2.5">
         <span className="hidden text-[11px] font-medium uppercase tracking-[0.22em] text-fg-muted lg:inline">
           Mithqal · working surface
         </span>
-        <div className="mx-auto inline-flex items-center gap-0.5 overflow-x-auto rounded-full border border-line bg-ink-card p-1">
+        <div className="mx-auto inline-flex items-center gap-0.5 overflow-x-auto rounded-full border border-line bg-ink/60 p-1 backdrop-blur-xl">
           {VIEWS.map((v) => {
             const active = view === v.id;
             const Icon = v.icon;
@@ -142,8 +142,8 @@ function ViewSwitcher({
               <button
                 key={v.id}
                 onClick={() => setView(v.id)}
-                className={`relative inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors sm:px-4 sm:text-[13px] ${
-                  active ? "bg-gold text-ink" : "text-fg-muted hover:text-foreground"
+                className={`relative inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-all sm:px-4 sm:text-[13px] ${
+                  active ? "bg-gold text-ink glow-gold" : "text-fg-muted hover:text-foreground hover:bg-ink-card/60"
                 }`}
                 aria-pressed={active}
               >

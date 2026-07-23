@@ -125,15 +125,18 @@
 /* ===== Mithqal institutional palette (always on) ===== */
 :root,
 .dark {
-  --ink: oklch(0.16 0.004 70);
-  --ink-soft: oklch(0.195 0.005 70);
-  --ink-card: oklch(0.225 0.006 70);
-  --line: oklch(0.34 0.006 70);
-  --gold: oklch(0.8 0.135 84);
-  --gold-soft: oklch(0.88 0.1 85);
-  --gold-deep: oklch(0.56 0.12 84);
-  --reserve: oklch(0.74 0.15 158);
-  --fg-muted: oklch(0.66 0.012 70);
+  --ink: oklch(0.14 0.004 70);
+  --ink-soft: oklch(0.175 0.005 70);
+  --ink-card: oklch(0.205 0.006 70);
+  --line: oklch(0.30 0.006 70);
+  --gold: oklch(0.82 0.14 84);
+  --gold-soft: oklch(0.90 0.10 85);
+  --gold-deep: oklch(0.58 0.13 84);
+  --reserve: oklch(0.76 0.15 158);
+  --reserve-soft: oklch(0.88 0.08 158);
+  --fg-muted: oklch(0.64 0.012 70);
+  --glass-bg: oklch(0.20 0.006 70 / 0.60);
+  --glass-border: oklch(0.40 0.008 70 / 0.40);
 }
 
 @layer base {
@@ -183,6 +186,156 @@
     radial-gradient(circle at 18% 12%, color-mix(in oklch, var(--gold) 9%, transparent) 0, transparent 38%),
     radial-gradient(circle at 86% 8%, color-mix(in oklch, var(--reserve) 7%, transparent) 0, transparent 32%),
     radial-gradient(circle at 50% 100%, color-mix(in oklch, var(--gold-deep) 10%, transparent) 0, transparent 45%);
+}
+
+/* ===== Glassmorphism ===== */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  border: 1px solid var(--glass-border);
+}
+.glass-strong {
+  background: oklch(0.18 0.005 70 / 0.80);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border: 1px solid oklch(0.42 0.008 70 / 0.50);
+}
+
+/* ===== Glow effects ===== */
+.glow-gold {
+  box-shadow: 0 0 24px -4px color-mix(in oklch, var(--gold) 40%, transparent),
+              0 0 1px 0 color-mix(in oklch, var(--gold) 60%, transparent);
+}
+.glow-gold-lg {
+  box-shadow: 0 0 48px -8px color-mix(in oklch, var(--gold) 35%, transparent),
+              0 0 1px 0 color-mix(in oklch, var(--gold) 50%, transparent);
+}
+.glow-reserve {
+  box-shadow: 0 0 24px -4px color-mix(in oklch, var(--reserve) 40%, transparent);
+}
+.glow-text-gold {
+  text-shadow: 0 0 20px color-mix(in oklch, var(--gold) 50%, transparent);
+}
+
+/* ===== Shimmer (loading) ===== */
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--ink-card) 0%,
+    oklch(0.28 0.006 70) 50%,
+    var(--ink-card) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* ===== Animated gradient border ===== */
+.gradient-border {
+  position: relative;
+  background: var(--ink-soft);
+  border: 1px solid transparent;
+  background-clip: padding-box;
+}
+.gradient-border::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, var(--gold) 0%, transparent 40%, transparent 60%, var(--reserve) 100%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* ===== Premium card hover ===== */
+.card-hover {
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.3s ease, border-color 0.3s ease;
+}
+.card-hover:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in oklch, var(--gold) 40%, var(--line));
+  box-shadow: 0 12px 40px -12px color-mix(in oklch, var(--gold) 20%, transparent);
+}
+
+/* ===== Live pulse indicator ===== */
+.live-dot {
+  position: relative;
+}
+.live-dot::before {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: 999px;
+  background: var(--reserve);
+  opacity: 0.4;
+  animation: live-pulse 2s infinite;
+}
+@keyframes live-pulse {
+  0% { transform: scale(0.8); opacity: 0.6; }
+  50% { transform: scale(1.4); opacity: 0; }
+  100% { transform: scale(1.4); opacity: 0; }
+}
+
+/* ===== Animated number (count-up) ===== */
+@keyframes count-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.count-up {
+  animation: count-up 0.4s ease-out;
+}
+
+/* ===== Mesh gradient background (premium hero) ===== */
+.mesh-bg {
+  background-color: var(--ink);
+  background-image:
+    radial-gradient(at 20% 20%, color-mix(in oklch, var(--gold) 12%, transparent) 0px, transparent 50%),
+    radial-gradient(at 80% 10%, color-mix(in oklch, var(--reserve) 8%, transparent) 0px, transparent 50%),
+    radial-gradient(at 50% 80%, color-mix(in oklch, var(--gold-deep) 10%, transparent) 0px, transparent 50%),
+    radial-gradient(at 90% 90%, color-mix(in oklch, var(--gold) 6%, transparent) 0px, transparent 50%);
+}
+
+/* ===== Premium focus ring ===== */
+.premium-focus:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--ink), 0 0 0 4px color-mix(in oklch, var(--gold) 60%, transparent);
+}
+
+/* ===== Chart tooltip (recharts override) ===== */
+.recharts-tooltip-wrapper {
+  outline: none !important;
+}
+.recharts-default-tooltip {
+  background: oklch(0.16 0.005 70 / 0.95) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 8px !important;
+  backdrop-filter: blur(16px);
+  padding: 8px 12px !important;
+}
+.recharts-tooltip-label {
+  color: var(--gold) !important;
+  font-weight: 600 !important;
+  font-size: 11px !important;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.recharts-tooltip-item {
+  color: var(--fg-muted) !important;
+  font-size: 12px !important;
+}
+.recharts-cartesian-axis-tick text {
+  fill: var(--fg-muted) !important;
+  font-size: 10px !important;
+}
+.recharts-cartesian-grid line {
+  stroke: oklch(0.30 0.006 70 / 0.40) !important;
 }
 
 /* ===== Print (Save as PDF) ===== */
