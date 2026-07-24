@@ -43,6 +43,9 @@ import {
   ELIGIBILITY,
   INTEGRATION,
   STATUS_ITEMS,
+  LEGAL_STATUS,
+  LAYER_ZERO,
+  PHASE_ZERO_TIMELINE,
   FORMATION_ROLES,
 } from "@/lib/site-data";
 import { useToast } from "@/hooks/use-toast";
@@ -646,6 +649,174 @@ function StatusBoard() {
   );
 }
 
+/* ---------------- Layer 0 — Institutional Philosophy ---------------- */
+
+function LayerZero() {
+  return (
+    <section id="s-layer-zero" className="scroll-mt-24 border-y border-line/60 bg-ink-soft/40 px-5 py-16 sm:px-8 sm:py-24">
+      <div className="mx-auto w-full max-w-6xl">
+        <Reveal>
+          <Eyebrow>Layer 0 — The Institutional Foundation</Eyebrow>
+          <h2 className="font-display mt-4 text-3xl leading-tight text-balance sm:text-5xl">
+            Every provision derives its authority from Layer 0
+          </h2>
+          <p className="mt-5 max-w-2xl text-[15px] leading-relaxed text-fg-muted sm:text-base">
+            {LAYER_ZERO.intro}
+          </p>
+        </Reveal>
+        <div className="mt-10 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {LAYER_ZERO.pillars.map((p, i) => (
+            <Reveal key={p.title} delay={i * 0.05}>
+              <div className="glass card-hover h-full rounded-xl border-gold/20 p-6">
+                <div className="flex items-center gap-2 text-gold">
+                  <Shield className="h-4 w-4" />
+                  <span className="text-[11px] font-semibold uppercase tracking-[0.22em]">
+                    Doctrine
+                  </span>
+                </div>
+                <h3 className="font-display mt-3 text-lg text-foreground">{p.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-fg-muted">{p.desc}</p>
+              </div>
+            </Reveal>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ---------------- Legal & Regulatory Status ---------------- */
+
+function LegalStatus() {
+  return (
+    <section id="s-legal" className="scroll-mt-24 px-5 py-16 sm:px-8 sm:py-24">
+      <div className="mx-auto w-full max-w-6xl">
+        <Reveal>
+          <Eyebrow>Legal & Regulatory Status</Eyebrow>
+          <h2 className="font-display mt-4 text-3xl leading-tight text-balance sm:text-5xl">
+            Operating through JOZOUR LLC
+          </h2>
+          <p className="mt-5 max-w-2xl text-[15px] leading-relaxed text-fg-muted sm:text-base">
+            MITHQAL operates through {LEGAL_STATUS.entity}, a {LEGAL_STATUS.entity_type}. The Institution
+            is designed to operate in compliance with applicable laws and regulations in every
+            jurisdiction in which it conducts activities.
+          </p>
+        </Reveal>
+        <div className="mt-10 overflow-hidden rounded-2xl border border-line">
+          <table className="w-full text-sm">
+            <thead className="bg-ink-card text-left text-[10px] uppercase tracking-wider text-fg-muted">
+              <tr>
+                <th className="px-5 py-3 font-semibold">Item</th>
+                <th className="px-5 py-3 font-semibold">Value</th>
+                <th className="px-5 py-3 font-semibold">Status</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-line">
+              {LEGAL_STATUS.items.map((item) => (
+                <tr key={item.label} className="hover:bg-ink-card/40">
+                  <td className="px-5 py-3 font-medium text-foreground">{item.label}</td>
+                  <td className="px-5 py-3 text-fg-muted">{item.value}</td>
+                  <td className="px-5 py-3">
+                    <Badge
+                      className={
+                        item.status === "Active" || item.status === "Published"
+                          ? "border-reserve/40 bg-reserve/10 text-[10px] text-reserve hover:bg-reserve/10"
+                          : "border-gold/30 bg-gold/10 text-[10px] text-gold hover:bg-gold/10"
+                      }
+                    >
+                      {item.status}
+                    </Badge>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div className="mt-4 flex items-start gap-3 rounded-xl border border-gold/30 bg-gold/[0.05] p-5">
+          <FileCheck className="mt-0.5 h-5 w-5 shrink-0 text-gold" />
+          <p className="text-sm text-fg-muted">
+            <span className="font-semibold text-foreground">Constitutional Version:</span>{" "}
+            {LEGAL_STATUS.constitutionalVersion}
+            <br />
+            <span className="font-semibold text-foreground">Status:</span>{" "}
+            {LEGAL_STATUS.constitutionalStatus}
+          </p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ---------------- Phase 0 Timeline ---------------- */
+
+function PhaseZeroTimeline() {
+  const statusIcon = (status: string) => {
+    switch (status) {
+      case "done": return <Check className="h-4 w-4 text-reserve" />;
+      case "in-progress": return <div className="h-3 w-3 animate-pulse rounded-full bg-gold" />;
+      case "scheduled": return <Calendar className="h-4 w-4 text-gold" />;
+      case "planned": return <Calendar className="h-4 w-4 text-fg-muted" />;
+      default: return <CircleDollarSign className="h-4 w-4 text-fg-muted" />;
+    }
+  };
+  const statusLabel = (status: string) => {
+    switch (status) {
+      case "done": return "Complete";
+      case "in-progress": return "In Progress";
+      case "scheduled": return "Scheduled";
+      case "planned": return "Planned";
+      default: return "Pending";
+    }
+  };
+  return (
+    <section id="s-phase-zero" className="scroll-mt-24 border-y border-line/60 bg-ink-soft/40 px-5 py-16 sm:px-8 sm:py-24">
+      <div className="mx-auto w-full max-w-6xl">
+        <Reveal>
+          <Eyebrow>Current Status — Phase 0: Formation</Eyebrow>
+          <h2 className="font-display mt-4 text-3xl leading-tight text-balance sm:text-5xl">
+            From blueprint to live settlement rail
+          </h2>
+          <p className="mt-5 max-w-2xl text-[15px] leading-relaxed text-fg-muted sm:text-base">
+            The Formation Committee is actively establishing the Institution. We are in Phase 0:
+            foundation entity formation, regulatory filings, and institutional build-out.
+          </p>
+        </Reveal>
+        <div className="mt-10 overflow-hidden rounded-2xl border border-line">
+          <table className="w-full text-sm">
+            <thead className="bg-ink-card text-left text-[10px] uppercase tracking-wider text-fg-muted">
+              <tr>
+                <th className="px-5 py-3 font-semibold">Milestone</th>
+                <th className="px-5 py-3 font-semibold">Status</th>
+                <th className="px-5 py-3 font-semibold">Target</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-line">
+              {PHASE_ZERO_TIMELINE.map((m) => (
+                <tr key={m.milestone} className="hover:bg-ink-card/40">
+                  <td className="px-5 py-3 font-medium text-foreground">{m.milestone}</td>
+                  <td className="px-5 py-3">
+                    <div className="flex items-center gap-2">
+                      {statusIcon(m.status)}
+                      <span className={
+                        m.status === "done" ? "text-reserve" :
+                        m.status === "in-progress" ? "text-gold" :
+                        "text-fg-muted"
+                      }>
+                        {statusLabel(m.status)}
+                      </span>
+                    </div>
+                  </td>
+                  <td className="px-5 py-3 text-fg-muted">{m.date}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 /* ---------------- Formation Committee contact form ---------------- */
 
 function ContactForm() {
@@ -861,12 +1032,21 @@ function PublicFooter() {
           </div>
         </div>
         <Separator className="my-6 bg-line" />
-        <p className="text-xs leading-relaxed text-fg-muted">
-          Mithqal is a constitutional monetary institution. MTQ is minted exclusively
-          against verified reserve deposits and is never sold unbacked, per the
-          Constitution's invariants. Nothing on this page constitutes an offer to sell
-          securities or any MTQ unit. Eligibility is objective and applied uniformly.
-        </p>
+        <div className="space-y-3">
+          <p className="text-xs leading-relaxed text-fg-muted">
+            © 2026 MITHQAL Constitutional Monetary Institution. All rights reserved.
+          </p>
+          <p className="text-xs leading-relaxed text-fg-muted">
+            <span className="font-medium text-gold">MITHQAL v19.0</span> — Constitutional Monetary Infrastructure Specification.
+            Released 22 July 2026 · Status: Constitutional Release Candidate — Pending Independent External Validation.
+          </p>
+          <p className="text-xs leading-relaxed text-fg-muted">
+            Operated through <span className="font-medium text-foreground">JOZOUR LLC</span>, a New Jersey limited liability company, USA.
+            MTQ is minted exclusively against verified reserve deposits and is never sold unbacked, per the
+            Constitution's invariants. Nothing on this page constitutes an offer to sell securities or any MTQ unit.
+            Eligibility is objective and applied uniformly.
+          </p>
+        </div>
       </div>
     </footer>
   );
@@ -879,6 +1059,7 @@ export default function PublicSite() {
     <div className="flex flex-col">
       <SiteHero />
       <WhatItIs />
+      <LayerZero />
       <Objectives />
       <Invariants />
       <AntiPlatform />
@@ -887,6 +1068,8 @@ export default function PublicSite() {
       <Governance />
       <Lifecycle />
       <Eligibility />
+      <LegalStatus />
+      <PhaseZeroTimeline />
       <StatusBoard />
       <ContactForm />
       <PublicFooter />

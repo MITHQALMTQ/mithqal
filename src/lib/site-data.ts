@@ -230,14 +230,79 @@ export const INTEGRATION = [
 
 /* ---- Build-in-public status ---- */
 export const STATUS_ITEMS = [
-  { label: "Constitution", value: "v19.0", state: "Published", tone: "done" },
-  { label: "Specification", value: "1.46M chars", state: "Public", tone: "done" },
-  { label: "GitHub", value: "Live", state: "Open", tone: "done" },
-  { label: "Testnet (MTQ)", value: "In development", state: "Phase 0", tone: "next" },
-  { label: "Foundation entity", value: "Formation Committee convening", state: "Phase 0", tone: "next" },
-  { label: "Qualified custody", value: "RFP pending", state: "Phase 1", tone: "next" },
-  { label: "Independent audit", value: "Scheduled", state: "Phase 1", tone: "next" },
-  { label: "Mainnet launch", value: "Planned", state: "Phase 3", tone: "future" },
+  { label: "Constitution", value: "v19.0", state: "Published 22 July 2026", tone: "done" },
+  { label: "Specification", value: "1.46M chars", state: "Public on GitHub", tone: "done" },
+  { label: "GitHub repository", value: "Live", state: "Open source", tone: "done" },
+  { label: "NJ LLC formation", value: "JOZOUR LLC", state: "Active", tone: "done" },
+  { label: "FinCEN MSB registration", value: "Form 107 filed", state: "In progress", tone: "next" },
+  { label: "Testnet (MTQ)", value: "Live simulator", state: "Phase 0", tone: "done" },
+  { label: "Qualified custody RFP", value: "Targeting Q4 2026", state: "Phase 1", tone: "next" },
+  { label: "Independent audit", value: "Scheduled Q1 2027", state: "Phase 1", tone: "next" },
+  { label: "Mainnet launch", value: "Planned Q3 2027", state: "Phase 3", tone: "future" },
+];
+
+/* ---- Legal & Regulatory Status ---- */
+export const LEGAL_STATUS = {
+  entity: "JOZOUR LLC",
+  entity_type: "New Jersey Limited Liability Company",
+  ein: "Pending",
+  njRegistration: "Active",
+  fincenMSB: "FinCEN Form 107 — Filed",
+  njMTL: "In progress",
+  constitutionalVersion: "v19.0 — Released 22 July 2026",
+  constitutionalStatus: "Constitutional Release Candidate — Pending Independent External Validation",
+  items: [
+    { label: "Operating Entity", value: "JOZOUR LLC", status: "Active" },
+    { label: "Jurisdiction", value: "New Jersey, USA", status: "Active" },
+    { label: "EIN", value: "Pending", status: "In progress" },
+    { label: "NJ Business Registration", value: "Active", status: "Active" },
+    { label: "FinCEN MSB Registration", value: "Form 107 filed", status: "In progress" },
+    { label: "NJ Money Transmitter License", value: "Application pending", status: "In progress" },
+    { label: "Constitutional Version", value: "v19.0 (22 July 2026)", status: "Published" },
+    { label: "Constitutional Status", value: "Release Candidate", status: "Pending validation" },
+  ],
+};
+
+/* ---- Layer 0 — Institutional Philosophy ---- */
+export const LAYER_ZERO = {
+  title: "Layer 0 — The Institutional Foundation",
+  intro:
+    "Every constitutional provision derives its authority from Layer 0, which establishes the permanent identity, trust doctrine, and constitutional interpretation rules of the Institution.",
+  pillars: [
+    {
+      title: "Institutional Identity",
+      desc: "A permanent, neutral, fully-reserved monetary institution — not a technology product, not a platform, not a token project.",
+    },
+    {
+      title: "Trust Doctrine",
+      desc: "Trust is earned through verifiable operations, never declared. Every claim is backed by independently auditable evidence.",
+    },
+    {
+      title: "Evidence Doctrine",
+      desc: "Every claim is supported by independently verifiable evidence. No assertion rests on institutional declaration alone.",
+    },
+    {
+      title: "Human Governance Doctrine",
+      desc: "Governance is exercised by qualified human professionals — not algorithms, not token votes, not automated systems.",
+    },
+    {
+      title: "Longevity Doctrine",
+      desc: "Designed to endure for 50–100+ years. The Institution outlives its founders, its technology, and the markets.",
+    },
+  ],
+};
+
+/* ---- Formation Phase 0 Timeline ---- */
+export const PHASE_ZERO_TIMELINE = [
+  { milestone: "Constitution v19.0", status: "done", date: "22 July 2026" },
+  { milestone: "NJ LLC formation (JOZOUR LLC)", status: "done", date: "Active" },
+  { milestone: "EIN obtained", status: "pending", date: "Q3 2026" },
+  { milestone: "FinCEN Form 107 filed", status: "pending", date: "Q3 2026" },
+  { milestone: "NJ Business Registration Certificate", status: "done", date: "Active" },
+  { milestone: "Testnet deployment", status: "done", date: "Live" },
+  { milestone: "Qualified custody RFP", status: "in-progress", date: "Q4 2026" },
+  { milestone: "Independent security audit", status: "scheduled", date: "Q1 2027" },
+  { milestone: "Mainnet launch", status: "planned", date: "Q3 2027" },
 ];
 
 export const FORMATION_ROLES = [
