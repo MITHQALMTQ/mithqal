@@ -337,7 +337,7 @@ export default function InvestorDeck() {
       <footer className="mt-auto border-t border-line/50 bg-ink-soft/60 px-4 py-4 sm:px-6">
         <div className="mx-auto w-full max-w-5xl">
           <p className="text-center text-[10px] leading-relaxed text-fg-muted sm:text-[11px]">
-            Confidential. Derived from the Mithqal v18 FINAL specification. Not
+            Confidential. Derived from the Mithqal v19.0 specification. Not
             an offer to sell securities or any MTQ unit. MTQ is minted
             exclusively against verified reserves.
           </p>

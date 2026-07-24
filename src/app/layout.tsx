@@ -28,7 +28,7 @@ export const metadata: Metadata = {
     template: "%s · Mithqal",
   },
   description:
-    "Mithqal — a constitutional, fully-reserved, neutral settlement institution for international trade. Built on the v18 FINAL specification. 100%+ reserves, verifiable operations, permanently non-platform.",
+    "Mithqal — a constitutional, fully-reserved, neutral settlement institution for international trade. Built on the v19.0 specification. 100%+ reserves, verifiable operations, permanently non-platform.",
   keywords: [
     "Mithqal",
     "MTQ",

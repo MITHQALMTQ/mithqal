@@ -105,7 +105,7 @@ export default function ConstitutionDocs() {
                   The Constitution
                 </div>
                 <div className="text-[10px] uppercase tracking-[0.18em] text-fg-muted">
-                  v18 FINAL · citable reference
+                  v19.0 · citable reference
                 </div>
               </div>
             </div>
@@ -263,7 +263,7 @@ export default function ConstitutionDocs() {
                 </span>
               </div>
               <p className="mt-2">
-                Mithqal Constitution v18 FINAL — {activeLayer?.name ?? "Institutional Constitution"}
+                Mithqal Constitution v19.0 — {activeLayer?.name ?? "Institutional Constitution"}
                 {activeArticle ? `, ${activeArticle.number}: ${activeArticle.title}` : ", Preamble"}.
                 The full specification is version-controlled at{" "}
                 <a
@@ -397,7 +397,7 @@ function ArticleView({
         <div className="mt-10 rounded-xl border border-line bg-ink-soft/50 p-5">
           <p className="text-sm leading-relaxed text-fg-muted">
             This article is part of the {layerName}. The full provisions are defined in the
-            v18 FINAL specification. The summary above captures its purpose; detailed
+            v19.0 specification. The summary above captures its purpose; detailed
             provisions are being progressively published.
           </p>
         </div>

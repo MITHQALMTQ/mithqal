@@ -87,7 +87,7 @@ function SiteHero() {
       <div className="relative mx-auto w-full max-w-6xl px-5 pb-20 pt-16 sm:px-8 sm:pb-28 sm:pt-24">
         <Reveal>
           <Badge className="border-gold/40 bg-gold/10 text-gold hover:bg-gold/10">
-            Constitutional Monetary Institution · Est. under the v18 Constitution
+            Constitutional Monetary Institution · Est. under the v19.0 Constitution
           </Badge>
         </Reveal>
         <Reveal delay={0.05}>
@@ -856,7 +856,7 @@ function PublicFooter() {
               <BoxesIcon className="h-4 w-4" /> GitHub
             </a>
             <span className="inline-flex items-center gap-1.5">
-              <FileCheck className="h-4 w-4" /> Constitution v18 FINAL
+              <FileCheck className="h-4 w-4" /> Constitution v19.0
             </span>
           </div>
         </div>

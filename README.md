@@ -29,9 +29,9 @@
 
 ```
 .
-├── docs/blueprint/            # The complete v18 specification
+├── docs/blueprint/            # The complete v19.0 specification
 │   ├── blueprint.txt           #   Full text
-│   ├── v18-blueprint-complete.md
+│   ├── v19.0-blueprint-complete.md
 │   ├── executive-summary.md
 │   └── one-pager.md
 ├── src/
@@ -63,7 +63,7 @@ The Next.js application exposes seven views — the public-facing institutional 
 |---|---|---|
 | **Institution** | Public | The credibility site + Formation Committee intake |
 | **Transparency** | Public | Live state — verifiable operations, build in public |
-| **Constitution** | Public | The citable v18 spec (47 articles across 5 layers) |
+| **Constitution** | Public | The citable v19.0 spec (47 articles across 5 layers) |
 | **Testnet** | Technical investors | Live reserve simulator (mint/redeem/PoR/NAV) |
 | **Deck** | First-meeting investors | 10-slide teaser → downloadable PDF |
 | **Playbook** | Internal | The A-to-Z strategic execution plan |

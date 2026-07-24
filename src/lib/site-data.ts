@@ -1,4 +1,4 @@
-// Mithqal public institutional site — content distilled from the v18 FINAL
+// Mithqal public institutional site — content distilled from the v19.0
 // Consolidated Implementation Specification. This is the credibility-layer
 // copy that faces investors, advisors, anchor participants and the public.
 
@@ -230,8 +230,8 @@ export const INTEGRATION = [
 
 /* ---- Build-in-public status ---- */
 export const STATUS_ITEMS = [
-  { label: "Constitution", value: "v18 FINAL", state: "Published", tone: "done" },
-  { label: "Specification", value: "850k chars", state: "Public", tone: "done" },
+  { label: "Constitution", value: "v19.0", state: "Published", tone: "done" },
+  { label: "Specification", value: "1.46M chars", state: "Public", tone: "done" },
   { label: "GitHub", value: "Live", state: "Open", tone: "done" },
   { label: "Testnet (MTQ)", value: "In development", state: "Phase 0", tone: "next" },
   { label: "Foundation entity", value: "Formation Committee convening", state: "Phase 0", tone: "next" },

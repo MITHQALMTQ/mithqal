@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { db, ensureSchema } from "@/lib/db";
 import { deriveState, canMint, PAR } from "@/lib/testnet-engine";
-import { mintFee } from "@/lib/monetary-engine";
+import { mintFee } from "@/lib/monetary-engine-v19";
 
 // POST /api/testnet/mint — mint MTQ 1:1 against a verified (simulated)
 // reserve deposit. Enforces the 100%+ reserve invariant: minting is paused

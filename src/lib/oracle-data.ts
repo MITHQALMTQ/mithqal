@@ -132,7 +132,7 @@ export function aggregateOraclePrice(
   // (oracle-data is imported by monetary-engine; monetary-engine is
   // imported here only at call-time.)
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { consensusPrice } = require("./monetary-engine") as typeof import("./monetary-engine");
+  const { consensusPrice } = require("./monetary-engine-v19") as typeof import("./monetary-engine-v19");
   // Simulate 6 family reports with small deterministic variance.
   const families = 6;
   const reports: number[] = [];

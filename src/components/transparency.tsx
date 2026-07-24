@@ -719,7 +719,7 @@ export default function TransparencyDashboard() {
           <div className="flex items-center gap-2 text-sm">
             <Lock className="h-4 w-4 text-gold" />
             <span className="text-fg-muted">
-              Testnet simulator — no real value held or transferred. Mechanics mirror the v18
+              Testnet simulator — no real value held or transferred. Mechanics mirror the v19.0
               Constitution. Every figure above is reproducible from the public ledger.
             </span>
           </div>

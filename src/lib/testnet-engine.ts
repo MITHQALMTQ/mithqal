@@ -1,5 +1,5 @@
 // Mithqal testnet reserve engine — pure functions that derive settlement
-// state from the append-only TestnetOperation ledger. Faithful to the v18
+// state from the append-only TestnetOperation ledger. Faithful to the v19.0
 // Constitution: 100%+ reserve mandate, no discretionary minting, no
 // redemption suspension, 0.05% redemption fee, four-tier diversified basket.
 //

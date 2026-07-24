@@ -1,9 +1,9 @@
 // Mithqal Strategic Execution Playbook — structured data
-// Authored from the v18 FINAL Consolidated Implementation Specification.
+// Authored from the v19.0 Consolidated Implementation Specification.
 
 export const STATUS = {
   have: [
-    { label: "Blueprint v18 — FINAL", note: "Full constitutional specification (reserves, governance, compliance, post-quantum, lifecycle)" },
+    { label: "Blueprint v19.0 — FINAL", note: "Full constitutional specification (reserves, governance, compliance, post-quantum, lifecycle)" },
     { label: "GitHub repository", note: "github.com/MITHQALMTQ/mithqal" },
     { label: "X / Twitter presence", note: "@MithqalMTQ" },
     { label: "Founder conviction", note: "Zero budget, full commitment" },
@@ -168,7 +168,7 @@ export const SPRINT: { week: string; focus: string; tasks: string[] }[] = [
     week: "Week 5–6",
     focus: "Publish the Constitution",
     tasks: [
-      "Publish the full v18 specification as a versioned, citable docs site",
+      "Publish the full v19.0 specification as a versioned, citable docs site",
       "Open-source the testnet contract scaffold on GitHub",
       "Publish the reserve policy, fee schedule, and governance map",
       "Open a public 'Formation Committee' interest form",

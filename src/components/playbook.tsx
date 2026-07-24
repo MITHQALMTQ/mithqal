@@ -250,7 +250,7 @@ function Hero() {
         <Reveal>
           <div className="flex items-center gap-2">
             <Badge className="border-gold/40 bg-gold/10 text-gold hover:bg-gold/10">
-              v18 FINAL · Consolidated Specification
+              v19.0 · Consolidated Specification
             </Badge>
             <Badge className="border-line bg-ink-card text-fg-muted hover:bg-ink-card">
               Prepared for the COO / PM
@@ -311,7 +311,7 @@ function Hero() {
         <Reveal delay={0.24}>
           <div className="mt-14 grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-line bg-line sm:grid-cols-4">
             {[
-              { k: "Blueprint", v: "v18 FINAL", s: "850k-char Constitution" },
+              { k: "Blueprint", v: "v19.0", s: "1.46M-char Constitution" },
               { k: "Capital", v: "$0", s: "Zero budget — sweat equity" },
               { k: "Entity", v: "None", s: "No company, yet" },
               { k: "Target raise", v: "$0.25–8M", s: "Pre-seed → Seed (Entity B)" },
@@ -969,13 +969,13 @@ function Footer() {
               <FileText className="h-4 w-4" /> GitHub
             </a>
             <span className="inline-flex items-center gap-1.5">
-              <Boxes className="h-4 w-4" /> Blueprint v18
+              <Boxes className="h-4 w-4" /> Blueprint v19.0
             </span>
           </div>
         </div>
         <Separator className="my-6 bg-line" />
         <p className="text-xs leading-relaxed text-fg-muted">
-          This playbook is a strategic execution document derived from the Mithqal v18
+          This playbook is a strategic execution document derived from the Mithqal v19.0
           FINAL Consolidated Implementation Specification. It does not constitute an
           offer to sell securities or any MTQ unit. MTQ is minted exclusively against
           verified reserve deposits and is never sold unbacked, per the Constitution's

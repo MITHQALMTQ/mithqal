@@ -5,7 +5,7 @@ pragma solidity ^0.8.23;
  * @title Mithqal Settlement Token (MTQ)
  * @dev Constitutional settlement unit — fully reserved, non-platform, non-speculative.
  *
- * Implements the v18 FINAL Constitution's invariants on-chain:
+ * Implements the v19.0 Constitutional Specification's invariants on-chain:
  *   - 100%+ reserve mandate: mint ONLY on verified deposit (Invariant 1)
  *   - No discretionary minting: mint requires a deposit event (Invariant 2)
  *   - No lending of reserves: reserves are held, never lent (Invariant 3)
