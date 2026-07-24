@@ -63,4 +63,7 @@ server.log
 /db/*.db
 /db/*.db-journal
 /db/*.db-wal
-/db/*.db-shmbackup-*/
+/db/*.db-shm
+
+# Local backups
+backup-*/
