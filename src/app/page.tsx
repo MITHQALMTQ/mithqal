@@ -2,7 +2,7 @@
 
 import { useSyncExternalStore, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { BookOpen, Landmark, FlaskConical, Presentation, ScrollText, LayoutDashboard, Eye, Network } from "lucide-react";
+import { BookOpen, Landmark, FlaskConical, Presentation, ScrollText, LayoutDashboard, Eye, Network, ShieldCheck } from "lucide-react";
 import Playbook from "@/components/playbook";
 import PublicSite from "@/components/public-site";
 import TestnetDashboard from "@/components/testnet";
@@ -11,8 +11,9 @@ import ConstitutionDocs from "@/components/constitution";
 import AdminConsole from "@/components/admin";
 import TransparencyDashboard from "@/components/transparency";
 import InfrastructureView from "@/components/infrastructure";
+import TestnetAudit from "@/components/testnet-audit";
 
-type View = "institution" | "transparency" | "infrastructure" | "playbook" | "testnet" | "deck" | "constitution" | "admin";
+type View = "institution" | "transparency" | "infrastructure" | "playbook" | "testnet" | "audit" | "deck" | "constitution" | "admin";
 
 const STORAGE_KEY = "mithqal.view";
 const CHANGE_EVENT = "mithqal:view-change";
@@ -24,6 +25,7 @@ const VIEWS: { id: View; label: string; icon: typeof BookOpen; hint: string }[] 
   { id: "infrastructure", label: "Infrastructure", icon: Network, hint: "v19.0 infrastructure" },
   { id: "constitution", label: "Constitution", icon: ScrollText, hint: "v19.0 spec · citable" },
   { id: "testnet", label: "Testnet", icon: FlaskConical, hint: "MTQ simulator" },
+  { id: "audit", label: "Audit", icon: ShieldCheck, hint: "Testnet validation v1.0" },
   { id: "deck", label: "Deck", icon: Presentation, hint: "Investor teaser" },
   { id: "playbook", label: "Playbook", icon: BookOpen, hint: "Internal · COO/PM" },
   { id: "admin", label: "Admin", icon: LayoutDashboard, hint: "Intake pipeline" },
@@ -41,7 +43,7 @@ function subscribe(cb: () => void) {
   };
 }
 
-const VALID_VIEWS: View[] = ["institution", "transparency", "infrastructure", "constitution", "testnet", "deck", "playbook", "admin"];
+const VALID_VIEWS: View[] = ["institution", "transparency", "infrastructure", "constitution", "testnet", "audit", "deck", "playbook", "admin"];
 
 function getSnapshot(): View {
   const v = window.localStorage.getItem(STORAGE_KEY);
@@ -103,6 +105,8 @@ export default function Page() {
               <Playbook />
             ) : view === "testnet" ? (
               <TestnetDashboard />
+            ) : view === "audit" ? (
+              <TestnetAudit />
             ) : view === "deck" ? (
               <InvestorDeck />
             ) : view === "constitution" ? (
