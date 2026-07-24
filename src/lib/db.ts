@@ -5,20 +5,21 @@ const globalForPrisma = globalThis as unknown as {
   __schemaInitialized?: boolean
 }
 
-// Use DATABASE_URL, or fall back to POSTGRES_URL / POSTGRES_PRISMA_URL
-// (Vercel Neon stores inject these when linked to the project).
+// Use DATABASE_URL (SQLite for dev/ephemeral, PostgreSQL/Neon for production).
+// The Neon Postgres connection string is set via the Vercel Dashboard by
+// linking the Neon store to the project. When linked, Vercel auto-injects
+// POSTGRES_PRISMA_URL which we fall back to.
 const databaseUrl =
   process.env.DATABASE_URL ||
   process.env.POSTGRES_PRISMA_URL ||
   process.env.POSTGRES_URL ||
-  process.env.POSTGRES_URL_NON_POOLING ||
   ""
 
 export const db =
   globalForPrisma.prisma ??
   new PrismaClient({
     log: process.env.NODE_ENV === 'production' ? ['error', 'warn'] : ['query'],
-    datasources: databaseUrl ? { db: { url: databaseUrl } } : undefined,
+    ...(databaseUrl ? { datasources: { db: { url: databaseUrl } } } : {}),
   })
 
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = db
@@ -33,16 +34,26 @@ export async function ensureSchema(): Promise<void> {
   if (globalForPrisma.__schemaInitialized) return
   globalForPrisma.__schemaInitialized = true
 
-  // PostgreSQL schema creation (replaces the SQLite DDL from the ephemeral version).
+  // Schema creation — supports both SQLite (ephemeral dev) and PostgreSQL (Neon).
   // Uses IF NOT EXISTS so it's idempotent — safe on every cold start.
-  const statements = [
-    `CREATE TABLE IF NOT EXISTS "FormationInterest" ("id" TEXT PRIMARY KEY NOT NULL, "fullName" TEXT NOT NULL, "email" TEXT NOT NULL, "org" TEXT, "role" TEXT NOT NULL, "message" TEXT, "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP)`,
-    `CREATE INDEX IF NOT EXISTS "FormationInterest_role_idx" ON "FormationInterest"("role")`,
-    `CREATE INDEX IF NOT EXISTS "FormationInterest_createdAt_idx" ON "FormationInterest"("createdAt")`,
-    `CREATE TABLE IF NOT EXISTS "TestnetOperation" ("id" TEXT PRIMARY KEY NOT NULL, "type" TEXT NOT NULL, "amountUsd" DOUBLE PRECISION NOT NULL, "mtq" DOUBLE PRECISION NOT NULL, "participant" TEXT NOT NULL, "nav" DOUBLE PRECISION NOT NULL, "reserveRatio" DOUBLE PRECISION NOT NULL, "porHash" TEXT NOT NULL, "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP)`,
-    `CREATE INDEX IF NOT EXISTS "TestnetOperation_createdAt_idx" ON "TestnetOperation"("createdAt")`,
-    `CREATE INDEX IF NOT EXISTS "TestnetOperation_type_idx" ON "TestnetOperation"("type")`,
-  ]
+  const isPostgres = databaseUrl.includes("postgresql://") || databaseUrl.includes("postgres://");
+  const statements = isPostgres
+    ? [
+        `CREATE TABLE IF NOT EXISTS "FormationInterest" ("id" TEXT PRIMARY KEY NOT NULL, "fullName" TEXT NOT NULL, "email" TEXT NOT NULL, "org" TEXT, "role" TEXT NOT NULL, "message" TEXT, "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP)`,
+        `CREATE INDEX IF NOT EXISTS "FormationInterest_role_idx" ON "FormationInterest"("role")`,
+        `CREATE INDEX IF NOT EXISTS "FormationInterest_createdAt_idx" ON "FormationInterest"("createdAt")`,
+        `CREATE TABLE IF NOT EXISTS "TestnetOperation" ("id" TEXT PRIMARY KEY NOT NULL, "type" TEXT NOT NULL, "amountUsd" DOUBLE PRECISION NOT NULL, "mtq" DOUBLE PRECISION NOT NULL, "participant" TEXT NOT NULL, "nav" DOUBLE PRECISION NOT NULL, "reserveRatio" DOUBLE PRECISION NOT NULL, "porHash" TEXT NOT NULL, "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP)`,
+        `CREATE INDEX IF NOT EXISTS "TestnetOperation_createdAt_idx" ON "TestnetOperation"("createdAt")`,
+        `CREATE INDEX IF NOT EXISTS "TestnetOperation_type_idx" ON "TestnetOperation"("type")`,
+      ]
+    : [
+        `CREATE TABLE IF NOT EXISTS "FormationInterest" ("id" TEXT PRIMARY KEY NOT NULL, "fullName" TEXT NOT NULL, "email" TEXT NOT NULL, "org" TEXT, "role" TEXT NOT NULL, "message" TEXT, "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP)`,
+        `CREATE INDEX IF NOT EXISTS "FormationInterest_role_idx" ON "FormationInterest"("role")`,
+        `CREATE INDEX IF NOT EXISTS "FormationInterest_createdAt_idx" ON "FormationInterest"("createdAt")`,
+        `CREATE TABLE IF NOT EXISTS "TestnetOperation" ("id" TEXT PRIMARY KEY NOT NULL, "type" TEXT NOT NULL, "amountUsd" REAL NOT NULL, "mtq" REAL NOT NULL, "participant" TEXT NOT NULL, "nav" REAL NOT NULL, "reserveRatio" REAL NOT NULL, "porHash" TEXT NOT NULL, "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP)`,
+        `CREATE INDEX IF NOT EXISTS "TestnetOperation_createdAt_idx" ON "TestnetOperation"("createdAt")`,
+        `CREATE INDEX IF NOT EXISTS "TestnetOperation_type_idx" ON "TestnetOperation"("type")`,
+      ]
 
   try {
     for (const sql of statements) {
