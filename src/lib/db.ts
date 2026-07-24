@@ -5,10 +5,20 @@ const globalForPrisma = globalThis as unknown as {
   __schemaInitialized?: boolean
 }
 
+// Use DATABASE_URL, or fall back to POSTGRES_URL / POSTGRES_PRISMA_URL
+// (Vercel Neon stores inject these when linked to the project).
+const databaseUrl =
+  process.env.DATABASE_URL ||
+  process.env.POSTGRES_PRISMA_URL ||
+  process.env.POSTGRES_URL ||
+  process.env.POSTGRES_URL_NON_POOLING ||
+  ""
+
 export const db =
   globalForPrisma.prisma ??
   new PrismaClient({
     log: process.env.NODE_ENV === 'production' ? ['error', 'warn'] : ['query'],
+    datasources: databaseUrl ? { db: { url: databaseUrl } } : undefined,
   })
 
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = db
