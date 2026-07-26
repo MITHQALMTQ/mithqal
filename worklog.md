@@ -732,3 +732,184 @@ Stage Summary:
 - ✅ Secrets redacted from tracked files
 - ✅ GitHub + Turso + SMTP all verified working
 - ⚠️ Operator action: deploy MockOracle.sol to Monad Testnet (forge create command in admin UI), then set MOCK_ORACLE_ADDRESS env var on Vercel + in .env
+
+---
+Task ID: 5
+Agent: general-purpose (API endpoints sub-agent)
+Task: Create three public API endpoint files (transactions, reserve/status, governance/proposals) for the Mithqal Operating System indexer layer.
+
+Work Log:
+- Read worklog.md (734 lines) to understand project context: Turso DB via @libsql/client, Next.js 16 App Router, TypeScript, v19.0 monetary engine, MockOracle on Monad Testnet, three on-chain contracts (MTQ token, Governance, Safe Multi-Sig).
+- Read existing src/lib/db.ts to confirm the compatibility wrapper exposes `db.transactions`, `db.reserves`, `db.fees`, `db.proposals` with the Prisma-like API used by the task spec.
+- Read existing src/app/api/transparency/route.ts and src/app/api/oracle/route.ts as reference patterns for NextResponse + try/catch + public GET endpoints.
+- Read src/lib/monetary-engine-v19.ts (ReserveAsset interface, HAIRCUTS, computeMonetaryStateV19 signature), src/lib/live-oracle.ts (getLiveOracleData + toOracleSnapshot), src/lib/oracle-client.ts (getOracleSnapshot), src/lib/contract-reader.ts (getContractInfo + CONTRACTS.GOVERNANCE = 0xE35a91801bc541fb743BB9EaD26C1FbD81EaBd66).
+
+File 1 — /home/z/my-project/src/app/api/transactions/route.ts (created):
+  - GET /api/transactions — public, returns { transactions, total, feeSummary, filter, limit }
+  - Query params: ?type=mint|redeem|transfer (validated against allow-list, optional), ?limit=50 (default 50, max 200, min 1)
+  - Calls `db.transactions.findMany({ where: type ? { type } : undefined, orderBy: { timestamp: "desc" }, take: limit })` exactly per spec
+  - In parallel: `db.transactions.count()` for total + `db.fees.total()` for feeSummary (sum of fees grouped by fee_type, returned as { feeType, totalUsd, count }[])
+  - Each transaction is enriched with `timestampIso` (ISO string derived from the unixepoch `timestamp` field)
+  - Imports `{ db, ensureSchema } from "@/lib/db"` exactly as required
+  - try/catch wraps everything; 500 returned with `{ error, detail }` on failure
+
+File 2 — /home/z/my-project/src/app/api/reserve/status/route.ts (created):
+  - GET /api/reserve/status — public, returns full §23 reserve composition + v19.0 monetary state
+  - All five required imports wired: db+ensureSchema, getOracleSnapshot, computeMonetaryStateV19+ReserveAsset+HAIRCUTS, getLiveOracleData+toOracleSnapshot, getContractInfo
+  - totalReserve = 54_000_000 (testnet baseline, hardcoded per task spec)
+  - Reserve composition per §23: Fiat 75% (50% cash + 25% sovereign T-bills ≤1yr), Bullion 20% (15% gold + 5% silver), Stablecoins 5% — each ReserveAsset has the correct constitutional haircut (HAIRCUTS.cash=0, sovereign=0.02, gold=0.05, silver=0.07, stablecoin=0.02)
+  - Gold price taken from the live oracle snapshot (`oracle.goldUsd`); silver from `oracle.silverUsd`
+  - reserveAssets array built with quantity = value/priceUsd for gold/silver, par-1 for fiat/stablecoins
+  - Calls `computeMonetaryStateV19(oracleSnapshot, reserveAssets, supply, lcrInputs, criInputs, 0.015, [])` — supply from on-chain totalSupply (contractInfo.totalSupplyDisplay) with 50_000_000 fallback
+  - Also fetches `db.reserves.latest()` (latest snapshot per asset_type) and exposes as `dbSnapshots`
+  - Response shape: { totalReserveUsd, reserves: [{assetType, name, amount, valueUsd, sharePct, haircut}], threeLayer: {market, adjusted, liquidation, hierarchyValid}, nav: {market, prudential, stress, hierarchyValid}, reserveRatio: {ratio, compliant, policyTarget}, goldPrice, silverPrice, oracleSource, oracleAddress, dbSnapshots, contract: {address, name, symbol, decimals, totalSupply, explorerLink, network}, lastUpdated }
+  - getContractInfo wrapped in `.catch(() => null)` so the endpoint still returns reserve data even if the Monad RPC is unreachable
+
+File 3 — /home/z/my-project/src/app/api/governance/proposals/route.ts (created):
+  - GET /api/governance/proposals — public, returns { proposals, governanceContract, explorerLink, filter }
+  - Query param: ?status=active|executed|defeated|pending (validated against allow-list, optional)
+  - Calls `db.proposals.findMany({ where: status ? { status } : undefined, take: 50 })` exactly per spec
+  - Empty proposals table returns empty array (NOT an error) — explicitly noted in JSDoc
+  - Each proposal is enriched with `createdAtIso` (ISO string from unixepoch) when createdAt is non-null
+  - governanceContract hardcoded = "0xE35a91801bc541fb743BB9EaD26C1FbD81EaBd66" (matches CONTRACTS.GOVERNANCE in contract-reader.ts)
+  - explorerLink = "https://testnet.monadscan.com/address/0xE35a91801bc541fb743BB9EaD26C1FbD81EaBd66"
+
+Verification:
+  - `cd /home/z/my-project && bun run lint 2>&1 | tail -5` → `$ eslint .` (clean exit, no warnings/errors)
+  - `bunx tsc --noEmit` shows only pre-existing errors in OTHER files (testnet-engine.ts, db.ts, admin.tsx, onchain-test/route.ts, contract-reader.ts BigInt literals, etc.) — ZERO errors in the three new route files
+  - All three endpoints follow the project conventions: NextResponse from "next/server", try/catch wrapper, 500 on error, public (no auth), no test files created
+
+Stage Summary:
+- ✅ /api/transactions — list recent transactions with type filter + limit cap (200) + fee summary
+- ✅ /api/reserve/status — §23 three-layer reserve composition + 3 NAVs + reserve ratio with live gold/silver prices
+- ✅ /api/governance/proposals — list proposals with status filter + governance contract address
+- ✅ All three files lint-clean (eslint . passes with zero errors)
+- ✅ All three files TypeScript-clean (no new tsc errors introduced)
+- ✅ Directory layout: src/app/api/{transactions, reserve/status, governance/proposals}/route.ts
+
+---
+Task ID: 3
+Agent: sub-agent (read-only API endpoints)
+
+Task: Create 3 read-only API endpoint files for the Mithqal project (Next.js 16 App Router, TypeScript) — `/api/status`, `/api/contract/info`, `/api/balance/[address]`.
+
+Work Log:
+- Read worklog.md to absorb project context (Mithqal v19.0 Constitutional Monetary Infrastructure; @libsql/client + Turso; contract-reader at src/lib/contract-reader.ts; db wrapper at src/lib/db.ts exposes `db.$executeRawUnsafe`, `ensureSchema`, `db.users.upsert(address)`).
+- Inspected existing references before writing:
+  - `src/lib/contract-reader.ts` — exports `CONTRACTS` ({MTQ_TOKEN, GOVERNANCE, SAFE_MULTI_SIG, DEPLOYER}), `NETWORK` ({name:"Monad Testnet", chainId:10143, explorer}), `getContractInfo()` (returns name/symbol/decimals/totalSupply/totalSupplyDisplay/address/explorerLink/network), `getBalance(address)` (returns address/balance(bigint)/balanceDisplay/decimals).
+  - `src/lib/db.ts` — `db.$executeRawUnsafe(sql)` wraps `_rawClient.execute(sql)`; `db.users.upsert(address, email?)` lowercases + ON CONFLICT DO NOTHING.
+  - `src/lib/oracle-client.ts` — `getOracleSnapshot()` returns goldUsd/silverUsd/stablecoins/source/fetchedAt (on-chain first, free-API fallback).
+  - `src/lib/live-oracle.ts` — `getLiveOracleData()` + `toOracleSnapshot(live)` builds the 8-currency snapshot the v19 engine requires (currencies + fxAgo + goldUsd12moAgo etc.).
+  - `src/lib/monetary-engine-v19.ts` — `computeMonetaryStateV19(snapshot, reserveAssets, supply, lcrInputs, criInputs, volatility?, ewmaReturns?)` + `HAIRCUTS` + `ReserveAsset` type. `reserves.adjusted` is the prudential layer (R_a); `reserves.liquidation` is the stress layer (R_l).
+  - `src/app/api/transparency/route.ts` — confirmed the exact pattern to follow (oracleSnapshot for display + live-oracle for engine + §23 reserve basket).
+
+- File 1 created: `src/app/api/status/route.ts` — GET /api/status
+  - Imports `db, ensureSchema` from `@/lib/db` and `CONTRACTS, NETWORK` from `@/lib/contract-reader`.
+  - Wraps handler in try/catch (returns 500 JSON `{ok:false, error, detail}` on hard failure).
+  - Inner try/catch around the DB probe: `await ensureSchema(); await db.$executeRawUnsafe("SELECT 1")` — sets `database` to `"connected"` on success, `"disconnected"` on failure (logs the error, does NOT abort the response so uptime monitors can distinguish API-up/DB-down from API-down).
+  - Returns: `{ ok:true, service:"Mithqal OS", version:"v19.0", timestamp:ISO, database, network:"Monad Testnet", chainId:10143, contracts:{mtq, governance, safe, deployer} }`.
+
+- File 2 created: `src/app/api/contract/info/route.ts` — GET /api/contract/info
+  - Imports `getContractInfo` (contract-reader), `getOracleSnapshot` (oracle-client), `computeMonetaryStateV19, HAIRCUTS, type ReserveAsset` (monetary-engine-v19), `getLiveOracleData, toOracleSnapshot` (live-oracle).
+  - `totalReserve = 54_000_000` (testnet baseline per spec).
+  - Reserve basket per §23: 50% cash, 25% sovereign (T-bills ≤1yr, MD 0.5), 15% gold (oz = totalReserve×0.15/goldPrice), 5% silver, 5% stablecoin. Haircuts from HAIRCUTS, counterparty/stress coefficients aligned with transparency/route.ts.
+  - LCR: `{ hqla: totalReserve*0.60, expectedRedemptions: totalSupply*0.10, committedInflows:0, operationalAdjustments:0 }`.
+  - CRI: `{ liquidity:20, fx:30, custody:25, counterparty:40, operational:15 }`.
+  - Calls `computeMonetaryStateV19(oracleForEngine, reserveAssets, totalSupply, lcr, cri, 0.015, [])`.
+  - Response: `{ contract:{name, symbol, decimals, totalSupply(wei string), totalSupplyDisplay, address, explorerLink, network}, oracle:{goldUsd, silverUsd, stablecoins, source, oracleAddress, fetchedAt}, monetary:{reserves{market,prudential,stress,hierarchyValid}, nav{market,prudential,stress,hierarchyValid}, reserveRatio{ratio,redemptionLiability,adjustedReserve,marketReserve,compliant,policyTarget}, lcr{ratio,hqla,netOutflow,compliant,strong}, cri{cri,level,components}}, reserves:{totalReserve, allocation:[...], composition:{cash:.5,sovereign:.25,gold:.15,silver:.05,stablecoin:.05}}, generatedAt }`.
+  - Wrapped in try/catch → 500 `{error, detail}` on failure.
+
+- File 3 created: `src/app/api/balance/[address]/route.ts` — GET /api/balance/[address]
+  - Next.js 16 signature: `export async function GET(req: Request, { params }: { params: Promise<{ address: string }> })` with `const { address } = await params`.
+  - Validates Ethereum address: `^0x[a-fA-F0-9]{40}$` → 400 `{error:"Invalid address.", detail}` on failure.
+  - Normalizes to lowercase, calls `getBalance(normalized)` (read-only eth_call to MTQ.balanceOf on Monad Testnet).
+  - Best-effort `await ensureSchema(); await db.users.upsert(normalized)` in its own try/catch — a DB failure does NOT mask the on-chain balance (DB row is observational only).
+  - Returns `{ address, balance(wei string), balanceDisplay(number), decimals:18, explorerLink: "https://testnet.monadscan.com/address/<addr>" }`.
+  - Wrapped in outer try/catch → 500 `{error, detail}`.
+
+- Lint: ran `cd /home/z/my-project && bun run lint 2>&1 | tail -5` — output was just `$ eslint .` with zero errors/warnings (eslint.config.mjs disables the strict TS/React rules, but I kept imports clean — fixed an initial duplicate `NETWORK` import in the balance route before linting).
+
+Next actions (handoff):
+- These three routes are read-only and unauthenticated; they can be wired directly into the institutional dashboard (`src/components/transparency.tsx` already consumes the same shape from `/api/transparency`) and into external integration tooling.
+- When `MOCK_ORACLE_ADDRESS` is set and the on-chain MockOracle is deployed, `/api/contract/info` will automatically serve on-chain prices instead of the free-API fallback (handled inside `getOracleSnapshot`).
+- Consider adding a thin rate-limit wrapper (src/lib/rate-limit.ts exists in the repo) around `/api/balance/[address]` if it ends up exposed to untrusted traffic — the user upsert is intentionally non-blocking but a flood of unique addresses could still pressure the DB.
+- The `users` upsert stores only the address (no email). A future `/api/users/[address]/profile` POST endpoint could attach email/KYC metadata — but that is out of scope for Task 3.
+
+Files created:
+- /home/z/my-project/src/app/api/status/route.ts
+- /home/z/my-project/src/app/api/contract/info/route.ts
+- /home/z/my-project/src/app/api/balance/[address]/route.ts
+
+---
+Task ID: 4+6
+Agent: general-purpose sub agent
+Task: Create mint/redeem/transfer + admin endpoints (4 Next.js App Router API routes) for the Mithqal Operating System indexer.
+
+Work Log:
+- Read prior worklog (Task 0 → Task 4) to absorb project context: Turso DB via @libsql/client, Monad Testnet (chainId 10143), MTQ token at 0x9e6EdC15DAc420931508d8Ddf9BC817651A253aD, deployer 0x3C3932F865892EFabE45892f453f81B64f6c8d8c, backend never holds private keys (all writes are signed client-side via MetaMask, backend records resulting tx_hash).
+- Surveyed existing patterns: /api/admin/interests (auth-gated GET), /api/testnet/mint + /api/testnet/redeem (simulator POSTs), /api/transactions (public lister), /api/admin/oracle (calldata templates). Confirmed `db.transactions.create` and `db.fees.create` shapes already exist in src/lib/db.ts (Phase 1 Operating System tables: `transactions` with tx_hash/type/from_address/to_address/amount/fee/block_number, `fees` with tx_hash/fee_type/amount 8-dec-USD).
+- Confirmed fee schedule constants live in src/lib/monetary-engine-v19.ts: MINT_FEE_BPS=5 / MINT_FEE_CAP=5000, REDEEM_FEE_BPS=5 / REDEEM_FEE_CAP=5000, TRANSFER_FEE_BPS=1 / TRANSFER_FEE_CAP=1000, plus exported `mintFee()` and `redemptionFee()` helpers.
+- Confirmed src/lib/rate-limit.ts exports `enforceRateLimit(namespace, req, max, windowMs)` returning either null (allowed) or a 429 Response.
+- Confirmed src/lib/oracle-client.ts exports `priceToWei(usd)` (8-decimal uint256 string). The internal `encodeString()` is NOT exported, so I re-implemented it locally inside the update-price route.
+
+Files Created (4):
+
+1. src/app/api/mint/route.ts — POST /api/mint
+   - Auth-gated via `getServerSession(authOptions)` (operator session, 401 if absent — same pattern as /api/admin/interests).
+   - Defense-in-depth rate limit: enforceRateLimit("mint", req, 60, 60_000) = 60/min/IP.
+   - Body: { amountUsd:number, toAddress:string, txHash:string, blockNumber?:number }.
+   - Validates: amountUsd > 0 and ≤ 1B sanity cap; toAddress matches /^0x[a-fA-F0-9]{40}$/; txHash matches /^0x[a-fA-F0-9]{64}$/; blockNumber non-negative.
+   - Fee: `const fee = mintFee(amountUsd)` (0.05%, capped $5,000).
+   - NAV pinned to 1.0 for testnet (TODO wire to live oracle once indexer is upgraded).
+   - Records in `transactions` table: type="mint", fromAddress=ZERO_ADDRESS (0x0…0), toAddress, amount=amountWei (mtqAmount × 1e18, string-math to avoid float precision loss), fee=feeWei, blockNumber.
+   - Records in `fees` table: txHash, feeType="mint", amount=feeUsd8Dec (fee × 1e8).
+   - Returns { ok, txHash, type:"mint", amountUsd, mtqAmount, nav, fee, feeUsd8Dec, amountWei, feeWei, recorded:true }.
+
+2. src/app/api/redeem/route.ts — POST /api/redeem
+   - Auth-gated operator session + 60/min/IP rate limit (defense-in-depth).
+   - Body: { mtqAmount:number, fromAddress:string, txHash:string, blockNumber?:number }.
+   - Same validation suite as mint.
+   - Fee: `const fee = redemptionFee(claimUsd)` where claimUsd = mtqAmount × navUsd (navUsd=1.0 testnet). 0.05% capped at $5,000.
+   - Records in `transactions`: type="redeem", fromAddress, toAddress=ZERO_ADDRESS (burn), amount=mtqAmount in wei, fee=feeWei, blockNumber.
+   - Records in `fees`: feeType="redeem", amount=feeUsd8Dec.
+   - Returns { ok, txHash, type:"redeem", mtqAmount, claimUsd, nav, fee, feeUsd8Dec, amountWei, feeWei, recorded:true }.
+
+3. src/app/api/transfer/route.ts — POST /api/transfer
+   - Public (NO auth — anyone with a wallet can transfer MTQ peer-to-peer).
+   - Rate limited: enforceRateLimit("transfer", req, 20, 60_000) = 20/min/IP.
+   - Body: { fromAddress:string, toAddress:string, amount:string (wei), txHash:string, blockNumber?:number }.
+   - Validates: both addresses match 0x+40 hex; from ≠ to; amount is non-negative integer wei string AND > "0"; txHash 0x+64 hex; blockNumber non-negative.
+   - Transfer fee is informational only (actual transfer happens on-chain via MetaMask ERC-20 transfer; backend just records). feeUsd = Math.min(Number(amount)/1e18 × navUsd × 0.0001, TRANSFER_FEE_CAP=1000). Imported TRANSFER_FEE_CAP from monetary-engine-v19 to keep the constant in lock-step with §9.3.
+   - Records in `transactions`: type="transfer", fromAddress, toAddress, amount (passthrough wei string), fee=feeWei, blockNumber.
+   - Records in `fees` (only if feeUsd > 0): feeType="transfer", amount=feeUsd8Dec.
+   - Returns { ok, txHash, type:"transfer", amount, mtqAmount, nav, fee, feeUsd8Dec, feeWei, recorded:true }.
+
+4. src/app/api/admin/update-price/route.ts — POST /api/admin/update-price
+   - Auth-gated operator session.
+   - Body: { asset:"gold"|"silver"|"stablecoin", price:number, symbol?:string (required for stablecoin, e.g. USDC/USDT/DAI) }.
+   - Validates asset enum, price > 0 and ≤ 1B, symbol required for stablecoin.
+   - Returns 503 if MOCK_ORACLE_ADDRESS env var is not set (with deployment hint).
+   - Selectors hardcoded per spec: gold=0x2e7c0f93, silver=0x2f5e3d76, stablecoin=0x6f3a3e2a.
+   - For gold/silver: calldata = selector + priceToWei(price).padStart(64,"0").
+   - For stablecoin: re-implemented `encodeStringForCalldata(str)` locally (oracle-client.ts `encodeString` is not exported). Calldata = selector + offset(64) + length(64) + data(padded to 32-byte multiple) + priceWei(64). NOTE: I corrected the offset to 64 (0x40) for the two-arg (string,uint256) case — the existing oracle-client encodeString hardcodes offset=32 which is correct for the single-arg getStablecoinPrice(string) read but would be wrong for the two-arg setStablecoinPrice(string,uint256) write.
+   - Returns { ok, calldata, oracleAddress, selector, signature, asset, price, priceWei, symbol, command (cast send one-liner), metamask:{to,data,from:deployerAddress,chainId:"0x27f7"}, network:{name:"Monad Testnet",chainId:10143,chainIdHex:"0x27f7",rpcUrl,explorer}, explainerLink, fetchedAt }.
+   - The `metamask` object is ready to feed into `window.ethereum.request({ method:"eth_sendTransaction", params:[tx] })` on the admin frontend. gas/gasPrice omitted — MetaMask will estimate them.
+
+Validation:
+- `bun run lint` → exit 0, no errors.
+- `bunx tsc --noEmit` → no errors in the 4 new files (pre-existing TS errors in other files are unrelated to this task; they were present before and remain after — see Task 0/1/2/3 logs).
+
+Key design decisions:
+- The backend NEVER holds the deployer private key — every write endpoint receives the already-mined txHash from the client (operator or wallet holder) and only persists the audit record. This is the explicit constitutional pattern (admin/oracle already follows it for price updates).
+- Used string-math wei conversion (`toWei(amount, decimals)`) instead of `Math.round(amount × 1e18)` to avoid Number.MAX_SAFE_INTEGER overflow at large USD amounts (e.g. $1M × 1e18 = 1e24 > 9e15). Same helper used for feeWei.
+- `toFixedDecimals(amount, 8)` produces the 8-decimal USD string the `fees.amount` column expects (matches the encoding used by the MockOracle's 8-decimal uint256 prices).
+- Mint & redeem use ZERO_ADDRESS (0x0000…0000) as the counterpart (from-address for mint = mint-from-zero, to-address for redeem = burn). Transfer is peer-to-peer between two real addresses.
+- Testnet NAV is pinned to 1.0 (1 MTQ ≈ 1 USD) throughout — TODO once the indexer pulls live NAV from the reserves table + supply, this becomes a runtime lookup. Marked with comments.
+- Defense-in-depth: even though /api/mint and /api/redeem are auth-gated, I still apply a 60/min/IP rate limit so a compromised operator session cannot flood the ledger.
+- Transfer endpoint is public (no auth) per spec — anyone with a wallet can transfer MTQ. Rate limited to 20/min/IP. Backend does NOT yet verify the txHash on-chain (TODO: call eth_getTransactionReceipt via contract-reader before persisting — see the inline comment in src/app/api/transfer/route.ts).
+
+Next actions (out of scope for this task, flagged for follow-up):
+- Wire /api/admin/update-price to record the resulting tx_hash after the operator broadcasts (mirror the mint/redeem tx-recording pattern in a new /api/admin/oracle/record route).
+- Add eth_getTransactionReceipt verification to /api/transfer (and optionally mint/redeem) before persisting — prevents bogus records from polluting the ledger.
+- Replace the testnet NAV=1.0 pin with a live NAV lookup from the reserves + supply (already exposed via computeNAV in monetary-engine-v19.ts).
+- Once MultiOracleConsensus adapter is implemented, swap MockOracle calldata builders for the consensus contract's update path.

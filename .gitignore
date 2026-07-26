@@ -56,3 +56,4 @@ test
 upload/
 yarn-debug.log*
 yarn-error.log*
+tool-results/
