@@ -658,8 +658,8 @@ export default function TestnetDashboard() {
                         <td className="max-w-[180px] truncate px-5 py-3.5 text-foreground" title={op.participant}>{op.participant}</td>
                         <td className="px-5 py-3.5 text-right text-fg-muted">{fmtUsd(op.amountUsd)}</td>
                         <td className="px-5 py-3.5 text-right text-foreground">{fmtMtq(op.mtq)}</td>
-                        <td className="px-5 py-3.5 text-right text-fg-muted">{fmtUsd2(op.nav)}</td>
-                        <td className="px-5 py-3.5 text-right text-fg-muted">{fmtPct(op.reserveRatio)}</td>
+                        <td className="px-5 py-3.5 text-right text-fg-muted">{op.nav === 0 ? "—" : fmtUsd2(op.nav)}</td>
+                        <td className="px-5 py-3.5 text-right text-fg-muted">{op.reserveRatio === 0 ? "—" : fmtPct(op.reserveRatio)}</td>
                         <td className="px-5 py-3.5"><code className="font-mono text-[11px] text-gold/70">{op.porHash.slice(0, 8)}…</code></td>
                       </motion.tr>
                     ))}
@@ -753,8 +753,8 @@ function OperationDetailBody({ op }: { op: Operation }) {
       <OpRow label="Participant" value={op.participant} />
       <OpRow label="Amount (USD)" value={fmtUsd(op.amountUsd)} />
       <OpRow label="MTQ moved" value={`${fmtMtq(op.mtq)} MTQ`} />
-      <OpRow label="NAV at time" value={`${fmtUsd2(op.nav)} / MTQ`} />
-      <OpRow label="Reserve ratio (post)" value={fmtPct(op.reserveRatio)} />
+      <OpRow label="NAV at time" value={op.nav === 0 ? "—" : `${fmtUsd2(op.nav)} / MTQ`} />
+      <OpRow label="Reserve ratio (post)" value={op.reserveRatio === 0 ? "—" : fmtPct(op.reserveRatio)} />
       <OpRow label="Block" value={`#${blockNumber.toLocaleString("en-US")}`} />
       <div className="!mt-3">
         <div className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-fg-muted">Transaction hash</div>

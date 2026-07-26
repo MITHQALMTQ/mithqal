@@ -122,7 +122,18 @@ export async function GET() {
       },
     ];
 
-    const totalSupply = contract.totalSupplyDisplay || 0;
+    /**
+     * Monetary-engine supply: the testnet simulator's baseline circulation
+     * (50,000,000 MTQ). The on-chain ERC-20 totalSupply (≈110 MTQ) is only
+     * the deployer's initial mint, NOT the simulator's circulating supply —
+     * using it for NAV would give $54M / 110 = $490,909 per MTQ instead of
+     * the target ~$1.00 peg. The actual on-chain supply is published below
+     * as `onChainTotalSupply` / `onChainTotalSupplyDisplay` for verification
+     * (audit fix, Task ID FIX · BUG 2).
+     */
+    const onChainTotalSupply = contract.totalSupply; // bigint (wei)
+    const onChainTotalSupplyDisplay = contract.totalSupplyDisplay; // number (e.g. 110 MTQ)
+    const totalSupply = 50_000_000; // simulator baseline (MTQ units, used for NAV = R / S)
 
     // LCR inputs (§5): 60% of reserves qualify as HQLA; 10% of supply is the
     // 30-day expected redemption assumption; no committed inflows on testnet.
@@ -160,8 +171,14 @@ export async function GET() {
         name: contract.name,
         symbol: contract.symbol,
         decimals: contract.decimals,
-        totalSupply: contract.totalSupply.toString(), // wei string (BigDecimal-safe)
-        totalSupplyDisplay: contract.totalSupplyDisplay,
+        // Simulator baseline supply (50M MTQ) — what the monetary engine uses
+        // for NAV = R / S. Returned in wei for BigDecimal-safe consumers.
+        totalSupply: (BigInt(totalSupply) * 10n ** BigInt(contract.decimals)).toString(),
+        totalSupplyDisplay: totalSupply,
+        // Actual on-chain ERC-20 totalSupply (≈110 MTQ = deployer's initial
+        // mint). Published separately for verification — NOT used for NAV.
+        onChainTotalSupply: onChainTotalSupply.toString(),
+        onChainTotalSupplyDisplay: onChainTotalSupplyDisplay,
         address: contract.address,
         explorerLink: contract.explorerLink,
         network: contract.network,

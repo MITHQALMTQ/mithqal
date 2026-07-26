@@ -1788,3 +1788,66 @@ Stage Summary:
 - ✅ Turso: connected (7 tables)
 - ✅ Backup: 1 bundle (newest), 0 dangling, pre-push hook active
 - ✅ Production verified: https://mithqal.vercel.app — all endpoints HTTP 200
+
+---
+Task ID: FIX
+Agent: general-purpose sub-agent (3-bug audit fix pass: NAV ledger, OS NAV, deck counter)
+Task: Fix the 3 bugs surfaced in the latest UI audit — (1) the Testnet Operation Ledger showed NAV "$0.00" and Ratio "0.00%" for historical ops whose stored nav/ratio were 0 (pre-nav-update-fix records); (2) the OS Dashboard NAV showed $490,909/MTQ because /api/contract/info used the on-chain ERC-20 totalSupply (~110 MTQ deployer mint) instead of the simulator's 50M baseline; (3) the Deck rendered two slide counters ("01 / 10" inside the slide body + "01/10" in the navigation bar). Lint must remain clean.
+
+Reference Files Consulted:
+- /home/z/my-project/worklog.md (last 2 sections — Task P1 + Task 25 — for project context)
+- /home/z/my-project/src/components/testnet.tsx (808 lines — operation ledger table at lines 591–671; OpRow detail modal at lines 749–770)
+- /home/z/my-project/src/components/operating-system.tsx (702 lines — ContractInfo type interface at lines 19–39; supply/NAV StatCard at lines 365–390; consumer of /api/contract/info at line 100; reads `contract.contract.totalSupplyDisplay` at line 282)
+- /home/z/my-project/src/app/api/contract/info/route.ts (252 lines — v19 monetary-engine snapshot endpoint; the buggy `const totalSupply = contract.totalSupplyDisplay || 0;` at line 125; response shape at lines 157–240)
+- /home/z/my-project/src/lib/contract-reader.ts (verified `contract.totalSupply` is a `bigint` returned from `decodeUint(hex)`; `contract.totalSupplyDisplay` is `Number(totalSupply) / Math.pow(10, decimals)` ≈ 110 MTQ on the deployed testnet token)
+- /home/z/my-project/src/components/deck.tsx (471 lines — per-slide content counter at lines 176–181; navigation bar counter at lines 315–323)
+- /home/z/my-project/src/app/api/reserve/status/route.ts (verified it consumes `contractInfo.totalSupplyDisplay` directly via `getContractInfo()` — unaffected by the contract/info response shape change; already had `?? 50_000_000` fallback at line 120)
+- /home/z/my-project/src/app/api/transparency/route.ts (verified it independently calls `computeMonetaryStateV19` with its own `50_000_000` supply baseline — unaffected)
+
+Work Log:
+
+**BUG 1 — Testnet operation ledger NAV/Ratio "—":**
+File: `/home/z/my-project/src/components/testnet.tsx`
+- The audit flagged the Operation Ledger table rendering NAV as "$0.00" and Ratio as "0.00%" for old operations whose stored `nav` / `reserveRatio` are 0 (these rows pre-date the nav-update fix that started populating those fields). Showing "$0.00" looks like wrong data; showing "—" (em dash) communicates "no data captured at the time" cleanly.
+- **Table fix (lines 661–662):** Changed the NAV cell from `{fmtUsd2(op.nav)}` → `{op.nav === 0 ? "—" : fmtUsd2(op.nav)}` and the Ratio cell from `{fmtPct(op.reserveRatio)}` → `{op.reserveRatio === 0 ? "—" : fmtPct(op.reserveRatio)}`. The conditional reads the raw numeric value before formatting so a true 0 (not a string-formatted "$0.00") triggers the dash.
+- **Detail modal fix (lines 756–757) — applied for consistency:** The `OpDetails` modal (opened by clicking an operation row) renders the same `op.nav` and `op.reserveRatio` values via `OpRow` rows. If only the table was patched, clicking an old op would still show "$0.00 / MTQ" and "0.00%" in the modal — visually inconsistent with the table. Applied the same `=== 0 ? "—" : …` guard to both OpRow values ("NAV at time" and "Reserve ratio (post)"). This is the same data, same fix; keeping the table + modal in lockstep avoids a follow-up audit ping-pong.
+- The KPI cards at lines 336–338 (`<Kpi icon={TrendingUp} label="NAV" value={<AnimatedNumber value={state.nav} format={fmtUsd2} />} …/>`) deliberately remain unchanged — the live KPI card shows the CURRENT NAV (always populated by the simulator), not historical. Only the historical-operation rows needed the "—" guard.
+
+**BUG 2 — OS Dashboard NAV $490,909 → ~$1.00:**
+File: `/home/z/my-project/src/app/api/contract/info/route.ts`
+- Root cause confirmed: line 125 `const totalSupply = contract.totalSupplyDisplay || 0;` pulled the on-chain ERC-20 totalSupply (≈110 MTQ = the deployer's initial mint, not the simulator's 50M circulation). The monetary engine then computed `NAV_m = R_m / S = $54,000,000 / 110 = $490,909` per MTQ — wildly off the ~$1.00 peg target. The OS Dashboard (`operating-system.tsx` line 283) reads `monetary.nav.market` straight from this response, so the bad number propagated directly to the dashboard StatCard.
+- **Fix (lines 125–136):** Replaced the single line with three lines plus an explanatory block comment:
+  - `const onChainTotalSupply = contract.totalSupply;` (bigint, wei — kept for the response)
+  - `const onChainTotalSupplyDisplay = contract.totalSupplyDisplay;` (number, ≈110 — kept for the response)
+  - `const totalSupply = 50_000_000;` (simulator baseline MTQ units — used by `computeMonetaryStateV19` and `lcr.expectedRedemptions`).
+  The block comment cites the audit fix and explains why the on-chain supply can't be used for NAV (110 MTQ × $1.00 ≠ $54M reserve — internally inconsistent).
+- **Response shape (lines 168–185):** The `contract` object now publishes BOTH supplies:
+  - `totalSupply` (wei string) = `(BigInt(totalSupply) * 10n ** BigInt(contract.decimals)).toString()` = `"50000000000000000000000000"` (50M MTQ × 10^18 wei).
+  - `totalSupplyDisplay` (number) = `50_000_000` (the simulator baseline used by the engine).
+  - `onChainTotalSupply` (wei string) = `onChainTotalSupply.toString()` = `"110000000000000000000"` (110 MTQ × 10^18 wei — deployer's initial mint, for verification only).
+  - `onChainTotalSupplyDisplay` (number) = `onChainTotalSupplyDisplay` = `110` (the actual on-chain supply, for verification only).
+  This means the OS Dashboard's `supply` KPI (which reads `contract.contract.totalSupplyDisplay`) now shows "50,000,000 MTQ" instead of "110 MTQ" — which is internally consistent with the engine's NAV calc (50M × $1.08 = $54M ≈ the reserve). The on-chain deployer mint (110 MTQ) is still surfaced for verification via the new `onChainTotalSupply*` fields. A future dashboard iteration can show "On-chain supply: 110 MTQ" as a sub-label if desired, but the audit was specifically about NAV, so no dashboard-side changes were made beyond what flows naturally from the response shape.
+- **Side-consumer audit:** Verified `/api/reserve/status/route.ts` (line 120 `const supply = contractInfo?.totalSupplyDisplay ?? 50_000_000;` and line 184 `totalSupply: contractInfo.totalSupplyDisplay,`) calls `getContractInfo()` DIRECTLY (not this route's response), so it still uses the on-chain 110 MTQ — that's a separate endpoint with its own intent (reserve-status, not NAV-display) and the audit didn't flag it. Left untouched. `/api/transparency/route.ts` (lines 99–102) already uses its own 50M simulator baseline — left untouched.
+- **Live verification:** After the change, `curl -s http://localhost:3000/api/contract/info` now returns `"totalSupplyDisplay":50000000`, `"onChainTotalSupplyDisplay":110`, and `"nav":{"market":1.08…}` (was $490,909 before — fixed to ~$1.00).
+
+**BUG 3 — Deck duplicate slide counter:**
+File: `/home/z/my-project/src/components/deck.tsx`
+- Root cause confirmed: the `<SlideBody>` component rendered its own per-slide counter badge (lines 176–181) — a `<p>` tag with `{PAD2(index + 1)} / {PAD2(TOTAL)}` (the spaces around `/` give the "01 / 10" form) — gated on `variant === "interactive" && isFeature` (only on cover + contact feature slides). The main `<InvestorDeck>` viewer separately rendered a navigation counter (lines 315–323) — a `<p>` with three `<span>`s for current slide + slash + total (the `mx-1` margin on the middle span gives the "01/10" form). Both appeared simultaneously on feature slides → the audit's "01 / 10" + "01/10" double-counter.
+- **Fix:** Removed the per-slide content counter block (lines 176–181, the `{variant === "interactive" && isFeature ? (… slide counter …) : null}` JSX). The navigation-bar counter (lines 315–323) stays as the single source of truth — it is always visible across all slides (not gated on `isFeature`), it has the proper `aria-live="polite"` + `aria-label={\`Slide ${index + 1} of ${TOTAL}\`}` for screen readers, and it sits next to the Prev/Next + progress dots where users expect a counter.
+- Replaced the deleted block with a NOTE comment documenting the audit fix rationale so the next maintainer doesn't re-add a duplicate. `PAD2` is still used by the navigation counter (lines 319, 321) so there's no unused-variable lint warning. `isFeature` is still used by 5 other className conditionals (lines 75, 82, 106, 119, 131) so it's not orphaned either.
+
+**Verification:**
+- `bun run lint` — clean: 0 errors, 0 warnings (`$ eslint .` exits 0 with no output; final `| tail -10` shows only the `$ eslint .` command line).
+- Dev server (port 3000) live-verified: `curl -s -o /dev/null -w "HTTP %{http_code}\n" http://localhost:3000/api/contract/info` → HTTP 200. Response payload inspected:
+  - `"totalSupplyDisplay":50000000` ✓ (was 110 — now simulator baseline)
+  - `"onChainTotalSupplyDisplay":110` ✓ (new field, on-chain verification)
+  - `"nav":{"market":1.08…}` ✓ (was $490,909 — fixed to ~$1.00)
+  - `"reserves":{"market":54000000,"prudential":52843860,"stress":48019608,"hierarchyValid":true}` ✓ (R_m ≥ R_a ≥ R_l invariant intact)
+- TypeScript: all changes are localized literal-value swaps, JSX conditional guards (`=== 0 ? "—" : fmtX(n)`) and a JSX block removal + 1-line variable rename. No new types introduced. The `onChainTotalSupply*` fields are additive to the response — the OS Dashboard's `ContractInfo` interface (lines 19–39) is a structural subset of the new response, so TypeScript's excess-property-check is satisfied and no interface update is strictly required. Left the interface untouched to keep the diff minimal (the new fields are optional metadata the dashboard doesn't read yet).
+
+Stage Summary:
+- ✅ BUG 1: Testnet operation ledger now shows "—" for NAV and Ratio cells on old ops with stored 0 (instead of wrong "$0.00" / "0.00%"). Same guard applied to the OpDetails modal for visual consistency. (testnet.tsx lines 661–662 + 756–757.)
+- ✅ BUG 2: /api/contract/info now uses the simulator's 50M MTQ baseline supply for the monetary engine (NAV_m = R_m / S = $54M / 50M ≈ $1.08), and publishes the actual on-chain ERC-20 supply (≈110 MTQ deployer mint) separately as `onChainTotalSupply` / `onChainTotalSupplyDisplay` for verification. Live curl confirmed NAV went from $490,909 → $1.08. (route.ts lines 125–136 + 170–185.)
+- ✅ BUG 3: Deck's per-slide content counter ("01 / 10") removed; the navigation-bar counter ("01/10") next to Prev/Next remains as the single source of truth. `PAD2` and `isFeature` are still in use elsewhere — no lint warnings. (deck.tsx lines 176–181 removed, replaced with a NOTE comment.)
+- ✅ `bun run lint` — clean (0 errors, 0 warnings).
+- ✅ /api/contract/info returns HTTP 200 with corrected NAV (~$1.08) and on-chain supply published separately.

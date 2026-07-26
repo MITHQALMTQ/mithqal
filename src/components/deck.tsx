@@ -173,12 +173,11 @@ function SlideBody({
         </p>
       ) : null}
 
-      {/* Slide counter badge — interactive only, on feature slides show at bottom */}
-      {variant === "interactive" && isFeature ? (
-        <p className="mt-8 text-[11px] font-medium uppercase tracking-[0.28em] text-fg-muted">
-          {PAD2(index + 1)} / {PAD2(TOTAL)}
-        </p>
-      ) : null}
+      {/* NOTE (audit fix, Task ID FIX · BUG 3): the per-slide counter badge
+          ("01 / 10") that used to render here on feature slides has been
+          removed — it duplicated the navigation counter shown next to the
+          Prev/Next buttons below. Keep a single source of truth for the
+          slide position to avoid the "01 / 10" + "01/10" double-counter. */}
     </article>
   );
 }
