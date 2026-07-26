@@ -23,6 +23,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Logo } from "@/components/logo";
+import { CurrencyWeightingIntro } from "@/components/currency-weighting";
 
 interface TierState {
   tier: string;
@@ -242,6 +243,21 @@ export default function TransparencyDashboard() {
           </Reveal>
         </div>
       </section>
+
+      {/* Currency Weighting Intro — animated educational diagram */}
+      {state?.monetary && (
+        <section className="mx-auto w-full max-w-6xl px-5 pb-8 sm:px-8">
+          <CurrencyWeightingIntro
+            data={{
+              goldUsd: state.monetary.goldUsd,
+              silverUsd: state.oracle?.silverUsd ?? 58.28,
+              weights: state.monetary.weights,
+              basketVerification: state.monetary.basketVerification,
+              shockAbsorber: state.monetary.shockAbsorber,
+            }}
+          />
+        </section>
+      )}
 
       <div className="mx-auto w-full max-w-6xl px-5 pb-20 sm:px-8">
         {/* Live KPIs */}

@@ -1127,3 +1127,59 @@ Stage Summary:
 - Every line-number reference in the audit report was verified against the actual source files (MTQ.sol, MockOracle.sol, Governance.sol) by reading them before writing.
 - The KNOWN VIOLATION (MTQ.burn carries notEmergencyPaused despite § Invariant 5) is documented in 3 places: the MTQ.spec header, the burnNeverPauses rule comment, and §7 of the audit report. The fuzz test (testFuzz_Burn_RevertIfPaused, 10K runs) is cited as empirical evidence; the CVL rule is the formal proof.
 - The audit score is 7.5/10 with conditional approval for mainnet, blocked on the 3 remediation items in §9 + the external audit (OpenZeppelin/ToB) + the Certora license.
+
+---
+Task ID: 23
+Agent: main (COO + CTO + High-End UI Designer + Crypto Expert)
+Task: Animated currency weighting visualization + Vercel env push automation.
+
+Work Log:
+- **Currency Weighting Intro component (src/components/currency-weighting.tsx):**
+  - Animated SVG diagram showing the connection web: Gold (top) → 8 currencies (ring) → MTQ (bottom), Silver (side) → MTQ
+  - Currency nodes sized proportionally to their normalized weights (USD largest at 47.99%)
+  - Line thickness = weight magnitude, node radius = weight proportion
+  - 3 educational phases cycle every 8s: "Introduction" → "Live data flow" → "Shock scenario"
+  - During "live" phase: animated gold particles flow from Gold node to currencies (showing price propagation)
+  - During "shock" phase: dropping currencies bob downward, non-highlighted lines fade
+  - Interactive: click any currency node → detail panel shows structural/normalized weight, momentum, K-factor, gold price in that currency
+  - 5-step "What happens when a currency drops?" cascade diagram animates: drop → momentum falls → weight decreases → others rebalance → MTQ stable
+  - 3 concept cards: "Gold is the Anchor" (§14), "Structural Weight" (§13), "Adjusted Weight" (§19-20) with formulas
+  - Color-coded by region (USD green, EUR blue, JPY red, GBP purple, CNY yellow, etc.)
+  - MTQ node pulses with radial gradient glow
+- **Created shared Reveal component (src/components/reveal.tsx):**
+  - Scroll-triggered fade + slide-up using framer-motion
+  - Used by the currency weighting concept cards
+- **Integrated into Transparency view (src/components/transparency.tsx):**
+  - Added CurrencyWeightingIntro section right after the hero, before the KPIs
+  - Passes live data from /api/transparency (goldUsd, silverUsd, weights, basketVerification, shockAbsorber)
+  - Auto-refreshes every 30s with the rest of the dashboard
+- **Verified via Agent Browser:**
+  - "Currency Weighting Engine" header visible
+  - SVG diagram renders with Gold + currencies + MTQ nodes
+  - Concept cards render correctly
+  - No errors in dev log
+- **VLM verification:** "high-end, premium institutional aesthetic" with "fintech-luxury feel" — confirms the unique MTQ character (gold/dark theme, glassmorphism, serif headers + sans-serif data)
+- **Vercel env push script (scripts/push-env-to-vercel.sh):**
+  - Fully automated: reads .env, pushes all 12 vars to Vercel production + preview + development
+  - Deletes existing var first (idempotent — safe to re-run)
+  - Pushes as sensitive (hidden in Vercel dashboard)
+  - Never prints secret values — only KEY names
+  - --dry-run mode: shows what would be pushed without doing it
+  - Single var mode: `./scripts/push-env-to-vercel.sh DATABASE_URL`
+  - Smart placeholder detection: skips `__SET_YOUR`, `your-`, `<REPLACE`, `TODO` but allows angle brackets in email display names
+  - Tested: --dry-run shows 12 vars would be pushed, 0 skipped
+- **Vercel setup documentation (VERCEL-SETUP.md):**
+  - Complete guide: install CLI → authenticate → link project → push envs → redeploy
+  - Troubleshooting section (common errors + fixes)
+  - Security notes (sensitive vars, gitignored .env, SMTP_PASS is App-Specific Password)
+- **Vercel CLI installed:** `npm i -g vercel` → Vercel CLI 57.0.0
+
+Stage Summary:
+- ✅ Animated currency weighting visualization live in Transparency view
+- ✅ Shows gold/silver/currencies/MTQ connections with proportional sizing + animated particles
+- ✅ Educational: 3 phases, 5-step shock cascade, 3 concept cards with formulas
+- ✅ Vercel env push script: `./scripts/push-env-to-vercel.sh` (fully automated)
+- ✅ VERCEL-SETUP.md documentation complete
+- ✅ Vercel CLI installed (v57.0.0)
+- ⚠️ Operator one-time setup: `vercel login` + `vercel link` (2 minutes)
+- ⚠️ After env push: redeploy via `vercel --prod` or `git push origin main`
