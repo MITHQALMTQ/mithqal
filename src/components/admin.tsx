@@ -597,7 +597,157 @@ function Console({ email }: { email: string }) {
             <ExternalLink className="h-3.5 w-3.5" /> @MithqalMTQ
           </a>
         </div>
+
+        <OracleAdminSection />
       </div>
+    </div>
+  );
+}
+
+/* ---- Oracle Admin Section ----
+ * Shows current oracle prices (gold/silver/stablecoins) from the on-chain
+ * MockOracle contract (if deployed) or the live API fallback. Provides the
+ * operator with deployment instructions and calldata templates to update
+ * prices via MetaMask / cast send.
+ */
+function OracleAdminSection() {
+  const [oracle, setOracle] = useState<{
+    snapshot?: {
+      goldUsd: number;
+      silverUsd: number;
+      stablecoins: Record<string, number>;
+      source: string;
+    };
+    deployed?: boolean;
+    oracleAddress?: string | null;
+    deploymentInstructions?: { command: string; afterDeploy: string } | null;
+    updateCommands?: Record<string, string>;
+  } | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/admin/oracle", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => setOracle(d))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  return (
+    <div className="mt-8 rounded-xl border border-line bg-ink-soft/50 p-5">
+      <div className="flex items-center gap-2">
+        <div className="h-2 w-2 rounded-full bg-gold animate-pulse" />
+        <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-fg-muted">
+          Oracle Engine (§30-33)
+        </h3>
+      </div>
+
+      {loading ? (
+        <div className="mt-4 text-sm text-fg-muted">Loading oracle status…</div>
+      ) : !oracle ? (
+        <div className="mt-4 text-sm text-fg-muted">Could not load oracle status.</div>
+      ) : (
+        <div className="mt-4 space-y-4">
+          {/* Status badge */}
+          <div className="flex items-center gap-2">
+            <span
+              className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-semibold ${
+                oracle.deployed
+                  ? "border-reserve/40 bg-reserve/10 text-reserve"
+                  : "border-gold/30 bg-gold/10 text-gold"
+              }`}
+            >
+              {oracle.deployed ? "ON-CHAIN" : "FALLBACK (live APIs)"}
+            </span>
+            {oracle.deployed && oracle.oracleAddress && (
+              <a
+                href={`https://testnet.monadscan.com/address/${oracle.oracleAddress}`}
+                target="_blank"
+                rel="noreferrer"
+                className="font-mono text-xs text-fg-muted hover:text-gold"
+              >
+                {oracle.oracleAddress.slice(0, 10)}…{oracle.oracleAddress.slice(-6)}
+              </a>
+            )}
+          </div>
+
+          {/* Current prices */}
+          {oracle.snapshot && (
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+              <PriceCard label="Gold" value={`$${oracle.snapshot.goldUsd.toFixed(2)}`} unit="/oz" />
+              <PriceCard label="Silver" value={`$${oracle.snapshot.silverUsd.toFixed(2)}`} unit="/oz" />
+              <PriceCard label="USDC" value={`$${oracle.snapshot.stablecoins?.USDC?.toFixed(4) ?? "1.00"}`} />
+              <PriceCard label="Source" value={oracle.snapshot.source === "onchain" ? "MockOracle.sol" : "gold-api.com"} />
+            </div>
+          )}
+
+          {/* Deployment instructions (if not deployed) */}
+          {!oracle.deployed && oracle.deploymentInstructions && (
+            <div className="rounded-lg border border-gold/20 bg-gold/[0.03] p-4">
+              <div className="text-xs font-semibold text-gold">DEPLOY MOCK ORACLE</div>
+              <p className="mt-1 text-xs text-fg-muted">
+                Deploy the contract to Monad Testnet, then set{" "}
+                <code className="rounded bg-ink-card px-1 py-0.5 text-[10px]">MOCK_ORACLE_ADDRESS</code>{" "}
+                in Vercel env vars.
+              </p>
+              <pre className="mt-2 overflow-x-auto rounded bg-ink-card p-2 text-[10px] text-fg-muted">
+                {oracle.deploymentInstructions.command}
+              </pre>
+            </div>
+          )}
+
+          {/* Update commands (always show, for reference) */}
+          {oracle.updateCommands && (
+            <details className="rounded-lg border border-line bg-ink-card/50 p-3">
+              <summary className="cursor-pointer text-xs font-semibold text-fg-muted">
+                Update price commands (cast send)
+              </summary>
+              <div className="mt-2 space-y-2">
+                <CommandRow label="Gold" cmd={oracle.updateCommands.gold} />
+                <CommandRow label="Silver" cmd={oracle.updateCommands.silver} />
+                <CommandRow label="Stablecoin" cmd={oracle.updateCommands.stablecoin} />
+              </div>
+              <p className="mt-2 text-[10px] text-fg-muted">
+                Prices are uint256 with 8 decimals. $1.00 = 100000000. $4053.50 = 405350000000.
+              </p>
+            </details>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function PriceCard({ label, value, unit }: { label: string; value: string; unit?: string }) {
+  return (
+    <div className="rounded-lg border border-line bg-ink-card p-3">
+      <div className="text-[10px] font-semibold uppercase tracking-wider text-fg-muted">{label}</div>
+      <div className="mt-1 font-display text-lg text-foreground">
+        {value}
+        {unit && <span className="ml-1 text-xs text-fg-muted">{unit}</span>}
+      </div>
+    </div>
+  );
+}
+
+function CommandRow({ label, cmd }: { label: string; cmd: string }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <div className="flex items-center gap-2">
+      <span className="w-20 shrink-0 text-[10px] font-semibold uppercase text-fg-muted">{label}</span>
+      <code className="flex-1 overflow-x-auto rounded bg-ink-card px-2 py-1 text-[10px] text-fg-muted">
+        {cmd}
+      </code>
+      <button
+        onClick={() => {
+          navigator.clipboard?.writeText(cmd);
+          setCopied(true);
+          setTimeout(() => setCopied(false), 1500);
+        }}
+        className="shrink-0 rounded border border-line px-2 py-1 text-[10px] text-fg-muted hover:text-gold"
+      >
+        {copied ? "✓" : "Copy"}
+      </button>
     </div>
   );
 }

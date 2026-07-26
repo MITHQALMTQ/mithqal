@@ -3,6 +3,7 @@ import { db, ensureSchema } from "@/lib/db";
 import { deriveState } from "@/lib/testnet-engine";
 import { computeMonetaryStateV19, mintFee, redemptionFee, HAIRCUTS, MAX_DURATION, type ReserveAsset } from "@/lib/monetary-engine-v19";
 import { getLiveOracleData, toOracleSnapshot } from "@/lib/live-oracle";
+import { getOracleSnapshot } from "@/lib/oracle-client";
 
 // GET /api/transparency — public, unauthenticated snapshot of the
 // Institution's live state per the v19.0 Constitutional Monetary Infrastructure
@@ -163,6 +164,8 @@ export async function GET() {
         submissionCount,
         milestones: FORMATION_MILESTONES,
       },
+      // §30 Oracle engine — on-chain MockOracle prices (or live API fallback)
+      oracle: await getOracleSnapshot(),
       generatedAt: new Date().toISOString(),
     });
   } catch (err) {
