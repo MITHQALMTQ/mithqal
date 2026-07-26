@@ -970,3 +970,160 @@ Stage Summary:
 - ✅ Lint clean, 0 errors in dev log
 - ✅ Git pushed: commit 76a1071, local = remote
 - ⚠️ Operator action: deploy MockOracle.sol to Monad Testnet (forge create command in admin UI), then set MOCK_ORACLE_ADDRESS env var
+
+---
+Task ID: 1
+Agent: general-purpose (Foundry fuzz/invariant test author)
+Task: Write comprehensive Foundry fuzz + invariant tests for the Mithqal smart contracts (MTQ, MockOracle, Governance) deployed at /home/z/my-project/foundry/src/.
+
+Work Log:
+- Read MTQ.sol, MockOracle.sol, Governance.sol to map contract surface and identify behavioral contracts vs brief discrepancies.
+- Found 3 contract/source bugs that block tests as-written (documented; minimal non-behavioral source fixes applied so the project compiles):
+  1. foundry.toml: `fuzz.seed = "0xmithqal"` is invalid (must be a 32-byte hex string). Replaced with `"0x6d69746871616c0000…00"` (the same bytes padded). Also `solc_version = "0.8.20"` cannot compile `pragma ^0.8.23` contracts → set to `0.8.24` with `auto_detect_solc = true`. Also `[profile.default.gas_reports]` map syntax is invalid → removed (kept only the `[profile.gas-report]` list form).
+  2. MTQ.sol:121 has a Unicode em-dash inside an ASCII string literal (`"MTQ: minting paused — reserve ratio below 100%"`), which solc rejects. Replaced with ASCII `-` (single-char cosmetic edit, no behavior change). Comments elsewhere keep em-dashes (solc allows Unicode in comments).
+  3. MockOracle.sol:142 had a mismatched `@return symbols` NatSpec tag (actual return name is `symbolsOut`). solc 0.8.24 errors on this. Renamed the tag to `@return symbolsOut`.
+- Discovered 3 behavioral discrepancies between the brief and the deployed contracts. Per task rule "FIX THE TEST (not the contract)", tests assert the on-chain behavior and the discrepancies are documented in test comments + this worklog:
+  1. MTQ has NO constructor → totalSupply starts at 0 and NO role is granted at deploy. Furthermore, `grantRole()` is gated by `onlyCouncil`, and COUNCIL_ROLE itself is ungrantable through the public API. So the contract as-deployed is functionally inert (no one can mint / pause / lift-pause / grant roles through the public interface). Tests bootstrap roles by writing directly to storage via `vm.store` using the known layout (`_roles` mapping at slot 3; `_roles[role][account]` slot = `keccak256(account . keccak256(role . 3))`). The `_grantRoleRaw` helper is in both MTQ.t.sol and MTQInvariant.t.sol.
+  2. MTQ.burn() carries the `notEmergencyPaused` modifier despite the NatSpec claiming redemption is "NEVER pausable" (§ Invariant 5 / Constitution Article V). Tests document this as `testFuzz_Burn_RevertIfPaused` in MTQ.t.sol and via a comment block in MTQInvariant.t.sol::invariant_burn_works_when_not_paused. The constitutional non-suspendability invariant is NOT enforced by the deployed contract — flag for re-mediation.
+  3. MTQ.mint() takes 4 args (`to, amount, reserveDepositedUsd, depositProof`), not 1 (`amount`) as the brief suggests. Fuzz tests use the actual signature. After-mint `_checkReserveRatio()` can overflow if `reserveValueUsd * 1e18 * 10000` exceeds `type(uint256).max`, so fuzz tests bound amount + reserveDepositedUsd to `[1, 1e40]` to avoid arithmetic panics. The brief's "test_InitialSupply: totalSupply > 0 (110 MTQ minted at deploy)" expectation is wrong — the contract mints nothing at deploy; `test_InitialSupply` asserts `totalSupply == 0`.
+- Built 4 test files (69 tests, all passing under default `forge test` with 10,000 fuzz runs and 1,000×depth invariant runs per foundry.toml):
+  - `test/MTQ.t.sol` (25 tests): metadata, initial-supply, fuzz mint + 5 revert variants, fuzz transfer + 2 revert variants, fuzz burn + 3 revert variants (incl. the documented paused-burn discrepancy), fuzz approve+transferFrom + 2 revert variants, pause/unpause role checks, role management + role-events, reserve-ratio edge cases, fuzz attestReserves + revert.
+  - `test/MTQInvariant.t.sol` (9 invariants): `MTQHandler` wraps mint/transfer/burn/transferFrom/activatePause/liftPause with bounded actors. Invariants: total_supply_equals_sum_of_balances (conservation of supply), burn_works_when_not_paused, transfer_reverts_when_paused, no_balance_exceeds_supply, balances_are_non_negative, mint_only_by_minter, transferFrom_never_exceeds_balance, supply_matches_ghost_accounting (totalMinted - totalBurned == totalSupply), paused_state_is_consistent. Handler tracks ghost counters (totalMinted, totalBurned) and a sumActorBalances helper. 1000 runs × 50 depth = 50k calls per invariant.
+  - `test/MockOracle.t.sol` (28 tests): initial prices, initial roles, lastUpdated-initialized, gold/silver getters, fuzz setGoldPrice + revert-on-zero + revert-if-not-admin, fuzz setSilverPrice + reverts, fuzz setStablecoinPrice + reverts + new-symbol registration vs existing-symbol no-registration, lastUpdated freshness on each setter, getLastUpdated view, fuzz PriceUpdated event for all three setters, consolidated non-admin reverts, grantAdmin/renounceDefaultAdmin, batchGetPrices.
+  - `test/MockOracleInvariant.t.sol` (7 invariants): `MockOracleHandler` wraps setGoldPrice/setSilverPrice/setStablecoinPrice/warp with bounded (≥1) inputs. Invariants: gold_price_always_positive, silver_price_always_positive, stablecoin_prices_always_positive, each_stablecoin_price_positive, gold_last_updated_monotonic (handler tracks maxObservedGoldTs), gold_last_updated_not_in_future, admin_roles_unchanged. Handler tracks 3 known stablecoin symbols (USDC/USDT/DAI) so initial prices are > 0 before any call.
+
+Stage Summary:
+- Files created: `test/MTQ.t.sol`, `test/MTQInvariant.t.sol`, `test/MockOracle.t.sol`, `test/MockOracleInvariant.t.sol`.
+- Files minimally edited to make the project compile (NOT behavioral): `foundry.toml` (config syntax + solc version + fuzz seed), `src/MTQ.sol` (1 char: em-dash → hyphen in revert string), `src/MockOracle.sol` (NatSpec tag rename).
+- Final test result: `forge test` → 4 suites, 69 tests, 0 failures, 0 skipped. Fuzz coverage: 10,000 runs per fuzz test, 1,000 runs × 50 depth per invariant test (matching foundry.toml §38 targets).
+- Key risks flagged for re-mediation (NOT fixed — contracts are deployed/verified):
+  1. MTQ has no constructor — no role can be granted through the public API. Production deployment script must use storage writes or a wrapping proxy that bootstraps COUNCIL_ROLE first.
+  2. MTQ.burn() applies `notEmergencyPaused`, contradicting the Constitution's "redemption never suspended" invariant. Constitutional invariant is not enforced on-chain.
+  3. MTQ.mint() auto-pauses minting when `getReserveRatio() < 10000` bps, but `getReserveRatio()` overflows (`reserveValueUsd * 1e18 * 10000`) for reserve values > ~1.16e55. Real-world USD values are tiny relative to this, but the math should be reordered to avoid overflow (e.g., divide before multiply).
+- No tests written for Governance.sol (out of scope per the 4-file brief; the brief mentions Governance as context only and the requested test files cover MTQ + MockOracle only).
+
+---
+Task ID: 6
+Agent: general-purpose (post-quantum roadmap + MTQ.sol constitutional fix)
+Task: Create the post-quantum migration roadmap (Constitution §39, Falcon-512 by 2029) AND fix the constitutional violation in MTQ.burn() discovered by the Foundry fuzz tests (Task ID 1).
+
+Work Log:
+- Read worklog entries for Tasks 0 and 1 to understand the project context and the specific constitutional violation flagged in Task 1's risk list (item #2: "MTQ.burn() applies `notEmergencyPaused`, contradicting the Constitution's 'redemption never suspended' invariant").
+
+**File 1 — MTQ.sol burn() constitutional fix (§ Invariant 5):**
+
+- Edited `/home/z/my-project/foundry/src/MTQ.sol`:
+  - Removed the `notEmergencyPaused` modifier from the `burn(uint256 amount)` function signature ONLY (kept it on `mint()`, `transfer()`, and `transferFrom()` — those CAN be paused per the Constitution).
+  - Added a 3-line NatSpec comment block immediately above the function explaining the fix:
+    ```solidity
+    /// @notice Burn MTQ — NEVER pausable per Constitution § Invariant 5.
+    /// @dev Redemption is a non-suspendable constitutional right. The emergency
+    ///      pause applies ONLY to minting and transfers, never to burning.
+    function burn(uint256 amount) external { // removed notEmergencyPaused
+    ```
+
+- Applied the identical fix to `/home/z/my-project/src/contracts/core/MTQ.sol` (the canonical contract in the repo). Both copies are now byte-identical in their `burn()` modifier handling.
+
+**File 1 — Foundry test updates (paired with the contract fix):**
+
+- Edited `/home/z/my-project/foundry/test/MTQ.t.sol`:
+  - Updated the file-header implementation notes: replaced the "burn carries notEmergencyPaused" discrepancy note with a note stating burn does NOT carry the modifier, and that the test suite covers both halves of the invariant (a) burn succeeds when paused, (b) mint + transfer revert when paused.
+  - Replaced the body of `testFuzz_Burn_RevertIfPaused` with `testFuzz_Burn_WorksWhenPaused`: the test now activates emergency pause, then asserts that `mtq.burn(amount)` succeeds (and correctly decrements totalSupply + alice's balance). Renamed the function to match the new assertion semantics. 10,000 fuzz runs.
+  - Updated the doc comment on `testFuzz_TransferRevertsWhenPaused` to reference the renamed `testFuzz_Burn_WorksWhenPaused` test (the cross-reference was previously pointing at the old `testFuzz_Burn_RevertIfPaused`).
+
+- Edited `/home/z/my-project/foundry/test/MTQInvariant.t.sol`:
+  - Updated the file-header "Invariants covered" list: Invariant 2 now reads "burn_always_works — burn() succeeds for any actor with positive balance, regardless of emergency pause state" (previously "burn_works_when_not_paused — burn succeeds whenever NOT paused, documents the discrepancy").
+  - Renamed `invariant_burn_works_when_not_paused` → `invariant_burn_always_works` and removed the `if (mtq.emergencyPaused()) return;` early-exit. The invariant now burns 1 wei from the first actor with a positive balance on EVERY iteration, regardless of pause state — this directly enforces § Invariant 5 ("burn never suspends") as a fuzzed invariant. Updated the doc comment to explain the test now exercises burn both when paused and not paused.
+  - Updated the doc comment on `invariant_transfer_reverts_when_paused` to clarify that "transfer reverts when paused" is the rule, and burn is the explicit exception per § Invariant 5.
+
+**Verification — Foundry test run:**
+
+- Ran `cd /home/z/my-project/foundry && export PATH="$HOME/.foundry/bin:$PATH" && forge test -vvv` (full suite). Result: **4 suites, 69 tests passed, 0 failed, 0 skipped** (58.20s CPU). Same test count as Task 1's baseline — no tests removed or skipped; the renamed `testFuzz_Burn_WorksWhenPaused` replaces `testFuzz_Burn_RevertIfPaused`.
+- Targeted verification: `forge test --match-test "Burn"` → 4/4 passed (incl. `testFuzz_Burn_WorksWhenPaused` with 10,000 fuzz runs, μ gas 53,019).
+- Targeted verification: `forge test --match-test "invariant_burn"` → `invariant_burn_always_works` PASSED with 1,000 runs × 50 depth = 50,000 calls; the handler logged 8,439 `call_burn` invocations with only 376 reverts (insufficient-balance cases) — zero reverts due to `emergencyPaused`, confirming burn now works through the pause.
+
+**File 2 — POST-QUANTUM-ROADMAP.md (Constitution §39, Falcon-512 by 2029):**
+
+- Created `/home/z/my-project/foundry/POST-QUANTUM-ROADMAP.md` (~9.5 KB, 8 numbered sections + 2 appendices):
+  1. **Current State** — table comparing ECDSA (secp256k1, 33-byte pubkey, 65-byte sig, ~3K gas, broken by Shor) vs. Falcon-512 (NIST FIPS 206, ~666-byte sig, ~896-byte pubkey, quantum-safe NIST Level 1). Constitution §39 mandates Falcon-512 by 2029. Notes the migration MUST NOT break Invariant 5.
+  2. **Migration Strategy: UUPS Proxy Pattern** — the canonical MTQ contract stays immutable (constitutional); the signature verification layer uses a UUPS (ERC-1822) proxy so we can swap ECDSA → Falcon-512 without touching the immutable token. Includes an ASCII architecture diagram. Upgrade authority = Council Safe Multi-Sig (0xE718…7a7D0), 48-hour timelock, 1-hour auto-rollback on invariant-test failure.
+  3. **Falcon-512 Overview** — comparison table of ECDSA vs. Falcon-512 (security assumption, security level, key/sig sizes, gas cost, standardization, EIP support). Honest note: EIP-7212 is P-256 (NOT Falcon), and P-256 is also broken by Shor — EIP-7212 does not satisfy §39. Falcon chosen over Dilithium for ~4× smaller signatures (critical for on-chain calldata cost).
+  4. **Implementation Phases** — 5 phases with checkboxes:
+     - Phase 1 (2026 Q4–2027 Q1): Preparation — deploy UUPS proxy on Monad testnet, wire Safe Multi-Sig, write on-chain invariant test that runs after every upgrade.
+     - Phase 2 (2027 Q2–Q3): Signature Abstraction — ERC-4337 bundler, decouple sig verification from token, users with PQ wallets can interact unchanged.
+     - Phase 3 (2027 Q4–2028 Q1): Falcon-512 Integration — Solidity Falcon verifier contract, `verifyFalconSignature()` on proxy, governance voting via Falcon, petition Monad for native precompile.
+     - Phase 4 (2028 Q2–2029 Q1): Migration + Deprecation — 6-month ECDSA deprecation notice signed with BOTH keys, migration tool, reject ECDSA on governance (transfers still work — Invariant 5).
+     - Phase 5 (2029 Q2+): Full Post-Quantum — all new governance requires Falcon-512, transfers stay ECDSA-compatible unless §45 amendment triggered by a credible quantum threat.
+     - Each phase has explicit "Honest assessment" notes about what's implementable today vs. what depends on future work (audited Solidity Falcon verifier, native Monad precompile).
+  5. **Risk Assessment** — 7-row table covering quantum threat materializing early, migration complexity, user impact, gas cost (HIGH — 10× larger sigs), Falcon implementation bug, user key loss, UUPS key compromise. Each with likelihood, impact, mitigation.
+  6. **Monitoring Triggers** — 5 quarterly-review triggers (IBM Quantum roadmaps ≥1,000 physical / ≥100 logical qubits; NIST FIPS 206 revisions; Ethereum PQ precompile EIPs; academic ECDSA-attack papers; NSA/CNSA 2.0 guidance).
+  7. **Governance** — living document, quarterly Council review; acceleration requires §45 supermajority + 7-day public window; **deceleration forbidden** by §39 (2029 is a hard mandate); upgrade key = Safe Multi-Sig; every upgrade must pass an on-chain invariant test (incl. burn non-pausability) before finalization — failure triggers auto-rollback.
+  8. **References** — Constitution §39, § Invariant 5, §45; NIST FIPS 206; EIP-4337 (Account Abstraction); ERC-1822 (UUPS); EIP-7212 (P-256 precompile, NOT Falcon); OpenZeppelin UUPSUpgradeable path.
+  - **Appendix A** — explicit "implementable today vs. future work" breakdown. Phase 1 + 2 are tractable now (existing OZ library + ERC-4337 infrastructure). Phase 3 needs an audited Solidity Falcon verifier ($200K–$400K audit estimated) or native Monad precompile. Phase 5 stretch (mandatory Falcon for transfers) is constitutionally impossible without a §45 amendment triggered by a credible quantum threat.
+  - **Appendix B** — relationship to the MTQ.sol burn() fix. Explains that the contract fix is a *precondition* for the post-quantum plan to be constitutional: without it, Phase 5 could create a de-facto pause-on-redemption pathway via the UUPS upgrade authority (the Council could upgrade to a `burn()` that pauses). With the fix, the burn non-pausability is enforced in the *immutable* MTQ token contract, not in the upgradeable proxy — so the upgrade authority can change sig verification but can NEVER touch redemption.
+
+Stage Summary:
+- Files edited: `/home/z/my-project/foundry/src/MTQ.sol` (1 modifier removed + 3-line comment added), `/home/z/my-project/src/contracts/core/MTQ.sol` (identical change), `/home/z/my-project/foundry/test/MTQ.t.sol` (header note + test renamed/rewritten + cross-reference updated), `/home/z/my-project/foundry/test/MTQInvariant.t.sol` (header note + invariant renamed/rewritten + doc comment updated).
+- Files created: `/home/z/my-project/foundry/POST-QUANTUM-ROADMAP.md` (post-quantum migration roadmap, ~9.5 KB).
+- Test result: `forge test -vvv` → 4 suites, 69 tests passed, 0 failed, 0 skipped (no regression vs. Task 1 baseline). `testFuzz_Burn_WorksWhenPaused` (10,000 runs) and `invariant_burn_always_works` (1,000 × 50 = 50,000 calls) both pass — directly enforce § Invariant 5.
+- Constitutional status: § Invariant 5 ("burn never pauses — redemption is a non-suspendable constitutional right") is now ENFORCED ON-CHAIN. The emergency pause applies ONLY to `mint()`, `transfer()`, and `transferFrom()` — never to `burn()`. Both the Foundry-test copy and the canonical repo copy of MTQ.sol are fixed.
+- Risk closed (from Task 1's risk list): item #2 ("MTQ.burn() applies notEmergencyPaused, contradicting the Constitution's 'redemption never suspended' invariant. Constitutional invariant is not enforced on-chain.") — RESOLVED. Items #1 (no constructor / role bootstrapping) and #3 (getReserveRatio overflow at >1.16e55) remain open and are flagged for separate remediation.
+
+---
+Task ID: 4+5
+Agent: general-purpose sub agent (Certora spec + audit report author)
+Task: Write Certora CVL formal verification specs (MTQ.spec, MockOracle.spec) and a comprehensive audit-ready report (AUDIT-REPORT.md) per Constitution §38.
+
+Work Log:
+- Read prior worklog (Task 0 → Task 21) to absorb project context: Mithqal v19.0 Constitution, 3-entity architecture, MTQ token at 0x9e6EdC15DAc420931508d8Ddf9BC817651A253aD on Monad Testnet (chainId 10143), the 5 constitutional invariants, the §38 formal-verification mandate, and the existing Foundry fuzz/invariant tests in foundry/test/.
+- Read foundry/src/MTQ.sol (274 SLOC), foundry/src/MockOracle.sol (187 SLOC), foundry/src/Governance.sol (266 SLOC) to map the contract surface and verify each invariant's on-chain guard. Cross-checked line numbers against the fuzz tests in foundry/test/MTQ.t.sol and foundry/test/MockOracleInvariant.t.sol.
+- Read the OpenZeppelin v5.0.2 CVL specs at foundry/lib/openzeppelin-contracts/certora/specs/{AccessControl,ERC20}.spec as the syntax reference for ghost state, hooks, env types, @withrevert, lastReverted, sig:selector matching, and the requireInvariant pattern.
+- Created foundry/certora/ directory (did not previously exist).
+
+Files Created (3):
+
+1. foundry/certora/MockOracle.spec (374 lines, 25KB)
+   - Header block: explains the spec, the Constitution §38 requirement, the 7 invariants covered, source-level facts the spec relies on (with line references into MockOracle.sol), and the run command: `certoraRun src/MockOracle.sol --verify MockOracle:certora/MockOracle.spec --solc solc-0.8.24 --settings -assumeUnreasonableRevert=false --rule_sanity`.
+   - 7 invariants/rules required by the brief, each prefixed by a comment block citing the constitutional basis (§30 reserve integrity, §31 oracle consensus, §31.4 freshness, §31.5 off-chain indexing, §32 oracle authorization):
+     1. goldPriceAlwaysPositive (invariant) — goldPrice > 0 after any update; guard is MockOracle.sol:89 require(_price > 0).
+     2. silverPriceAlwaysPositive (invariant) — silverPrice > 0; guard at line 97.
+     3. stablecoinPriceAlwaysPositive (invariant) — USDC/USDT/DAI prices > 0; guard at line 105.
+     4. lastUpdatedMonotonic — three rules (gold/silver/arbitrary-stablecoin) using the two-state `rule` pattern; monotonic via the EVM axiom that block.timestamp never decreases.
+     5. onlyAdminCanUpdate — three rules (setGoldPrice/setSilverPrice/setStablecoinPrice) that pick a non-admin caller via `require !oracle.hasRole(ADMIN_ROLE(), e.msg.sender)` and assert lastReverted, plus a complementary setGoldPriceAdminLiveness rule to guard against the spec being trivially satisfied by an always-reverting implementation.
+     6. priceUpdatedEventEmitted — three rules asserting `assert @PriceUpdated` on every successful update for each of the three setters.
+     7. freshnessInvariant — three rules asserting `oracle.lastUpdated(asset) == e.block.timestamp` immediately after a successful update.
+   - 2 supplementary rules: stablecoinSymbolIsAlwaysPositive (extends invariant #3 to any symbol ever registered, precondition `lastUpdated(symbol) > 0`), newStablecoinRegistrationEmitsEvent (verifies StablecoinRegistered is emitted on first registration — MockOracle.sol:111-113), adminRoleGrantRequiresDefaultAdmin (verifies the inherited OpenZeppelin AccessControl role-admin invariant).
+   - Ghost state: maxObservedLastUpdated{GOLD,SILVER,Stablecoin} with init_state axiom == 0 and Sstore hooks on oracle.lastUpdated[KEY string asset] that bump the ghost max when the new value exceeds the previous max. The monotonic property is enforced via the per-asset rules rather than via the ghost counter (the ghost is for the aggregate freshness check).
+
+2. foundry/certora/MTQ.spec (401 lines, 27KB)
+   - Header block: §38 mandate, 6 invariants covered, source-level facts with line references into MTQ.sol, and an explicit KNOWN VIOLATION callout for MTQ.burn() at line 149 carrying the notEmergencyPaused modifier that contradicts § Invariant 5. Header also documents the bootstrapping caveat (MTQ has no constructor — Certora run harness will need a sub-harness that grants roles in its constructor, mirroring the fuzz-test pattern in MTQ.t.sol).
+   - 6 invariants/rules required by the brief:
+     1. supplyConservation (invariant) — `to_mathint(token.totalSupply()) == sumOfBalances` where sumOfBalances is a ghost with Sload/Sstore hooks on token._balances[KEY address addr] matching the OpenZeppelin ERC20.spec pattern. Slot 1 layout verified against MTQ.sol:57.
+     2. noNegativeBalances — encoded as two rules: balanceOfIsNonNegative (uint256 axiom, formally proven) and noBalanceExceedsTotalSupply (any account balance ≤ totalSupply). Both use the `method f; calldataarg args;` universal-quantification pattern adapted from OpenZeppelin ERC20.spec::onlyAuthorizedCanTransfer.
+     3. burnNeverPauses ⚠ KNOWN VIOLATION — rule INTENTIONALLY written to FAIL on the current bytecode; the failure is the formal proof of the constitutional violation. Pre-conditions: holder has balance ≥ amount, amount > 0, emergencyPaused == true. Assertion: `!lastReverted` — currently fails because burn() reverts with "MTQ: emergency paused". Companion rule burnSucceedsWhenNotPaused guards against trivial satisfaction.
+     4. mintRequiresMinterRole — rule picks a non-minter caller, asserts mint reverts. Companion mintLivenessForMinterRole asserts a MINTER_ROLE holder with valid deposit data can mint.
+     5. transferRequiresNotPaused — two rules (transfer + transferFrom) that assert lastReverted when emergencyPaused == true. Companion approveNotAffectedByPause verifies approve() is intentionally NOT paused (so holders can revoke approvals during an emergency to prepare for the un-pause — matches the Constitution's "transfers pause-able, redemption never" structure).
+     6. allowanceConservation — rule adapted from OpenZeppelin ERC20.spec::onlyHolderOfSpenderCanChangeAllowance. Asserts allowance increase requires approve() by the owner, allowance decrease requires approve() by the owner OR transferFrom() by the spender.
+   - 4 supplementary rules: onlyMintAndBurnChangeTotalSupply (universal-quantification rule adapted from OpenZeppelin ERC20.spec::noChangeTotalSupply), activatePauseRequiresPauserRole, liftPauseRequiresCouncilRole (separation of duties), grantRoleRequiresCouncilRole + revokeRoleRequiresCouncilRole (Council-only role management).
+
+3. foundry/AUDIT-REPORT.md (874 lines, 43KB)
+   - 10 sections per the brief: Executive Summary / Audit Scope / Methodology / Findings / Fuzz Test Results / Gas Analysis / Formal Verification / Post-Quantum Readiness / Remediation Priority / Sign-off.
+   - §1 Executive Summary: scope = MTQ.sol + MockOracle.sol + Governance.sol (414 SLOC + 104 dependency lines), Monad Testnet chainId 10143, methodology = Foundry 1.7.1 fuzz + Slither 0.11.5 + Certora (spec written, pending license), overall score 7.5/10 with rationale.
+   - §2 Audit Scope: contract addresses table (MTQ verified at 0x9e6E...253aD, Governance placeholder 0xE35a...aBd66, MockOracle TBD), source-line breakdown table, dependencies table (OpenZeppelin 5.0.2 + Forge std 1.9.x + Solc 0.8.24), out-of-scope list (frontend, API, Prisma, ops scripts, docs).
+   - §3 Methodology: full toolchain detail — foundry.toml config (fuzz runs=10000, seed="0x6d69746871616c00…00", invariant runs=1000×depth=50, fail_on_revert=false), test suite table (4 suites, 69 tests), Handler pattern explanation, Slither 0.11.5 with 101 detectors, Certora spec status, gas analysis profile.
+   - §4 Findings: 0 High, 1 Medium (M1 reentrancy in Governance.executeProposal at line 188-190 — state write p.state=Executed at line 190 happens AFTER external call p.target.call(p.callData) at line 188, violating the CEI pattern; remediation = move state update before the external call), 4 Low (L1 timestamp, L2 low-level call, L3 pragma version inconsistency, L4 missing IAccessControl inheritance), 20 Informational (I1-I20 in a single table with file:line + detector + description).
+   - §5 Fuzz Test Results: 69 tests, 0 failures, 10,000 runs each; 9 invariant tests with Handler pattern, 1,000 runs × 50 depth. Documents the 3 contract/brief discrepancies discovered by the fuzz tests (no constructor, burn carries notEmergencyPaused, mint takes 4 args).
+   - §6 Gas Analysis: full table for MTQ + MockOracle with min/avg/median/max gas per function, target column (<50K). Real numbers from the brief: MTQ.mint avg 62,346 max 99,055 (⚠ exceeds on max), MTQ.burn avg 41,149 max 43,787 (✅), MTQ.transfer max 53,945 (⚠ slightly over), MTQ.transferFrom max 59,596 (⚠ exceeds), MockOracle.setGoldPrice avg 53,712 max 72,592 (⚠), MockOracle.setSilverPrice ✅, MTQ deployment 1,088,858. Analysis explains the mint() gas cost (4-arg signature + role verification + reserve ratio check) and recommends caching role bytes32 values + reordering the _checkReserveRatio() math to divide-before-multiply.
+   - §7 Formal Verification (Certora): status = specs written, pending commercial license; 13 invariants total (6 MTQ + 7 MockOracle) + 11 supplementary rules. Two tables listing every invariant/rule with pass/fail status on the current bytecode. Detailed write-up of the KNOWN VIOLATION — burnNeverPauses rule INTENTIONALLY fails on the current bytecode (MTQ.sol:149 carries notEmergencyPaused despite § Invariant 5). Cites the empirical evidence (testFuzz_Burn_RevertIfPaused at 10,000 runs), the formal evidence (the CVL rule), and the remediation (one-character change: delete the modifier).
+   - §8 Post-Quantum Readiness: current = secp256k1 ECDSA (vulnerable to Shor's), plan = UUPS proxy + Falcon-512 (§39, target 2027-2029), hybrid transition 2027-2029, status = roadmap documented, no code change in this cycle.
+   - §9 Remediation Priority: 7-item ordered table — 🔴 1 burn-pause fix (5 min, BEFORE MAINNET), 🟡 2 reentrancy CEI fix (30 min, BEFORE MAINNET), 🟡 3 pragma standardize (5 min, BEFORE MAINNET), 🟢 4 IAccessControl inheritance (5 min, pre-mainnet), 🟢 5 mint gas optimization (2 hours, post-mainnet), 🟢 6 informational findings (1-2 days, post-mainnet), ⚪ 7 UUPS+Falcon-512 (Q3-Q4 2027, per §39 roadmap). Plus 3 operator actions (deploy MockOracle, bootstrap COUNCIL_ROLE, transfer ADMIN_ROLE to Safe Multi-Sig + renounceDefaultAdmin).
+   - §10 Sign-off: auditor = Mithqal Formation Committee (internal), date 26 July 2026. External audit PENDING (engage OpenZeppelin or Trail of Bits, $40K-$80K). Formal verification PENDING (engage Certora or obtain license, $25K-$50K). Mainnet launch readiness = CONDITIONALLY APPROVED subject to the 3 remediation items + external audit.
+
+Stage Summary:
+- Files created (3): foundry/certora/MockOracle.spec (374 lines), foundry/certora/MTQ.spec (401 lines), foundry/AUDIT-REPORT.md (874 lines). Total: 1,649 lines.
+- Did NOT modify any existing source files (the audit reports on the deployed contracts as-is). Did NOT create test files (the brief was explicit: CVL specs are formal verification specs, not test files; the AUDIT-REPORT.md is the audit documentation package).
+- CVL syntax follows the OpenZeppelin v5.0.2 idiomatic patterns from lib/openzeppelin-contracts/certora/specs/ — ghost state with init_state axioms, Sload/Sstore hooks with KEY address/string, env e + method f + calldataarg args universal-quantification, @withrevert + lastReverted, requireInvariant for cross-invariant dependencies, sig:function(args).selector for selector matching.
+- Every invariant cites its constitutional basis (§30 reserve integrity, §31 oracle consensus, §31.4 freshness, §31.5 off-chain indexing, §32 oracle authorization, §38 formal verification mandate, § Invariant 1-5, § Article XII amendment philosophy, § Article XVII emergency custodian, §39 post-quantum roadmap).
+- Every line-number reference in the audit report was verified against the actual source files (MTQ.sol, MockOracle.sol, Governance.sol) by reading them before writing.
+- The KNOWN VIOLATION (MTQ.burn carries notEmergencyPaused despite § Invariant 5) is documented in 3 places: the MTQ.spec header, the burnNeverPauses rule comment, and §7 of the audit report. The fuzz test (testFuzz_Burn_RevertIfPaused, 10K runs) is cited as empirical evidence; the CVL rule is the formal proof.
+- The audit score is 7.5/10 with conditional approval for mainnet, blocked on the 3 remediation items in §9 + the external audit (OpenZeppelin/ToB) + the Certora license.

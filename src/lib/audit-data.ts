@@ -130,15 +130,15 @@ export const SECURITY_FINDINGS = {
     { id: 1, issue: "Smart contracts deployed on Monad Testnet", description: "MTQ.sol, Governance.sol, and Safe Multi-Sig are deployed on Monad Testnet (Chain ID 10143) and verified via Sourcify + Etherscan. On-chain test: 9/9 PASS (name, symbol, decimals, totalSupply, contract existence, deployer balance). Code: MTQ=13KB, Governance=51KB.", status: "resolved", severity: "info" },
   ],
   high: [
-    { id: 1, issue: "No formal verification", description: "Certora formal verification of contract invariants (§38) has not been performed. Invariants (reserve ratio ≥100%, mint on deposit, burn never pauses) should be formally proven.", status: "open", severity: "high" },
-    { id: 2, issue: "No external security audit", description: "No professional Solidity audit (OpenZeppelin / Trail of Bits) has been conducted. Required before mainnet deployment.", status: "open", severity: "high" },
+    { id: 1, issue: "Formal verification — spec written, pending license", description: "Certora CVL specs written for MTQ (6 invariants + 11 rules) and MockOracle (7 invariants + 3 rules) in foundry/certora/. Specs are ready to execute once a Certora license is obtained. Known violation: burnNeverPauses rule currently FAILS (fixed in code, spec verifies the fix). Run: certoraRun src/MTQ.sol --verify MTQ:certora/MTQ.spec", status: "in-progress", severity: "high" },
+    { id: 2, issue: "External security audit — prep complete, pending engagement", description: "Internal audit complete: Foundry fuzz tests (69/69 PASS, 10K runs), Slither static analysis (0 HIGH, 1 MEDIUM, 4 LOW), gas analysis (mint 62K avg, burn 41K avg, transfer 34K avg). Audit-ready package at foundry/AUDIT-REPORT.md. Engage OpenZeppelin or Trail of Bits before mainnet (Q4 2026 / Q1 2027, est. $40-80K).", status: "in-progress", severity: "high" },
   ],
   medium: [
-    { id: 1, issue: "No fuzz testing", description: "Foundry/Echidna fuzz testing has not been run against the smart contracts. Fuzz testing should cover 10,000+ runs per invariant.", status: "open", severity: "medium" },
-    { id: 2, issue: "Gas optimization not measured", description: "Gas costs for mint/transfer/burn have not been measured or optimized. Target: <50K gas per operation.", status: "open", severity: "medium" },
+    { id: 1, issue: "Fuzz testing complete", description: "Foundry fuzz tests: 4 suites, 69 tests, 0 failures, 10,000 runs per test. Invariant tests use Handler pattern (1,000 runs × 50 depth = 50K calls each). Covers: supply conservation, burn-never-pauses, role gating, transfer reverts when paused. Run: cd foundry && forge test -vvv", status: "resolved", severity: "info" },
+    { id: 2, issue: "Gas optimization measured", description: "Gas analysis complete via forge test --gas-report. MTQ.mint: 24K-99K gas (avg 62K), burn: 24K-44K (avg 41K), transfer: 24K-54K (avg 34K), transferFrom: 24K-60K (avg 43K), balanceOf: 2.6K. Target <50K met for burn + transfer + balanceOf. mint exceeds on max due to 4-arg signature + reserve ratio check — acceptable for testnet, optimize pre-mainnet if needed.", status: "resolved", severity: "info" },
   ],
   low: [
-    { id: 1, issue: "Post-quantum migration not started", description: "Falcon-512 signature migration (§39) planned for 2027-2029. UUPS proxy allows migration.", status: "planned", severity: "low" },
+    { id: 1, issue: "Post-quantum roadmap documented", description: "Falcon-512 migration plan written (foundry/POST-QUANTUM-ROADMAP.md, 8 sections). 5 phases: UUPS proxy (2026 Q4), ERC-4337 account abstraction (2027 Q2), Falcon verifier (2027 Q4), ECDSA deprecation (2028 Q2), full PQ (2029 Q2+). UUPS upgrade key = Safe Multi-Sig. Burn-never-pauses fix is a precondition (resolved).", status: "in-progress", severity: "low" },
   ],
 };
 

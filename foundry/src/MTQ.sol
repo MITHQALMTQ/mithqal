@@ -118,7 +118,7 @@ contract MTQ is IERC20 {
         uint256 reserveDepositedUsd,
         bytes32 depositProof
     ) external onlyRole(MINTER_ROLE) notEmergencyPaused {
-        require(!mintingPaused, "MTQ: minting paused — reserve ratio below 100%");
+        require(!mintingPaused, "MTQ: minting paused - reserve ratio below 100%");
         require(amount > 0, "MTQ: zero mint");
         require(reserveDepositedUsd >= amount, "MTQ: insufficient deposit"); // 1:1 at par
         require(depositProof != bytes32(0), "MTQ: missing deposit proof");

@@ -52,8 +52,12 @@ node_modules
 npm-debug.log*
 prompt
 server.log
-test
+/test
 upload/
 yarn-debug.log*
 yarn-error.log*
 tool-results/
+foundry/lib/
+foundry/.git
+foundry/out/
+foundry/cache/
