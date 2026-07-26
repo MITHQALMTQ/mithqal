@@ -4,10 +4,13 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, Shield } from "lucide-react";
 import { LiveIndicator, VerifyOnChainBadge } from "@/components/live-ui";
+import { LanguageSwitcher } from "@/components/language-switcher";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 /**
  * GlobalHeader — fixed top bar shown on all pages.
- * Contains: Cmd+K trigger, Live indicator, On-chain verification badge.
+ * Contains: Cmd+K trigger, Live indicator, On-chain verification badge,
+ * language switcher, and theme toggle.
  * Enhances every page with "live data pulse" + "verify on chain" trust signals.
  */
 export function GlobalHeader() {
@@ -69,6 +72,12 @@ export function GlobalHeader() {
         <Shield className="h-2.5 w-2.5" />
         v19.0
       </div>
+
+      {/* Language switcher (audit recommendation #7: en/ar/fr) */}
+      <LanguageSwitcher />
+
+      {/* Theme toggle (audit recommendation #9: dark/light) */}
+      <ThemeToggle />
     </motion.div>
   );
 }

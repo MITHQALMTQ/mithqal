@@ -1,7 +1,14 @@
 "use client";
 
 import { useCallback, useEffect, useState, useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import {
+  motion,
+  AnimatePresence,
+  useMotionValue,
+  useTransform,
+  useAnimationFrame,
+  type MotionValue,
+} from "framer-motion";
 import { Reveal } from "@/components/reveal";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -101,6 +108,9 @@ const FORMULAS: Record<string, { section: string; formula: string; desc: string 
 /* ---- Helpers ---- */
 const fmtPct = (n: number, digits = 2) => `${(n * 100).toFixed(digits)}%`;
 const fmtUsd = (n: number) => `$${n.toLocaleString("en-US", { maximumFractionDigits: 2 })}`;
+// fmtUsd2 forces 2 decimals (e.g. $4,053.70) — used for gold spot price so
+// trailing zeros are preserved (audit fix 10: avoid "$4,053.7" display).
+const fmtUsd2 = (n: number) => `$${n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
 /* ============================================================
  * MetricTooltip — small "?" icon that opens a formula popover
@@ -220,7 +230,7 @@ export function CurrencyWeightingIntro({ data }: { data: WeightingData | null })
 
       {/* Main diagram — the connection web */}
       <div className="overflow-hidden rounded-2xl border border-gold/30 bg-gradient-to-br from-ink-soft via-background to-ink-card p-6 sm:p-8">
-        <ConnectionDiagram
+        <HolographicConstellation
           weights={weights}
           goldUsd={goldUsd}
           silverUsd={silverUsd}
@@ -299,15 +309,43 @@ export function CurrencyWeightingIntro({ data }: { data: WeightingData | null })
 }
 
 /* ============================================================
- * ConnectionDiagram — SVG animated web showing:
- *   Gold (top center) → 8 currencies (middle ring) → MTQ (bottom)
- *   Silver (side) → MTQ
- *   Currency sizes proportional to weights
- *   Lines thicken/Thin based on weight
- *   Gold anchor: inner gold ring around MTQ + reference label
+/* ============================================================
+ * HolographicConstellation — futuristic 3D-perspective
+ * holographic diagram of the Mithqal currency basket:
+ *   • Gold core (center, pulsing radial gradient) — §14 anchor
+ *   • 8 currency orbs orbit at distances = inverse weight
+ *       (heavier currencies orbit CLOSER to gold)
+ *   • Each orb rotates at its own speed (heavier = slower)
+ *   • MTQ token at the outermost ring — synthesis of all currencies
+ *   • Silver satellite orbits MTQ
+ *   • Energy beams (linear gradient + glow filter) flow from
+ *     each currency to MTQ with animated dash offset
+ *   • Gold particles stream along the beams during the live phase
+ *   • Dark starfield background (CSS radial-gradient dots) +
+ *     moving holographic shimmer overlay
  * ============================================================ */
 
-function ConnectionDiagram({
+const STARFIELD: string = (() => {
+  // Deterministic pseudo-random star positions (26 dots) — computed once
+  // at module load to keep render cheap. Adds a gold core halo at center.
+  const layers: string[] = [];
+  for (let i = 0; i < 26; i++) {
+    const x = (i * 37 + 13) % 100;
+    const y = (i * 53 + 7) % 100;
+    const sz = i % 4 === 0 ? 2 : 1;
+    const op = 0.18 + ((i * 7) % 5) * 0.04;
+    layers.push(
+      `radial-gradient(${sz}px ${sz}px at ${x}% ${y}%, rgba(255,255,255,${op.toFixed(2)}), transparent)`
+    );
+  }
+  layers.push("radial-gradient(circle at 50% 50%, rgba(201,162,39,0.10), transparent 65%)");
+  layers.push("#050810");
+  return layers.join(", ");
+})();
+
+type OrbWeight = CurrencyWeight & { orbit: number; period: number };
+
+function HolographicConstellation({
   weights,
   goldUsd,
   silverUsd,
@@ -331,439 +369,648 @@ function ConnectionDiagram({
     [weights]
   );
 
-  // SVG layout: Gold at top, currencies in a ring, MTQ at bottom
-  const cx = 400;
-  const cy = 250;
-  const ringRadius = 150;
-  const goldPos = { x: cx, y: 50 };
-  const mtqPos = { x: cx, y: 450 };
-  const silverPos = { x: 680, y: 250 };
-
-  // Position currencies in a ring around the center
-  const currencyPositions = sortedWeights.map((w, i) => {
-    const angle = (i / sortedWeights.length) * 2 * Math.PI - Math.PI / 2;
-    return {
-      ...w,
-      x: cx + ringRadius * Math.cos(angle),
-      y: cy + ringRadius * Math.sin(angle),
-    };
-  });
-
   const maxWeight = Math.max(...weights.map((w) => w.normalizedWeight), 0.01);
 
-  // Aria label describes the diagram for screen readers (FIX 7)
-  const ariaLabel = `Currency weighting diagram. Gold anchor at ${fmtUsd(
+  // Layout — gold core at the geometric center, currencies on inner orbits
+  // (heavier = closer), MTQ on the outermost ring, silver satellite of MTQ.
+  const cx = 400;
+  const cy = 300;
+  const mtqOrbit = 240;
+  const mtqAngle = Math.PI / 2; // bottom of the outer ring
+  const mtqX = cx + mtqOrbit * Math.cos(mtqAngle);
+  const mtqY = cy + mtqOrbit * Math.sin(mtqAngle);
+
+  // Per-currency orbit radii + rotation periods.
+  // Heavier currencies orbit CLOSER + SLOWER (more "anchored" to gold).
+  const orbs: OrbWeight[] = sortedWeights.map((w, i) => {
+    const t = sortedWeights.length > 1 ? i / (sortedWeights.length - 1) : 0;
+    const orbit = 100 + t * 100; // 100 → 200
+    const period = 28 + i * 7;   // 28s → 77s (heavier = slower)
+    return { ...w, orbit, period };
+  });
+
+  // One shared clock for the entire diagram — every orb's angle and every
+  // particle's progress derives from this single MotionValue, so we register
+  // exactly ONE rAF callback per frame regardless of orb count.
+  const time: MotionValue<number> = useMotionValue(0);
+  useAnimationFrame((t) => time.set(t));
+
+  // Silver satellite orbits MTQ at small radius.
+  const silverAngle = useTransform(time, (t) => (t / 1000 / 14) * Math.PI * 2);
+  const silverX = useTransform(silverAngle, (a) => mtqX + 36 * Math.cos(a));
+  const silverY = useTransform(silverAngle, (a) => mtqY + 36 * Math.sin(a));
+
+  const ariaLabel = `Holographic constellation of the Mithqal currency basket. Gold core at ${fmtUsd2(
     goldUsd
-  )} per ounce at the top. ${weights.length} currencies arranged in a ring around the center: ${weights
+  )} per ounce pulsing at the center, the constitutional anchor. ${weights.length} currencies orbit gold at different distances — heavier currencies orbit closer. ${weights
     .map((w) => `${w.code} at ${(w.normalizedWeight * 100).toFixed(2)}%`)
-    .join(", ")}. MTQ token at the bottom. Silver at ${fmtUsd(silverUsd)} per ounce on the right.`;
+    .join(", ")}. MTQ token sits on the outermost ring as the synthesis of all currencies. Silver at ${fmtUsd2(
+    silverUsd
+  )} per ounce orbits MTQ as a satellite. Energy beams flow from each currency to MTQ, with gold particles streaming during live data flow.`;
 
   return (
-    <div className="relative">
+    <div className="relative overflow-hidden rounded-xl">
+      {/* Starfield background — radial-gradient dots over near-black */}
+      <div
+        className="absolute inset-0"
+        style={{ background: STARFIELD }}
+        aria-hidden="true"
+      />
+
+      {/* Holographic shimmer — slowly moving gold tint overlay */}
+      <motion.div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            "linear-gradient(45deg, transparent 30%, rgba(201,162,39,0.06) 50%, transparent 70%)",
+          backgroundSize: "300% 300%",
+        }}
+        animate={{ backgroundPosition: ["0% 0%", "100% 100%", "0% 0%"] }}
+        transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+        aria-hidden="true"
+      />
+
       <svg
-        viewBox="0 0 800 500"
-        className="w-full"
+        viewBox="0 0 800 600"
+        className="relative w-full"
         role="img"
         aria-label={ariaLabel}
+        style={{ transform: "perspective(1000px) rotateX(15deg)" }}
       >
-        {/* Defs — gradients + filters */}
         <defs>
-          <radialGradient id="goldGlow">
-            <stop offset="0%" stopColor="#c9a227" stopOpacity="0.8" />
-            <stop offset="60%" stopColor="#c9a227" stopOpacity="0.2" />
-            <stop offset="100%" stopColor="#c9a227" stopOpacity="0" />
-          </radialGradient>
-          <radialGradient id="silverGlow">
-            <stop offset="0%" stopColor="#e5e7eb" stopOpacity="0.6" />
-            <stop offset="60%" stopColor="#e5e7eb" stopOpacity="0.15" />
-            <stop offset="100%" stopColor="#e5e7eb" stopOpacity="0" />
-          </radialGradient>
-          <radialGradient id="mtqGlow">
-            <stop offset="0%" stopColor="#c9a227" stopOpacity="1" />
-            <stop offset="50%" stopColor="#8a6d1a" stopOpacity="0.6" />
+          {/* Gold core radial gradient */}
+          <radialGradient id="goldCore">
+            <stop offset="0%" stopColor="#fde68a" stopOpacity="1" />
+            <stop offset="30%" stopColor="#c9a227" stopOpacity="0.95" />
+            <stop offset="70%" stopColor="#8a6d1a" stopOpacity="0.5" />
             <stop offset="100%" stopColor="#3a2d0a" stopOpacity="0" />
           </radialGradient>
-          <radialGradient id="goldAnchorRing">
-            <stop offset="0%" stopColor="#fde68a" stopOpacity="0" />
-            <stop offset="65%" stopColor="#c9a227" stopOpacity="0" />
-            <stop offset="85%" stopColor="#c9a227" stopOpacity="0.85" />
-            <stop offset="100%" stopColor="#c9a227" stopOpacity="0" />
+
+          {/* MTQ gradient (stronger glow at the synthesis node) */}
+          <radialGradient id="mtqCore">
+            <stop offset="0%" stopColor="#fde68a" stopOpacity="1" />
+            <stop offset="40%" stopColor="#c9a227" stopOpacity="0.9" />
+            <stop offset="100%" stopColor="#3a2d0a" stopOpacity="0" />
           </radialGradient>
-          <filter id="glow">
-            <feGaussianBlur stdDeviation="3" result="coloredBlur" />
+
+          {/* Silver gradient */}
+          <radialGradient id="silverCore">
+            <stop offset="0%" stopColor="#f5f5f4" stopOpacity="1" />
+            <stop offset="60%" stopColor="#a8a29e" stopOpacity="0.8" />
+            <stop offset="100%" stopColor="#44403c" stopOpacity="0" />
+          </radialGradient>
+
+          {/* Per-currency orb radial gradients */}
+          {orbs.map((o) => {
+            const color = CURRENCY_META[o.code]?.color ?? "#888";
+            return (
+              <radialGradient key={`grad-${o.code}`} id={`grad-${o.code}`}>
+                <stop offset="0%" stopColor={color} stopOpacity="1" />
+                <stop offset="55%" stopColor={color} stopOpacity="0.5" />
+                <stop offset="100%" stopColor={color} stopOpacity="0" />
+              </radialGradient>
+            );
+          })}
+
+          {/* Per-currency energy-beam gradients (currency color → gold) */}
+          {orbs.map((o) => {
+            const color = CURRENCY_META[o.code]?.color ?? "#888";
+            return (
+              <linearGradient
+                key={`beam-${o.code}`}
+                id={`beam-${o.code}`}
+                x1="0%"
+                y1="0%"
+                x2="100%"
+                y2="0%"
+              >
+                <stop offset="0%" stopColor={color} stopOpacity="0.85" />
+                <stop offset="100%" stopColor="#c9a227" stopOpacity="0.85" />
+              </linearGradient>
+            );
+          })}
+
+          {/* Generic orb glow filter */}
+          <filter id="orbGlow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="2.5" result="blur" />
             <feMerge>
-              <feMergeNode in="coloredBlur" />
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+
+          {/* Strong glow for gold core + MTQ */}
+          <filter id="strongGlow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="6" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
               <feMergeNode in="SourceGraphic" />
             </feMerge>
           </filter>
         </defs>
 
-        {/* Background pulsing glow on MTQ */}
+        {/* Faint dashed orbit rings — one per currency + MTQ's outer ring */}
+        {orbs.map((o) => (
+          <motion.circle
+            key={`orbit-${o.code}`}
+            cx={cx}
+            cy={cy}
+            r={o.orbit}
+            fill="none"
+            stroke={CURRENCY_META[o.code]?.color ?? "#888"}
+            strokeOpacity={0.1}
+            strokeWidth={0.6}
+            strokeDasharray="2 5"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 90 + o.orbit, repeat: Infinity, ease: "linear" }}
+            style={{ transformOrigin: `${cx}px ${cy}px` }}
+          />
+        ))}
         <motion.circle
-          cx={mtqPos.x}
-          cy={mtqPos.y}
-          r={80}
-          fill="url(#mtqGlow)"
-          animate={{
-            r: [70, 85, 70],
-            opacity: [0.4, 0.7, 0.4],
-          }}
-          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-        />
-
-        {/* Gold anchor — inner gold ring around MTQ (FIX 4) */}
-        <motion.circle
-          cx={mtqPos.x}
-          cy={mtqPos.y}
-          r={45}
+          cx={cx}
+          cy={cy}
+          r={mtqOrbit}
           fill="none"
           stroke="#c9a227"
-          strokeWidth={1.2}
-          strokeOpacity={0.45}
-          strokeDasharray="2 4"
-          animate={{ rotate: 360 }}
-          transition={{ duration: 60, repeat: Infinity, ease: "linear" }}
-          style={{ transformOrigin: `${mtqPos.x}px ${mtqPos.y}px` }}
-        />
-        <motion.circle
-          cx={mtqPos.x}
-          cy={mtqPos.y}
-          r={50}
-          fill="none"
-          stroke="#fde68a"
-          strokeWidth={0.6}
-          strokeOpacity={0.35}
+          strokeOpacity={0.15}
+          strokeWidth={0.7}
+          strokeDasharray="3 6"
           animate={{ rotate: -360 }}
-          transition={{ duration: 90, repeat: Infinity, ease: "linear" }}
-          style={{ transformOrigin: `${mtqPos.x}px ${mtqPos.y}px` }}
+          transition={{ duration: 140, repeat: Infinity, ease: "linear" }}
+          style={{ transformOrigin: `${cx}px ${cy}px` }}
         />
 
-        {/* Lines from Gold → each currency */}
-        {currencyPositions.map((c) => {
-          const isHighlighted = c.code === selected || c.code === hovered;
-          const weight = c.normalizedWeight;
-          const opacity = isHighlighted ? 0.9 : 0.25;
-          const strokeWidth = Math.max(1, (weight / maxWeight) * 6);
+        {/* Energy beams (currency → MTQ). Rendered before orbs so orbs sit on top. */}
+        {orbs.map((o) => (
+          <CurrencyBeam
+            key={`beam-line-${o.code}`}
+            c={o}
+            cx={cx}
+            cy={cy}
+            mtqX={mtqX}
+            mtqY={mtqY}
+            time={time}
+            maxWeight={maxWeight}
+            isSelected={o.code === selected}
+            isHovered={o.code === hovered}
+            phase={phase}
+          />
+        ))}
 
-          return (
-            <motion.line
-              key={`gold-${c.code}`}
-              x1={goldPos.x}
-              y1={goldPos.y}
-              x2={c.x}
-              y2={c.y}
-              stroke="#c9a227"
-              strokeWidth={strokeWidth}
-              strokeOpacity={opacity}
-              initial={{ pathLength: 0, opacity: 0 }}
-              animate={{
-                pathLength: 1,
-                opacity,
-                strokeWidth,
-              }}
-              transition={{ duration: 1, delay: 0.1 }}
-            />
-          );
-        })}
+        {/* Currency orbs */}
+        {orbs.map((o, i) => (
+          <CurrencyOrb
+            key={o.code}
+            c={o}
+            cx={cx}
+            cy={cy}
+            time={time}
+            maxWeight={maxWeight}
+            isSelected={o.code === selected}
+            isHovered={o.code === hovered}
+            index={i}
+            onSelect={onSelect}
+            onHover={onHover}
+          />
+        ))}
 
-        {/* Lines from each currency → MTQ */}
-        {currencyPositions.map((c) => {
-          const isHighlighted = c.code === selected || c.code === hovered;
-          const weight = c.normalizedWeight;
-          const opacity = isHighlighted ? 0.9 : 0.2;
-          const strokeWidth = Math.max(1, (weight / maxWeight) * 6);
-          const color = CURRENCY_META[c.code]?.color ?? "#888";
-
-          return (
-            <motion.line
-              key={`cur-${c.code}`}
-              x1={c.x}
-              y1={c.y}
-              x2={mtqPos.x}
-              y2={mtqPos.y}
-              stroke={color}
-              strokeWidth={strokeWidth}
-              strokeOpacity={opacity}
-              animate={{
-                strokeOpacity: phase === "shock" && !isHighlighted ? 0.1 : opacity,
-              }}
-              transition={{ duration: 0.5 }}
-            />
-          );
-        })}
-
-        {/* Line from Silver → MTQ */}
-        <motion.line
-          x1={silverPos.x}
-          y1={silverPos.y}
-          x2={mtqPos.x}
-          y2={mtqPos.y}
-          stroke="#e5e7eb"
-          strokeWidth={3}
-          strokeOpacity={0.5}
-          strokeDasharray="6 4"
-          animate={{
-            strokeDashoffset: [0, -20],
-          }}
-          transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
-        />
-
-        {/* Animated particles flowing along the gold→currency lines */}
-        {phase === "live" &&
-          currencyPositions.map((c) => {
-            const isHighlighted = c.code === selected || c.code === hovered;
-            if (!isHighlighted && c.normalizedWeight < 0.05) return null;
-            return (
-              <motion.circle
-                key={`particle-${c.code}`}
-                r={2}
-                fill="#c9a227"
-                initial={{ cx: goldPos.x, cy: goldPos.y, opacity: 0 }}
-                animate={{
-                  cx: [goldPos.x, c.x],
-                  cy: [goldPos.y, c.y],
-                  opacity: [0, 1, 0],
-                }}
-                transition={{
-                  duration: 2,
-                  repeat: Infinity,
-                  delay: Math.random() * 2,
-                  ease: "easeInOut",
-                }}
-              />
-            );
-          })}
-
-        {/* Gold node (top) — the RULER anchor (FIX 4) */}
+        {/* MTQ token — synthesis node on the outermost ring */}
         <motion.g
           initial={{ scale: 0, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.5 }}
+          transition={{ duration: 0.6, delay: 0.4 }}
+          style={{ transformOrigin: `${mtqX}px ${mtqY}px` }}
         >
-          <circle cx={goldPos.x} cy={goldPos.y} r={35} fill="url(#goldGlow)" />
-          {/* Outer gold reference ring — "Gold is the RULER" visual */}
+          {/* Pulsing outer aura */}
           <motion.circle
-            cx={goldPos.x}
-            cy={goldPos.y}
-            r={30}
+            cx={mtqX}
+            cy={mtqY}
+            r={55}
+            fill="url(#mtqCore)"
+            animate={{ r: [50, 60, 50], opacity: [0.5, 0.85, 0.5] }}
+            transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
+          />
+          {/* Counter-rotating reference rings */}
+          <motion.circle
+            cx={mtqX}
+            cy={mtqY}
+            r={38}
             fill="none"
             stroke="#fde68a"
-            strokeWidth={1.2}
-            strokeOpacity={0.6}
+            strokeWidth={1}
+            strokeOpacity={0.55}
             strokeDasharray="3 3"
             animate={{ rotate: 360 }}
-            transition={{ duration: 50, repeat: Infinity, ease: "linear" }}
-            style={{ transformOrigin: `${goldPos.x}px ${goldPos.y}px` }}
+            transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
+            style={{ transformOrigin: `${mtqX}px ${mtqY}px` }}
           />
+          <motion.circle
+            cx={mtqX}
+            cy={mtqY}
+            r={44}
+            fill="none"
+            stroke="#c9a227"
+            strokeWidth={0.6}
+            strokeOpacity={0.35}
+            animate={{ rotate: -360 }}
+            transition={{ duration: 70, repeat: Infinity, ease: "linear" }}
+            style={{ transformOrigin: `${mtqX}px ${mtqY}px` }}
+          />
+          {/* MTQ disc */}
           <circle
-            cx={goldPos.x}
-            cy={goldPos.y}
-            r={22}
+            cx={mtqX}
+            cy={mtqY}
+            r={26}
             fill="#c9a227"
             stroke="#fde68a"
             strokeWidth={2}
-            filter="url(#glow)"
+            filter="url(#strongGlow)"
           />
           <text
-            x={goldPos.x}
-            y={goldPos.y + 5}
+            x={mtqX}
+            y={mtqY}
             textAnchor="middle"
-            className="fill-ink text-xs font-bold"
-            fontSize="11"
-          >
-            GOLD
-          </text>
-          <text
-            x={goldPos.x}
-            y={goldPos.y + 55}
-            textAnchor="middle"
-            className="fill-gold text-[10px]"
-            fontSize="10"
-          >
-            {fmtUsd(goldUsd)}/oz · anchor
-          </text>
-        </motion.g>
-
-        {/* Silver node (right) */}
-        <motion.g
-          initial={{ scale: 0, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-        >
-          <circle cx={silverPos.x} cy={silverPos.y} r={30} fill="url(#silverGlow)" />
-          <circle
-            cx={silverPos.x}
-            cy={silverPos.y}
-            r={18}
-            fill="#b8b4ae"
-            stroke="#e5e7eb"
-            strokeWidth={2}
-          />
-          <text
-            x={silverPos.x}
-            y={silverPos.y + 4}
-            textAnchor="middle"
-            className="fill-ink text-[10px] font-bold"
-            fontSize="10"
-          >
-            Ag
-          </text>
-          <text
-            x={silverPos.x}
-            y={silverPos.y + 45}
-            textAnchor="middle"
-            className="fill-fg-muted text-[10px]"
-            fontSize="10"
-          >
-            {fmtUsd(silverUsd)}/oz
-          </text>
-        </motion.g>
-
-        {/* Currency nodes (ring) — keyboard accessible (FIX 7) */}
-        {currencyPositions.map((c, i) => {
-          const meta = CURRENCY_META[c.code];
-          const isSelected = c.code === selected;
-          const isHovered = c.code === hovered;
-          const radius = 12 + (c.normalizedWeight / maxWeight) * 18;
-          const isDropping = phase === "shock" && c.momentum < 0.97;
-
-          return (
-            <motion.g
-              key={c.code}
-              initial={{ scale: 0, opacity: 0 }}
-              animate={{
-                scale: 1,
-                opacity: 1,
-                y: isDropping ? [0, 5, 0] : 0,
-              }}
-              transition={{
-                duration: 0.4,
-                delay: 0.3 + i * 0.08,
-                y: { duration: 2, repeat: Infinity },
-              }}
-              style={{ cursor: "pointer", outline: "none" }}
-              onClick={() => onSelect(c.code)}
-              onMouseEnter={() => onHover(c.code)}
-              onMouseLeave={() => onHover(null)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  onSelect(c.code);
-                }
-              }}
-              tabIndex={0}
-              role="button"
-              aria-label={`${c.code} — ${meta?.name ?? c.code}: ${(c.normalizedWeight * 100).toFixed(2)}% of basket. Press Enter for details.`}
-            >
-              {/* Glow ring on selection */}
-              {isSelected && (
-                <motion.circle
-                  cx={c.x}
-                  cy={c.y}
-                  r={radius + 8}
-                  fill="none"
-                  stroke={meta?.color}
-                  strokeWidth={2}
-                  strokeOpacity={0.4}
-                  animate={{ r: [radius + 6, radius + 12, radius + 6] }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                />
-              )}
-              <circle
-                cx={c.x}
-                cy={c.y}
-                r={radius}
-                fill={meta?.color}
-                fillOpacity={isSelected || isHovered ? 0.3 : 0.15}
-                stroke={meta?.color}
-                strokeWidth={isSelected ? 2.5 : 1.5}
-              />
-              <text
-                x={c.x}
-                y={c.y + 3}
-                textAnchor="middle"
-                className="fill-foreground text-[10px] font-bold"
-                fontSize="10"
-              >
-                {c.code}
-              </text>
-              <text
-                x={c.x}
-                y={c.y + radius + 12}
-                textAnchor="middle"
-                className="fill-fg-muted text-[8px]"
-                fontSize="8"
-              >
-                {fmtPct(c.normalizedWeight, 1)}
-              </text>
-              {c.isCapped && (
-                <text x={c.x + radius - 4} y={c.y - radius + 4} textAnchor="end" className="fill-gold text-[8px] font-bold" fontSize="8">CAP</text>
-              )}
-              {c.belowFloor && (
-                <text x={c.x + radius - 4} y={c.y - radius + 4} textAnchor="end" className="fill-destructive text-[8px] font-bold" fontSize="8">FLR</text>
-              )}
-            </motion.g>
-          );
-        })}
-
-        {/* MTQ node (bottom) — wrapped in gold anchor ring (FIX 4) */}
-        <motion.g
-          initial={{ scale: 0, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.6 }}
-        >
-          {/* Outer anchor ring */}
-          <circle
-            cx={mtqPos.x}
-            cy={mtqPos.y}
-            r={38}
-            fill="url(#goldAnchorRing)"
-            opacity={0.7}
-          />
-          <circle
-            cx={mtqPos.x}
-            cy={mtqPos.y}
-            r={28}
-            fill="#c9a227"
-            stroke="#fde68a"
-            strokeWidth={3}
-            filter="url(#glow)"
-          />
-          <text
-            x={mtqPos.x}
-            y={mtqPos.y + 4}
-            textAnchor="middle"
-            className="fill-ink text-sm font-bold"
+            dy="0.35em"
+            className="fill-ink text-[14px] font-bold"
             fontSize="14"
           >
             MTQ
           </text>
           <text
-            x={mtqPos.x}
-            y={mtqPos.y + 55}
+            x={mtqX}
+            y={mtqY}
             textAnchor="middle"
+            dy="52px"
             className="fill-gold text-[10px]"
             fontSize="10"
           >
             1 MTQ = basket value
           </text>
-          <text
-            x={mtqPos.x}
-            y={mtqPos.y + 70}
+        </motion.g>
+
+        {/* Silver satellite — orbits MTQ */}
+        <motion.g
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.6 }}
+          style={{ transformOrigin: `${mtqX}px ${mtqY}px` }}
+        >
+          {/* Dashed silver→MTQ tether */}
+          <motion.line
+            x1={silverX}
+            y1={silverY}
+            x2={mtqX}
+            y2={mtqY}
+            stroke="#e5e7eb"
+            strokeWidth={1.5}
+            strokeOpacity={0.55}
+            strokeDasharray="4 3"
+            animate={{ strokeDashoffset: [0, -14] }}
+            transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+          />
+          <motion.circle cx={silverX} cy={silverY} r={16} fill="url(#silverCore)" filter="url(#orbGlow)" />
+          <motion.circle cx={silverX} cy={silverY} r={9} fill="#b8b4ae" stroke="#e5e7eb" strokeWidth={1.5} />
+          <motion.text
+            x={silverX}
+            y={silverY}
             textAnchor="middle"
+            dy="0.35em"
+            className="fill-ink text-[8px] font-bold"
+            fontSize="8"
+          >
+            Ag
+          </motion.text>
+          <motion.text
+            x={silverX}
+            y={silverY}
+            textAnchor="middle"
+            dy="22px"
             className="fill-fg-muted text-[8px]"
             fontSize="8"
           >
-            anchored to gold
+            {fmtUsd2(silverUsd)}/oz
+          </motion.text>
+        </motion.g>
+
+        {/* Gold core (center) — drawn LAST so it sits on top of crossing beams */}
+        <motion.g
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.6 }}
+          style={{ transformOrigin: `${cx}px ${cy}px` }}
+        >
+          {/* Pulsing outer aura */}
+          <motion.circle
+            cx={cx}
+            cy={cy}
+            r={75}
+            fill="url(#goldCore)"
+            animate={{ r: [68, 80, 68], opacity: [0.8, 1, 0.8] }}
+            transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+          />
+          {/* Counter-rotating reference rings around the gold disc */}
+          <motion.circle
+            cx={cx}
+            cy={cy}
+            r={44}
+            fill="none"
+            stroke="#fde68a"
+            strokeWidth={1}
+            strokeOpacity={0.55}
+            strokeDasharray="3 3"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
+            style={{ transformOrigin: `${cx}px ${cy}px` }}
+          />
+          <motion.circle
+            cx={cx}
+            cy={cy}
+            r={52}
+            fill="none"
+            stroke="#c9a227"
+            strokeWidth={0.6}
+            strokeOpacity={0.35}
+            animate={{ rotate: -360 }}
+            transition={{ duration: 90, repeat: Infinity, ease: "linear" }}
+            style={{ transformOrigin: `${cx}px ${cy}px` }}
+          />
+          {/* Gold disc */}
+          <circle
+            cx={cx}
+            cy={cy}
+            r={32}
+            fill="#c9a227"
+            stroke="#fde68a"
+            strokeWidth={2}
+            filter="url(#strongGlow)"
+          />
+          <text
+            x={cx}
+            y={cy}
+            textAnchor="middle"
+            dy="0.35em"
+            className="fill-ink text-[11px] font-bold"
+            fontSize="11"
+          >
+            GOLD
+          </text>
+          <text
+            x={cx}
+            y={cy}
+            textAnchor="middle"
+            dy="56px"
+            className="fill-gold text-[10px]"
+            fontSize="10"
+          >
+            {fmtUsd2(goldUsd)}/oz · anchor
           </text>
         </motion.g>
 
         {/* Legend */}
-        <text x={20} y={490} className="fill-fg-muted text-[9px]" fontSize="9">
-          Line thickness = weight · Node size = weight · Click or focus a currency for details
+        <text x={20} y={590} className="fill-fg-muted text-[9px]" fontSize="9">
+          Orb size + beam width ∝ weight · orbit distance ∝ 1/weight · MTQ = synthesis · Click an orb for details
         </text>
       </svg>
     </div>
+  );
+}
+
+/* ============================================================
+ * CurrencyOrb — single glowing currency node orbiting the gold core.
+ * Hooks into the shared `time` MotionValue + derives its own angle.
+ * ============================================================ */
+
+function CurrencyOrb({
+  c,
+  cx,
+  cy,
+  time,
+  maxWeight,
+  isSelected,
+  isHovered,
+  index,
+  onSelect,
+  onHover,
+}: {
+  c: OrbWeight;
+  cx: number;
+  cy: number;
+  time: MotionValue<number>;
+  maxWeight: number;
+  isSelected: boolean;
+  isHovered: boolean;
+  index: number;
+  onSelect: (code: string) => void;
+  onHover: (code: string | null) => void;
+}) {
+  const meta = CURRENCY_META[c.code];
+  const color = meta?.color ?? "#888";
+  const r = 10 + (c.normalizedWeight / maxWeight) * 14;
+  const { orbit, period } = c;
+
+  // Derive the orb's instantaneous position from the shared clock.
+  const orbX = useTransform(time, (t) => {
+    const a = (t / 1000 / period) * Math.PI * 2;
+    return cx + orbit * Math.cos(a);
+  });
+  const orbY = useTransform(time, (t) => {
+    const a = (t / 1000 / period) * Math.PI * 2;
+    return cy + orbit * Math.sin(a);
+  });
+
+  const isHighlighted = isSelected || isHovered;
+
+  return (
+    <motion.g
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.4, delay: 0.3 + index * 0.06 }}
+      style={{ cursor: "pointer", outline: "none" }}
+      onClick={() => onSelect(c.code)}
+      onMouseEnter={() => onHover(c.code)}
+      onMouseLeave={() => onHover(null)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onSelect(c.code);
+        }
+      }}
+      tabIndex={0}
+      role="button"
+      aria-label={`${c.code} — ${meta?.name ?? c.code}: ${(c.normalizedWeight * 100).toFixed(2)}% of basket. Press Enter for details.`}
+    >
+      {/* Selection halo */}
+      {isSelected && (
+        <motion.circle
+          cx={orbX}
+          cy={orbY}
+          r={r + 6}
+          fill="none"
+          stroke={color}
+          strokeWidth={1.5}
+          strokeOpacity={0.55}
+          animate={{ r: [r + 4, r + 11, r + 4] }}
+          transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+        />
+      )}
+
+      {/* Glow halo (radial gradient fill) */}
+      <motion.circle
+        cx={orbX}
+        cy={orbY}
+        r={r + 8}
+        fill={`url(#grad-${c.code})`}
+        opacity={isHighlighted ? 0.95 : 0.65}
+      />
+
+      {/* Solid core */}
+      <motion.circle
+        cx={orbX}
+        cy={orbY}
+        r={r}
+        fill={color}
+        fillOpacity={isHighlighted ? 0.5 : 0.28}
+        stroke={color}
+        strokeWidth={isSelected ? 2.2 : 1.2}
+        filter="url(#orbGlow)"
+      />
+
+      {/* Code label (vertically centered on the orb) */}
+      <motion.text
+        x={orbX}
+        y={orbY}
+        textAnchor="middle"
+        dy="0.35em"
+        className="fill-foreground text-[10px] font-bold"
+        fontSize="10"
+      >
+        {c.code}
+      </motion.text>
+
+      {/* Weight label (below the orb) */}
+      <motion.text
+        x={orbX}
+        y={orbY}
+        textAnchor="middle"
+        dy={`${r + 12}px`}
+        className="fill-fg-muted text-[8px]"
+        fontSize="8"
+      >
+        {fmtPct(c.normalizedWeight, 1)}
+      </motion.text>
+
+      {/* Cap / Floor markers (above the orb) */}
+      {c.isCapped && (
+        <motion.text
+          x={orbX}
+          y={orbY}
+          textAnchor="middle"
+          dy={`${-(r + 4)}px`}
+          className="fill-gold text-[8px] font-bold"
+          fontSize="8"
+        >
+          CAP
+        </motion.text>
+      )}
+      {c.belowFloor && (
+        <motion.text
+          x={orbX}
+          y={orbY}
+          textAnchor="middle"
+          dy={`${-(r + 4)}px`}
+          className="fill-destructive text-[8px] font-bold"
+          fontSize="8"
+        >
+          FLR
+        </motion.text>
+      )}
+    </motion.g>
+  );
+}
+
+/* ============================================================
+ * CurrencyBeam — energy beam from a currency orb to the MTQ node,
+ * with a flowing gold particle during the "live" phase.
+ * ============================================================ */
+
+function CurrencyBeam({
+  c,
+  cx,
+  cy,
+  mtqX,
+  mtqY,
+  time,
+  maxWeight,
+  isSelected,
+  isHovered,
+  phase,
+}: {
+  c: OrbWeight;
+  cx: number;
+  cy: number;
+  mtqX: number;
+  mtqY: number;
+  time: MotionValue<number>;
+  maxWeight: number;
+  isSelected: boolean;
+  isHovered: boolean;
+  phase: "intro" | "live" | "shock";
+}) {
+  const isHighlighted = isSelected || isHovered;
+  const { orbit, period } = c;
+
+  // Match the orb's instantaneous position so the beam endpoint tracks it.
+  const orbX = useTransform(time, (t) => {
+    const a = (t / 1000 / period) * Math.PI * 2;
+    return cx + orbit * Math.cos(a);
+  });
+  const orbY = useTransform(time, (t) => {
+    const a = (t / 1000 / period) * Math.PI * 2;
+    return cy + orbit * Math.sin(a);
+  });
+
+  // Particle progresses along the beam (currency → MTQ) on a 2.2s cycle,
+  // offset per currency so they don't all sync visually.
+  const progress = useTransform(
+    time,
+    (t) => (t / 2200 + c.code.charCodeAt(0) * 0.07) % 1
+  );
+  const particleX = useTransform([orbX, progress], (vals: number[]) =>
+    vals[0] + (mtqX - vals[0]) * vals[1]
+  );
+  const particleY = useTransform([orbY, progress], (vals: number[]) =>
+    vals[0] + (mtqY - vals[0]) * vals[1]
+  );
+
+  const strokeWidth = Math.max(1, (c.normalizedWeight / maxWeight) * 4);
+  const baseOpacity = isHighlighted ? 0.85 : 0.35;
+  const beamOpacity = phase === "shock" && !isHighlighted ? 0.15 : baseOpacity;
+
+  return (
+    <>
+      <motion.line
+        x1={orbX}
+        y1={orbY}
+        x2={mtqX}
+        y2={mtqY}
+        stroke={`url(#beam-${c.code})`}
+        strokeWidth={strokeWidth}
+        strokeOpacity={beamOpacity}
+        strokeDasharray="6 4"
+        animate={{ strokeDashoffset: [0, -20] }}
+        transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+        filter="url(#orbGlow)"
+      />
+      {phase === "live" && (
+        <motion.circle
+          cx={particleX}
+          cy={particleY}
+          r={2.2}
+          fill="#fde68a"
+          filter="url(#orbGlow)"
+        />
+      )}
+    </>
   );
 }
 
@@ -839,7 +1086,7 @@ function CurrencyDetail({
             {goldPriceInCurrency.toLocaleString("en-US", { maximumFractionDigits: 2 })} {weight.code}/oz
           </div>
           <div className="text-[10px] text-fg-muted">
-            = {fmtUsd(goldUsd)} USD/oz ÷ FX rate
+            = {fmtUsd2(goldUsd)} USD/oz ÷ FX rate
           </div>
         </div>
         <div className="rounded-lg border border-line bg-ink-card p-3">
@@ -925,8 +1172,8 @@ function GoldAnchorCallout({ goldUsd }: { goldUsd: number }) {
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
               <h4 className="font-display text-base text-gold sm:text-lg">Why gold?</h4>
-              <Badge className="border-gold/40 bg-gold/10 text-[10px] text-gold" title={`Gold anchor: ${fmtUsd(goldUsd)}/oz`}>
-                {fmtUsd(goldUsd)}/oz · anchor
+              <Badge className="border-gold/40 bg-gold/10 text-[10px] text-gold" title={`Gold anchor: ${fmtUsd2(goldUsd)}/oz`}>
+                {fmtUsd2(goldUsd)}/oz · anchor
               </Badge>
             </div>
             <p className="mt-2 max-w-3xl text-sm leading-relaxed text-fg-muted">

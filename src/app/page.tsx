@@ -16,6 +16,7 @@ import { OperatingSystem } from "@/components/operating-system";
 import { MonetaryEngineExplained } from "@/components/monetary-engine-explained";
 import { LiveStatus } from "@/components/live-status";
 import { CommandPalette } from "@/components/command-palette";
+import { useLanguage } from "@/components/language-provider";
 
 type View = "institution" | "transparency" | "infrastructure" | "playbook" | "testnet" | "audit" | "deck" | "constitution" | "admin" | "os" | "engine";
 
@@ -23,18 +24,22 @@ const STORAGE_KEY = "mithqal.view";
 const CHANGE_EVENT = "mithqal:view-change";
 const DEFAULT_VIEW: View = "institution";
 
-const VIEWS: { id: View; label: string; icon: typeof BookOpen; hint: string }[] = [
-  { id: "institution", label: "Institution", icon: Landmark, hint: "Public-facing" },
-  { id: "transparency", label: "Transparency", icon: Eye, hint: "Live · build in public" },
-  { id: "engine", label: "Engine", icon: Compass, hint: "5-layer explainer" },
-  { id: "infrastructure", label: "Infrastructure", icon: Network, hint: "v19.0 infrastructure" },
-  { id: "constitution", label: "Constitution", icon: ScrollText, hint: "v19.0 spec · citable" },
-  { id: "testnet", label: "Testnet", icon: FlaskConical, hint: "MTQ simulator" },
-  { id: "os", label: "OS", icon: Cpu, hint: "Operating System" },
-  { id: "audit", label: "Audit", icon: ShieldCheck, hint: "Testnet validation v1.0" },
-  { id: "deck", label: "Deck", icon: Presentation, hint: "Investor teaser" },
-  { id: "playbook", label: "Playbook", icon: BookOpen, hint: "Internal · COO/PM" },
-  { id: "admin", label: "Admin", icon: LayoutDashboard, hint: "Intake pipeline" },
+// The view id maps to a translation key for the localized label.
+// The icon + hint are static (not translated yet — see i18n follow-up).
+type ViewDef = { id: View; label: string; icon: typeof BookOpen; hint: string; tKey?: string };
+
+const VIEWS: ViewDef[] = [
+  { id: "institution", label: "Institution", icon: Landmark, hint: "Public-facing", tKey: "nav.institution" },
+  { id: "transparency", label: "Transparency", icon: Eye, hint: "Live · build in public", tKey: "nav.transparency" },
+  { id: "engine", label: "Engine", icon: Compass, hint: "5-layer explainer", tKey: "nav.engine" },
+  { id: "infrastructure", label: "Infrastructure", icon: Network, hint: "v19.0 infrastructure", tKey: "nav.infrastructure" },
+  { id: "constitution", label: "Constitution", icon: ScrollText, hint: "v19.0 spec · citable", tKey: "nav.constitution" },
+  { id: "testnet", label: "Testnet", icon: FlaskConical, hint: "MTQ simulator", tKey: "nav.testnet" },
+  { id: "os", label: "OS", icon: Cpu, hint: "Operating System", tKey: "nav.os" },
+  { id: "audit", label: "Audit", icon: ShieldCheck, hint: "Testnet validation v1.0", tKey: "nav.audit" },
+  { id: "deck", label: "Deck", icon: Presentation, hint: "Investor teaser", tKey: "nav.deck" },
+  { id: "playbook", label: "Playbook", icon: BookOpen, hint: "Internal · COO/PM", tKey: "nav.playbook" },
+  { id: "admin", label: "Admin", icon: LayoutDashboard, hint: "Intake pipeline", tKey: "nav.admin" },
 ];
 
 /* ---- External store (localStorage-backed) via useSyncExternalStore ---- */
@@ -147,6 +152,7 @@ function ViewSwitcher({
   view: View;
   setView: (v: View) => void;
 }) {
+  const { t } = useLanguage();
   return (
     <div className="no-print sticky top-0 z-[60] flex justify-center border-b border-line/40 glass">
       <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-3 px-4 py-2 sm:px-8 sm:py-2.5">
@@ -163,6 +169,8 @@ function ViewSwitcher({
           {VIEWS.map((v) => {
             const active = view === v.id;
             const Icon = v.icon;
+            // Localized label — falls back to English if translation missing.
+            const label = v.tKey ? t(v.tKey) : v.label;
             return (
               <button
                 key={v.id}
@@ -173,7 +181,7 @@ function ViewSwitcher({
                 aria-pressed={active}
               >
                 <Icon className="h-3.5 w-3.5" />
-                {v.label}
+                {label}
               </button>
             );
           })}

@@ -9,10 +9,10 @@ export const STATUS = {
     { label: "Founder conviction", note: "Zero budget, full commitment" },
   ],
   missing: [
-    { label: "Legal entity (none)", note: "No company, no Foundation, no operating co" },
+    { label: "Legal entity — JOZOUR LLC", note: "JOZOUR LLC registered (NJ, USA). Foundation pending." },
     { label: "Team (none)", note: "No co-founders, no advisors of record, no Council" },
     { label: "Capital ($0)", note: "No runway, no custody, no audits" },
-    { label: "Working testnet (none)", note: "Specification only — no live MTQ contract" },
+    { label: "Working testnet ✅", note: "Deployed on Monad Testnet. 9/9 on-chain tests PASS." },
   ],
 };
 

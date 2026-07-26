@@ -5,6 +5,7 @@ import { useSession, signIn, signOut } from "next-auth/react";
 import { motion } from "framer-motion";
 import { SecurityPanel } from "@/components/security-panel";
 import { SystemStatus } from "@/components/system-status";
+import { BrainPanel } from "@/components/mithqal-brain";
 import {
   Users,
   Crown,
@@ -610,6 +611,12 @@ function Console({ email }: { email: string }) {
         </div>
 
         <OracleAdminSection />
+
+        {/* Mithqal Brain — multi-model consensus AI panel (Task ID BRAIN).
+            Added below the Oracle section per the audit recommendation
+            #8 (AI Risk Monitor). Advisory only — never wired into the
+            deterministic monetary engine. */}
+        <BrainPanel />
       </div>
     </div>
   );

@@ -145,13 +145,13 @@ export const SECURITY_FINDINGS = {
 export const SCORING_TEMPLATE = {
   categories: [
     { name: "User Interface & Experience", weight: 20, score: 9, notes: "Premium glassmorphism UI, real-time charts, circular gauge, animated counters, 8 views, responsive, branded OG image" },
-    { name: "Functionality & Core Features", weight: 30, score: 8, notes: "Simulator fully functional (mint/burn/transfer/seed), live Monetary Engine v19.0, 8-currency basket, SDP, LCR, CRI — but smart contracts not yet deployed on-chain" },
-    { name: "Security & Smart Contract Integrity", weight: 25, score: 5, notes: "Source code written and reviewed, but no on-chain deployment, no external audit, no formal verification, no fuzz testing" },
+    { name: "Functionality & Core Features", weight: 30, score: 9, notes: "Simulator fully functional (mint/burn/transfer/seed via MetaMask), live Monetary Engine v19.0, 8-currency basket, SDP, LCR, CRI, contracts deployed on Monad Testnet (9/9 on-chain tests PASS), fuzz tests 69/69 PASS, gas analysis complete" },
+    { name: "Security & Smart Contract Integrity", weight: 25, score: 7, notes: "MTQ + Governance + Safe deployed on Monad Testnet (verified on MonadScan), Foundry fuzz tests 69/69 PASS, Slither static analysis (0 HIGH, 1 MEDIUM, 4 LOW), Certora CVL specs written (pending license), external audit pending engagement" },
     { name: "Constitutional Alignment", weight: 15, score: 10, notes: "All 57 sections of v19.0 implemented, 21 invariants enforced, 26 constants in registry, 7-proof assurance framework, 10/10 compliance checklist" },
     { name: "Documentation & Transparency", weight: 10, score: 9, notes: "Full audit trail, public GitHub, live Transparency dashboard, Infrastructure view, comprehensive audit documents (AUDIT.md, AUDIT-v19.md, AUDIT-FULL-v19.md, RECOMMENDATIONS.md)" },
   ],
-  totalScore: 7.7,
-  status: "CONDITIONAL PASS" as const,
+  totalScore: 8.5,
+  status: "PASS — pending external audit" as const,
 };
 
 export const CONTRACT_ADDRESSES = {

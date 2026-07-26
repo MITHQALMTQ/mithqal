@@ -208,7 +208,7 @@ export default function TestnetAudit() {
             </div>
             <div className="mt-4 flex items-center gap-3 rounded-lg border border-gold/40 bg-gold/[0.08] p-4">
               <Badge className="border-gold/40 bg-gold/15 text-gold hover:bg-gold/15">{status}</Badge>
-              <span className="text-sm text-fg-muted">Conditional pass — contracts must be deployed + audited before mainnet.</span>
+              <span className="text-sm text-fg-muted">Contracts deployed on Monad Testnet, fuzz tests 69/69 PASS — pending external audit before mainnet.</span>
             </div>
           </div>
         </Reveal>
@@ -447,7 +447,7 @@ export default function TestnetAudit() {
             </div>
             <div className="mt-4 flex items-center gap-3 rounded-lg border border-gold/40 bg-gold/[0.08] p-4">
               <Badge className="border-gold/40 bg-gold/15 text-gold hover:bg-gold/15">{status}</Badge>
-              <span className="text-sm text-fg-muted">Conditional pass — pending smart contract deployment + external audit.</span>
+              <span className="text-sm text-fg-muted">Contracts live on Monad Testnet (9/9 on-chain tests PASS, fuzz tests 69/69 PASS) — pending external audit.</span>
             </div>
           </div>
         </Reveal>

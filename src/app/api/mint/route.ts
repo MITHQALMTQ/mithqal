@@ -1,12 +1,10 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
 import { db, ensureSchema } from "@/lib/db";
 import { mintFee } from "@/lib/monetary-engine-v19";
 import { enforceRateLimit } from "@/lib/rate-limit";
 
 /**
- * POST /api/mint — Record a mint transaction (admin-only for now).
+ * POST /api/mint — Record a mint transaction (testnet-public, rate-limited).
  *
  * Constitutional context (§9 + §12 of v19.0):
  *   - Minting is gated by the Reserve Ratio invariant (RR ≥ 1.00). When RR
@@ -14,11 +12,14 @@ import { enforceRateLimit } from "@/lib/rate-limit";
  *     this; the backend simply records the resulting tx_hash.
  *   - Mint fee: 0.05% (5 bps), capped at $5,000 per Constitution §9.1.
  *
- * Trust model:
- *   - The backend NEVER holds the deployer private key. The operator signs
- *     the mint transaction client-side via MetaMask (or cast send) and
- *     submits this endpoint with the resulting tx_hash AFTER the
- *     transaction is mined. The backend only persists the audit record.
+ * Trust model (testnet):
+ *   - Public endpoint (no operator auth required for testnet simulation).
+ *     The frontend submits a MetaMask-signed mock mint transaction and
+ *     posts the resulting tx_hash here for the indexer to record.
+ *   - Rate-limited to 20 mints/min/IP to prevent abuse.
+ *   - On mainnet, this endpoint MUST be re-gated: custody partner verifies
+ *     the deposit, then operator's MINTER_ROLE wallet mints MTQ to the
+ *     user, and the resulting tx_hash is recorded here (audit trail only).
  *
  * Request body:
  *   { amountUsd: number, toAddress: string, txHash: string, blockNumber?: number }
@@ -27,15 +28,9 @@ import { enforceRateLimit } from "@/lib/rate-limit";
  *   { ok: true, txHash, type: "mint", amountUsd, fee, recorded: true }
  */
 export async function POST(req: Request) {
-  // Auth-gate: operator session required (same pattern as /api/admin/interests).
-  const session = await getServerSession(authOptions);
-  if (!session) {
-    return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
-  }
-
-  // Defense-in-depth rate limit (auth already controls access, but this
-  // prevents a compromised session from flooding the ledger).
-  const blocked = enforceRateLimit("mint", req, 60, 60_000); // 60/min/IP
+  // Public endpoint (testnet simulation), but rate-limited (20 mints/min/IP).
+  // On mainnet this MUST be re-gated to operator auth + custody confirmation.
+  const blocked = enforceRateLimit("mint", req, 20, 60_000);
   if (blocked) return blocked;
 
   let body: unknown;

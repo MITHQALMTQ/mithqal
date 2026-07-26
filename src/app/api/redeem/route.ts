@@ -1,6 +1,4 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
 import { db, ensureSchema } from "@/lib/db";
 import { redemptionFee } from "@/lib/monetary-engine-v19";
 import { enforceRateLimit } from "@/lib/rate-limit";
@@ -14,11 +12,13 @@ import { enforceRateLimit } from "@/lib/rate-limit";
  *     reserves.
  *   - Redemption fee: 0.05% (5 bps), capped at $5,000 per Constitution §9.2.
  *
- * Trust model:
- *   - The backend never holds the redeemer's private key. The redeemer
- *     signs the burn transaction client-side via MetaMask (or cast send)
- *     and submits this endpoint with the resulting tx_hash AFTER the
- *     transaction is mined. The backend only persists the audit record.
+ * Trust model (testnet):
+ *   - Public endpoint (no operator auth required for testnet simulation).
+ *     The frontend submits a MetaMask-signed mock burn transaction and
+ *     posts the resulting tx_hash here for the indexer to record.
+ *   - Rate-limited to 20 redeems/min/IP.
+ *   - On mainnet, this endpoint should require an EIP-191 signed message
+ *     from `fromAddress` to authenticate the burn request before recording.
  *
  * Request body:
  *   { mtqAmount: number, fromAddress: string, txHash: string, blockNumber?: number }
@@ -27,17 +27,9 @@ import { enforceRateLimit } from "@/lib/rate-limit";
  *   { ok: true, txHash, type: "redeem", mtqAmount, fee, recorded: true }
  */
 export async function POST(req: Request) {
-  // Auth-gate: operator session required for now. Once the indexer is
-  // fully permissionless, this gate can be relaxed to "any signed
-  // message from fromAddress" (EIP-191) — but until then the operator
-  // curates which redemptions get recorded.
-  const session = await getServerSession(authOptions);
-  if (!session) {
-    return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
-  }
-
-  // Defense-in-depth rate limit.
-  const blocked = enforceRateLimit("redeem", req, 60, 60_000); // 60/min/IP
+  // Public endpoint (testnet simulation), but rate-limited (20 redeems/min/IP).
+  // On mainnet: require EIP-191 signature from fromAddress for authentication.
+  const blocked = enforceRateLimit("redeem", req, 20, 60_000);
   if (blocked) return blocked;
 
   let body: unknown;
