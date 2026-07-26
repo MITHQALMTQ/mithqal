@@ -1223,3 +1223,26 @@ Stage Summary:
 - ✅ `bun run lint` clean — no errors, no warnings.
 - ✅ Optional `data` prop accepts live WeightingData from /api/transparency, defaults to BASELINE_CURRENCIES when not provided.
 - ✅ Responsive (mobile-stacked) + accessible (aria-label on the SVG, prefers-reduced-motion respected).
+
+---
+Task ID: 22 (retroactive — was missing from worklog due to session interruption)
+Agent: main (COO + CTO + Crypto/Economic/Banking/Structuring Expert)
+Task: Fix all 5 audit findings — formal verification, external audit prep, fuzz testing, gas optimization, post-quantum roadmap.
+
+Work Log:
+- Installed Foundry 1.7.1, Slither 0.11.5, solc 0.8.20/0.8.24, OpenZeppelin v5.0.2
+- High #1 (Certora): 2 CVL specs written (MTQ + MockOracle), 13 invariants + 14 rules total
+- High #2 (External audit): Foundry fuzz + Slither + gas analysis, AUDIT-REPORT.md (874 lines)
+- Medium #1 (Fuzz): 69 tests, 10K runs each, 0 failures, Handler-pattern invariants
+- Medium #2 (Gas): measured — mint 62K avg, burn 41K avg, transfer 34K avg, balanceOf 2.6K
+- Low #1 (PQ): POST-QUANTUM-ROADMAP.md, 5 phases, UUPS + Falcon-512 by 2029
+- CRITICAL FIX: MTQ.burn() notEmergencyPaused modifier removed (Constitution § Invariant 5 violation)
+- Slither: 0 HIGH, 1 MEDIUM (reentrancy), 4 LOW, 20 INFO
+- 69/69 tests pass after burn() fix
+- Commit: 03a175b
+
+Stage Summary:
+- All 5 audit findings addressed (2 resolved, 3 in-progress/pending external)
+- Constitutional violation fixed (burn-never-pauses now enforced)
+- Audit-ready package complete: specs + tests + report + roadmap
+- Remaining pre-mainnet: fix M1 reentrancy, standardize pragma, engage external auditor
