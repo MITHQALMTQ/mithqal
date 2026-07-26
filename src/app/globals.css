@@ -338,6 +338,54 @@
   stroke: oklch(0.30 0.006 70 / 0.40) !important;
 }
 
+/* ===== Monetary Engine Explained — astrolabe & sliders ===== */
+/* Astrolabe tick ring rotation (260s linear; disabled when user prefers reduced motion) */
+.astrolabe-tick-ring {
+  transform-origin: 240px 240px;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .astrolabe-tick-ring {
+    animation: mithqal-astrolabe-spin 260s linear infinite;
+  }
+}
+@keyframes mithqal-astrolabe-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Custom range slider — used by the interactive simulator */
+.monetary-range {
+  outline: none;
+}
+.monetary-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #EBCB6E;
+  border: 2px solid #0E0C09;
+  cursor: pointer;
+  box-shadow: 0 0 0 1px #D4AF37, 0 0 12px -2px rgba(235, 203, 110, 0.6);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.monetary-range::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 0 1px #EBCB6E, 0 0 16px -2px rgba(235, 203, 110, 0.85);
+}
+.monetary-range::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #EBCB6E;
+  border: 2px solid #0E0C09;
+  cursor: pointer;
+  box-shadow: 0 0 0 1px #D4AF37, 0 0 12px -2px rgba(235, 203, 110, 0.6);
+}
+.monetary-range:focus-visible {
+  outline: 2px solid #EBCB6E;
+  outline-offset: 4px;
+}
+
 /* ===== Print (Save as PDF) ===== */
 @media print {
   .no-print { display: none !important; }

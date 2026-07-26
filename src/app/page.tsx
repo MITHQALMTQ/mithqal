@@ -2,7 +2,7 @@
 
 import { useSyncExternalStore, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { BookOpen, Landmark, FlaskConical, Presentation, ScrollText, LayoutDashboard, Eye, Network, ShieldCheck, Cpu } from "lucide-react";
+import { BookOpen, Landmark, FlaskConical, Presentation, ScrollText, LayoutDashboard, Eye, Network, ShieldCheck, Cpu, Compass } from "lucide-react";
 import Playbook from "@/components/playbook";
 import PublicSite from "@/components/public-site";
 import TestnetDashboard from "@/components/testnet";
@@ -13,8 +13,9 @@ import TransparencyDashboard from "@/components/transparency";
 import InfrastructureView from "@/components/infrastructure";
 import TestnetAudit from "@/components/testnet-audit";
 import { OperatingSystem } from "@/components/operating-system";
+import { MonetaryEngineExplained } from "@/components/monetary-engine-explained";
 
-type View = "institution" | "transparency" | "infrastructure" | "playbook" | "testnet" | "audit" | "deck" | "constitution" | "admin" | "os";
+type View = "institution" | "transparency" | "infrastructure" | "playbook" | "testnet" | "audit" | "deck" | "constitution" | "admin" | "os" | "engine";
 
 const STORAGE_KEY = "mithqal.view";
 const CHANGE_EVENT = "mithqal:view-change";
@@ -23,6 +24,7 @@ const DEFAULT_VIEW: View = "institution";
 const VIEWS: { id: View; label: string; icon: typeof BookOpen; hint: string }[] = [
   { id: "institution", label: "Institution", icon: Landmark, hint: "Public-facing" },
   { id: "transparency", label: "Transparency", icon: Eye, hint: "Live · build in public" },
+  { id: "engine", label: "Engine", icon: Compass, hint: "5-layer explainer" },
   { id: "infrastructure", label: "Infrastructure", icon: Network, hint: "v19.0 infrastructure" },
   { id: "constitution", label: "Constitution", icon: ScrollText, hint: "v19.0 spec · citable" },
   { id: "testnet", label: "Testnet", icon: FlaskConical, hint: "MTQ simulator" },
@@ -45,7 +47,7 @@ function subscribe(cb: () => void) {
   };
 }
 
-const VALID_VIEWS: View[] = ["institution", "transparency", "infrastructure", "constitution", "testnet", "os", "audit", "deck", "playbook", "admin"];
+const VALID_VIEWS: View[] = ["institution", "transparency", "infrastructure", "constitution", "testnet", "os", "audit", "deck", "playbook", "admin", "engine"];
 
 function getSnapshot(): View {
   const v = window.localStorage.getItem(STORAGE_KEY);
@@ -121,6 +123,8 @@ export default function Page() {
               <TransparencyDashboard />
             ) : view === "infrastructure" ? (
               <InfrastructureView />
+            ) : view === "engine" ? (
+              <MonetaryEngineExplained />
             ) : (
               <PublicSite />
             )}

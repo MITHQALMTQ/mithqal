@@ -1183,3 +1183,43 @@ Stage Summary:
 - ✅ Vercel CLI installed (v57.0.0)
 - ⚠️ Operator one-time setup: `vercel login` + `vercel link` (2 minutes)
 - ⚠️ After env push: redeploy via `vercel --prod` or `git push origin main`
+
+---
+Task ID: 2
+Agent: general-purpose sub-agent (monetary engine visualization)
+Task: Build /home/z/my-project/src/components/monetary-engine-explained.tsx — a comprehensive animated React component explaining the Mithqal monetary engine across 7 sections (Hero / 5 Layers / Astrolabe / Shock Simulator / Gold & Silver / Minting Flow / Guardrails).
+
+Reference Files Consulted:
+- /home/z/my-project/src/components/currency-weighting.tsx (style + Reveal/Badge import patterns)
+- /home/z/my-project/src/components/reveal.tsx (shared Reveal wrapper)
+- /home/z/my-project/upload/mithqal-currency-weighting.html (astrolabe dual-ring design — adapted the SVG approach)
+
+Work Log:
+- Built the complete `MonetaryEngineExplained` component (1,649 lines) as a single-file, scroll-driven educational experience with state lifted to the top-level component so the §4 simulator drives the §3 astrolabe ring live (no external store needed).
+- **State & math:** Pure-engine helpers (`applyCapFloor`, `computeMomentumScenario`, `computeUsdShareScenario`) mirror the brief exactly — Mode A multiplies the selected currency's weight by the stabilized factor (=1+0.6·(momentumClamped−1), momentumClamped in [0.95, 1.05]) then renormalizes and iteratively applies the 60% cap + 0.5% floor. Mode B scales USD by (1+decline), redistributes the lost share proportionally to the other seven currencies, renormalizes, and applies cap/floor — also exposing the largest beneficiary and cap headroom in the readout.
+- **Section 1 — Hero "The Constitutional Mirror":** Animated astrolabe glyph + 4 pillar badges (100% Reserved · Neutral · Algorithmic · Sharia-compliant) using lucide icons (ShieldCheck, Scale, Cog, BookOpen) in gold-on-ink pill style.
+- **Section 2 — 5 Layers Overview:** Vertical stack of 5 staggered Reveal cards (Currency Basket → Asset Allocation → Bullion Split → Stablecoins → Governance), each with a numbered gold medallion, lucide icon, tag Badge, and a down-arrow connector that animates between layers.
+- **Section 3 — Astrolabe Ring (centerpiece):** SVG dual-ring (viewBox 0 0 480 480) — outer ring is 8 currency arcs sized proportional to baseline weights (USD 47.46 / EUR 20.50 / GBP 10.17 / JPY 9.67 / CNY 7.90 / CHF 1.93 / AUD 1.27 / CAD 1.10) with the exact spec colors (#D4AF37, #3B6E8C, #8B3A3A, #4F7A55, #9B5B3F, #6E6259, #7A6A8A, #5C7A7A); inner ring is the 4 STATIC reserve layers (Fiat 75% / Gold 16% / Silver 4% / Stable 5% — colors #8A7A55 / #D4AF37 / #B7BCC0 / #4A4638) with embedded percentage labels. 72 tick marks around the outer edge with every 6th one longer (length 14 vs 6). The tick ring rotates at 260s linear infinite via the `.astrolabe-tick-ring` CSS class, gated behind `@media (prefers-reduced-motion: no-preference)` so motion-sensitive users see a static ring. Center disc shows the basket stability index (Mode A) or live USD weight (Mode B) with up/down/flat color tones. Below the SVG: an 8-row currency legend with live diff indicators (TrendingUp/Down/Minus) + a 4-cell reserve layer strip.
+- **Section 4 — Interactive Shock Simulator:** Tab toggle between two modes. Mode A "Momentum vs Gold" exposes 8 currency chips (selected highlighted gold), a -20%→+20% slider styled with a red-to-green gradient, and a 4-cell readout (raw move, clamped momentum, stabilized factor, new basket weight). Mode B "USD Loses Share" exposes -10/-20/-30% preset buttons plus a -40%→0% slider and a 4-cell readout (USD share lost, new USD weight, largest beneficiary + pts gained, 60% cap headroom pts). Each mode change re-renders the astrolabe because `currentWeights` is derived in the parent. Added a "Four Forces" explainer grid (Momentum / Mean Reversion / Shock Absorber / Liquidity Overlay) to give the simulator intellectual context. The 0.05% mint fee is referenced in the minting flow step 4.
+- **Section 5 — Gold & Silver — The Anchor:** Two-column layout explaining gold's two roles (ruler — measured against, no central bank; held directly — 16% of reserves is the static reserve layer). Visual split bar (gold 80% / silver 20%) with two value cards showing the constitutional ranges (60–95% / 5–40%). Three scenario cards (drops / rises / volatile) describing Council responses inside the constitutional ranges.
+- **Section 6 — Minting Flow (6 steps per the brief's 6-action list):** Staggered Reveal grid with numbered gold medallions, color-coded top accent strips, and inter-step animated ArrowRight indicators that respect reduced-motion. Steps: deposit → verify → calculate NAV → mint MTQ minus 0.05% fee → add to reserve pool + rebalance → user receives MTQ.
+- **Section 7 — Constitutional Guardrails:** 10-card grid (100% reserve · no discretionary mint · no lending · no commingling · 60% cap · 0.5% floor · 15–25% bullion · 60–95% gold · 5–40% silver · ≤8% stablecoins) each with a gold-tinted icon medallion, a short rule, and a monospace value badge. Closing "Why this matters" callout explaining the Multi-Sig Safe refuses to sign any rule-violating action.
+- **Optional `data` prop:** Accepts `WeightingData` (live weights from /api/transparency). When provided, the 8 baseline currencies have their `weight` field overwritten by `normalizedWeight × 100` from the API; otherwise the BASELINE_CURRENCIES constants are used. Colors and codes stay fixed.
+- **CSS additions (src/app/globals.css):** Added `.astrolabe-tick-ring` (260s linear infinite rotation, gated behind prefers-reduced-motion: no-preference), `.monetary-range` (custom range slider thumb — gold gradient circle with glow), and a print-mode override to disable the grain background. Reuses the existing `.grain-bg` utility for the hero wash.
+- **Integration (src/app/page.tsx):** Added the "engine" view to the VIEWS array (icon: Compass, label "Engine", hint "5-layer explainer"), imported `MonetaryEngineExplained`, and wired it into the AnimatePresence view-switcher. `VALID_VIEWS` array extended to include "engine".
+- **Tailwind tokens used:** bg-ink-soft, text-gold, text-gold-soft, text-gold-deep, border-gold/30, border-gold/40, border-line, text-fg-muted, font-display, from-gold/15, from-reserve/15 — matches the existing institutional gold/ink palette used in currency-weighting.tsx, transparency.tsx, and public-site.tsx.
+
+Verification:
+- `bun run lint` → clean (no errors, no warnings) — `$ eslint .` exits 0.
+- `bunx tsc --noEmit` → zero TypeScript errors related to monetary-engine-explained.tsx (the only TS error in the repo is an unrelated one in src/lib/oracle-data.ts).
+- All 7 sections render with the exact colors, weights, ranges, and formulas specified in the brief.
+- The slider in §4 updates the astrolabe arcs in §3 live (state lifted to MonetaryEngineExplained).
+- prefers-reduced-motion is respected (rotation disabled, minting-flow arrows hidden).
+
+Stage Summary:
+- ✅ /home/z/my-project/src/components/monetary-engine-explained.tsx built (1,649 lines, 7 sections, dual-ring astrolabe centerpiece, interactive simulator with two modes, all spec colors/weights/ranges).
+- ✅ Wired into src/app/page.tsx as the "Engine" view (Compass icon).
+- ✅ CSS additions to src/app/globals.css (astrolabe rotation, slider thumb, print overrides).
+- ✅ `bun run lint` clean — no errors, no warnings.
+- ✅ Optional `data` prop accepts live WeightingData from /api/transparency, defaults to BASELINE_CURRENCIES when not provided.
+- ✅ Responsive (mobile-stacked) + accessible (aria-label on the SVG, prefers-reduced-motion respected).
