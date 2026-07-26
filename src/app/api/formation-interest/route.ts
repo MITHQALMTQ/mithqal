@@ -1,12 +1,21 @@
 import { NextResponse } from "next/server";
 import { db, ensureSchema } from "@/lib/db";
 import { notifyNewSubmission } from "@/lib/email";
+import { enforceRateLimit } from "@/lib/rate-limit";
 
 // Public Formation Committee interest capture.
 // This is the credibility-layer intake: investors, advisors, anchor
 // participants and Council nominees. POST only; no listing endpoint to
 // avoid leaking submissions.
+//
+// Rate limited: 5 submissions per hour per IP (see src/lib/rate-limit.ts).
+// Returns 429 with Retry-After header when exceeded.
 export async function POST(req: Request) {
+  // Rate limit FIRST — before parsing the body — so abusive clients can't
+  // even waste CPU on JSON parsing once they've hit the limit.
+  const blocked = enforceRateLimit("formation-interest", req, 5, 3600_000);
+  if (blocked) return blocked;
+
   let body: unknown;
   try {
     body = await req.json();

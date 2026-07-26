@@ -1,0 +1,346 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Mithqal — Constitutional Settlement Institution API",
+    "version": "v19.0-stable",
+    "description": "The Mithqal public API. All endpoints are relative to the site root (https://mithqal.vercel.app). The Admin endpoints require an authenticated operator session (NextAuth JWT). Rate limiting: 5 submissions/hour/IP on public POST endpoints.",
+    "contact": {
+      "name": "Mithqal Formation Committee",
+      "url": "https://mithqal.vercel.app"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://github.com/MITHQALMTQ/mithqal/blob/main/LICENSE"
+    }
+  },
+  "servers": [
+    { "url": "https://mithqal.vercel.app", "description": "Production" },
+    { "url": "http://localhost:3000", "description": "Local development" }
+  ],
+  "tags": [
+    { "name": "Public", "description": "Public data endpoints — no auth required" },
+    { "name": "Formation", "description": "Formation Committee intake — public POST" },
+    { "name": "Admin", "description": "Operator-only endpoints — require NextAuth session" },
+    { "name": "Auth", "description": "NextAuth authentication endpoints" }
+  ],
+  "paths": {
+    "/api/transparency": {
+      "get": {
+        "tags": ["Public"],
+        "summary": "Live transparency data",
+        "description": "Returns the full live monetary state: gold price, 8-currency basket with structural weights (Σ=100%) and normalized weights (Σ=100%), 3-layer reserves (market/adjusted/liquidation), 3 NAVs (market/liquidation/stress), reserve ratio, LCR, portfolio duration, CRI, volatility, shock absorber, basket verification, haircuts, and fees. Data is refreshed from live oracles (gold-api.com, open.er-api.com, CoinGecko) on every request.",
+        "responses": {
+          "200": {
+            "description": "Live monetary state",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "generatedAt": { "type": "string", "format": "date-time" },
+                    "monetary": {
+                      "type": "object",
+                      "properties": {
+                        "specVersion": { "type": "string", "example": "v19.0" },
+                        "goldUsd": { "type": "number", "example": 4053.50 },
+                        "reserves": { "type": "object" },
+                        "nav": { "type": "object" },
+                        "reserveRatio": { "type": "object" },
+                        "lcr": { "type": "object" },
+                        "cri": { "type": "object" },
+                        "weights": {
+                          "type": "array",
+                          "description": "8-currency basket weights (Σ structuralWeight = 1.0, Σ normalizedWeight = 1.0)",
+                          "items": { "type": "object" }
+                        },
+                        "basketVerification": {
+                          "type": "object",
+                          "properties": {
+                            "sumIsOne": { "type": "boolean" },
+                            "allAboveFloor": { "type": "boolean" },
+                            "allBelowCap": { "type": "boolean" },
+                            "passed": { "type": "boolean" }
+                          }
+                        }
+                      }
+                    },
+                    "formation": { "type": "object" },
+                    "testnet": { "type": "object" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/infrastructure": {
+      "get": {
+        "tags": ["Public"],
+        "summary": "Constitutional infrastructure data",
+        "description": "Returns the full v19.0 constitutional infrastructure: 20 constitutional invariants, 26 constitutional constants, 7 proofs of reserves, redemption hierarchy, settlement pipeline, supply lifecycles, US + international regulatory frameworks, Sharia governance, stress testing scenarios.",
+        "responses": {
+          "200": { "description": "Constitutional infrastructure" }
+        }
+      }
+    },
+    "/api/testnet": {
+      "get": {
+        "tags": ["Public"],
+        "summary": "Testnet simulator state",
+        "description": "Returns the current testnet supply, NAV, reserve ratio, and the append-only ledger of mint/redeem operations.",
+        "responses": {
+          "200": { "description": "Testnet state" }
+        }
+      }
+    },
+    "/api/testnet/mint": {
+      "post": {
+        "tags": ["Public"],
+        "summary": "Mint MTQ (simulator)",
+        "description": "Mints MTQ against a USD deposit in the testnet simulator. Records the operation in the append-only ledger. Note: this is a SIMULATOR, not on-chain Monad minting. On-chain minting requires MINTER_ROLE on the deployed contract.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "amountUsd": { "type": "number", "minimum": 1 },
+                  "participant": { "type": "string", "maxLength": 64 }
+                },
+                "required": ["amountUsd", "participant"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Minted successfully" },
+          "400": { "description": "Invalid input" }
+        }
+      }
+    },
+    "/api/testnet/redeem": {
+      "post": {
+        "tags": ["Public"],
+        "summary": "Redeem MTQ (simulator)",
+        "description": "Redeems MTQ for USD in the testnet simulator. Burns MTQ, releases reserves proportionally, records the operation.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "mtq": { "type": "number", "minimum": 0.0001 },
+                  "participant": { "type": "string", "maxLength": 64 }
+                },
+                "required": ["mtq", "participant"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Redeemed successfully" },
+          "400": { "description": "Invalid input or insufficient supply" }
+        }
+      }
+    },
+    "/api/testnet/seed": {
+      "post": {
+        "tags": ["Public"],
+        "summary": "Seed testnet with sample operations",
+        "description": "Populates the testnet simulator with a few sample mint/redeem operations so the dashboard isn't empty on first visit.",
+        "responses": {
+          "200": { "description": "Seeded" }
+        }
+      }
+    },
+    "/api/formation-interest": {
+      "post": {
+        "tags": ["Formation"],
+        "summary": "Submit Formation Committee interest",
+        "description": "Public intake for investors, advisors, anchor participants, Council nominees, and partners. Records to DB and triggers email notification to the operator. Rate limited: 5 requests/hour/IP. Returns 429 with Retry-After when exceeded.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "fullName": { "type": "string", "minLength": 2, "maxLength": 120 },
+                  "email": { "type": "string", "format": "email" },
+                  "org": { "type": "string", "maxLength": 200 },
+                  "role": {
+                    "type": "string",
+                    "enum": ["investor", "advisor", "anchor", "council-nominee", "partner", "other"]
+                  },
+                  "message": { "type": "string", "maxLength": 4000 }
+                },
+                "required": ["fullName", "email", "role"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Submission recorded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": { "type": "boolean", "example": true },
+                    "id": { "type": "string", "example": "cms1l3sgy0000ni3730ju1fc7" }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "Validation error" },
+          "429": {
+            "description": "Rate limited — too many submissions",
+            "headers": {
+              "Retry-After": { "schema": { "type": "integer" }, "description": "Seconds to wait" },
+              "X-RateLimit-Limit": { "schema": { "type": "integer" } },
+              "X-RateLimit-Remaining": { "schema": { "type": "integer" } },
+              "X-RateLimit-Reset": { "schema": { "type": "integer" }, "description": "Epoch seconds" }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/interests": {
+      "get": {
+        "tags": ["Admin"],
+        "summary": "List Formation Committee submissions",
+        "description": "Auth-gated. Returns all submissions with optional role filter. Totals and byRole breakdown are always unfiltered so dashboard stats remain stable.",
+        "security": [{ "nextauth": [] }],
+        "parameters": [
+          {
+            "name": "role",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["investor", "advisor", "anchor", "council-nominee", "partner", "other", "all"]
+            }
+          }
+        ],
+        "responses": {
+          "200": { "description": "List of submissions" },
+          "401": { "description": "Unauthorized — no session" }
+        }
+      }
+    },
+    "/api/admin/smtp-test": {
+      "get": {
+        "tags": ["Admin"],
+        "summary": "SMTP configuration status",
+        "description": "Returns the current SMTP configuration status (configured/not configured) WITHOUT exposing credentials.",
+        "security": [{ "nextauth": [] }],
+        "responses": {
+          "200": {
+            "description": "SMTP status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "configured": { "type": "boolean" },
+                    "host": { "type": "string" },
+                    "port": { "type": "string" },
+                    "user": { "type": "string" },
+                    "notifyEmail": { "type": "string" },
+                    "passConfigured": { "type": "boolean" }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" }
+        }
+      },
+      "post": {
+        "tags": ["Admin"],
+        "summary": "Send SMTP test email",
+        "description": "Sends a test email to ADMIN_NOTIFY_EMAIL via the configured SMTP transporter. Verifies end-to-end connectivity (auth + STARTTLS + delivery).",
+        "security": [{ "nextauth": [] }],
+        "responses": {
+          "200": { "description": "Email sent" },
+          "500": { "description": "SMTP not configured or send failed" },
+          "401": { "description": "Unauthorized" }
+        }
+      }
+    },
+    "/api/auth/csrf": {
+      "get": {
+        "tags": ["Auth"],
+        "summary": "Get CSRF token",
+        "description": "Returns a CSRF token for use in credential login POST.",
+        "responses": {
+          "200": {
+            "description": "CSRF token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "csrfToken": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/session": {
+      "get": {
+        "tags": ["Auth"],
+        "summary": "Get current session",
+        "description": "Returns the current NextAuth session (null if not logged in).",
+        "responses": {
+          "200": { "description": "Session (or null)" }
+        }
+      }
+    },
+    "/api/auth/callback/credentials": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Operator login",
+        "description": "Authenticates the operator against ADMIN_EMAIL + ADMIN_PASSWORD_HASH env vars. Returns a session cookie.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "csrfToken": { "type": "string" },
+                  "email": { "type": "string", "format": "email" },
+                  "password": { "type": "string", "format": "password" },
+                  "json": { "type": "string", "example": "true" }
+                },
+                "required": ["csrfToken", "email", "password"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Login successful (sets session cookie)" },
+          "401": { "description": "Invalid credentials" }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "nextauth": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "next-auth.session-token",
+        "description": "NextAuth JWT session cookie. Obtain via POST /api/auth/callback/credentials."
+      }
+    }
+  }
+}

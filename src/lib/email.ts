@@ -53,7 +53,10 @@ export async function sendNotificationEmail(
   email: NotificationEmail
 ): Promise<{ sent: boolean; error?: string }> {
   const t = getTransporter();
-  const from = process.env.SMTP_FROM ?? "Mithqal <noreply@mithqal.io>";
+  // iCloud/Apple Mail requires the From address to match the authenticated
+  // SMTP_USER. Default to SMTP_USER if SMTP_FROM is not explicitly set, so
+  // the operator doesn't have to remember to set both.
+  const from = process.env.SMTP_FROM ?? (process.env.SMTP_USER ? `Mithqal <${process.env.SMTP_USER}>` : "Mithqal <noreply@mithqal.io>");
 
   if (!t) {
     // No SMTP configured — log to server console so it's visible in dev

@@ -323,6 +323,19 @@ function Console({ email }: { email: string }) {
     fetchList();
   });
 
+  // Polling fallback — when the WebSocket mini-service isn't reachable
+  // (e.g., on Vercel where the mini-service can't run, or during dev when
+  // it isn't started), poll /api/admin/interests every 30s. This guarantees
+  // the operator still sees new submissions within 30s even without the
+  // real-time channel. See RECOMMENDATIONS.md item #7.
+  useEffect(() => {
+    if (notifyConnected) return; // WebSocket is live — no need to poll
+    const interval = setInterval(() => {
+      fetchList();
+    }, 30_000);
+    return () => clearInterval(interval);
+  }, [notifyConnected, fetchList]);
+
   const exportCsv = () => {
     if (!data?.rows.length) return;
     const header = ["Name", "Email", "Organisation", "Role", "Submitted (ISO)", "Message"];
