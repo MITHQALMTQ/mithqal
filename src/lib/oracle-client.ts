@@ -190,22 +190,26 @@ export async function getOracleSnapshot(): Promise<OracleSnapshot> {
  */
 async function getFallbackOracleSnapshot(): Promise<OracleSnapshot> {
   try {
-    // Gold price from gold-api.com (free, no key)
-    const goldRes = await fetch("https://gold-api.com/api/price", {
+    // Gold price from gold-api.com (free, no key) — uses api. subdomain
+    const goldRes = await fetch("https://api.gold-api.com/price/XAU", {
       signal: AbortSignal.timeout(5000),
     });
     const goldData = await goldRes.json();
-    const goldUsd = typeof goldData.price === "number" ? goldData.price : 1850;
+    const goldUsd = typeof goldData.price === "number" ? goldData.price : 4053.70;
 
-    // Silver price (free, no key) — try metals-api or use a fallback
+    // Silver price (free, no key) — same API, XAG symbol
     let silverUsd = 25; // reasonable default
     try {
-      const silverRes = await fetch("https://gold-api.com/api/price/XAG", {
+      const silverRes = await fetch("https://api.gold-api.com/price/XAG", {
         signal: AbortSignal.timeout(5000),
       });
       if (silverRes.ok) {
-        const silverData = await silverRes.json();
-        if (typeof silverData.price === "number") silverUsd = silverData.price;
+        const text = await silverRes.text();
+        // Only parse as JSON if it looks like JSON (not HTML)
+        if (text.trim().startsWith("{")) {
+          const silverData = JSON.parse(text);
+          if (typeof silverData.price === "number") silverUsd = silverData.price;
+        }
       }
     } catch {
       // keep default
