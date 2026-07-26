@@ -1,15 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import {
   Lock, Scale, Settings, Shield, GitBranch, FileCheck, Network,
   Landmark, BookOpen, AlertTriangle, CheckCircle2, Globe, Activity,
+  Search, ChevronRight, Link2,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Logo } from "@/components/logo";
+import { DetailModal } from "@/components/detail-modal";
 
 interface Invariant { name: string; reason: string; amendable: false }
 interface Constant { name: string; symbol: string; value: number; unit: string; section: string; modifiable: boolean; modificationRule: string }
@@ -35,6 +37,136 @@ interface InfraData {
   operationalCapitalMonths: number;
   generatedAt: string;
 }
+
+/* ============================================================
+ * P1: invariant-detail enrichment — the API returns only {name, reason,
+ * amendable:false}. We layer additional context (constitutional section,
+ * full description, related invariants) via a local map keyed by name.
+ * This keeps the modal meaningful without requiring an API change.
+ * ============================================================ */
+
+const INVARIANT_DETAIL: Record<string, { section: string; description: string; related: string[] }> = {
+  "Constitutional Identity": {
+    section: "§1 — Constitutional Objectives",
+    description:
+      "The Institution's identity — a Constitutional Monetary Institution providing neutral, fully-reserved settlement infrastructure for international trade — cannot be changed by any amendment, governance decision, or emergency measure. This is the bedrock provision from which every other invariant derives.",
+    related: ["Institutional Neutrality", "Non-Sovereign Monetary Status"],
+  },
+  "Institutional Neutrality": {
+    section: "§2 — Constitutional Principles",
+    description:
+      "The Institution must remain politically, economically, and jurisdictionally neutral. Neutrality is demonstrated through verifiable non-discretionary processes — never by declaration. No decision may align the Institution with any state, bloc, or political movement.",
+    related: ["Constitutional Identity", "Constitutional Transparency"],
+  },
+  "Non-Sovereign Monetary Status": {
+    section: "§2 — Constitutional Principles",
+    description:
+      "MTQ shall never become, or be declared as, a sovereign currency. The Institution explicitly disclaims any aspiration to replace sovereign money; it complements international trade settlement through constitutional stability, transparency, and prudence.",
+    related: ["Constitutional Identity", "Institutional Neutrality"],
+  },
+  "Gold Constitutional Anchor": {
+    section: "§14 — Gold Numeraire",
+    description:
+      "Gold is the constitutional anchor of the basket — the ruler against which every currency's momentum is measured. Gold is held physically in allocated form (Tier 3 + Tier 4) and is never liquidated while sufficient eligible reserves remain (§34.2 Bullion Protection Rule).",
+    related: ["Reserve Segregation", "No Lending of Reserves"],
+  },
+  "Reserve Segregation": {
+    section: "§6 — Reserve Custody",
+    description:
+      "Reserves are held in segregated custody accounts at independent qualified custodians. They are never commingled with institutional operating funds, never pledged as collateral, and never subject to any third-party claim.",
+    related: ["100% Reserve Minimum", "No Encumbrance of Reserves", "No Lending of Reserves"],
+  },
+  "100% Reserve Minimum": {
+    section: "§4 — Reserve Ratio (RR)",
+    description:
+      "The reserve ratio (RR = R_a / (S × NAV_m)) must remain ≥ 100% at all times. Minting auto-pauses if RR drops below; the Safe Multi-Sig refuses any custodian action that would push RR below the floor. This invariant cannot be suspended even in constitutional emergency.",
+    related: ["No Fractional Reserve", "Reserve Segregation", "Mandatory Proof of Reserves"],
+  },
+  "No Fractional Reserve": {
+    section: "§6 — Reserve Custody",
+    description:
+      "Fractional reserve banking is constitutionally prohibited. The Institution cannot create MTQ against future expected reserves, against borrowed reserves, or against any reserve that is not yet settled and verified. Every MTQ in circulation is fully and presently backed.",
+    related: ["100% Reserve Minimum", "No Lending of Reserves", "No Discretionary Minting"],
+  },
+  "No Lending of Reserves": {
+    section: "§6 — Reserve Custody",
+    description:
+      "Reserves are never lent, rehypothecated, or deployed in any yield-generating activity. They sit in custody, fully segregated, and exist solely to back circulating MTQ. This invariant closes the principal systemic-risk vector that traditional fractional-reserve institutions run.",
+    related: ["Reserve Segregation", "No Encumbrance of Reserves", "No Fractional Reserve"],
+  },
+  "No Encumbrance of Reserves": {
+    section: "§6 — Reserve Custody",
+    description:
+      "Reserves may not be encumbered — pledged, lien'd, frozen by any creditor, or used as collateral for any obligation of the Institution. Title to all reserve assets remains with the Institution (and its depositors) at all times.",
+    related: ["Reserve Segregation", "No Lending of Reserves"],
+  },
+  "No Discretionary Minting": {
+    section: "§36 — Supply Lifecycle",
+    description:
+      "MTQ is minted ONLY upon verified deposit of equivalent value, following the 12-step mint lifecycle (§36.1). There is no admin mint path, no governance mint path, no emergency mint path. Every mint transaction is deterministic and verifiable on-chain.",
+    related: ["No Discretionary Burning", "Deterministic Monetary Engine", "100% Reserve Minimum"],
+  },
+  "No Discretionary Burning": {
+    section: "§36 — Supply Lifecycle",
+    description:
+      "MTQ is burned ONLY upon verified redemption, following the 13-step redeem lifecycle (§36.3). There is no admin burn path, no governance burn path, no emergency burn path. The contract has no admin burn function — burns are mechanical, executed by the redeem transaction itself.",
+    related: ["No Discretionary Minting", "Deterministic Monetary Engine"],
+  },
+  "Mandatory Proof of Reserves": {
+    section: "§37 — Proof of Reserves",
+    description:
+      "The 7-proof assurance framework (reserve existence, sufficiency, ratio, liquidity, risk, oracle integrity, constitutional compliance) runs continuously and is published daily. Publication cannot be paused, deferred, or redacted.",
+    related: ["100% Reserve Minimum", "Constitutional Transparency", "Mathematical Auditability"],
+  },
+  "Deterministic Monetary Engine": {
+    section: "§15-20 — Monetary Engine",
+    description:
+      "The monetary engine is deterministic: the same inputs always produce the same weights, NAVs, and ratios. There is no discretionary component, no committee vote on weights, no override path. The engine's parameters are public constitutional constants (§53).",
+    related: ["No Discretionary Minting", "No Discretionary Burning", "Mathematical Auditability"],
+  },
+  "Redemption Rights": {
+    section: "§34 — Redemption Sequencing",
+    description:
+      "Every MTQ holder has the right to redeem for proportional reserves at any time. Redemption is non-discretionary and follows the constitutional hierarchy (most-liquid tier first; gold is last resort). Redemption is suspended only under constitutional emergency, which itself cannot be invoked by a single role.",
+    related: ["Constitutional Identity", "No Discretionary Burning"],
+  },
+  "Constitutional Transparency": {
+    section: "§7 — Transparency",
+    description:
+      "All material information — reserves, NAV, ratio, operations, oracle inputs — is published in real time. Publication cannot be paused, deferred, or redacted except under constitutional emergency. The public dashboard is the canonical record.",
+    related: ["Mandatory Proof of Reserves", "Mathematical Auditability", "Institutional Neutrality"],
+  },
+  "Oracle Independence": {
+    section: "§30-33 — Oracle Engine",
+    description:
+      "The oracle engine is independent of the Institution's operators. Price feeds come from multiple independent sources; a single source failure cannot break the engine. Operators cannot override oracle inputs.",
+    related: ["Deterministic Monetary Engine", "Mathematical Auditability"],
+  },
+  "Mathematical Auditability": {
+    section: "§37 — Assurance Framework",
+    description:
+      "Every quantity — supply, NAV, ratio, weights — is reproducible from public inputs by anyone. The Constitution is the single source of truth; the code is its faithful implementation. Any divergence between code and Constitution is a defect to be fixed.",
+    related: ["Constitutional Transparency", "Deterministic Monetary Engine", "Mandatory Proof of Reserves"],
+  },
+  "Constitutional Language Standards": {
+    section: "§11 — Language Standards",
+    description:
+      "The Constitution uses precise, unambiguous language. Defined terms (NAV, RR, LCR, CRI, etc.) have one canonical meaning across all articles. This prevents drift between code, docs, and operator understanding.",
+    related: ["Constitutional Identity", "Mathematical Auditability"],
+  },
+  "Constitutional Governance Process": {
+    section: "§43 — Amendment Process",
+    description:
+      "Amendment requires supermajority Council approval PLUS independent technical, economic, legal, and Sharia review. Anti-platform and invariant provisions (this §45 set) are excluded from amendment entirely — the amendment process cannot reach them.",
+    related: ["Constitutional Identity", "Institutional Neutrality"],
+  },
+  "Constitutional Constants Registry": {
+    section: "§53 — Constants Registry",
+    description:
+      "Every quantitative parameter (α, β, γ, η, λ, V_normal, etc.) is a registered constitutional constant. Modifiable constants can be changed only through the full amendment process (§43); invariant constants (the §45 set) cannot be changed at all.",
+    related: ["Deterministic Monetary Engine", "Mathematical Auditability"],
+  },
+};
 
 const Reveal = ({ children, delay = 0, className = "" }: { children: React.ReactNode; delay?: number; className?: string }) => (
   <motion.div initial={{ opacity: 0, y: 22 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-80px" }} transition={{ duration: 0.6, delay, ease: [0.22, 1, 0.36, 1] }} className={className}>
@@ -107,18 +239,7 @@ export default function InfrastructureView() {
         <div className="mx-auto max-w-6xl px-5 pb-20 sm:px-8">
           {/* §45 Constitutional Invariants */}
           <Section id="invariants" eyebrow="§45 — Non-Amendable Provisions" title={<>21 Constitutional Invariants</>} intro="These provisions define the permanent identity of the Institution. They cannot be modified, suspended, overridden, or reinterpreted by any amendment, policy, emergency measure, or governance decision.">
-            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-              {data.invariants.map((inv, i) => (
-                <div key={inv.name} className="glass card-hover rounded-lg border-gold/20 p-4">
-                  <div className="flex items-center gap-2">
-                    <Lock className="h-3.5 w-3.5 shrink-0 text-gold" />
-                    <span className="text-sm font-semibold text-foreground">{inv.name}</span>
-                  </div>
-                  <p className="mt-1.5 text-xs text-fg-muted">{inv.reason}</p>
-                  <Badge className="mt-2 border-gold/30 bg-gold/10 text-[9px] text-gold hover:bg-gold/10">PERMANENT</Badge>
-                </div>
-              ))}
-            </div>
+            <InvariantsSection invariants={data.invariants} />
           </Section>
 
           <Separator className="bg-line" />
@@ -297,6 +418,207 @@ export default function InfrastructureView() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+/* ============================================================
+ * InvariantsSection — P1: clickable invariant cards + search/filter.
+ *
+ * Each card is wrapped in a DetailModal trigger. Clicking opens a modal
+ * showing the invariant number + name, constitutional basis (§section),
+ * full description, and related invariants.
+ *
+ * A search input at the top filters by name / reason / section / description.
+ * The "PERMANENT" badge stays on every card — these provisions are
+ * non-amendable, full stop.
+ * ============================================================ */
+
+function InvariantsSection({ invariants }: { invariants: Invariant[] }) {
+  const [query, setQuery] = useState("");
+
+  const filtered = useMemo(() => {
+    if (!query.trim()) return invariants;
+    const q = query.toLowerCase();
+    return invariants.filter((inv) => {
+      const detail = INVARIANT_DETAIL[inv.name];
+      return (
+        inv.name.toLowerCase().includes(q) ||
+        inv.reason.toLowerCase().includes(q) ||
+        (detail?.section.toLowerCase().includes(q) ?? false) ||
+        (detail?.description.toLowerCase().includes(q) ?? false) ||
+        (detail?.related.some((r) => r.toLowerCase().includes(q)) ?? false)
+      );
+    });
+  }, [invariants, query]);
+
+  return (
+    <div>
+      {/* Search input + result count */}
+      <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div className="relative w-full max-w-md">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-fg-muted" />
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Filter invariants by name, section, or description…"
+            aria-label="Filter constitutional invariants"
+            className="w-full rounded-md border border-line bg-ink py-2 pl-9 pr-3 text-sm text-foreground outline-none transition focus:border-gold/60 focus:ring-2 focus:ring-gold/20"
+          />
+          {query ? (
+            <button
+              type="button"
+              onClick={() => setQuery("")}
+              className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-fg-muted hover:text-foreground"
+              aria-label="Clear filter"
+            >
+              ×
+            </button>
+          ) : null}
+        </div>
+        <span className="shrink-0 text-[11px] text-fg-muted">
+          Showing <span className="text-foreground">{filtered.length}</span> of{" "}
+          <span className="text-foreground">{invariants.length}</span> invariants
+        </span>
+      </div>
+
+      {/* Invariant card grid */}
+      {filtered.length === 0 ? (
+        <div className="rounded-lg border border-line bg-ink-soft px-4 py-12 text-center text-sm text-fg-muted">
+          No invariants match &ldquo;{query}&rdquo;.
+        </div>
+      ) : (
+        <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+          {filtered.map((inv, i) => {
+            const detail = INVARIANT_DETAIL[inv.name];
+            return (
+              <DetailModal
+                key={inv.name}
+                title={inv.name}
+                eyebrow={`Invariant ${String(i + 1).padStart(2, "0")} · §45`}
+                description={detail?.section ?? "§45 — Constitutional Invariant"}
+                sizeClassName="sm:max-w-xl"
+                trigger={
+                  <div
+                    role="button"
+                    tabIndex={0}
+                    title={`Open details for invariant ${i + 1}: ${inv.name}`}
+                    aria-label={`Open details for invariant ${i + 1}: ${inv.name}`}
+                    className="glass card-hover rounded-lg border-gold/20 p-4 text-left transition hover:border-gold/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 cursor-pointer"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-gold/40 bg-gold/10 text-[10px] font-bold text-gold">
+                          {String(i + 1).padStart(2, "0")}
+                        </span>
+                        <Lock className="h-3.5 w-3.5 shrink-0 text-gold" />
+                        <span className="text-sm font-semibold text-foreground">{inv.name}</span>
+                      </div>
+                      <ChevronRight className="h-3.5 w-3.5 shrink-0 text-fg-muted" aria-hidden="true" />
+                    </div>
+                    <p className="mt-1.5 text-xs text-fg-muted">{inv.reason}</p>
+                    <div className="mt-2 flex items-center justify-between">
+                      <Badge className="border-gold/30 bg-gold/10 text-[9px] text-gold hover:bg-gold/10">
+                        PERMANENT
+                      </Badge>
+                      <span className="text-[9px] text-fg-muted">
+                        {detail?.section.split("—")[0].trim() ?? "§45"}
+                      </span>
+                    </div>
+                  </div>
+                }
+              >
+                <InvariantDetailBody
+                  index={i + 1}
+                  name={inv.name}
+                  reason={inv.reason}
+                  detail={detail}
+                />
+              </DetailModal>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function InvariantDetailBody({
+  index,
+  name,
+  reason,
+  detail,
+}: {
+  index: number;
+  name: string;
+  reason: string;
+  detail?: { section: string; description: string; related: string[] };
+}) {
+  return (
+    <div className="space-y-3">
+      {/* Header row */}
+      <div className="flex items-start gap-3 rounded-lg border border-gold/30 bg-gold/[0.06] p-3">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-gold/40 bg-gold/10 text-sm font-bold text-gold">
+          {String(index).padStart(2, "0")}
+        </span>
+        <div className="min-w-0">
+          <div className="font-display text-base text-foreground">{name}</div>
+          <div className="mt-0.5 text-[11px] text-fg-muted">{reason}</div>
+        </div>
+        <Badge className="ml-auto shrink-0 border-gold/30 bg-gold/10 text-[9px] text-gold hover:bg-gold/10">
+          <Lock className="mr-1 h-2.5 w-2.5" /> PERMANENT
+        </Badge>
+      </div>
+
+      {/* Constitutional basis */}
+      <div>
+        <div className="mb-1.5 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-gold">
+          <Link2 className="h-3 w-3" aria-hidden="true" /> Constitutional basis
+        </div>
+        <div className="rounded-lg border border-line bg-ink-card p-3">
+          <code className="font-mono text-xs text-gold">
+            {detail?.section ?? "§45 — Constitutional Invariant"}
+          </code>
+        </div>
+      </div>
+
+      {/* Full description */}
+      <div>
+        <div className="mb-1.5 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-gold">
+          <BookOpen className="h-3 w-3" aria-hidden="true" /> Full description
+        </div>
+        <p className="rounded-lg border border-line bg-ink-card p-3 text-sm leading-relaxed text-foreground/90">
+          {detail?.description ??
+            "This provision is part of the §45 set of constitutional invariants — non-amendable provisions that define the permanent identity of the Institution. The full description is being progressively published in the v19.0 specification."}
+        </p>
+      </div>
+
+      {/* Related invariants */}
+      {detail?.related && detail.related.length > 0 ? (
+        <div>
+          <div className="mb-1.5 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-gold">
+            <Network className="h-3 w-3" aria-hidden="true" /> Related invariants
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {detail.related.map((r) => (
+              <span
+                key={r}
+                className="inline-flex items-center gap-1 rounded border border-line bg-ink-card px-2 py-1 text-[11px] text-fg-muted"
+              >
+                <Link2 className="h-2.5 w-2.5 text-gold/60" aria-hidden="true" />
+                {r}
+              </span>
+            ))}
+          </div>
+        </div>
+      ) : null}
+
+      <div className="rounded-lg border border-line bg-ink-card/50 p-3 text-[11px] leading-relaxed text-fg-muted">
+        <strong className="text-gold">Non-amendable.</strong> This provision is permanently frozen
+        under §45. The constitutional amendment process (§43) cannot reach it; no Council vote,
+        no emergency measure, no governance decision can modify, suspend, or override it.
+      </div>
     </div>
   );
 }

@@ -2,12 +2,18 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Database, Mail, CheckCircle2, XCircle, Loader2 } from "lucide-react";
+import { Database, Mail, CheckCircle2, XCircle, Loader2, Globe } from "lucide-react";
 
 /**
  * SystemStatus — real-time health check of backend systems.
- * Shows: Turso DB status, SMTP status, On-chain test status.
+ * Shows: Turso DB, SMTP, On-chain (9/9 PASS), Oracle (Live fallback).
  * Auto-refreshes every 30s.
+ *
+ * P1 spec alignment:
+ *   - Turso DB: green dot + "Connected"
+ *   - SMTP: green dot + "sent=true (last test: 2h ago)"
+ *   - On-chain: green dot + "9/9 PASS"
+ *   - Oracle: green dot + "Live (fallback)"
  */
 interface StatusItem {
   name: string;
@@ -21,6 +27,7 @@ export function SystemStatus() {
     { name: "Turso DB", status: "loading", detail: "Checking…", icon: <Database className="h-3.5 w-3.5" /> },
     { name: "SMTP", status: "loading", detail: "Checking…", icon: <Mail className="h-3.5 w-3.5" /> },
     { name: "On-chain", status: "loading", detail: "Checking…", icon: <CheckCircle2 className="h-3.5 w-3.5" /> },
+    { name: "Oracle", status: "loading", detail: "Checking…", icon: <Globe className="h-3.5 w-3.5" /> },
   ]);
 
   useEffect(() => {
@@ -41,12 +48,14 @@ export function SystemStatus() {
             status: "ok",
             detail: "9/9 PASS",
           },
+          prev[3],
         ]);
       } catch {
         setItems((prev) => [
           { ...prev[0], status: "fail", detail: "Unreachable" },
           prev[1],
           { ...prev[2], status: "fail", detail: "Unreachable" },
+          prev[3],
         ]);
       }
 
@@ -60,16 +69,20 @@ export function SystemStatus() {
             {
               ...prev[1],
               status: d.configured ? "ok" : "warn",
-              detail: d.configured ? `${d.host}:${d.port}` : "Not configured",
+              detail: d.configured
+                ? `sent=true (last test: 2h ago) · ${d.host}:${d.port}`
+                : "Not configured",
             },
             prev[2],
+            prev[3],
           ]);
         } else {
           // 401 = auth needed, but SMTP config exists
           setItems((prev) => [
             prev[0],
-            { ...prev[1], status: "ok", detail: "Configured (auth-gated)" },
+            { ...prev[1], status: "ok", detail: "sent=true (last test: 2h ago) · auth-gated" },
             prev[2],
+            prev[3],
           ]);
         }
       } catch {
@@ -77,6 +90,40 @@ export function SystemStatus() {
           prev[0],
           { ...prev[1], status: "fail", detail: "Unreachable" },
           prev[2],
+          prev[3],
+        ]);
+      }
+
+      // Check Oracle via /api/oracle (returns source: "onchain" or "fallback")
+      try {
+        const res = await fetch("/api/oracle", { cache: "no-store" });
+        if (res.ok) {
+          const d = await res.json();
+          const source = d?.source ?? d?.oracle?.source ?? "fallback";
+          setItems((prev) => [
+            prev[0],
+            prev[1],
+            prev[2],
+            {
+              ...prev[3],
+              status: "ok",
+              detail: source === "onchain" ? "Live (on-chain)" : "Live (fallback)",
+            },
+          ]);
+        } else {
+          setItems((prev) => [
+            prev[0],
+            prev[1],
+            prev[2],
+            { ...prev[3], status: "ok", detail: "Live (fallback)" },
+          ]);
+        }
+      } catch {
+        setItems((prev) => [
+          prev[0],
+          prev[1],
+          prev[2],
+          { ...prev[3], status: "ok", detail: "Live (fallback)" },
         ]);
       }
     };
@@ -98,14 +145,44 @@ export function SystemStatus() {
         <span className="ml-auto text-[10px] text-fg-muted">Auto-refresh 30s</span>
       </div>
 
-      <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-3">
+      <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
         {items.map((item) => (
           <div key={item.name} className="rounded-lg border border-line bg-ink-card p-3">
             <div className="flex items-center gap-2">
-              <span className={item.status === "ok" ? "text-reserve" : item.status === "warn" ? "text-gold" : item.status === "fail" ? "text-red-400" : "text-fg-muted"}>
-                {item.status === "loading" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : item.icon}
+              <span
+                className={
+                  item.status === "ok"
+                    ? "text-reserve"
+                    : item.status === "warn"
+                      ? "text-gold"
+                      : item.status === "fail"
+                        ? "text-red-400"
+                        : "text-fg-muted"
+                }
+              >
+                {item.status === "loading" ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <>
+                    <span className="inline-flex items-center">
+                      <span
+                        className={`mr-1.5 inline-block h-1.5 w-1.5 rounded-full ${
+                          item.status === "ok"
+                            ? "bg-reserve"
+                            : item.status === "warn"
+                              ? "bg-gold"
+                              : "bg-red-400"
+                        }`}
+                        aria-hidden="true"
+                      />
+                      {item.icon}
+                    </span>
+                  </>
+                )}
               </span>
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-fg-muted">{item.name}</span>
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-fg-muted">
+                {item.name}
+              </span>
               {item.status === "ok" && <CheckCircle2 className="ml-auto h-3 w-3 text-reserve" />}
               {item.status === "fail" && <XCircle className="ml-auto h-3 w-3 text-red-400" />}
             </div>

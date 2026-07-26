@@ -14,6 +14,8 @@ import InfrastructureView from "@/components/infrastructure";
 import TestnetAudit from "@/components/testnet-audit";
 import { OperatingSystem } from "@/components/operating-system";
 import { MonetaryEngineExplained } from "@/components/monetary-engine-explained";
+import { LiveStatus } from "@/components/live-status";
+import { CommandPalette } from "@/components/command-palette";
 
 type View = "institution" | "transparency" | "infrastructure" | "playbook" | "testnet" | "audit" | "deck" | "constitution" | "admin" | "os" | "engine";
 
@@ -96,6 +98,7 @@ export default function Page() {
   return (
     <div className="print-page flex min-h-screen flex-col bg-ink text-foreground">
       <ViewSwitcher view={view} setView={setView} />
+      <CommandPalette />
       <main className="flex-1">
         <AnimatePresence mode="wait">
           <motion.div
@@ -147,9 +150,15 @@ function ViewSwitcher({
   return (
     <div className="no-print sticky top-0 z-[60] flex justify-center border-b border-line/40 glass">
       <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-3 px-4 py-2 sm:px-8 sm:py-2.5">
-        <span className="hidden text-[11px] font-medium uppercase tracking-[0.22em] text-fg-muted lg:inline">
-          Mithqal · working surface
-        </span>
+        <div className="hidden items-center gap-3 lg:flex">
+          <span className="text-[11px] font-medium uppercase tracking-[0.22em] text-fg-muted">
+            Mithqal · working surface
+          </span>
+          <LiveStatus />
+        </div>
+        <div className="flex items-center gap-2 lg:hidden">
+          <LiveStatus />
+        </div>
         <div className="mx-auto inline-flex items-center gap-0.5 overflow-x-auto rounded-full border border-line bg-ink/60 p-1 backdrop-blur-xl">
           {VIEWS.map((v) => {
             const active = view === v.id;

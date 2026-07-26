@@ -50,6 +50,7 @@ import {
 } from "@/lib/site-data";
 import { useToast } from "@/hooks/use-toast";
 import { Logo } from "@/components/logo";
+import { VerifyOnChain } from "@/components/verify-on-chain";
 
 const Reveal = ({
   children,
@@ -744,6 +745,39 @@ function LegalStatus() {
             <span className="font-semibold text-foreground">Status:</span>{" "}
             {LEGAL_STATUS.constitutionalStatus}
           </p>
+        </div>
+        {/* Independent verification: on-chain Safe Multi-Sig treasury is the
+            single source of truth for any reserve claim the institution makes.
+            The Constitution requires every claim rest on verifiable data, so
+            we surface the explorer link directly under the legal-entity panel. */}
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-line bg-ink-soft p-4">
+          <div className="flex items-start gap-2.5">
+            <Shield className="mt-0.5 h-4 w-4 shrink-0 text-gold" aria-hidden="true" />
+            <div className="text-sm">
+              <div className="font-semibold text-foreground">
+                Verify on MonadScan
+              </div>
+              <div className="text-xs text-fg-muted">
+                Operational treasury (Safe Multi-Sig) and governance contracts are
+                deployed on Monad Testnet. Every claim made on this page can be
+                independently verified against the public ledger.
+              </div>
+            </div>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <VerifyOnChain
+              address="0xE71869C662733642bfBb262B8c6bad8B0fBfA7D0"
+              label="Safe Multi-Sig"
+              size="md"
+              showAddress={false}
+            />
+            <VerifyOnChain
+              address="0x9e6EdC15DAc420931508d8Ddf9BC817651A253aD"
+              label="MTQ Token"
+              size="md"
+              showAddress={false}
+            />
+          </div>
         </div>
       </div>
     </section>

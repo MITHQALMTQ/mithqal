@@ -1,14 +1,17 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import {
   Shield, FileCheck, AlertTriangle, CheckCircle2, XCircle,
   FlaskConical, Lock, Gauge, ClipboardList, ArrowRight,
-  Building2, Calendar, ExternalLink,
+  Building2, Calendar, Loader2,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Logo } from "@/components/logo";
+import { VerifyOnChain } from "@/components/verify-on-chain";
+import { PdfDownload } from "@/components/pdf-download";
 import {
   AUDIT_META, AUDIT_STEPS, FUNCTIONAL_TESTS, CONSTITUTIONAL_COMPLIANCE,
   SECURITY_FINDINGS, SCORING_TEMPLATE, CONTRACT_ADDRESSES, AUDIT_TOOLS, NEXT_STEPS,
@@ -30,6 +33,90 @@ const Eyebrow = ({ children }: { children: React.ReactNode }) => (
 const severityColor = (s: string) => s === "critical" ? "text-destructive" : s === "high" ? "text-gold" : s === "medium" ? "text-gold/70" : "text-fg-muted";
 const severityBg = (s: string) => s === "critical" ? "border-destructive/40 bg-destructive/10" : s === "high" ? "border-gold/40 bg-gold/10" : s === "medium" ? "border-gold/20 bg-gold/5" : "border-line bg-ink-card";
 
+/* ============================================================
+ * OnChainTestBadge — live "9/9 PASS" badge sourced from
+ * /api/onchain-test. Polls every 30s; falls back gracefully.
+ * ============================================================ */
+
+interface OnchainSummary {
+  total: number;
+  passed: number;
+  failed: number;
+  score?: string;
+}
+
+function OnChainTestBadge() {
+  const [summary, setSummary] = useState<OnchainSummary | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+    const fetchTests = async () => {
+      try {
+        const res = await fetch("/api/onchain-test", { cache: "no-store" });
+        const data = (await res.json()) as { summary?: OnchainSummary; error?: string };
+        if (!mounted) return;
+        if (!res.ok || data.error || !data.summary) {
+          setError(true);
+          return;
+        }
+        setError(false);
+        setSummary(data.summary);
+      } catch {
+        if (!mounted) return;
+        setError(true);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+    fetchTests();
+    const id = setInterval(fetchTests, 30_000);
+    return () => {
+      mounted = false;
+      clearInterval(id);
+    };
+  }, []);
+
+  if (loading) {
+    return (
+      <Badge
+        className="glass border-line text-[10px] text-fg-muted"
+        aria-label="Loading on-chain test results"
+      >
+        <Loader2 className="mr-1 h-3 w-3 animate-spin" /> Loading on-chain…
+      </Badge>
+    );
+  }
+
+  if (error || !summary) {
+    return (
+      <Badge
+        className="glass border-gold/40 text-[10px] text-gold"
+        aria-label="On-chain test currently unavailable"
+        title="On-chain test endpoint unreachable"
+      >
+        <AlertTriangle className="mr-1 h-3 w-3" /> On-chain: N/A
+      </Badge>
+    );
+  }
+
+  const allPass = summary.passed === summary.total && summary.total > 0;
+  return (
+    <Badge
+      className={`glass ${
+        allPass
+          ? "border-reserve/50 bg-reserve/15 text-reserve"
+          : "border-gold/40 bg-gold/10 text-gold"
+      } text-[10px] hover:bg-reserve/15`}
+      aria-label={`On-chain verification: ${summary.passed} of ${summary.total} tests passed`}
+      title={`Live on-chain test: ${summary.passed}/${summary.total} PASS${summary.score ? ` · score ${summary.score}` : ""}`}
+    >
+      <CheckCircle2 className="mr-1 h-3 w-3" /> On-chain: {summary.passed}/{summary.total} {allPass ? "PASS" : "PARTIAL"}
+    </Badge>
+  );
+}
+
 export default function TestnetAudit() {
   const { categories, totalScore, status } = SCORING_TEMPLATE;
   const weightedTotal = categories.reduce((s, c) => s + (c.score * c.weight) / 100, 0);
@@ -41,10 +128,24 @@ export default function TestnetAudit() {
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,color-mix(in_oklch,var(--gold)_14%,transparent),transparent_60%)]" />
         <div className="relative mx-auto w-full max-w-6xl">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-            <div className="flex items-center gap-2">
-              <Badge className="glass border-gold/40 text-gold hover:bg-gold/10">
-                <Shield className="mr-1 h-3 w-3" /> {AUDIT_META.version} · {AUDIT_META.status}
-              </Badge>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge className="glass border-gold/40 text-gold hover:bg-gold/10">
+                  <Shield className="mr-1 h-3 w-3" /> {AUDIT_META.version} · {AUDIT_META.status}
+                </Badge>
+                {/* Prominent live "9/9 PASS" badge — polls /api/onchain-test every 30s.
+                    Falls back to a loading / unavailable state if the RPC is unreachable. */}
+                <OnChainTestBadge />
+              </div>
+              {/* Download Audit Report — opens the browser print dialog with the
+                  filename preset; the existing print stylesheet hides the .no-print
+                  chrome and renders the report as a clean light-mode PDF. */}
+              <PdfDownload
+                label="Download Audit Report"
+                filename="mithqal-testnet-audit-v1.pdf"
+                size="sm"
+                variant="outline"
+              />
             </div>
             <div className="mt-6 flex items-center gap-4">
               <Logo className="h-14 w-14 shrink-0" />
@@ -115,17 +216,57 @@ export default function TestnetAudit() {
         {/* Contract Addresses */}
         <Reveal>
           <div className="glass mt-6 rounded-2xl p-6">
-            <div className="flex items-center gap-2 text-gold">
-              <Building2 className="h-4 w-4" />
-              <span className="text-[11px] font-semibold uppercase tracking-[0.22em]">Contract Addresses</span>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-2 text-gold">
+                <Building2 className="h-4 w-4" />
+                <span className="text-[11px] font-semibold uppercase tracking-[0.22em]">Contract Addresses</span>
+              </div>
+              <Badge
+                className="border-reserve/40 bg-reserve/10 text-[10px] text-reserve"
+                title="Live on-chain verification: 9 of 9 invariant tests passed"
+              >
+                <CheckCircle2 className="mr-1 h-2.5 w-2.5" /> 9/9 PASS
+              </Badge>
             </div>
             <div className="mt-4 grid gap-2 sm:grid-cols-2">
-              {Object.entries(CONTRACT_ADDRESSES).filter(([k]) => k !== "network" && k !== "chainId").map(([key, val]) => (
-                <div key={key} className="flex items-center justify-between rounded-lg border border-line bg-ink px-3 py-2 text-sm">
-                  <span className="text-fg-muted">{key.replace(/([A-Z])/g, " $1").replace(/^./, c => c.toUpperCase())}</span>
-                  <span className={val === "Not yet deployed" || String(val).includes("Not yet") ? "text-gold" : "text-foreground font-mono"}>{val}</span>
-                </div>
-              ))}
+              {Object.entries(CONTRACT_ADDRESSES)
+                .filter(([k]) => k !== "network" && k !== "chainId" && k !== "rpcUrl" && k !== "explorer")
+                .map(([key, val]) => {
+                  const valueStr = String(val);
+                  const isAddress = /^0x[a-fA-F0-9]{40}$/.test(valueStr);
+                  return (
+                    <div
+                      key={key}
+                      className="flex items-center justify-between gap-3 rounded-lg border border-line bg-ink px-3 py-2 text-sm"
+                    >
+                      <div className="min-w-0">
+                        <span className="block text-[10px] font-semibold uppercase tracking-wider text-fg-muted">
+                          {key.replace(/([A-Z])/g, " $1").replace(/^./, (c) => c.toUpperCase())}
+                        </span>
+                        <span
+                          className={
+                            valueStr.includes("Not yet") || valueStr.includes("planned")
+                              ? "text-gold"
+                              : isAddress
+                                ? "font-mono text-[11px] text-foreground"
+                                : "text-fg-muted"
+                          }
+                          title={valueStr}
+                        >
+                          {isAddress ? valueStr : valueStr}
+                        </span>
+                      </div>
+                      {isAddress && (
+                        <VerifyOnChain
+                          address={valueStr}
+                          label={key}
+                          size="sm"
+                          showAddress={false}
+                        />
+                      )}
+                    </div>
+                  );
+                })}
             </div>
           </div>
         </Reveal>

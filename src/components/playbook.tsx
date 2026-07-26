@@ -11,6 +11,8 @@ import {
   Target,
   AlertTriangle,
   Check,
+  CheckCircle2,
+  Circle,
   X,
   ArrowRight,
   Crown,
@@ -668,6 +670,240 @@ function FundingSection() {
 /*  Roadmap                                                            */
 /* ------------------------------------------------------------------ */
 
+/*
+ * Gantt — phase timeline (Jul 2026 → Dec 2027).
+ * 18 months total; each phase bar is positioned with CSS percentage
+ * widths. Milestones render as dots on the bar. Status colors:
+ *   done         → gold (uses var(--gold))
+ *   in-progress  → reserve (uses var(--reserve))
+ *   planned      → line  (uses var(--line))
+ */
+type GanttStatus = "done" | "in-progress" | "planned";
+
+interface GanttPhase {
+  id: string;
+  n: string;
+  title: string;
+  status: GanttStatus;
+  // inclusive start/end month offset (0 = Jul 2026, 17 = Dec 2027)
+  startMonth: number;
+  endMonth: number;
+  milestones: string[];
+}
+
+const GANTT_TOTAL_MONTHS = 18;
+const GANTT_MONTH_LABELS = [
+  "Jul '26", "Aug '26", "Sep '26", "Oct '26",
+  "Nov '26", "Dec '26", "Jan '27", "Feb '27", "Mar '27",
+  "Apr '27", "May '27", "Jun '27", "Jul '27", "Aug '27",
+  "Sep '27", "Oct '27", "Nov '27", "Dec '27",
+];
+
+const GANTT_PHASES: GanttPhase[] = [
+  {
+    id: "g-p0",
+    n: "Phase 0",
+    title: "Formation",
+    status: "done",
+    startMonth: 0,
+    endMonth: 3,
+    milestones: [
+      "Entity B incorporated",
+      "Constitution published",
+      "MTQ testnet live",
+      "3–5 advisors",
+      "Data room open",
+    ],
+  },
+  {
+    id: "g-p1",
+    n: "Phase 1",
+    title: "Institutional",
+    status: "in-progress",
+    startMonth: 4,
+    endMonth: 8,
+    milestones: [
+      "Pre-seed closed",
+      "Foundation (A) formed",
+      "Custodian RFP issued",
+      "Mainnet-ready MTQ",
+      "Audit booked",
+    ],
+  },
+  {
+    id: "g-p2",
+    n: "Phase 2",
+    title: "Operational",
+    status: "planned",
+    startMonth: 9,
+    endMonth: 13,
+    milestones: [
+      "Anchor MOU signed",
+      "Compliance stack live",
+      "ISO 20022 adapter",
+      "Audit #1 published",
+      "Bug bounty live",
+    ],
+  },
+  {
+    id: "g-p3",
+    n: "Phase 3",
+    title: "Scale",
+    status: "planned",
+    startMonth: 14,
+    endMonth: 17,
+    milestones: [
+      "Seed round closed",
+      "Licensing secured",
+      "Mainnet MTQ launched",
+      "Council constituted",
+      "PQ roadmap Phase 1",
+    ],
+  },
+];
+
+const ganttStatusColor: Record<GanttStatus, string> = {
+  done: "var(--gold)",
+  "in-progress": "var(--reserve)",
+  planned: "var(--line)",
+};
+
+const ganttStatusLabel: Record<GanttStatus, string> = {
+  done: "Done",
+  "in-progress": "In progress",
+  planned: "Planned",
+};
+
+function GanttChart() {
+  return (
+    <Reveal>
+      <div className="print-card rounded-2xl border border-line bg-ink-soft p-5 sm:p-7">
+        <div className="flex items-center gap-2 text-gold">
+          <Calendar className="h-4 w-4" />
+          <span className="text-[11px] font-semibold uppercase tracking-[0.22em]">
+            Phase Timeline · Jul 2026 → Dec 2027
+          </span>
+        </div>
+
+        {/* Phase bars */}
+        <div className="mt-6 space-y-3">
+          {GANTT_PHASES.map((p) => {
+            const leftPct =
+              (p.startMonth / GANTT_TOTAL_MONTHS) * 100;
+            const spanMonths = p.endMonth - p.startMonth + 1;
+            const widthPct = (spanMonths / GANTT_TOTAL_MONTHS) * 100;
+            const barColor = ganttStatusColor[p.status];
+            const dots = p.milestones;
+            return (
+              <div
+                key={p.id}
+                className="grid grid-cols-[110px_1fr] items-center gap-3 sm:grid-cols-[160px_1fr]"
+              >
+                {/* Label column */}
+                <div className="min-w-0">
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-gold">
+                    {p.n}
+                  </div>
+                  <div className="truncate text-sm font-semibold text-foreground">
+                    {p.title}
+                  </div>
+                  <div className="text-[10px] text-fg-muted">
+                    <span
+                      className="mr-1 inline-block h-1.5 w-1.5 rounded-full align-middle"
+                      style={{ background: barColor }}
+                      aria-hidden
+                    />
+                    {ganttStatusLabel[p.status]}
+                  </div>
+                </div>
+
+                {/* Track */}
+                <div className="relative">
+                  <div className="relative h-9 w-full rounded-md bg-ink-card/70">
+                    {/* Bar */}
+                    <div
+                      className="absolute top-0 h-full overflow-hidden rounded-md border"
+                      style={{
+                        left: `${leftPct}%`,
+                        width: `${widthPct}%`,
+                        background: `color-mix(in oklch, ${barColor} 22%, transparent)`,
+                        borderColor: `color-mix(in oklch, ${barColor} 60%, transparent)`,
+                      }}
+                    >
+                      {/* Milestone dots — evenly distributed along the bar */}
+                      <div className="absolute inset-0 flex items-center justify-around px-1">
+                        {dots.map((m, i) => (
+                          <span
+                            key={i}
+                            className="block h-2 w-2 rounded-full ring-2 ring-ink-soft"
+                            style={{ background: barColor }}
+                            title={m}
+                            aria-label={`Milestone ${i + 1}: ${m}`}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Month axis */}
+        <div className="mt-3 grid grid-cols-[110px_1fr] gap-3 sm:grid-cols-[160px_1fr]">
+          <div className="text-[10px] font-semibold uppercase tracking-wider text-fg-muted">
+            Months
+          </div>
+          <div className="relative text-[9px] text-fg-muted">
+            <div
+              className="grid gap-0"
+              style={{ gridTemplateColumns: `repeat(${GANTT_TOTAL_MONTHS}, minmax(0, 1fr))` }}
+            >
+              {GANTT_MONTH_LABELS.map((m, i) => (
+                <span
+                  key={m}
+                  className={
+                    // Only label every other month on small screens to avoid crowding
+                    i % 2 === 0 ? "block text-center" : "hidden text-center sm:block"
+                  }
+                >
+                  {m.replace("'26", "").replace("'27", "")}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Legend */}
+        <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-line/60 pt-4 text-[11px] text-fg-muted">
+          {(["done", "in-progress", "planned"] as GanttStatus[]).map((s) => (
+            <span key={s} className="inline-flex items-center gap-1.5">
+              <span
+                className="inline-block h-2.5 w-4 rounded-sm"
+                style={{
+                  background: `color-mix(in oklch, ${ganttStatusColor[s]} 30%, transparent)`,
+                  border: `1px solid color-mix(in oklch, ${ganttStatusColor[s]} 60%, transparent)`,
+                }}
+                aria-hidden
+              />
+              {ganttStatusLabel[s]}
+            </span>
+          ))}
+          <span className="inline-flex items-center gap-1.5">
+            <span
+              className="inline-block h-2 w-2 rounded-full"
+              style={{ background: "var(--gold)" }}
+              aria-hidden
+            />
+            Key milestone
+          </span>
+        </div>
+      </div>
+    </Reveal>
+  );
+}
+
 function RoadmapSection() {
   return (
     <SectionShell
@@ -681,7 +917,10 @@ function RoadmapSection() {
       }
       intro="Built directly on the Constitution's own Institutional Lifecycle (Formation → Operation → Expansion). Each phase has one capital milestone, one structural milestone, and one KPI. Capital enters Entity B (equity) and Entity A (grants/reserves) — never as MTQ."
     >
-      <div className="relative">
+      {/* Gantt — visual phase timeline at the top */}
+      <GanttChart />
+
+      <div className="relative mt-8">
         <div className="absolute left-[22px] top-2 bottom-2 w-px bg-gradient-to-b from-gold via-gold/40 to-transparent sm:left-[26px]" />
         <div className="space-y-5">
           {PHASES.map((p, i) => (
@@ -742,6 +981,45 @@ function RoadmapSection() {
 /*  90-day sprint                                                      */
 /* ------------------------------------------------------------------ */
 
+type TaskStatus = "done" | "in-progress" | "not-started";
+
+// Per-week status — applies to every task in that week. The sprint is
+// currently mid-Phase 0: weeks 1–4 are done, week 5 is in progress,
+// weeks 6–7 are not yet started.
+const SPRINT_WEEK_STATUS: TaskStatus[] = [
+  "done",
+  "done",
+  "done",
+  "done",
+  "in-progress",
+  "not-started",
+  "not-started",
+];
+
+const taskStatusMeta: Record<
+  TaskStatus,
+  { label: string; dot: string; text: string; Icon: typeof CheckCircle2 }
+> = {
+  done: {
+    label: "Done",
+    dot: "var(--gold)",
+    text: "text-gold",
+    Icon: CheckCircle2,
+  },
+  "in-progress": {
+    label: "In progress",
+    dot: "var(--reserve)",
+    text: "text-reserve",
+    Icon: ArrowRight,
+  },
+  "not-started": {
+    label: "Not started",
+    dot: "var(--line)",
+    text: "text-fg-muted",
+    Icon: Circle,
+  },
+};
+
 function SprintSection() {
   return (
     <SectionShell
@@ -755,30 +1033,72 @@ function SprintSection() {
       }
       intro="No capital required for the first 12 weeks. The deliverable of this sprint is a Term-Sheet-ready narrative: a live testnet, a public Constitution, named advisors and an open data room."
     >
+      {/* Task progress legend */}
+      <Reveal>
+        <div className="mb-5 flex flex-wrap items-center gap-x-5 gap-y-2 rounded-xl border border-line bg-ink-soft px-4 py-3 text-[11px] text-fg-muted">
+          <span className="font-semibold uppercase tracking-[0.18em] text-fg-muted">
+            Task status
+          </span>
+          {(Object.keys(taskStatusMeta) as TaskStatus[]).map((s) => {
+            const m = taskStatusMeta[s];
+            return (
+              <span key={s} className="inline-flex items-center gap-1.5">
+                <span
+                  className="inline-block h-2.5 w-2.5 rounded-full"
+                  style={{ background: m.dot }}
+                  aria-hidden
+                />
+                {m.label}
+              </span>
+            );
+          })}
+        </div>
+      </Reveal>
+
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {SPRINT.map((s, i) => (
-          <Reveal key={s.week} delay={i * 0.04}>
-            <div className="print-card flex h-full flex-col rounded-xl border border-line bg-ink-soft p-5">
-              <div className="flex items-center gap-2">
-                <span className="font-display text-2xl text-gold">{String(i + 1).padStart(2, "0")}</span>
-                <div>
-                  <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-fg-muted">
-                    {s.week}
+        {SPRINT.map((s, i) => {
+          const weekStatus = SPRINT_WEEK_STATUS[i] ?? "not-started";
+          const meta = taskStatusMeta[weekStatus];
+          const StatusIcon = meta.Icon;
+          return (
+            <Reveal key={s.week} delay={i * 0.04}>
+              <div className="print-card flex h-full flex-col rounded-xl border border-line bg-ink-soft p-5">
+                <div className="flex items-center gap-2">
+                  <span className="font-display text-2xl text-gold">{String(i + 1).padStart(2, "0")}</span>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-fg-muted">
+                      {s.week}
+                    </div>
+                    <div className="text-sm font-semibold text-foreground">{s.focus}</div>
                   </div>
-                  <div className="text-sm font-semibold text-foreground">{s.focus}</div>
+                  <span
+                    className={`inline-flex shrink-0 items-center gap-1 rounded-full border border-line bg-ink-card px-2 py-0.5 text-[9px] font-medium uppercase tracking-wider ${meta.text}`}
+                    title={`Week status: ${meta.label}`}
+                  >
+                    <StatusIcon className="h-3 w-3" />
+                    {meta.label}
+                  </span>
                 </div>
+                <ul className="mt-4 space-y-2.5">
+                  {s.tasks.map((t, ti) => (
+                    <li
+                      key={t}
+                      className="flex items-start gap-2 text-sm text-fg-muted"
+                      title={`Task ${ti + 1} · ${meta.label}`}
+                    >
+                      <span
+                        className="mt-1.5 inline-block h-2 w-2 shrink-0 rounded-full"
+                        style={{ background: meta.dot }}
+                        aria-hidden
+                      />
+                      <span>{t}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
-              <ul className="mt-4 space-y-2.5">
-                {s.tasks.map((t) => (
-                  <li key={t} className="flex items-start gap-2 text-sm text-fg-muted">
-                    <ArrowRight className="mt-0.5 h-3.5 w-3.5 shrink-0 text-gold/70" />
-                    <span>{t}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </Reveal>
-        ))}
+            </Reveal>
+          );
+        })}
       </div>
     </SectionShell>
   );

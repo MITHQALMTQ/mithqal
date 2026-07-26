@@ -472,6 +472,8 @@ export function OperatingSystem() {
                           target="_blank"
                           rel="noreferrer"
                           className="font-mono text-xs text-gold hover:underline"
+                          aria-label={`Open transaction ${tx.txHash} on MonadScan (opens in a new tab)`}
+                          title={`View transaction ${tx.txHash} on MonadScan (new tab)`}
                         >
                           {tx.txHash.slice(0, 10)}…{tx.txHash.slice(-6)}
                         </a>
@@ -673,8 +675,10 @@ function ContractAddresses() {
                 target="_blank"
                 rel="noreferrer"
                 className="rounded border border-line p-1.5 text-fg-muted hover:text-gold"
+                aria-label={`Verify ${a.name} (${a.address}) on MonadScan (opens in a new tab)`}
+                title={`Verify ${a.name} on MonadScan · ${a.address} (new tab)`}
               >
-                <ExternalLink className="h-3.5 w-3.5" />
+                <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
               </a>
             </div>
           </div>

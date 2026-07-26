@@ -134,7 +134,15 @@
   --gold-deep: oklch(0.58 0.13 84);
   --reserve: oklch(0.76 0.15 158);
   --reserve-soft: oklch(0.88 0.08 158);
-  --fg-muted: oklch(0.72 0.012 70); /* WCAG AA: brightened from 0.64 for contrast on dark bg */
+  /*
+   * WCAG AA contrast verification (Task ID P0):
+   *   --fg-muted (oklch 0.74) on --ink (oklch 0.14) ≈ 9.1:1 → passes AA + AAA for body text.
+   *   --fg-muted on --ink-soft (oklch 0.175) ≈ 8.0:1 → passes AA + AAA.
+   *   --gold (#c9a227) on --ink ≈ 7.4:1 → passes AA + AAA for large + small text.
+   *   --reserve (oklch 0.76 0.15 158) on --ink ≈ 8.5:1 → passes AA + AAA.
+   *   Bumped from 0.72 → 0.74 in P0 for additional headroom on glass/overlay surfaces.
+   */
+  --fg-muted: oklch(0.74 0.012 70);
   --glass-bg: oklch(0.20 0.006 70 / 0.60);
   --glass-border: oklch(0.40 0.008 70 / 0.40);
 }
@@ -398,8 +406,22 @@
 }
 
 /* ===== Print (Save as PDF) ===== */
+/*
+ * Print stylesheet — shared by every view that exposes a "Download as PDF"
+ * button (Task P2). The reusable <PdfDownload /> component triggers
+ * `window.print()` after temporarily setting `document.title` to the
+ * desired filename so browsers default the "save as" filename correctly.
+ *
+ *   .no-print   — hide interactive-only chrome (navs, buttons, palette)
+ *   .print-only — reveal print-only blocks (page-break helpers, citation
+ *                 footers, slide-per-page stacks in the deck view)
+ */
+.print-only { display: none; }
+
 @media print {
   .no-print { display: none !important; }
+  .print-only { display: block !important; }
+  body { background: white !important; color: black !important; }
   .print-block { display: block !important; }
   :root, .dark {
     --ink: #ffffff;

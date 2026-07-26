@@ -2,33 +2,52 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Shield, Key, Clock, MapPin, Fingerprint, AlertCircle } from "lucide-react";
+import { Shield, Key, Clock, MapPin, Fingerprint, AlertCircle, History } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 /**
  * SecurityPanel — institutional-grade security indicators for the Admin console.
- * Shows: 2FA status, session integrity, last login, hardware key support.
- * Addresses VLM finding: "Admin page lacks multi-factor security indicators."
+ * Shows: session timer (8h max countdown), last login, IP indicator, 2FA badge,
+ * hardware-key badge, plus an integrity bar + session note.
+ *
+ * P1 spec alignment:
+ *   - Session: "3h 27m remaining" (8h max, live countdown)
+ *   - Last login: "2h ago" (mock)
+ *   - IP: "1.2.3.4" (mock — production reads from request headers)
+ *   - 2FA: "Enabled" (or "Recommended" if not configured)
+ *   - Hardware key: "Not configured" (status: warn)
  */
 export function SecurityPanel() {
   const [sessionInfo, setSessionInfo] = useState<{
     expiresAt?: string;
-    ip?: string;
-    device?: string;
-  }>({});
+    ip: string;
+    device: string;
+    lastLoginIso: string;
+    twofaEnabled: boolean;
+    hardwareKeyConfigured: boolean;
+  }>({
+    ip: "1.2.3.4", // mock — in production this would come from the request
+    device: "Chrome · macOS",
+    lastLoginIso: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2h ago
+    twofaEnabled: true,
+    hardwareKeyConfigured: false,
+  });
   const [timeRemaining, setTimeRemaining] = useState("");
 
   useEffect(() => {
-    // Fetch session info
+    // Fetch session info from NextAuth's session endpoint (sets `expiresAt`).
     fetch("/api/auth/session", { cache: "no-store" })
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => {
         if (d?.expires) {
-          setSessionInfo({
+          setSessionInfo((prev) => ({
+            ...prev,
             expiresAt: d.expires,
-            ip: "127.0.0.1", // In production, this would come from the request
-            device: navigator.userAgent.includes("Chrome") ? "Chrome" : "Browser",
-          });
+            device:
+              typeof navigator !== "undefined" && navigator.userAgent.includes("Chrome")
+                ? "Chrome · " + (navigator.platform || "desktop")
+                : prev.device,
+          }));
         }
       })
       .catch(() => {});
@@ -47,9 +66,17 @@ export function SecurityPanel() {
       }
     };
     updateRemaining();
-    const id = setInterval(updateRemaining, 60000);
+    const id = setInterval(updateRemaining, 30_000);
     return () => clearInterval(id);
   }, [sessionInfo.expiresAt]);
+
+  const lastLoginLabel = (() => {
+    const diff = Date.now() - new Date(sessionInfo.lastLoginIso).getTime();
+    if (diff < 60_000) return "just now";
+    if (diff < 3_600_000) return Math.round(diff / 60_000) + "m ago";
+    if (diff < 86_400_000) return Math.round(diff / 3_600_000) + "h ago";
+    return Math.round(diff / 86_400_000) + "d ago";
+  })();
 
   return (
     <div className="rounded-xl border border-line bg-ink-soft p-5">
@@ -59,26 +86,8 @@ export function SecurityPanel() {
         <Badge className="ml-auto border-reserve/40 bg-reserve/10 text-[10px] text-reserve">SECURE</Badge>
       </div>
 
-      <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {/* 2FA Status */}
-        <SecurityMetric
-          icon={<Key className="h-3.5 w-3.5 text-reserve" />}
-          label="2FA"
-          value="Enabled"
-          status="ok"
-          detail="App Password"
-        />
-
-        {/* Hardware Key */}
-        <SecurityMetric
-          icon={<Fingerprint className="h-3.5 w-3.5 text-reserve" />}
-          label="Hardware Key"
-          value="Supported"
-          status="ok"
-          detail="YubiKey ready"
-        />
-
-        {/* Session Timer */}
+      <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+        {/* Session timer (8h max, countdown) */}
         <SecurityMetric
           icon={<Clock className="h-3.5 w-3.5 text-gold" />}
           label="Session"
@@ -87,13 +96,49 @@ export function SecurityPanel() {
           detail="8h max"
         />
 
-        {/* IP / Location */}
+        {/* Last login (mock) */}
+        <SecurityMetric
+          icon={<History className="h-3.5 w-3.5 text-fg-muted" />}
+          label="Last login"
+          value={lastLoginLabel}
+          status="ok"
+          detail={new Date(sessionInfo.lastLoginIso).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" })}
+        />
+
+        {/* IP indicator (mock — production reads from headers) */}
+        <SecurityMetric
+          icon={<MapPin className="h-3.5 w-3.5 text-fg-muted" />}
+          label="IP"
+          value={sessionInfo.ip}
+          status="ok"
+          detail={sessionInfo.device}
+        />
+
+        {/* 2FA badge */}
+        <SecurityMetric
+          icon={<Key className={`h-3.5 w-3.5 ${sessionInfo.twofaEnabled ? "text-reserve" : "text-gold"}`} />}
+          label="2FA"
+          value={sessionInfo.twofaEnabled ? "Enabled" : "Recommended"}
+          status={sessionInfo.twofaEnabled ? "ok" : "warn"}
+          detail={sessionInfo.twofaEnabled ? "App password (TOTP)" : "Configure now"}
+        />
+
+        {/* Hardware key badge */}
+        <SecurityMetric
+          icon={<Fingerprint className={`h-3.5 w-3.5 ${sessionInfo.hardwareKeyConfigured ? "text-reserve" : "text-gold"}`} />}
+          label="Hardware key"
+          value={sessionInfo.hardwareKeyConfigured ? "Configured" : "Not configured"}
+          status={sessionInfo.hardwareKeyConfigured ? "ok" : "warn"}
+          detail={sessionInfo.hardwareKeyConfigured ? "YubiKey · FIDO2" : "Add a YubiKey"}
+        />
+
+        {/* Access (IP-derived device) */}
         <SecurityMetric
           icon={<MapPin className="h-3.5 w-3.5 text-fg-muted" />}
           label="Access"
-          value={sessionInfo.ip || "—"}
+          value={sessionInfo.device}
           status="ok"
-          detail={sessionInfo.device || "Browser"}
+          detail="Browser"
         />
       </div>
 
@@ -113,13 +158,20 @@ export function SecurityPanel() {
         </div>
       </div>
 
-      {/* Last login info */}
+      {/* Last login + session note */}
       <div className="mt-4 flex items-start gap-2 rounded-lg border border-line bg-ink-card/50 p-3">
         <AlertCircle className="mt-0.5 h-3 w-3 shrink-0 text-fg-muted" />
         <div className="text-[10px] text-fg-muted">
-          <span className="font-medium text-foreground">Session note:</span> Operator access is env-defined (ADMIN_EMAIL + ADMIN_PASSWORD_HASH).
-          No user table exists. All write operations are logged to Turso DB with tx_hash.
-          Session expires in 8 hours. Re-authentication required after expiry.
+          <span className="font-medium text-foreground">Session note:</span> Operator access is env-defined
+          (ADMIN_EMAIL + ADMIN_PASSWORD_HASH). No user table exists. All write operations are logged to
+          Turso DB with tx_hash. Session expires in 8 hours. Re-authentication required after expiry.
+          {sessionInfo.hardwareKeyConfigured ? null : (
+            <>
+              {" "}
+              <span className="text-gold">Hardware key recommended</span> — add a FIDO2/YubiKey for
+              defense-in-depth against credential theft.
+            </>
+          )}
         </div>
       </div>
     </div>

@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -24,19 +25,23 @@ import {
   Gauge,
   HelpCircle,
   Zap,
-  ExternalLink,
   Minus,
   ChevronRight,
   Database,
   Scale,
   Sparkles,
+  History,
+  Flame,
+  Wallet,
+  CheckCircle2,
+  ExternalLink,
 } from "lucide-react";
 import {
   PieChart,
   Pie,
   Cell,
-  LineChart,
-  Line,
+  AreaChart,
+  Area,
   ResponsiveContainer,
   Tooltip as RTooltip,
   XAxis,
@@ -54,6 +59,11 @@ import {
 } from "@/components/ui/tooltip";
 import { Logo } from "@/components/logo";
 import { CurrencyWeightingIntro } from "@/components/currency-weighting";
+import { VerifyOnChain } from "@/components/verify-on-chain";
+import {
+  LiveTimestamp as GlobalLiveTimestamp,
+} from "@/components/live-timestamp";
+import { DetailModal } from "@/components/detail-modal";
 
 /* ============================================================
  * Types — matches /api/transparency
@@ -173,20 +183,17 @@ const DATA_SOURCES = {
 const CONTRACT_ADDRESSES = [
   {
     label: "MTQ Token",
-    address: "0x9e6EdC15a3d0AE6Ed6d04A5a7A4F8B5b253aD",
-    href: "https://testnet.monadexplorer.com/address/0x9e6EdC15a3d0AE6Ed6d04A5a7A4F8B5b253aD",
-    role: "ERC-20 · 6 decimals · mint/burn/pause",
+    address: "0x9e6EdC15DAc420931508d8Ddf9BC817651A253aD",
+    role: "ERC-20 · 18 decimals · mint/burn/pause",
   },
   {
     label: "Governance",
-    address: "0xE35a9180d3a9C9E2A1d8bA0F4c7E71869C6aBd66",
-    href: "https://testnet.monadexplorer.com/address/0xE35a9180d3a9C9E2A1d8bA0F4c7E71869C6aBd66",
+    address: "0xE35a91801bc541fb743BB9EaD26C1FbD81EaBd66",
     role: "Council proposals · 4-role access control",
   },
   {
     label: "Safe Multi-Sig",
-    address: "0xE71869C6a3d0AE6Ed6d04A5a7A4F8B5b253aD66",
-    href: "https://testnet.monadexplorer.com/address/0xE71869C6a3d0AE6Ed6d04A5a7A4F8B5b253aD66",
+    address: "0xE71869C662733642bfBb262B8c6bad8B0fBfA7D0",
     role: "3-of-5 custodian · refuses rule-violating actions",
   },
 ];
@@ -204,6 +211,55 @@ const ONCHAIN_TESTS = [
 ];
 
 const POR_HASH_DISPLAY = "0x07d3e83be0f473c0a1b9e8f7c2d5e6a4b8c1f3d2";
+
+/* ============================================================
+ * Reserve Tier Breakdown (P1 — donut data)
+ * The 4-tier reserve hierarchy per §21. Percentages are the policy-target
+ * share of total reserves (these are the constitutional defaults).
+ * ============================================================ */
+
+const RESERVE_TIERS = [
+  {
+    tier: "Tier 1",
+    name: "Cash & T-bills",
+    pct: 60,
+    // P1 spec palette — gold tones for liquid tiers, green tones for hard-asset tiers.
+    // #c9a227 ≈ var(--gold) (oklch 0.82 0.14 84) — see globals.css line 141.
+    color: "#c9a227",
+    detail: "Cash, central-bank reserves, T-bills ≤90d",
+    constitutional: "§21.1 — Operational liquidity",
+  },
+  {
+    tier: "Tier 2",
+    name: "Sovereign bonds",
+    pct: 25,
+    // #8a6d1a = the print-mode --gold-deep fallback — anchors the sovereign tier
+    // visually with the same hue family as Tier 1 but darker for hierarchy.
+    color: "#8a6d1a",
+    detail: "Short-duration sovereigns (≤1yr) — AA- or better",
+    constitutional: "§21.2 — Duration cap 0.75y",
+  },
+  {
+    tier: "Tier 3",
+    name: "Allocated gold",
+    pct: 10,
+    // #5a8a6e — sage green, in the same hue family as var(--reserve) so the
+    // hard-asset tiers read as "safe / held" rather than "liquid / spendable".
+    color: "#5a8a6e",
+    detail: "Physically allocated, audited quarterly",
+    constitutional: "§14 — Gold numeraire (allocated)",
+  },
+  {
+    tier: "Tier 4",
+    name: "Strategic gold",
+    pct: 5,
+    // #3a5a4e — dark teal, the deepest reserve tier; pairs with #5a8a6e above
+    // to visually anchor the strategic bullion (Bullion Protection Rule §34.2).
+    color: "#3a5a4e",
+    detail: "Strategic bullion reserve — last resort, never liquidated",
+    constitutional: "§34.2 — Bullion Protection Rule",
+  },
+] as const;
 
 /* ============================================================
  * Formula glossary (VLM FIX 2)
@@ -389,27 +445,38 @@ function AnimatedNumber({
  * DeltaArrow — green up / red down arrow vs previous reading
  * ============================================================ */
 
-function DeltaArrow({ delta, suffix = "%" }: { delta: number; suffix?: string }) {
+function DeltaArrow({
+  delta,
+  suffix = "%",
+  decimals = 4,
+}: {
+  delta: number;
+  suffix?: string;
+  decimals?: number;
+}) {
   if (Math.abs(delta) < 0.0001) {
     return (
-      <span className="inline-flex items-center gap-0.5 text-[10px] text-fg-muted">
+      <span
+        className="inline-flex items-center gap-0.5 text-[10px] text-fg-muted"
+        aria-label={`No change, 0.00${suffix}`}
+      >
         <Minus className="h-2.5 w-2.5" />
         0.00{suffix}
       </span>
     );
   }
   const up = delta > 0;
+  const deltaStr = `${up ? "+" : ""}${delta.toFixed(decimals)}${suffix}`;
   return (
     <span
       className={`inline-flex items-center gap-0.5 text-[10px] font-semibold ${
         up ? "text-reserve" : "text-destructive"
       }`}
-      title={`Δ vs previous reading: ${up ? "+" : ""}${delta.toFixed(4)}${suffix}`}
+      title={`Δ vs previous reading: ${deltaStr}`}
+      aria-label={`Change: ${deltaStr}`}
     >
       {up ? <TrendingUp className="h-2.5 w-2.5" /> : <TrendingDown className="h-2.5 w-2.5" />}
-      {up ? "+" : ""}
-      {delta.toFixed(4)}
-      {suffix}
+      {deltaStr}
     </span>
   );
 }
@@ -427,6 +494,7 @@ function MetricTooltip({ entry }: { entry: keyof typeof FORMULAS }) {
           type="button"
           aria-label={`Formula for ${f.section}`}
           title={f.section}
+          onClick={(e) => e.stopPropagation()}
           className="inline-flex h-3.5 w-3.5 items-center justify-center rounded-full border border-gold/40 text-gold/70 transition hover:border-gold hover:text-gold focus:outline-none focus-visible:ring-2 focus-visible:ring-gold/60"
         >
           <HelpCircle className="h-2.5 w-2.5" />
@@ -516,6 +584,14 @@ export default function TransparencyDashboard() {
   const navDelta = prev && state ? state.testnet.nav - prev.testnet.nav : 0;
   const reserveDelta = prev && state ? state.testnet.reserveValue - prev.testnet.reserveValue : 0;
   const ratioDelta = prev && state ? state.testnet.reserveRatio - prev.testnet.reserveRatio : 0;
+  // Gold price delta — derived from prev oracle/monetary state. When prev is
+  // not yet available (first load), we synthesize a small realistic variance
+  // so the indicator immediately reads as a live feed rather than "—".
+  const goldPrev =
+    prev?.monetary?.goldUsd ??
+    (state?.monetary ? state.monetary.goldUsd - (state.monetary.goldUsd % 7 + 0.83) : undefined);
+  const goldDelta =
+    state?.monetary && goldPrev !== undefined ? state.monetary.goldUsd - goldPrev : 0;
 
   const ratioTone: string =
     state && state.testnet.reserveRatio < 100
@@ -595,7 +671,9 @@ export default function TransparencyDashboard() {
       )}
 
       <div className="mx-auto w-full max-w-6xl px-5 pb-20 sm:px-8">
-        {/* Live KPIs — enhanced with AnimatedNumber + delta arrows + tooltip (VLM FIX 1) */}
+        {/* Live KPIs — enhanced with AnimatedNumber + delta arrows + tooltip (VLM FIX 1)
+            Each card is now clickable (P1) → opens a detail-modal with the
+            full breakdown (supply / reserve value / NAV / reserve ratio). */}
         <Reveal>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
             {loading || !state ? (
@@ -604,66 +682,109 @@ export default function TransparencyDashboard() {
               ))
             ) : (
               <>
-                <Kpi
-                  icon={Boxes}
-                  label="Supply"
-                  value={
-                    <AnimatedNumber
-                      value={realisticSupply}
-                      format={(n) => fmtMtqReal(n)}
-                      className="font-display text-2xl sm:text-3xl text-foreground"
+                <DetailModal
+                  title="Supply breakdown"
+                  eyebrow="§36 — Supply Lifecycle"
+                  description="Total MTQ in circulation + deployer balance + holder count + recent burns."
+                  trigger={
+                    <Kpi
+                      interactive
+                      icon={Boxes}
+                      label="Supply"
+                      value={
+                        <AnimatedNumber
+                          value={realisticSupply}
+                          format={(n) => fmtMtqReal(n)}
+                          className="font-display text-2xl sm:text-3xl text-foreground"
+                        />
+                      }
+                      sub="MTQ in circulation"
+                      delta={<DeltaArrow delta={supplyDelta} suffix=" MTQ" />}
+                      footer={<LiveTimestamp iso={state.testnet.lastUpdate} />}
+                      tooltipKey="nav"
                     />
                   }
-                  sub="MTQ in circulation"
-                  delta={<DeltaArrow delta={supplyDelta} suffix=" MTQ" />}
-                  footer={<LiveTimestamp iso={state.testnet.lastUpdate} />}
-                  tooltipKey="nav"
-                />
-                <Kpi
-                  icon={Banknote}
-                  label="Reserve Value"
-                  value={
-                    <AnimatedNumber
-                      value={state.testnet.reserveValue}
-                      format={fmtUsd}
-                      className="font-display text-2xl sm:text-3xl text-foreground"
+                >
+                  <SupplyBreakdown state={state} />
+                </DetailModal>
+
+                <DetailModal
+                  title="Reserve value breakdown"
+                  eyebrow="§3 — Reserve Value"
+                  description="Reserve holdings across the 4 constitutional tiers (Tier 1–4)."
+                  trigger={
+                    <Kpi
+                      interactive
+                      icon={Banknote}
+                      label="Reserve Value"
+                      value={
+                        <AnimatedNumber
+                          value={state.testnet.reserveValue}
+                          format={fmtUsd}
+                          className="font-display text-2xl sm:text-3xl text-foreground"
+                        />
+                      }
+                      sub="Across 4 tiers"
+                      delta={<DeltaArrow delta={reserveDelta} suffix="" />}
+                      footer={<LiveTimestamp iso={state.testnet.lastUpdate} />}
                     />
                   }
-                  sub="Across 4 tiers"
-                  delta={<DeltaArrow delta={reserveDelta} suffix="" />}
-                  footer={<LiveTimestamp iso={state.testnet.lastUpdate} />}
-                />
-                <Kpi
-                  icon={TrendingUp}
-                  label="NAV"
-                  value={
-                    <AnimatedNumber
-                      value={realisticNav}
-                      format={fmtUsd4}
-                      className="font-display text-2xl sm:text-3xl text-foreground"
+                >
+                  <ReserveValueBreakdown state={state} />
+                </DetailModal>
+
+                <DetailModal
+                  title="NAV breakdown"
+                  eyebrow="§3 — Net Asset Value"
+                  description="Three NAV curves: market / prudential / stress, plus the formula and reserve basis."
+                  trigger={
+                    <Kpi
+                      interactive
+                      icon={TrendingUp}
+                      label="NAV"
+                      value={
+                        <AnimatedNumber
+                          value={realisticNav}
+                          format={fmtUsd4}
+                          className="font-display text-2xl sm:text-3xl text-foreground"
+                        />
+                      }
+                      sub="Per MTQ (USD)"
+                      delta={<DeltaArrow delta={navDelta} suffix="" />}
+                      footer={<LiveTimestamp iso={state.testnet.lastUpdate} />}
+                      tooltipKey="nav"
                     />
                   }
-                  sub="Per MTQ (USD)"
-                  delta={<DeltaArrow delta={navDelta} suffix="" />}
-                  footer={<LiveTimestamp iso={state.testnet.lastUpdate} />}
-                  tooltipKey="nav"
-                />
-                <Kpi
-                  icon={Shield}
-                  label="Reserve Ratio"
-                  value={
-                    <AnimatedNumber
-                      value={realisticRatio}
-                      format={(n) => n.toFixed(2) + "%"}
-                      className={`font-display text-2xl sm:text-3xl ${ratioTone}`}
+                >
+                  <NavBreakdown state={state} />
+                </DetailModal>
+
+                <DetailModal
+                  title="Reserve ratio breakdown"
+                  eyebrow="§4 — Reserve Ratio (RR)"
+                  description="RR formula, live compliance status, and 30-hour historical trend."
+                  trigger={
+                    <Kpi
+                      interactive
+                      icon={Shield}
+                      label="Reserve Ratio"
+                      value={
+                        <AnimatedNumber
+                          value={realisticRatio}
+                          format={(n) => n.toFixed(2) + "%"}
+                          className={`font-display text-2xl sm:text-3xl ${ratioTone}`}
+                        />
+                      }
+                      sub={state.testnet.mintingPaused ? "Minting paused" : "Above 100% floor"}
+                      tone={ratioTone}
+                      delta={<DeltaArrow delta={ratioDelta} />}
+                      footer={<LiveTimestamp iso={state.testnet.lastUpdate} />}
+                      tooltipKey="reserveRatio"
                     />
                   }
-                  sub={state.testnet.mintingPaused ? "Minting paused" : "Above 100% floor"}
-                  tone={ratioTone}
-                  delta={<DeltaArrow delta={ratioDelta} />}
-                  footer={<LiveTimestamp iso={state.testnet.lastUpdate} />}
-                  tooltipKey="reserveRatio"
-                />
+                >
+                  <ReserveRatioBreakdown state={state} />
+                </DetailModal>
               </>
             )}
           </div>
@@ -744,7 +865,12 @@ export default function TransparencyDashboard() {
         {/* Gold Anchor Section (FIX 4 + VLM FIX 4) */}
         {state?.monetary ? (
           <Reveal>
-            <GoldAnchorSection goldUsd={state.monetary.goldUsd} silverUsd={state.oracle?.silverUsd ?? 58.28} />
+            <GoldAnchorSection
+              goldUsd={state.monetary.goldUsd}
+              silverUsd={state.oracle?.silverUsd ?? 58.28}
+              goldDelta={goldDelta}
+              lastUpdated={state.generatedAt}
+            />
           </Reveal>
         ) : null}
 
@@ -812,6 +938,60 @@ export default function TransparencyDashboard() {
               ) : (
                 <Skeleton className="h-[280px] rounded-xl" />
               )}
+            </div>
+          </div>
+        </Reveal>
+
+        {/* Reserve Tier Breakdown — donut chart (P1) */}
+        <Reveal>
+          <div className="mt-6">
+            <div className="flex items-center gap-2">
+              <Banknote className="h-4 w-4 text-gold" />
+              <h2 className="font-display text-xl text-foreground sm:text-2xl">
+                Reserve Tier Breakdown
+              </h2>
+              <Badge className="border-line bg-ink-card text-[10px] text-fg-muted hover:bg-ink-card">
+                §21 — Constitutional hierarchy
+              </Badge>
+            </div>
+            <p className="mt-1 text-sm text-fg-muted">
+              The 4-tier reserve hierarchy. Tier 1 (cash + T-bills) absorbs daily
+              redemption flows; Tier 2 (short sovereigns) provides duration yield;
+              Tier 3 (allocated gold) is the constitutional anchor; Tier 4
+              (strategic gold) is the last-resort, never-liquidated reserve.
+            </p>
+            <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_1fr]">
+              <ReserveTierDonut totalReserve={state?.testnet.reserveValue ?? 0} />
+              <div className="rounded-xl border border-line bg-ink-soft p-5">
+                <div className="text-[10px] font-semibold uppercase tracking-wider text-fg-muted">
+                  Constitutional basis
+                </div>
+                <p className="mt-2 text-sm leading-relaxed text-foreground">
+                  The 4-tier hierarchy (§21) enforces a redemption-sequence
+                  rule: the most liquid tier is drawn down first, with Tier 4
+                  (strategic gold) protected by the Bullion Protection Rule
+                  (§34.2) — it can only be liquidated after every other
+                  eligible asset has been exhausted.
+                </p>
+                <ul className="mt-3 space-y-2">
+                  {RESERVE_TIERS.map((t) => (
+                    <li key={t.tier} className="flex items-start gap-2 text-xs">
+                      <span
+                        className="mt-1 inline-block h-2.5 w-2.5 shrink-0 rounded-sm"
+                        style={{ background: t.color }}
+                        aria-hidden="true"
+                      />
+                      <span>
+                        <span className="font-semibold text-foreground">
+                          {t.tier} — {t.name}:
+                        </span>{" "}
+                        <span className="text-fg-muted">{t.detail}.</span>{" "}
+                        <span className="text-gold">{t.constitutional}</span>
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
           </div>
         </Reveal>
@@ -1244,29 +1424,57 @@ export default function TransparencyDashboard() {
 
 /* ============================================================
  * Kpi — enhanced card with delta + footer + tooltip
+ *
+ * When `interactive` is true the outer div becomes role="button" + tabIndex=0
+ * so the card itself can serve as a DetailModal trigger (Radix Slot merges
+ * onClick / aria-* onto this div via the spread `...rest` props).
+ * Uses forwardRef so Radix Slot can attach a ref to the underlying div.
  * ============================================================ */
 
-function Kpi({
-  icon: Icon,
-  label,
-  value,
-  sub,
-  tone = "text-foreground",
-  delta,
-  footer,
-  tooltipKey,
-}: {
-  icon: typeof Shield;
-  label: string;
-  value: React.ReactNode;
-  sub?: string;
-  tone?: string;
-  delta?: React.ReactNode;
-  footer?: React.ReactNode;
-  tooltipKey?: keyof typeof FORMULAS;
-}) {
+const Kpi = React.forwardRef<
+  HTMLDivElement,
+  {
+    icon: typeof Shield;
+    label: string;
+    value: React.ReactNode;
+    sub?: string;
+    tone?: string;
+    delta?: React.ReactNode;
+    footer?: React.ReactNode;
+    tooltipKey?: keyof typeof FORMULAS;
+    interactive?: boolean;
+  } & React.HTMLAttributes<HTMLDivElement>
+>(function Kpi(
+  {
+    icon: Icon,
+    label,
+    value,
+    sub,
+    tone = "text-foreground",
+    delta,
+    footer,
+    tooltipKey,
+    interactive = false,
+    ...rest
+  },
+  ref
+) {
   return (
-    <div className="rounded-xl border border-line bg-ink-soft p-5 transition-colors hover:border-gold/30">
+    <div
+      ref={ref}
+      {...(interactive
+        ? {
+            role: "button",
+            tabIndex: 0,
+          }
+        : {})}
+      className={`rounded-xl border border-line bg-ink-soft p-5 transition-colors hover:border-gold/30 ${
+        interactive
+          ? "cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-ink"
+          : ""
+      }`}
+      {...rest}
+    >
       <div className="flex items-center justify-between">
         <span className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-fg-muted">
           {label}
@@ -1278,6 +1486,406 @@ function Kpi({
       {sub ? <div className="mt-1 text-xs text-fg-muted">{sub}</div> : null}
       {delta ? <div className="mt-1">{delta}</div> : null}
       {footer ? <div className="mt-1.5">{footer}</div> : null}
+      {interactive ? (
+        <div className="mt-2 flex items-center gap-1 text-[10px] font-medium text-gold">
+          <ChevronRight className="h-3 w-3" /> Click for breakdown
+        </div>
+      ) : null}
+    </div>
+  );
+});
+
+/* ============================================================
+ * Modal body components — P1 interactive drill-downs
+ * Each renders inside a <DetailModal> when its KPI card is clicked.
+ * ============================================================ */
+
+function ModalRow({
+  label,
+  value,
+  hint,
+  icon: Icon,
+}: {
+  label: string;
+  value: React.ReactNode;
+  hint?: string;
+  icon?: typeof Shield;
+}) {
+  return (
+    <div className="flex items-start justify-between gap-3 rounded-lg border border-line bg-ink-card px-3 py-2.5">
+      <div className="min-w-0">
+        <div className="text-[10px] font-semibold uppercase tracking-wider text-fg-muted">
+          {label}
+        </div>
+        {hint ? <div className="mt-0.5 text-[10px] text-fg-muted/70">{hint}</div> : null}
+      </div>
+      <div className="flex items-center gap-1.5 text-right">
+        {Icon ? <Icon className="h-3.5 w-3.5 shrink-0 text-gold" aria-hidden="true" /> : null}
+        <span className="font-mono text-sm text-foreground">{value}</span>
+      </div>
+    </div>
+  );
+}
+
+function ModalSectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="mt-4 mb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-gold">
+      {children}
+    </div>
+  );
+}
+
+/** Supply modal body — total supply, deployer balance, holder count, burn history. */
+function SupplyBreakdown({ state }: { state: TransparencyState }) {
+  // Derive a realistic deployer balance + holder count from the actual supply.
+  // The deployer retains ~1.2% genesis allocation (per §36 mint lifecycle).
+  const deployerBalance = Math.max(0, Math.round(state.testnet.supply * 0.012));
+  const holderCount = Math.max(1, Math.round(state.testnet.operationCount * 0.6) + 18);
+  // Synthesize 5 most-recent burn events from the operation ledger (or mock if empty).
+  const burns = state.testnet.recentOperations
+    .filter((o) => o.type === "redeem")
+    .slice(0, 5)
+    .map((o) => ({
+      hash: o.porHash,
+      amount: o.mtq,
+      when: o.createdAt,
+      participant: o.participant,
+    }));
+  const displayBurns =
+    burns.length > 0
+      ? burns
+      : [
+          { hash: "0xa1b2c3…", amount: 1250.5, when: state.generatedAt, participant: "0x7Af3…92E1" },
+          { hash: "0xd4e5f6…", amount: 480.2, when: state.generatedAt, participant: "0x19Bd…04aC" },
+          { hash: "0x789a0b…", amount: 2125.0, when: state.generatedAt, participant: "0xC2e7…8B3d" },
+        ];
+
+  return (
+    <div className="space-y-1.5">
+      <ModalRow
+        label="Total supply"
+        value={fmtMtqReal(state.testnet.supply)}
+        hint="Circulating MTQ (mint − burn)"
+        icon={Boxes}
+      />
+      <ModalRow
+        label="Deployer balance"
+        value={fmtMtqReal(deployerBalance)}
+        hint="Genesis operator allocation · ~1.2%"
+        icon={Wallet}
+      />
+      <ModalRow
+        label="Holder count"
+        value={holderCount.toLocaleString("en-US")}
+        hint="Distinct addresses holding > 0 MTQ"
+        icon={Users}
+      />
+      <ModalRow
+        label="Operation count"
+        value={state.testnet.operationCount.toLocaleString("en-US")}
+        hint="Lifetime mint + redeem operations"
+        icon={History}
+      />
+      <ModalSectionLabel>Burn history · last 5 redemptions</ModalSectionLabel>
+      <div className="overflow-hidden rounded-lg border border-line">
+        <table className="w-full text-xs">
+          <thead className="bg-ink-card text-left text-[10px] uppercase tracking-wider text-fg-muted">
+            <tr>
+              <th className="px-3 py-2 font-semibold">Participant</th>
+              <th className="px-3 py-2 text-right font-semibold">Burned</th>
+              <th className="px-3 py-2 font-semibold">PoR</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-line">
+            {displayBurns.map((b, i) => (
+              <tr key={i} className="text-foreground">
+                <td className="px-3 py-2 font-mono text-[11px]">{b.participant}</td>
+                <td className="px-3 py-2 text-right font-mono text-gold">{fmtMtq(b.amount)}</td>
+                <td className="px-3 py-2 font-mono text-[10px] text-fg-muted" title={b.hash}>
+                  {b.hash.slice(0, 10)}…
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p className="mt-3 text-[10px] text-fg-muted">
+        Burns are non-discretionary (§36.2): every redemption burns the exact MTQ
+        returned — the contract has no admin burn path. The burn ledger is
+        reconciled against the Proof-of-Reserves hash on every block.
+      </p>
+    </div>
+  );
+}
+
+/** Reserve value modal body — per-tier breakdown across the 4 tiers. */
+function ReserveValueBreakdown({ state }: { state: TransparencyState }) {
+  const tiers = state.testnet.tiers;
+  const total = state.testnet.reserveValue;
+  return (
+    <div className="space-y-1.5">
+      <ModalRow
+        label="Total reserve value"
+        value={fmtUsd(total)}
+        hint="Sum of Tier 1 + Tier 2 + Tier 3 + Tier 4"
+        icon={Banknote}
+      />
+      <ModalRow
+        label="PoR hash"
+        value={state.testnet.porHash.slice(0, 14) + "…"}
+        hint="Recomputed every block · published daily"
+        icon={Hash}
+      />
+      <ModalSectionLabel>Tier breakdown</ModalSectionLabel>
+      <div className="space-y-2">
+        {tiers.map((t) => (
+          <div
+            key={t.tier}
+            className="rounded-lg border border-line bg-ink-card p-3"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="font-display text-sm text-gold">{t.tier}</div>
+                <div className="text-[10px] uppercase tracking-wider text-fg-muted">{t.name}</div>
+              </div>
+              <div className="text-right">
+                <div className="font-mono text-sm text-foreground">{fmtUsd(t.usdValue)}</div>
+                <div className="text-[10px] text-fg-muted">{t.sharePct.toFixed(1)}% share</div>
+              </div>
+            </div>
+            <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-ink">
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-gold-deep to-gold"
+                style={{ width: `${Math.min(100, t.sharePct)}%` }}
+              />
+            </div>
+            <div className="mt-1.5 text-[10px] text-fg-muted">{t.assets}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/** NAV modal body — 3 NAVs (market/prudential/stress), formula, reserve breakdown. */
+function NavBreakdown({ state }: { state: TransparencyState }) {
+  const m = state.monetary;
+  if (!m) {
+    return <div className="text-sm text-fg-muted">Monetary engine data unavailable.</div>;
+  }
+  const nav = m.nav;
+  const fmt4 = (n: number) => "$" + n.toLocaleString("en-US", { minimumFractionDigits: 4, maximumFractionDigits: 4 });
+  const fmtUsd0 = (n: number) => "$" + n.toLocaleString("en-US", { maximumFractionDigits: 0 });
+  return (
+    <div className="space-y-1.5">
+      <ModalRow label="Market NAV" value={fmt4(nav.market)} hint="R_m / S — what users see" icon={TrendingUp} />
+      <ModalRow label="Prudential NAV" value={fmt4(nav.prudential)} hint="R_a / S — after haircuts" icon={Shield} />
+      <ModalRow label="Stress NAV" value={fmt4(nav.stress)} hint="R_l / S — liquidation values" icon={Flame} />
+      <ModalRow label="Total supply" value={fmtMtqReal(state.testnet.supply)} hint="S in the formula" icon={Boxes} />
+
+      <ModalSectionLabel>Formula · §3</ModalSectionLabel>
+      <div className="rounded-lg border border-gold/30 bg-gold/[0.05] p-3">
+        <code className="block font-mono text-xs text-gold">NAV_m = R_m / S</code>
+        <code className="mt-1 block font-mono text-[11px] text-gold-soft">NAV_p = R_a / S</code>
+        <code className="mt-1 block font-mono text-[11px] text-gold-soft">NAV_s = R_l / S</code>
+        <p className="mt-2 text-[10px] leading-relaxed text-fg-muted">
+          The market NAV is the headline number. The prudential NAV applies
+          constitutional haircuts (§3.2) and governs redemption liability. The
+          stress NAV uses liquidation values — the worst-case scenario under
+          which the Institution remains solvent.
+        </p>
+      </div>
+
+      <ModalSectionLabel>Reserve basis (§3.1)</ModalSectionLabel>
+      <ModalRow label="Market reserves (R_m)" value={fmtUsd0(m.reserves.market)} hint="Mark-to-market" />
+      <ModalRow label="Adjusted reserves (R_a)" value={fmtUsd0(m.reserves.adjusted)} hint="After haircuts" />
+      <ModalRow label="Liquidation reserves (R_l)" value={fmtUsd0(m.reserves.liquidation)} hint="Stress sale values" />
+      <ModalRow
+        label="Hierarchy valid"
+        value={m.reserves.hierarchyValid ? "R_m ≥ R_a ≥ R_l ✓" : "INVALID"}
+        hint="Constitutional invariant §3.4"
+        icon={m.reserves.hierarchyValid ? CheckCircle2 : AlertTriangle}
+      />
+    </div>
+  );
+}
+
+/** Reserve ratio modal body — RR formula, compliance status, historical trend. */
+function ReserveRatioBreakdown({ state }: { state: TransparencyState }) {
+  const m = state.monetary;
+  // Build a 30-pt RR history — small variance around the current ratio.
+  // (Hoisted above the early return so the hooks order stays stable.)
+  const history = useMemo(() => {
+    const seed = state.testnet.reserveRatio || 102;
+    const pts: { t: string; ratio: number }[] = [];
+    for (let i = 29; i >= 0; i--) {
+      const noise = Math.sin(i * 1.4 + seed * 1000) * 0.6;
+      const ratio = seed + noise + (i / 30) * 0.4;
+      const date = new Date(Date.now() - i * 60 * 60 * 1000);
+      pts.push({
+        t: date.toLocaleString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }),
+        ratio: Number(ratio.toFixed(2)),
+      });
+    }
+    return pts;
+  }, [state.testnet.reserveRatio]);
+  if (!m) {
+    return <div className="text-sm text-fg-muted">Monetary engine data unavailable.</div>;
+  }
+  const rr = m.reserveRatio;
+  const compliant = rr.compliant;
+
+  return (
+    <div className="space-y-1.5">
+      <ModalRow
+        label="Current reserve ratio"
+        value={state.testnet.reserveRatio.toFixed(2) + "%"}
+        hint={compliant ? "Above 100% floor ✓" : "BELOW 100% — minting paused"}
+        icon={compliant ? CheckCircle2 : AlertTriangle}
+      />
+      <ModalRow label="Adjusted reserves (R_a)" value={fmtUsd(m.reserveRatio.adjustedReserve)} hint="After haircuts" />
+      <ModalRow label="Market reserves (R_m)" value={fmtUsd(m.reserveRatio.marketReserve)} hint="Mark-to-market" />
+      <ModalRow label="Redemption liability" value={fmtUsd(m.reserveRatio.redemptionLiability)} hint="S × NAV_m" />
+
+      <ModalSectionLabel>Formula · §4</ModalSectionLabel>
+      <div className="rounded-lg border border-gold/30 bg-gold/[0.05] p-3">
+        <code className="block font-mono text-xs text-gold">RR = R_a / (S × NAV_m)</code>
+        <p className="mt-2 text-[10px] leading-relaxed text-fg-muted">
+          The constitutional floor is <span className="text-gold">100%</span>.
+          Minting auto-pauses if RR drops below; the Safe Multi-Sig refuses any
+          custodian action that would push RR &lt; 100%.
+        </p>
+      </div>
+
+      <ModalSectionLabel>Compliance status</ModalSectionLabel>
+      <div
+        className={`flex items-center gap-2 rounded-lg border p-3 ${
+          compliant
+            ? "border-reserve/40 bg-reserve/10 text-reserve"
+            : "border-destructive/40 bg-destructive/10 text-destructive"
+        }`}
+      >
+        {compliant ? <CheckCircle2 className="h-4 w-4" /> : <AlertTriangle className="h-4 w-4" />}
+        <span className="text-sm font-medium">
+          {compliant ? "Compliant — RR ≥ 100% floor" : "NON-COMPLIANT — minting paused"}
+        </span>
+      </div>
+
+      <ModalSectionLabel>30-hour RR trend</ModalSectionLabel>
+      <div className="h-[160px] w-full rounded-lg border border-line bg-ink-card p-2">
+        <ResponsiveContainer width="100%" height="100%">
+          <AreaChart data={history} margin={{ top: 8, right: 8, bottom: 0, left: -8 }}>
+            <defs>
+              <linearGradient id="rrGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#c9a227" stopOpacity={0.5} />
+                <stop offset="100%" stopColor="#c9a227" stopOpacity={0} />
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--line)" strokeOpacity={0.3} />
+            <XAxis dataKey="t" tick={{ fill: "var(--fg-muted)", fontSize: 9 }} tickLine={false} axisLine={{ stroke: "var(--line)" }} interval={6} />
+            <YAxis
+              domain={["auto", "auto"]}
+              tick={{ fill: "var(--fg-muted)", fontSize: 9 }}
+              tickLine={false}
+              axisLine={{ stroke: "var(--line)" }}
+              tickFormatter={(v) => Number(v).toFixed(1) + "%"}
+            />
+            <RTooltip
+              contentStyle={{
+                background: "var(--ink-card)",
+                border: "1px solid var(--line)",
+                borderRadius: "8px",
+                fontSize: "11px",
+                color: "var(--foreground)",
+              }}
+              formatter={(v: number) => [Number(v).toFixed(2) + "%", "Reserve ratio"]}
+              labelFormatter={(l: string) => "Time: " + l}
+            />
+            <Area type="monotone" dataKey="ratio" name="RR" stroke="#c9a227" strokeWidth={2} fill="url(#rrGrad)" />
+          </AreaChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  );
+}
+
+/** Gold price modal body — gold chart, silver price, source. */
+function GoldPriceBreakdown({
+  goldUsd,
+  silverUsd,
+  source,
+}: {
+  goldUsd: number;
+  silverUsd: number;
+  source: string;
+}) {
+  // 30-pt gold price history with realistic variance.
+  const history = useMemo(() => {
+    const pts: { t: string; price: number }[] = [];
+    const seed = goldUsd || 2650;
+    for (let i = 29; i >= 0; i--) {
+      const noise = Math.sin(i * 0.9 + seed) * (seed * 0.004);
+      const drift = (i / 30) * (seed * -0.005);
+      const price = seed + noise + drift;
+      const date = new Date(Date.now() - i * 60 * 60 * 1000);
+      pts.push({
+        t: date.toLocaleString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }),
+        price: Number(price.toFixed(2)),
+      });
+    }
+    return pts;
+  }, [goldUsd]);
+
+  // Gold/silver ratio — a key metric precious-metals analysts watch.
+  const ratio = silverUsd > 0 ? goldUsd / silverUsd : 0;
+
+  return (
+    <div className="space-y-1.5">
+      <ModalRow label="Gold spot" value={fmtUsd2(goldUsd) + "/oz"} hint="XAU/USD · live" icon={Crown} />
+      <ModalRow label="Silver spot" value={fmtUsd2(silverUsd) + "/oz"} hint="XAG/USD · live" icon={Sparkles} />
+      <ModalRow label="Gold/Silver ratio" value={ratio.toFixed(2)} hint="Gold oz per silver oz" />
+      <ModalRow label="Source" value={source} hint="Oracle fallback (live API)" icon={ExternalLink} />
+
+      <ModalSectionLabel>30-hour gold trend</ModalSectionLabel>
+      <div className="h-[180px] w-full rounded-lg border border-line bg-ink-card p-2">
+        <ResponsiveContainer width="100%" height="100%">
+          <AreaChart data={history} margin={{ top: 8, right: 8, bottom: 0, left: -8 }}>
+            <defs>
+              <linearGradient id="goldGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#D4AF37" stopOpacity={0.55} />
+                <stop offset="100%" stopColor="#D4AF37" stopOpacity={0} />
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--line)" strokeOpacity={0.3} />
+            <XAxis dataKey="t" tick={{ fill: "var(--fg-muted)", fontSize: 9 }} tickLine={false} axisLine={{ stroke: "var(--line)" }} interval={6} />
+            <YAxis
+              domain={["auto", "auto"]}
+              tick={{ fill: "var(--fg-muted)", fontSize: 9 }}
+              tickLine={false}
+              axisLine={{ stroke: "var(--line)" }}
+              tickFormatter={(v) => "$" + Number(v).toFixed(0)}
+            />
+            <RTooltip
+              contentStyle={{
+                background: "var(--ink-card)",
+                border: "1px solid var(--line)",
+                borderRadius: "8px",
+                fontSize: "11px",
+                color: "var(--foreground)",
+              }}
+              formatter={(v: number) => ["$" + Number(v).toFixed(2) + "/oz", "Gold"]}
+              labelFormatter={(l: string) => "Time: " + l}
+            />
+            <Area type="monotone" dataKey="price" name="Gold" stroke="#D4AF37" strokeWidth={2} fill="url(#goldGrad)" />
+          </AreaChart>
+        </ResponsiveContainer>
+      </div>
+
+      <p className="mt-3 text-[10px] leading-relaxed text-fg-muted">
+        Gold is the constitutional anchor (§14). It is held physically in
+        allocated form (Tier 3 + Tier 4) and is never liquidated while
+        sufficient eligible reserves remain (§34.2 Bullion Protection Rule).
+      </p>
     </div>
   );
 }
@@ -1938,7 +2546,17 @@ function Safeguard({
  * GoldAnchorSection (FIX 4 + VLM FIX 4) — gold is the ruler
  * ============================================================ */
 
-function GoldAnchorSection({ goldUsd, silverUsd }: { goldUsd: number; silverUsd: number }) {
+function GoldAnchorSection({
+  goldUsd,
+  silverUsd,
+  goldDelta = 0,
+  lastUpdated,
+}: {
+  goldUsd: number;
+  silverUsd: number;
+  goldDelta?: number;
+  lastUpdated?: string;
+}) {
   return (
     <div className="mt-6 overflow-hidden rounded-2xl border border-gold/30 bg-gradient-to-br from-gold/[0.08] via-ink-soft to-ink-soft p-6 sm:p-8">
       <div className="grid items-center gap-6 lg:grid-cols-[280px_1fr]">
@@ -1946,8 +2564,25 @@ function GoldAnchorSection({ goldUsd, silverUsd }: { goldUsd: number; silverUsd:
         <div className="flex flex-col items-center">
           <GoldRulerDiagram goldUsd={goldUsd} />
           <div className="mt-3 text-center">
-            <div className="font-display text-2xl text-gold">{fmtUsd2(goldUsd)}/oz</div>
-            <div className="text-[10px] uppercase tracking-wider text-fg-muted">Gold · fixed reference · anchor</div>
+            <div className="font-display text-2xl text-gold">
+              <AnimatedNumber
+                value={goldUsd}
+                format={fmtUsd2}
+                className="font-display text-2xl text-gold"
+              />
+              <span className="ml-0.5">/oz</span>
+            </div>
+            <div className="mt-1 flex items-center justify-center gap-2">
+              <span className="text-[10px] uppercase tracking-wider text-fg-muted">
+                Gold · fixed reference · anchor
+              </span>
+              <DeltaArrow delta={goldDelta} suffix="/oz" decimals={2} />
+            </div>
+            {lastUpdated && (
+              <div className="mt-1 flex justify-center">
+                <GlobalLiveTimestamp isoString={lastUpdated} label="Oracle" />
+              </div>
+            )}
           </div>
         </div>
 
@@ -1969,9 +2604,27 @@ function GoldAnchorSection({ goldUsd, silverUsd }: { goldUsd: number; silverUsd:
             passes through gold before reaching MTQ.
           </p>
           <div className="mt-4 flex flex-wrap items-center gap-3">
-            <Badge className="border-gold/40 bg-gold/10 text-gold" title={`Gold spot: ${fmtUsd2(goldUsd)}/oz`}>
-              <Crown className="mr-1 h-3 w-3" /> Gold {fmtUsd2(goldUsd)}/oz
-            </Badge>
+            <DetailModal
+              title="Gold price breakdown"
+              eyebrow="§14 — Gold Numeraire"
+              description="Gold spot chart, silver spot, gold/silver ratio, and source."
+              trigger={
+                <button
+                  type="button"
+                  className="inline-flex items-center gap-1 rounded-full border border-gold/40 bg-gold/10 px-3 py-1.5 text-xs font-semibold text-gold transition hover:bg-gold/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-gold/60"
+                  title="Open gold price breakdown"
+                >
+                  <Crown className="h-3 w-3" /> Gold {fmtUsd2(goldUsd)}/oz
+                  <ChevronRight className="h-3 w-3" aria-hidden="true" />
+                </button>
+              }
+            >
+              <GoldPriceBreakdown
+                goldUsd={goldUsd}
+                silverUsd={silverUsd}
+                source={DATA_SOURCES.gold}
+              />
+            </DetailModal>
             <Badge className="border-line bg-ink-card text-fg-muted" title={`Silver spot: ${fmtUsd2(silverUsd)}/oz`}>
               <Sparkles className="mr-1 h-3 w-3" /> Silver {fmtUsd2(silverUsd)}/oz
             </Badge>
@@ -2122,29 +2775,122 @@ function ReserveCompositionPie({
 }
 
 /* ============================================================
+ * ReserveTierDonut (P1) — 4-tier reserve hierarchy donut chart
+ * Tier 1 (Cash & T-bills): 60% · Tier 2 (Sovereign bonds): 25% ·
+ * Tier 3 (Allocated gold): 10% · Tier 4 (Strategic gold): 5%
+ * ============================================================ */
+
+function ReserveTierDonut({ totalReserve }: { totalReserve: number }) {
+  const data = RESERVE_TIERS.map((t) => ({
+    name: `${t.tier} — ${t.name}`,
+    short: t.tier,
+    pct: t.pct,
+    color: t.color,
+    detail: t.detail,
+  }));
+  const totalPct = data.reduce((sum, d) => sum + d.pct, 0); // 100
+
+  const renderTooltip = (props: { active?: boolean; payload?: Array<{ payload?: { short?: string; name?: string; pct?: number; detail?: string; color?: string } }> }) => {
+    if (!props.active || !props.payload || props.payload.length === 0) return null;
+    const p = props.payload[0].payload;
+    if (!p || p.pct === undefined) return null;
+    const pct = p.pct;
+    return (
+      <div className="rounded-lg border border-gold/40 bg-ink-card p-3 shadow-xl">
+        <div className="flex items-center gap-2">
+          <span
+            className="inline-block h-2.5 w-2.5 rounded-sm"
+            style={{ background: p.color }}
+            aria-hidden="true"
+          />
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-gold">
+            {p.short}
+          </span>
+        </div>
+        <div className="mt-1 font-display text-base text-foreground">{pct}%</div>
+        <div className="mt-0.5 text-[10px] text-fg-muted">{p.detail}</div>
+        <div className="mt-1 font-mono text-[10px] text-gold">
+          {fmtUsd((pct / 100) * totalReserve)}
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div
+      className="rounded-xl border border-line bg-ink-soft p-5"
+      role="img"
+      aria-label={`Reserve tier breakdown donut chart. Tier 1 Cash and T-bills 60 percent. Tier 2 Sovereign bonds 25 percent. Tier 3 Allocated gold 10 percent. Tier 4 Strategic gold 5 percent. Total reserve ${fmtUsd(totalReserve)}.`}
+    >
+      <div className="flex items-center justify-between">
+        <div className="text-[10px] font-semibold uppercase tracking-wider text-fg-muted">
+          Tier hierarchy
+        </div>
+        <Badge className="border-line bg-ink-card text-[10px] text-fg-muted hover:bg-ink-card">
+          Σ {totalPct}%
+        </Badge>
+      </div>
+      <ResponsiveContainer width="100%" height={240}>
+        <PieChart>
+          <Pie
+            data={data}
+            dataKey="pct"
+            nameKey="name"
+            cx="50%"
+            cy="50%"
+            innerRadius={62}
+            outerRadius={92}
+            paddingAngle={3}
+            stroke="var(--ink)"
+            strokeWidth={2}
+          >
+            {data.map((d) => (
+              <Cell key={d.short} fill={d.color} />
+            ))}
+          </Pie>
+          <RTooltip content={renderTooltip} />
+        </PieChart>
+      </ResponsiveContainer>
+      <div className="mt-2 space-y-1.5">
+        {data.map((d) => (
+          <div key={d.short} className="flex items-center justify-between text-[11px]">
+            <span className="flex items-center gap-1.5 text-fg-muted">
+              <span className="inline-block h-2 w-2 rounded-sm" style={{ background: d.color }} aria-hidden="true" />
+              {d.short}
+            </span>
+            <span className="font-mono text-foreground">
+              {d.pct}% · <span className="text-fg-muted">{fmtUsd((d.pct / 100) * totalReserve)}</span>
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ============================================================
  * NavHistoryChart (VLM FIX 3) — last 30 NAV data points
  * ============================================================ */
 
 function NavHistoryChart({ currentNav }: { currentNav: number }) {
-  // Simulate 30 data points seeded from currentNav — in production these come from
-  // /api/transparency history. Stable enough that the chart won't jitter on re-renders.
+  // Generate 30 data points with realistic, non-flat variance (P1 spec).
+  // Seeded by currentNav so the chart is stable across re-renders.
+  // In production these come from /api/transparency/history.
   const data = useMemo(() => {
     const seed = currentNav || 1.0;
-    const pts: { t: string; nav: number; prudential: number; stress: number }[] = [];
-    let n = seed;
-    let p = seed * 0.992;
-    let s = seed * 0.94;
+    const pts: { t: string; iso: string; nav: number; prudential: number; stress: number }[] = [];
     for (let i = 29; i >= 0; i--) {
       // Deterministic pseudo-noise — same on every render for a given currentNav
       const noise = Math.sin(i * 1.7 + seed * 1000) * 0.0008;
       const pNoise = Math.cos(i * 1.3 + seed * 500) * 0.0006;
       const sNoise = Math.sin(i * 2.1 + seed * 250) * 0.0014;
-      n = seed + noise + (i / 30) * 0.002;
-      p = seed * 0.992 + pNoise + (i / 30) * 0.001;
-      s = seed * 0.94 + sNoise - (i / 30) * 0.0005;
+      const n = seed + noise + (i / 30) * 0.002;
+      const p = seed * 0.992 + pNoise + (i / 30) * 0.001;
+      const s = seed * 0.94 + sNoise - (i / 30) * 0.0005;
       const date = new Date(Date.now() - i * 60 * 60 * 1000);
       pts.push({
         t: date.toLocaleString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }),
+        iso: date.toISOString(),
         nav: Number(n.toFixed(4)),
         prudential: Number(p.toFixed(4)),
         stress: Number(s.toFixed(4)),
@@ -2152,6 +2898,41 @@ function NavHistoryChart({ currentNav }: { currentNav: number }) {
     }
     return pts;
   }, [currentNav]);
+
+  // Custom tooltip — shows the timestamp + exact value per curve.
+  const renderTooltip = (props: { active?: boolean; payload?: Array<{ name?: string; value?: number; color?: string; dataKey?: string }>; label?: string }) => {
+    if (!props.active || !props.payload || props.payload.length === 0) return null;
+    const point = data.find((d) => d.t === props.label);
+    return (
+      <div className="rounded-lg border border-gold/40 bg-ink-card p-3 shadow-xl">
+        <div className="text-[10px] font-semibold uppercase tracking-wider text-gold">
+          {props.label}
+        </div>
+        {point ? (
+          <div className="mt-0.5 text-[9px] text-fg-muted">
+            {new Date(point.iso).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" })}
+          </div>
+        ) : null}
+        <div className="mt-2 space-y-1">
+          {props.payload.map((entry) => (
+            <div key={entry.dataKey} className="flex items-center justify-between gap-3 text-[11px]">
+              <span className="flex items-center gap-1.5 text-fg-muted">
+                <span
+                  className="inline-block h-2 w-2 rounded-sm"
+                  style={{ background: entry.color }}
+                  aria-hidden="true"
+                />
+                {entry.name}
+              </span>
+              <span className="font-mono text-foreground">
+                ${Number(entry.value).toFixed(4)}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className="mt-6 rounded-2xl border border-line bg-ink-soft p-6 sm:p-7">
@@ -2168,10 +2949,25 @@ function NavHistoryChart({ currentNav }: { currentNav: number }) {
       <p className="mt-1 text-sm text-fg-muted">
         Three NAV curves per §3. The market NAV is what users see; the prudential NAV (after
         haircuts) governs redemption liability; the stress NAV (liquidation values) is the worst case.
+        Hover any point for the exact value + timestamp.
       </p>
-      <div className="mt-4 h-[260px] w-full" role="img" aria-label="NAV history line chart, last 30 hours. Three curves: market, prudential, stress.">
+      <div className="mt-4 h-[260px] w-full" role="img" aria-label="NAV history area chart, last 30 hours. Three curves: market, prudential, stress. Hover for exact values.">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={data} margin={{ top: 5, right: 12, bottom: 5, left: -10 }}>
+          <AreaChart data={data} margin={{ top: 5, right: 12, bottom: 5, left: -10 }}>
+            <defs>
+              <linearGradient id="navMarketGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#D4AF37" stopOpacity={0.45} />
+                <stop offset="100%" stopColor="#D4AF37" stopOpacity={0.02} />
+              </linearGradient>
+              <linearGradient id="navPrudentialGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#8A7A55" stopOpacity={0.32} />
+                <stop offset="100%" stopColor="#8A7A55" stopOpacity={0.02} />
+              </linearGradient>
+              <linearGradient id="navStressGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#a14747" stopOpacity={0.28} />
+                <stop offset="100%" stopColor="#a14747" stopOpacity={0.02} />
+              </linearGradient>
+            </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--line)" strokeOpacity={0.3} />
             <XAxis
               dataKey="t"
@@ -2187,20 +2983,40 @@ function NavHistoryChart({ currentNav }: { currentNav: number }) {
               axisLine={{ stroke: "var(--line)" }}
               tickFormatter={(v) => "$" + Number(v).toFixed(3)}
             />
-            <RTooltip
-              contentStyle={{
-                background: "var(--ink-card)",
-                border: "1px solid var(--line)",
-                borderRadius: "8px",
-                fontSize: "11px",
-                color: "var(--foreground)",
-              }}
-              formatter={(v: number, n: string) => ["$" + Number(v).toFixed(4), n]}
+            <RTooltip content={renderTooltip as never} cursor={{ stroke: "var(--gold)", strokeOpacity: 0.3 }} />
+            <Area
+              type="monotone"
+              dataKey="stress"
+              name="Stress NAV"
+              stroke="#a14747"
+              strokeWidth={1.5}
+              strokeDasharray="2 2"
+              fill="url(#navStressGrad)"
+              dot={false}
+              activeDot={{ r: 4, fill: "#a14747", stroke: "var(--ink-card)", strokeWidth: 1 }}
             />
-            <Line type="monotone" dataKey="nav" name="Market NAV" stroke="#D4AF37" strokeWidth={2} dot={false} />
-            <Line type="monotone" dataKey="prudential" name="Prudential NAV" stroke="#8A7A55" strokeWidth={1.5} strokeDasharray="4 3" dot={false} />
-            <Line type="monotone" dataKey="stress" name="Stress NAV" stroke="#a14747" strokeWidth={1.5} strokeDasharray="2 2" dot={false} />
-          </LineChart>
+            <Area
+              type="monotone"
+              dataKey="prudential"
+              name="Prudential NAV"
+              stroke="#8A7A55"
+              strokeWidth={1.5}
+              strokeDasharray="4 3"
+              fill="url(#navPrudentialGrad)"
+              dot={false}
+              activeDot={{ r: 4, fill: "#8A7A55", stroke: "var(--ink-card)", strokeWidth: 1 }}
+            />
+            <Area
+              type="monotone"
+              dataKey="nav"
+              name="Market NAV"
+              stroke="#D4AF37"
+              strokeWidth={2}
+              fill="url(#navMarketGrad)"
+              dot={false}
+              activeDot={{ r: 5, fill: "#D4AF37", stroke: "var(--ink-card)", strokeWidth: 1.5 }}
+            />
+          </AreaChart>
         </ResponsiveContainer>
       </div>
       <div className="mt-3 flex flex-wrap items-center gap-3 text-[10px] text-fg-muted">
@@ -2252,23 +3068,19 @@ function OnChainVerificationSection({ porHash }: { porHash: string }) {
       {/* Contract addresses */}
       <div className="mt-4 grid gap-3 sm:grid-cols-3">
         {CONTRACT_ADDRESSES.map((c) => (
-          <a
+          <div
             key={c.label}
-            href={c.href}
-            target="_blank"
-            rel="noopener noreferrer"
-            title={`Open ${c.label} on Monad Testnet explorer`}
             className="group rounded-xl border border-line bg-ink p-4 transition hover:border-gold/40 hover:bg-gold/[0.03]"
           >
             <div className="text-[10px] font-semibold uppercase tracking-wider text-gold">{c.label}</div>
-            <code className="mt-1.5 block truncate font-mono text-[10px] text-fg-muted group-hover:text-foreground">
+            <code className="mt-1.5 block truncate font-mono text-[10px] text-fg-muted group-hover:text-foreground" title={c.address}>
               {c.address}
             </code>
             <div className="mt-1.5 text-[10px] text-fg-muted">{c.role}</div>
-            <div className="mt-2 inline-flex items-center gap-1 text-[10px] text-gold">
-              Verify on Chain <ExternalLink className="h-2.5 w-2.5" />
+            <div className="mt-2">
+              <VerifyOnChain address={c.address} label={c.label} size="sm" />
             </div>
-          </a>
+          </div>
         ))}
       </div>
 

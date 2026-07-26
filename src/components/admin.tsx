@@ -20,11 +20,13 @@ import {
   LogOut,
   Lock,
   Mail,
+  Bell,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useToast } from "@/hooks/use-toast";
 import { useNotify } from "@/hooks/use-notify";
 import { Logo } from "@/components/logo";
@@ -421,6 +423,7 @@ function Console({ email }: { email: string }) {
                 private operator view; never linked from the public site.
               </p>
               <div className="flex shrink-0 items-center gap-3">
+                <NotificationsBell rows={rows} total={total} loading={loading} />
                 <span className="text-xs text-fg-muted">{email}</span>
                 <button
                   onClick={() => signOut({ redirect: false })}
@@ -455,6 +458,12 @@ function Console({ email }: { email: string }) {
                   </div>
                 );
               })}
+        </div>
+
+        {/* P1: Institutional security UI + system status — top of console */}
+        <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
+          <SecurityPanel />
+          <SystemStatus />
         </div>
 
         {/* Toolbar */}
@@ -601,12 +610,6 @@ function Console({ email }: { email: string }) {
         </div>
 
         <OracleAdminSection />
-
-        {/* P1: Institutional security UI + system status */}
-        <div className="mt-8 grid grid-cols-1 gap-4 lg:grid-cols-2">
-          <SecurityPanel />
-          <SystemStatus />
-        </div>
       </div>
     </div>
   );
@@ -759,3 +762,118 @@ function CommandRow({ label, cmd }: { label: string; cmd: string }) {
     </div>
   );
 }
+
+/* ============================================================
+ * NotificationsBell — header icon showing recent submission count.
+ * P1: "Add a 'Notifications' bell icon in the admin header that shows a
+ * count of recent submissions."
+ *
+ * Renders a bell button with a gold count badge. Clicking opens a shadcn
+ * Popover with the 5 most-recent submissions + a "View all" hint. Uses
+ * timeAgo() (defined above) for relative timestamps.
+ * ============================================================ */
+
+function NotificationsBell({
+  rows,
+  total,
+  loading,
+}: {
+  rows: Row[];
+  total: number;
+  loading: boolean;
+}) {
+  // "Recent" = submitted within the last 7 days. The badge count shows these;
+  // total is shown separately inside the popover.
+  const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+  const recent = useMemo(
+    () => rows.filter((r) => new Date(r.createdAt).getTime() >= sevenDaysAgo).slice(0, 5),
+    [rows, sevenDaysAgo]
+  );
+  const recentCount = recent.length;
+
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          aria-label={`Notifications: ${recentCount} recent submission${recentCount === 1 ? "" : "s"} in the last 7 days`}
+          title="Recent Formation Committee submissions"
+          className="relative inline-flex h-9 w-9 items-center justify-center rounded-md border border-line bg-ink-card text-fg-muted transition hover:border-gold/40 hover:text-gold focus:outline-none focus-visible:ring-2 focus-visible:ring-gold/60"
+        >
+          <Bell className="h-4 w-4" aria-hidden="true" />
+          {recentCount > 0 ? (
+            <span
+              className="absolute -right-1 -top-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-gold px-1 text-[9px] font-bold text-ink"
+              aria-hidden="true"
+            >
+              {recentCount}
+            </span>
+          ) : null}
+        </button>
+      </PopoverTrigger>
+      <PopoverContent
+        align="end"
+        sideOffset={6}
+        className="w-80 border-line bg-ink-soft p-0 text-foreground"
+      >
+        <div className="flex items-center justify-between border-b border-line px-4 py-3">
+          <div className="flex items-center gap-2">
+            <Bell className="h-3.5 w-3.5 text-gold" aria-hidden="true" />
+            <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-fg-muted">
+              Recent submissions
+            </span>
+          </div>
+          <Badge className="border-gold/40 bg-gold/10 text-[10px] text-gold hover:bg-gold/10">
+            {total} total
+          </Badge>
+        </div>
+        <div className="max-h-[320px] overflow-y-auto">
+          {loading ? (
+            <div className="px-4 py-6 text-center text-xs text-fg-muted">
+              <Loader2 className="mx-auto h-4 w-4 animate-spin text-gold" />
+              <p className="mt-2">Loading submissions…</p>
+            </div>
+          ) : recent.length === 0 ? (
+            <div className="px-4 py-6 text-center text-xs text-fg-muted">
+              <Inbox className="mx-auto h-5 w-5 text-fg-muted" />
+              <p className="mt-2">No new submissions in the last 7 days.</p>
+            </div>
+          ) : (
+            <ul className="divide-y divide-line">
+              {recent.map((r) => {
+                const meta = ROLE_META[r.role];
+                const Icon = meta.icon;
+                return (
+                  <li key={r.id} className="px-4 py-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="truncate text-sm font-medium text-foreground">
+                        {r.fullName}
+                      </span>
+                      <span className="shrink-0 text-[10px] text-fg-muted">
+                        {timeAgo(r.createdAt)}
+                      </span>
+                    </div>
+                    <div className="mt-0.5 flex items-center gap-2">
+                      <span
+                        className={`inline-flex items-center gap-1 rounded border px-1.5 py-0.5 text-[9px] ${meta.tone}`}
+                      >
+                        <Icon className="h-2.5 w-2.5" /> {meta.label}
+                      </span>
+                      {r.org ? (
+                        <span className="truncate text-[10px] text-fg-muted">{r.org}</span>
+                      ) : null}
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
+        <div className="border-t border-line px-4 py-2 text-center text-[10px] text-fg-muted">
+          Scroll the table below to review all {total} submission{total === 1 ? "" : "s"}.
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
+

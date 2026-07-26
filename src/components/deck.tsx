@@ -2,14 +2,54 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowLeft, ArrowRight, Hexagon, Printer } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  ChevronDown,
+  Hexagon,
+  StickyNote,
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { SLIDES, type Slide } from "@/lib/deck-data";
+import { PdfDownload } from "@/components/pdf-download";
 import { cn } from "@/lib/utils";
 
 const TOTAL = SLIDES.length;
 const PAD2 = (n: number) => String(n).padStart(2, "0");
+
+/* ------------------------------------------------------------------ */
+/*  Presenter notes — per-slide talking points for the live presenter. */
+/*  Authored from the v19.0 narrative; kept in the component so the     */
+/*  data file stays presentation-format-only.                          */
+/* ------------------------------------------------------------------ */
+
+const PRESENTER_NOTES: Record<string, string> = {
+  cover:
+    "Open with conviction: this is an institutional settlement rail, not a token. Hold for 3 seconds. Do not pitch — establish credibility first.",
+  thesis:
+    "Lead with the analogy. Ask: 'What is the most boring, most trusted asset in traditional finance?' The answer is the T-bill. That is the wedge.",
+  problem:
+    "Do not name competitors by ticker. Frame the gap: 'Today, every settlement rail carries hidden risks.' Pause after the second bullet.",
+  institution:
+    "Emphasise 'permanently'. The anti-platform clause is frozen in the Constitution. This is the moat. Do not dwell on tech here — credibility first.",
+  invariants:
+    "Read all five aloud, slowly. Each one is a competitive moat against USDT/USDC. End with: 'These can never be broken, by any vote.'",
+  mtq:
+    "Walk through the spec table. The fee schedule is intentionally boring. Stress that NAV is anchored — not algorithmic.",
+  reserves:
+    "Pause on 'daily cryptographic Proof-of-Reserves'. This is what institutions ask for. Mention the 5-year independent constitutional review.",
+  moat:
+    "Credibility compounds. Each audit, each frozen clause, each Council seat filled is permanent. USDT/USDC structurally cannot copy this.",
+  ask:
+    "Be explicit: this is Entity B equity. MTQ is never sold. Lead investors co-design the cap table. Target close: 3 months. Soft-circles open now.",
+  status:
+    "Close on the Formation Committee. Ask for: advisor introductions, anchor candidate referrals, and pre-seed conversations. Then stop talking.",
+};
+
+function getPresenterNotes(slide: Slide): string {
+  return PRESENTER_NOTES[slide.id] ?? "";
+}
 
 /* ------------------------------------------------------------------ */
 /*  Slide body — shared by interactive viewer + print stack           */
@@ -149,7 +189,9 @@ function SlideBody({
 
 export default function InvestorDeck() {
   const [index, setIndex] = useState(0);
+  const [notesOpen, setNotesOpen] = useState(false);
   const slide = SLIDES[index];
+  const presenterNotes = getPresenterNotes(slide);
 
   const goTo = useCallback((next: number) => {
     setIndex((prev) => {
@@ -186,6 +228,14 @@ export default function InvestorDeck() {
           e.preventDefault();
           setIndex(TOTAL - 1);
           break;
+        case "n":
+        case "N":
+          // Toggle presenter notes
+          if (!e.metaKey && !e.ctrlKey) {
+            e.preventDefault();
+            setNotesOpen((v) => !v);
+          }
+          break;
         default:
           break;
       }
@@ -212,15 +262,12 @@ export default function InvestorDeck() {
               </p>
             </div>
           </div>
-          <Button
-            variant="outline"
+          <PdfDownload
+            label="Download Deck as PDF"
+            filename="mithqal-investor-deck.pdf"
             size="sm"
-            onClick={() => window.print()}
-            className="h-9 shrink-0 border-line/70 bg-ink-card text-foreground hover:bg-ink-soft hover:text-gold"
-          >
-            <Printer className="h-4 w-4" />
-            <span className="hidden sm:inline">Download PDF</span>
-          </Button>
+            variant="outline"
+          />
         </div>
       </header>
 
@@ -229,19 +276,30 @@ export default function InvestorDeck() {
         className="no-print flex flex-1 flex-col"
         aria-label="Slide viewer"
       >
-        {/* Slide stage */}
+        {/* Slide stage — horizontal scroll-snap container.
+            The visible slide is set by the `index` state; the inner motion
+            track translates left/right with a spring-like ease so the
+            slide-in feels like a snap rather than a fade. */}
         <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-4 py-6 sm:px-6 sm:py-10">
-          <div className="print-card grain-bg relative flex min-h-[70vh] w-full overflow-hidden rounded-2xl border border-line/60 bg-ink-soft p-6 shadow-[0_24px_60px_-30px_rgba(0,0,0,0.7)] sm:min-h-[78vh] sm:p-10 lg:p-14">
+          <div
+            className="print-card grain-bg relative flex min-h-[70vh] w-full overflow-hidden rounded-2xl border border-line/60 bg-ink-soft p-6 shadow-[0_24px_60px_-30px_rgba(0,0,0,0.7)] sm:min-h-[78vh] sm:p-10 lg:p-14"
+            style={{
+              scrollSnapType: "x mandatory",
+              scrollBehavior: "smooth",
+            }}
+          >
             {/* subtle gold top rule */}
             <div className="gold-rule pointer-events-none absolute inset-x-0 top-0 h-px opacity-60" />
 
-            <AnimatePresence mode="wait" initial={false}>
+            <AnimatePresence mode="popLayout" initial={false}>
               <motion.div
                 key={slide.id}
-                initial={{ opacity: 0, x: 24 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -24 }}
-                transition={{ duration: 0.32, ease: "easeOut" }}
+                layout
+                initial={{ opacity: 0, x: 80, scale: 0.985 }}
+                animate={{ opacity: 1, x: 0, scale: 1 }}
+                exit={{ opacity: 0, x: -80, scale: 0.985 }}
+                transition={{ duration: 0.36, ease: [0.22, 1, 0.36, 1] }}
+                style={{ scrollSnapAlign: "center", scrollSnapStop: "always" }}
                 className="flex h-full w-full"
               >
                 <SlideBody slide={slide} index={index} />
@@ -254,8 +312,14 @@ export default function InvestorDeck() {
             <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-gold sm:text-xs">
               {slide.eyebrow}
             </p>
-            <p className="font-mono text-[11px] tabular-nums text-fg-muted sm:text-xs">
-              {PAD2(index + 1)} / {PAD2(TOTAL)}
+            <p
+              className="font-mono text-[11px] tabular-nums text-fg-muted sm:text-xs"
+              aria-live="polite"
+              aria-label={`Slide ${index + 1} of ${TOTAL}`}
+            >
+              <span className="text-foreground">{PAD2(index + 1)}</span>
+              <span className="mx-1 text-fg-muted">/</span>
+              <span>{PAD2(TOTAL)}</span>
             </p>
           </div>
 
@@ -294,6 +358,7 @@ export default function InvestorDeck() {
                 size="sm"
                 onClick={prev}
                 disabled={index === 0}
+                aria-label="Previous slide"
                 className="h-10 min-w-11 px-4 text-foreground hover:bg-ink-card hover:text-gold disabled:opacity-40"
               >
                 <ArrowLeft className="h-4 w-4" />
@@ -304,6 +369,7 @@ export default function InvestorDeck() {
                 size="sm"
                 onClick={next}
                 disabled={index === TOTAL - 1}
+                aria-label="Next slide"
                 className="h-10 min-w-11 border border-gold/50 bg-gold px-4 font-semibold text-ink hover:bg-gold-soft disabled:opacity-40"
               >
                 <span className="hidden sm:inline">Next</span>
@@ -312,9 +378,54 @@ export default function InvestorDeck() {
             </div>
           </div>
 
+          {/* Presenter notes — expandable */}
+          {presenterNotes ? (
+            <div className="mt-4 overflow-hidden rounded-xl border border-line bg-ink-soft">
+              <button
+                type="button"
+                onClick={() => setNotesOpen((v) => !v)}
+                aria-expanded={notesOpen}
+                aria-controls="presenter-notes-panel"
+                className="no-print flex w-full items-center justify-between gap-3 px-4 py-3 text-left transition-colors hover:bg-ink-card/60"
+              >
+                <span className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-gold">
+                  <StickyNote className="h-3.5 w-3.5" />
+                  Presenter notes
+                  <span className="ml-1 text-[10px] font-normal normal-case tracking-normal text-fg-muted">
+                    · press N to toggle
+                  </span>
+                </span>
+                <ChevronDown
+                  className={cn(
+                    "h-4 w-4 text-fg-muted transition-transform duration-300",
+                    notesOpen ? "rotate-180" : "rotate-0",
+                  )}
+                  aria-hidden
+                />
+              </button>
+              <AnimatePresence initial={false}>
+                {notesOpen ? (
+                  <motion.div
+                    id="presenter-notes-panel"
+                    key="notes"
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                    className="overflow-hidden"
+                  >
+                    <p className="px-4 pb-4 pt-1 text-[13px] leading-relaxed text-fg-muted">
+                      {presenterNotes}
+                    </p>
+                  </motion.div>
+                ) : null}
+              </AnimatePresence>
+            </div>
+          ) : null}
+
           {/* Keyboard hint */}
           <p className="mt-4 text-center text-[10px] uppercase tracking-[0.2em] text-fg-muted/70 sm:text-[11px]">
-            Use ← → keys to navigate · Home / End to jump
+            Use ← → keys to navigate · Home / End to jump · N for presenter notes
           </p>
         </div>
       </section>
@@ -328,6 +439,17 @@ export default function InvestorDeck() {
           >
             <div className="flex h-full w-full max-w-4xl flex-col">
               <SlideBody slide={s} index={i} variant="print" />
+              {/* Inline presenter notes in print output */}
+              {getPresenterNotes(s) ? (
+                <div className="mt-8 border-t border-line pt-4">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-fg-muted">
+                    Presenter notes
+                  </p>
+                  <p className="mt-1 text-[12px] italic leading-relaxed text-fg-muted">
+                    {getPresenterNotes(s)}
+                  </p>
+                </div>
+              ) : null}
             </div>
           </div>
         ))}

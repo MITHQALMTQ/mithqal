@@ -595,7 +595,7 @@ function ConnectionDiagram({
             cx={silverPos.x}
             cy={silverPos.y}
             r={18}
-            fill="#9ca3af"
+            fill="#b8b4ae"
             stroke="#e5e7eb"
             strokeWidth={2}
           />
