@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { db, ensureSchema } from "@/lib/db";
 import { deriveState } from "@/lib/testnet-engine";
 import { computeMonetaryStateV19, mintFee, redemptionFee, HAIRCUTS, MAX_DURATION, type ReserveAsset } from "@/lib/monetary-engine-v19";
-import { getOracleSnapshot } from "@/lib/oracle-data";
+import { getLiveOracleData, toOracleSnapshot } from "@/lib/live-oracle";
 
 // GET /api/transparency — public, unauthenticated snapshot of the
 // Institution's live state per the v19.0 Constitutional Monetary Infrastructure
@@ -31,19 +31,27 @@ export async function GET() {
         createdAt: o.createdAt.toISOString(),
       }));
 
-    // Build reserve assets for the v19.0 three-layer valuation.
-    // Simulate a diversified portfolio: 50% cash, 20% sovereign, 15% gold, 10% stablecoins, 5% silver.
+    // Fetch live oracle data from free APIs (gold price, FX rates, crypto)
+    const liveData = await getLiveOracleData();
+    const oracle = toOracleSnapshot(liveData);
+
+    // Build reserve assets using the LIVE gold price.
+    // Allocation per §23: Fiat 75% (70-80%), Bullion 20% (15-25%), Stablecoins 5% (2-8%).
     const totalReserve = state.reserveValue || 50_000_000;
+    const goldPrice = liveData.goldUsd;
+    const silverPrice = 25;
     const reserveAssets: ReserveAsset[] = [
+      // Fiat Layer (75%): 50% cash + 25% sovereign
       { id: "cash-1", name: "Central-bank cash", assetClass: "cash", quantity: totalReserve * 0.50, priceUsd: 1, haircut: HAIRCUTS.cash, counterpartyScore: 1.00, stressCoefficient: 0.95, modifiedDuration: 0 },
-      { id: "sov-1", name: "US T-bills ≤1yr", assetClass: "sovereign", quantity: totalReserve * 0.20, priceUsd: 1, haircut: HAIRCUTS.sovereign, counterpartyScore: 0.99, stressCoefficient: 0.90, modifiedDuration: 0.5 },
-      { id: "gold-1", name: "Allocated gold", assetClass: "gold", quantity: (totalReserve * 0.15) / 1850, priceUsd: 1850, haircut: HAIRCUTS.gold, counterpartyScore: 1.00, stressCoefficient: 0.85, modifiedDuration: 0 },
-      { id: "stab-1", name: "Regulated stablecoins", assetClass: "stablecoin", quantity: totalReserve * 0.10, priceUsd: 1, haircut: HAIRCUTS.stablecoin, counterpartyScore: 0.96, stressCoefficient: 0.80, modifiedDuration: 0 },
-      { id: "silver-1", name: "Allocated silver", assetClass: "silver", quantity: (totalReserve * 0.05) / 25, priceUsd: 25, haircut: HAIRCUTS.silver, counterpartyScore: 1.00, stressCoefficient: 0.80, modifiedDuration: 0 },
+      { id: "sov-1", name: "US T-bills ≤1yr", assetClass: "sovereign", quantity: totalReserve * 0.25, priceUsd: 1, haircut: HAIRCUTS.sovereign, counterpartyScore: 0.99, stressCoefficient: 0.90, modifiedDuration: 0.5 },
+      // Bullion Layer (20%): 15% gold + 5% silver
+      { id: "gold-1", name: "Allocated gold", assetClass: "gold", quantity: (totalReserve * 0.15) / goldPrice, priceUsd: goldPrice, haircut: HAIRCUTS.gold, counterpartyScore: 1.00, stressCoefficient: 0.85, modifiedDuration: 0 },
+      { id: "silver-1", name: "Allocated silver", assetClass: "silver", quantity: (totalReserve * 0.05) / silverPrice, priceUsd: silverPrice, haircut: HAIRCUTS.silver, counterpartyScore: 1.00, stressCoefficient: 0.80, modifiedDuration: 0 },
+      // Stablecoin Layer (5%)
+      { id: "stab-1", name: "Regulated stablecoins", assetClass: "stablecoin", quantity: totalReserve * 0.05, priceUsd: 1, haircut: HAIRCUTS.stablecoin, counterpartyScore: 0.96, stressCoefficient: 0.80, modifiedDuration: 0 },
     ];
 
     const opIndex = ops.length;
-    const oracle = getOracleSnapshot(opIndex);
     const monetary = computeMonetaryStateV19(
       oracle,
       reserveAssets,
