@@ -1351,3 +1351,37 @@ Stage Summary:
 - ✅ Agent-browser verified: all 19 audited sections render, all 7 sliders present with correct defaults, liquidity shock Switch interaction works, 3 SVGs have role+aria-label, 53 elements with aria-label, 65 elements with title.
 - ✅ Three screenshots saved for the next VLM audit: transparency-rebuild.png (full page), transparency-mid-page.png (mid-scroll), transparency-liquidity-toggle.png (after Switch click).
 - ✅ No browser console errors, no dev-log errors beyond the pre-existing Fast Refresh / React DevTools messages.
+
+---
+Task ID: 24
+Agent: main (COO + CTO + PM + Economic/Crypto Expert + Web Structuring/Testing Expert)
+Task: Integrity audit, backup + harden, cleanup, push to GitHub/Vercel/Turso, VLM audit all pages with recommendations.
+
+Work Log:
+- **Integrity audit:** Local = Remote (853ee4e), 60 commits, 3 tags (v19.0-stable, v19.0-verified, v19.0-audited), 0 dangling, 0 uncommitted, all critical files present (3 contracts, 18 lib, 24 API, 16 components, 4 foundry tests, 2 certora specs, 12 public assets), .env has 12 vars, pre-push hook active, dev server running, Turso connected.
+- **Backup + harden:** Created fresh backup bundle (13MB), created v19.0-audited immutable tag (pushed to GitHub), verified pre-push hook blocks deletion + force-push.
+- **Cleanup:** Deleted old backup bundle (keeping newest), expired reflog, gc --prune=now --aggressive, 0 dangling commits/blobs.
+- **Push to GitHub:** main branch + v19.0-audited tag pushed, both in sync.
+- **Turso verified:** mithqal-db alive, 7 tables (FormationInterest, TestnetOperation, users, transactions, reserves, fees, proposals).
+- **Vercel:** CLI v57.0.0 installed, but project not linked (needs operator one-time: vercel login + vercel link). Script ready: scripts/push-env-to-vercel.sh (12 vars, dry-run verified).
+- **VLM audit all 11 pages:**
+  - Institution: 6.5/10
+  - Transparency: 7.5/10
+  - Engine: 7.5/10
+  - Infrastructure: 7.5/10
+  - Constitution: 7.5/10
+  - Testnet: 7.5/10
+  - OS: 6.5/10
+  - Audit: 7.5/10
+  - Deck: 7.5/10
+  - Playbook: 7.5/10
+  - Admin: 6.0/10
+  - Average: 7.2/10
+- **Recommendations compiled** (see VLM-RECOMMENDATIONS.md).
+
+Stage Summary:
+- ✅ Nothing lost — all systems verified intact
+- ✅ Backup created + 3 immutable tags on GitHub (anti-rollback)
+- ✅ Old backups deleted + git pruned (0 dangling)
+- ✅ GitHub in sync, Turso alive, Vercel CLI ready (operator must link)
+- ✅ VLM scores: average 7.2/10, target 9.5/10
