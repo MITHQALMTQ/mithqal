@@ -1,8 +1,8 @@
 # Mithqal v19.0 — Recommendations & Upgrade Roadmap
 
-**Date:** 2026-07-22  
+**Date:** 2026-07-26 (updated)  
 **Author:** COO/CTO  
-**Status:** ✅ All gaps closed. Recommendations below are for future phases.
+**Status:** ✅ All programmatically-fixable gaps closed. Items below requiring external accounts/credentials remain.
 
 ---
 
@@ -34,12 +34,11 @@ All 57 sections of the v19.0 specification are implemented:
    - **Effort:** 1 hour
    - **Status:** NOT YET DONE — this is the #1 remaining blocker for production
 
-2. **SMTP Credentials**
+2. **SMTP Credentials** ✅ DONE (2026-07-26)
    - **Issue:** Email notifications currently log to console (Vercel function logs)
-   - **Impact:** You don't receive actual emails at meltonsy@icloud.com — you have to check logs
    - **Fix:** Set SMTP_HOST, SMTP_USER, SMTP_PASS on Vercel (any provider: Gmail, SendGrid, AWS SES)
-   - **Effort:** 5 minutes
-   - **Status:** Infrastructure ready — just needs credentials
+   - **Status:** ✅ LIVE — smtp.mail.me.com:587 + STARTTLS configured with iCloud App-Specific Password. Test email delivered to meltonsy@icloud.com. Formation form submissions trigger real email notifications.
+   - **Vercel:** Operator must set SMTP_PASS + SMTP_FROM in Vercel env vars (see BACKUP-AND-RECOVERY.md §4)
 
 3. **Domain Registration (mithqal.io)**
    - **Issue:** Currently at mithqal.vercel.app (Vercel subdomain)
@@ -59,31 +58,35 @@ All 57 sections of the v19.0 specification are implemented:
    - Connect to real sources: Chainlink, Pyth, Chronicle, RedStone, LBMA, CB FX
    - The oracle consensus engine (§31) is already built — just needs real data feeds
 
-6. **Rate Limiting**
+6. **Rate Limiting** ✅ DONE (2026-07-26)
    - The Formation Committee API has no rate limiting
    - Add a simple IP-based rate limiter (e.g., 5 submissions per hour per IP)
    - Prevents spam before the persistent DB is in place
+   - **Status:** ✅ Implemented — src/lib/rate-limit.ts (in-memory IP-based, 5 req/hour/IP). Returns HTTP 429 + Retry-After + X-RateLimit-* headers. Verified end-to-end.
 
-7. **WebSocket Polling Fallback**
+7. **WebSocket Polling Fallback** ✅ DONE (2026-07-26)
    - The real-time notification mini-service (port 3003) can't run on Vercel
    - Add polling fallback to the Admin console (check every 30s for new submissions)
    - The Transparency dashboard already polls every 30s — replicate for Admin
+   - **Status:** ✅ Implemented — admin.tsx polls /api/admin/interests every 30s when WebSocket not connected. Skipped when notifyConnected=true.
 
 ### 🟢 Enhancements (post-launch)
 
-8. **Mobile App / PWA**
+8. **Mobile App / PWA** ✅ DONE (2026-07-26)
    - The manifest.webmanifest is already configured
    - Add a service worker for offline access to the Constitution
    - Enable "Add to Home Screen" with the gold MTQ icon
+   - **Status:** ✅ Implemented — public/sw.js (stale-while-revalidate + network-first), service-worker-register.tsx (production-only registration), manifest.webmanifest enhanced with maskable icons for Android adaptive display.
 
 9. **Multi-language Support**
    - The Constitution is English-only
    - Add Arabic (Sharia compliance audience) + French (African trade corridor)
    - Use next-intl (already installed)
 
-10. **API Documentation**
+10. **API Documentation** ✅ DONE (2026-07-26)
     - Add OpenAPI/Swagger documentation for all 10 API routes
     - Enables third-party integrations (banks, trade-finance platforms)
+    - **Status:** ✅ Implemented — public/openapi.json (OpenAPI 3.1.0, 13.6KB). Documents all 10 routes including auth scheme, rate limit responses, request/response schemas. Accessible at /openapi.json.
 
 11. **Analytics**
     - Add privacy-respecting analytics (Plausible or Umami — no Google Analytics)

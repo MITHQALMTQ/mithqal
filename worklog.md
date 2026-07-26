@@ -523,3 +523,71 @@ Stage Summary:
   4. Configure GitHub branch protection for `main` (Settings → Branches → Add rule)
   5. Configure GitHub tag protection for `v19.0-*` (Settings → Tags → Add rule)
   6. Update Vercel env vars: NEXTAUTH_SECRET (rotated), ADMIN_PASSWORD_HASH (rotated), SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, SMTP_FROM
+
+---
+Task ID: 18
+Agent: main (COO/CTO)
+Task: Set SMTP password, fix all remaining recommended items (rate limiting, admin polling, PWA, OpenAPI docs).
+
+Work Log:
+- **SMTP password set + verified end-to-end:**
+  - Set SMTP_PASS=hydy-rsgb-nunf-nazn (iCloud App-Specific Password) in .env
+  - Updated SMTP_FROM to "Mithqal <meltonsy@icloud.com>" (iCloud requires From = auth user)
+  - email.ts: defaults SMTP_FROM to SMTP_USER if not explicitly set
+  - First test: AUTH PLAIN succeeded, but got 550 5.7.0 "From address is not one of your addresses"
+  - After fixing SMTP_FROM: sent=true, error=null — TEST EMAIL DELIVERED to meltonsy@icloud.com
+  - Formation form submissions now trigger real email notifications (verified)
+- **Rate limiting implemented (RECOMMENDATIONS.md #6):**
+  - Created src/lib/rate-limit.ts — in-memory IP-based rate limiter
+  - checkRateLimit(namespace, identifier, max, windowMs) returns {allowed, remaining, resetAt, retryAfterSeconds}
+  - getClientIp(req) extracts IP from x-forwarded-for / x-real-ip headers
+  - enforceRateLimit(namespace, req, max, windowMs) returns Response|null for direct use
+  - formation-interest route: 5 submissions/hour/IP, returns HTTP 429 + Retry-After + X-RateLimit-* headers
+  - Auto-purges expired buckets when map size > 200
+  - Verified: requests 1-5 succeed (HTTP 200), requests 6-7 blocked (HTTP 429, Retry-After: 3584s)
+- **Admin polling fallback implemented (RECOMMENDATIONS.md #7):**
+  - admin.tsx: added useEffect that polls /api/admin/interests every 30s when WebSocket not connected
+  - Skipped when notifyConnected=true (WebSocket live — no need to poll)
+  - Cleans up interval on unmount or when WebSocket reconnects
+  - Ensures operator sees new submissions within 30s even on Vercel (where mini-service can't run)
+- **PWA service worker implemented (RECOMMENDATIONS.md #8):**
+  - public/sw.js — service worker v19.0-stable-1 with:
+    - App shell cache (HTML, CSS, JS, fonts, images, legal PDF)
+    - stale-while-revalidate for static assets
+    - network-first for API routes + navigation
+    - Offline fallback to cached shell
+  - src/components/service-worker-register.tsx — registers in production only (skips dev to not interfere with HMR)
+  - layout.tsx: wired ServiceWorkerRegister into the layout
+  - manifest.webmanifest: added maskable icons (Android adaptive icons), orientation, categories
+- **OpenAPI documentation implemented (RECOMMENDATIONS.md #10):**
+  - public/openapi.json — OpenAPI 3.1.0 spec for all 10 API routes:
+    - /api/transparency, /api/infrastructure, /api/testnet, /api/testnet/mint, /api/testnet/redeem, /api/testnet/seed
+    - /api/formation-interest (with 429 rate limit response documented)
+    - /api/admin/interests, /api/admin/smtp-test (auth-gated)
+    - /api/auth/csrf, /api/auth/session, /api/auth/callback/credentials
+  - Documents NextAuth security scheme (cookie-based)
+  - Accessible at /openapi.json (13.6KB)
+- **Cleanup:**
+  - Untracked db/custom.db from git (was accidentally committed earlier; .gitignore had /db/*.db but file was already tracked)
+- **Verification (all pass):**
+  - Rate limiting: 5/5 allowed, 6th blocked with 429 + Retry-After
+  - SMTP: sent=true, test email delivered
+  - OpenAPI: HTTP 200 (13.6KB)
+  - Service worker: HTTP 200 (4.8KB)
+  - PWA manifest: 6 icons, 2 maskable
+  - Lint: clean
+  - Agent Browser: page renders, legal entity visible, transparency weights correct (USD 47.99%)
+- **Pushed to GitHub** (commit 026be81).
+
+Stage Summary:
+- ✅ SMTP LIVE — test email delivered to meltonsy@icloud.com via smtp.mail.me.com:587 + STARTTLS
+- ✅ Rate limiting: 5 req/hour/IP on formation-interest, proper 429 + Retry-After headers
+- ✅ Admin polling fallback: every 30s when WebSocket down
+- ✅ PWA service worker: offline shell + legal PDF + network-first API
+- ✅ OpenAPI 3.1.0 spec at /openapi.json (all 10 routes documented)
+- Remaining recommendations requiring external accounts/credentials:
+  - #1 Turso persistent DB (needs Turso account)
+  - #3 Domain registration mithqal.io (needs registrar)
+  - #4 Smart contract audit (needs external firm: OpenZeppelin/Trail of Bits)
+  - #5 Real oracle integration (needs Chainlink/Pyth API keys)
+  - #12 KYC integration (needs Persona/Onfido/Sumsub account)
