@@ -50,8 +50,8 @@ export const BASE_CURRENCIES: CurrencyData[] = [
   { code: "GBP", name: "Pound Sterling",  fx: 1.27,    cofer: 0.040, swift: 0.200, bis: 0.180, lta: 0.1100 },
   { code: "CNY", name: "Chinese Yuan",    fx: 0.139,   cofer: 0.035, swift: 0.120, bis: 0.080, lta: 0.0830 },
   { code: "CHF", name: "Swiss Franc",     fx: 1.12,    cofer: 0.008, swift: 0.040, bis: 0.020, lta: 0.0230 },
-  { code: "AUD", name: "Australian Dollar", fx: 0.66,  cofer: 0.005, swift: 0.035, bis: 0.020, lta: 0.0145 },
-  { code: "CAD", name: "Canadian Dollar", fx: 0.73,    cofer: 0.005, swift: 0.030, bis: 0.020, lta: 0.0125 },
+  { code: "AUD", name: "Australian Dollar", fx: 0.66,  cofer: 0.005, swift: 0.035, bis: 0.020, lta: 0.0160 },
+  { code: "CAD", name: "Canadian Dollar", fx: 0.73,    cofer: 0.005, swift: 0.025, bis: 0.025, lta: 0.0130 },
 ];
 
 const BASE_GOLD = 1850; // USD/oz

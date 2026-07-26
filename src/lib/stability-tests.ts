@@ -112,6 +112,22 @@ async function runTests() {
   check("CRI ≤ 100", baseline.cri.cri <= 100);
   check("CRI level assigned", !!baseline.cri.level);
 
+  console.log("--- Test 11: §13 Structural Weight Normalization (REGRESSION) ---");
+  // The blueprint worked example requires Σ C_i = 1.0000 exactly.
+  // Raw C_i = α×COFER + β×SWIFT + γ×BIS do NOT sum to 1.0 (the three data
+  // sources each sum to different totals). Therefore structuralWeight() must
+  // normalize: C_i_norm = C_i_raw / Σ C_j_raw. This test guards against
+  // regression of the fix from commit f478afd that was lost during a rebase.
+  const structuralSum = baseline.weights.reduce((s, w) => s + w.structuralWeight, 0);
+  console.log("  Σ C_i (normalized) = " + (structuralSum * 100).toFixed(4) + "%");
+  check("Σ C_i = 100.0000% (normalized)", Math.abs(structuralSum - 1.0) < 0.0001);
+  check("Σ W = 1.0 (basketVerification.sumIsOne)", baseline.basketVerification.sumIsOne);
+  check("Basket passes (floor + cap + sum)", baseline.basketVerification.passed);
+  // Per-currency weight sanity (USD should dominate per blueprint worked example)
+  const usdWeight = baseline.weights.find((w) => w.code === "USD")!;
+  check("USD is largest weight", baseline.weights.every((w) => w.normalizedWeight <= usdWeight.normalizedWeight + 0.0001));
+  console.log("  USD normalized weight: " + (usdWeight.normalizedWeight * 100).toFixed(2) + "% (expected ~47-48%)");
+
   console.log("");
   console.log("TOTAL: " + pass + " PASS / " + fail + " FAIL / " + (pass + fail) + " TESTS");
 }

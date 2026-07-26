@@ -243,9 +243,29 @@ export const L_LIQ_MAX = 0.05; // §18 liquidity clamp ±5%
 
 // ---- §13: Structural Weight ----
 
-/** §13 C_i = α×COFER + β×SWIFT + γ×BIS */
-export function structuralWeight(c: CurrencyData): number {
+/** §13 C_i = α×COFER + β×SWIFT + γ×BIS (raw, before normalization) */
+export function structuralWeightRaw(c: CurrencyData): number {
   return ALPHA * c.cofer + BETA * c.swift + GAMMA * c.bis;
+}
+
+/**
+ * §13 Structural Weight (normalized).
+ *
+ * The blueprint worked example shows Σ C_i = 1.0000.
+ * The raw C_i values don't sum to 1.0 because COFER, SWIFT, and BIS
+ * data sources don't each sum to 100%. Therefore structural weights
+ * must be normalized: C_i_norm = C_i_raw / Σ C_j_raw.
+ *
+ * If `allCurrencies` is omitted, returns the raw value (backward-compatible).
+ */
+export function structuralWeight(
+  c: CurrencyData,
+  allCurrencies?: CurrencyData[]
+): number {
+  const raw = structuralWeightRaw(c);
+  if (!allCurrencies || allCurrencies.length === 0) return raw;
+  const totalRaw = allCurrencies.reduce((s, x) => s + structuralWeightRaw(x), 0);
+  return totalRaw > 0 ? raw / totalRaw : raw;
 }
 
 // ---- §14: Gold Anchor ----
@@ -533,7 +553,7 @@ export function computeMonetaryStateV19(
     const mRaw = rawMomentum(p12moAgo, pToday);
     const m = clampMomentum(mRaw);
 
-    const r = clampMeanReversion(meanReversionFactor(c.lta, structuralWeight(c)));
+    const r = clampMeanReversion(meanReversionFactor(c.lta, structuralWeight(c, currencyData)));
 
     // §17.7 K_i = 1 + A_t × (M_i × R_i - 1)
     const k = shockAdjustedFactor(m, r, shockAbsorber);
@@ -542,12 +562,12 @@ export function computeMonetaryStateV19(
     const liq = liquidityOverlay(c.swift, medianLiquidity);
 
     // §19 W_raw = C × K × L
-    const rawWeight = structuralWeight(c) * k * liq;
+    const rawWeight = structuralWeight(c, currencyData) * k * liq;
 
     return {
       code: c.code,
       name: c.name,
-      structuralWeight: structuralWeight(c),
+      structuralWeight: structuralWeight(c, currencyData),
       momentumRaw: mRaw,
       momentum: m,
       meanReversion: r,

@@ -241,12 +241,21 @@ export const STATUS_ITEMS = [
   { label: "Mainnet launch", value: "Planned Q3 2027", state: "Phase 3", tone: "future" },
 ];
 
-/* ---- Legal & Regulatory Status ---- */
+/* ---- Legal & Regulatory Status ----
+ * Source of truth: NJ Certificate of Formation (filed 22 Oct 2019, ID 0600463904)
+ * and IRS CP 575 G notice (EIN 84-3470275, dated 24 Oct 2019).
+ * Documents archived under /upload/Jozour USA_Part1.pdf (operator custody).
+ */
 export const LEGAL_STATUS = {
   entity: "JOZOUR LLC",
   entity_type: "New Jersey Limited Liability Company",
-  ein: "Pending",
-  njRegistration: "Active",
+  ein: "84-3470275",
+  njRegistration: "Filed 22 Oct 2019 (ID 0600463904)",
+  registeredAgent: "Edward M Lombard — 116 Mallory Ave, Jersey City, NJ 07304",
+  soleMember: "Mohamed S. Eltonsy",
+  dissolution: "Perpetual",
+  irsNotice: "CP 575 G (24 Oct 2019)",
+  nameControl: "JOZO",
   fincenMSB: "FinCEN Form 107 — Filed",
   njMTL: "In progress",
   constitutionalVersion: "v19.0 — Released 22 July 2026",
@@ -254,8 +263,12 @@ export const LEGAL_STATUS = {
   items: [
     { label: "Operating Entity", value: "JOZOUR LLC", status: "Active" },
     { label: "Jurisdiction", value: "New Jersey, USA", status: "Active" },
-    { label: "EIN", value: "Pending", status: "In progress" },
-    { label: "NJ Business Registration", value: "Active", status: "Active" },
+    { label: "NJ Filing", value: "0600463904 (22 Oct 2019)", status: "Filed" },
+    { label: "IRS EIN", value: "84-3470275", status: "Assigned" },
+    { label: "IRS Notice", value: "CP 575 G (24 Oct 2019)", status: "On file" },
+    { label: "Registered Agent", value: "Edward M Lombard, NJ", status: "Active" },
+    { label: "Sole Member", value: "Mohamed S. Eltonsy", status: "On file" },
+    { label: "Dissolution", value: "Perpetual", status: "Active" },
     { label: "FinCEN MSB Registration", value: "Form 107 filed", status: "In progress" },
     { label: "NJ Money Transmitter License", value: "Application pending", status: "In progress" },
     { label: "Constitutional Version", value: "v19.0 (22 July 2026)", status: "Published" },
@@ -295,8 +308,8 @@ export const LAYER_ZERO = {
 /* ---- Formation Phase 0 Timeline ---- */
 export const PHASE_ZERO_TIMELINE = [
   { milestone: "Constitution v19.0", status: "done", date: "22 July 2026" },
-  { milestone: "NJ LLC formation (JOZOUR LLC)", status: "done", date: "Active" },
-  { milestone: "EIN obtained", status: "pending", date: "Q3 2026" },
+  { milestone: "NJ LLC formation (JOZOUR LLC)", status: "done", date: "22 Oct 2019 (ID 0600463904)" },
+  { milestone: "IRS EIN assigned", status: "done", date: "24 Oct 2019 (84-3470275)" },
   { milestone: "FinCEN Form 107 filed", status: "pending", date: "Q3 2026" },
   { milestone: "NJ Business Registration Certificate", status: "done", date: "Active" },
   { milestone: "Testnet deployment", status: "done", date: "Live" },

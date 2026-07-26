@@ -712,14 +712,16 @@ function LegalStatus() {
               </tr>
             </thead>
             <tbody className="divide-y divide-line">
-              {LEGAL_STATUS.items.map((item) => (
+              {LEGAL_STATUS.items.map((item) => {
+                const positive = ["Active", "Published", "Filed", "Assigned", "On file"].includes(item.status);
+                return (
                 <tr key={item.label} className="hover:bg-ink-card/40">
                   <td className="px-5 py-3 font-medium text-foreground">{item.label}</td>
                   <td className="px-5 py-3 text-fg-muted">{item.value}</td>
                   <td className="px-5 py-3">
                     <Badge
                       className={
-                        item.status === "Active" || item.status === "Published"
+                        positive
                           ? "border-reserve/40 bg-reserve/10 text-[10px] text-reserve hover:bg-reserve/10"
                           : "border-gold/30 bg-gold/10 text-[10px] text-gold hover:bg-gold/10"
                       }
@@ -728,7 +730,8 @@ function LegalStatus() {
                     </Badge>
                   </td>
                 </tr>
-              ))}
+                );
+              })}
             </tbody>
           </table>
         </div>

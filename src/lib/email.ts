@@ -8,12 +8,18 @@ import nodemailer from "nodemailer";
  * if configured; falls back to a console log if not (so the flow never
  * breaks in dev / before SMTP is provisioned).
  *
- * To enable real email delivery, set in .env:
- *   SMTP_HOST=smtp.gmail.com (or your provider)
- *   SMTP_PORT=465
- *   SMTP_USER=...
- *   SMTP_PASS=...
+ * Production SMTP (configured 2026-07-26): Apple iCloud (smtp.mail.me.com:587)
+ *   SMTP_HOST=smtp.mail.me.com
+ *   SMTP_PORT=587
+ *   SMTP_USER=<iCloud email>
+ *   SMTP_PASS=<app-specific password>  ← NOT the Apple ID password; must be
+ *                                        a dedicated App Password (2FA required)
  *   SMTP_FROM="Mithqal <noreply@mithqal.io>"
+ *
+ * Port 587 uses STARTTLS (upgrade plaintext→TLS after EHLO).
+ * Port 465 uses implicit TLS (secure: true).
+ * We set `requireTLS: true` so the connection fails closed if STARTTLS
+ * is unavailable — never falls back to plaintext auth.
  */
 
 let transporter: nodemailer.Transporter | null = null;
@@ -21,14 +27,16 @@ let transporter: nodemailer.Transporter | null = null;
 function getTransporter(): nodemailer.Transporter | null {
   if (transporter) return transporter;
   const host = process.env.SMTP_HOST;
-  const port = process.env.SMTP_PORT ? Number(process.env.SMTP_PORT) : 465;
+  const port = process.env.SMTP_PORT ? Number(process.env.SMTP_PORT) : 587;
   const user = process.env.SMTP_USER;
   const pass = process.env.SMTP_PASS;
   if (!host || !user || !pass) return null;
+  const isImplicitTLS = port === 465;
   transporter = nodemailer.createTransport({
     host,
     port,
-    secure: port === 465,
+    secure: isImplicitTLS,
+    requireTLS: !isImplicitTLS, // port 587: force STARTTLS upgrade, fail closed
     auth: { user, pass },
   });
   return transporter;
