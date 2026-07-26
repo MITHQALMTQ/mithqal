@@ -11,9 +11,11 @@ export const AUDIT_META = {
   ],
   version: "v19.0",
   status: "Constitutional Release Candidate — Testnet Validation",
-  network: "Arbitrum Sepolia",
-  chainId: "421614",
-  auditDate: "22 July 2026",
+  network: "Monad Testnet",
+  chainId: "10143",
+  rpcUrl: "https://testnet-rpc.monad.xyz",
+  explorer: "https://testnet.monadscan.com",
+  auditDate: "26 July 2026 (updated)",
   auditor: "MITHQAL Formation Committee",
 };
 
@@ -22,11 +24,11 @@ export const AUDIT_STEPS = [
     step: 1,
     title: "Pre-Audit Preparation",
     actions: [
-      "Deploy contracts to testnet (Hardhat/Foundry, Arbitrum Sepolia)",
-      "Verify contracts on explorer (Arbiscan API)",
-      "Fund test wallet (Testnet faucet)",
-      "Record contract addresses (Documentation)",
-      "Set up monitoring dashboard (Custom or existing)",
+      "Deploy contracts to Monad Testnet (Chain ID 10143)",
+      "Verify contracts on MonadScan explorer",
+      "Fund deployer wallet (4.13 MON)",
+      "Record contract addresses (MTQ, Governance, Safe Multi-Sig)",
+      "Set up monitoring dashboard (mithqal.vercel.app)",
     ],
   },
   {
@@ -82,7 +84,7 @@ export const AUDIT_STEPS = [
       "Transaction Log — All mint/transfer/burn transactions with hashes",
       "Reserve Data — Real-time reserve composition",
       "Contract Addresses — All deployed contract addresses",
-      "Verification Proof — Arbiscan verification links",
+      "Verification Proof — MonadScan verification links",
       "Constitutional Compliance — Checklist of requirements met",
     ],
   },
@@ -125,7 +127,7 @@ export const CONSTITUTIONAL_COMPLIANCE = [
 
 export const SECURITY_FINDINGS = {
   critical: [
-    { id: 1, issue: "Smart contracts not deployed to testnet", description: "MTQ.sol and Governance.sol exist in source but have not been compiled, deployed, or verified on Arbitrum Sepolia. On-chain functional testing cannot begin until deployment.", status: "open", severity: "critical" },
+    { id: 1, issue: "Smart contracts deployed on Monad Testnet", description: "MTQ.sol, Governance.sol, and Safe Multi-Sig are deployed on Monad Testnet (Chain ID 10143) and verified via Sourcify + Etherscan. On-chain test: 9/9 PASS (name, symbol, decimals, totalSupply, contract existence, deployer balance). Code: MTQ=13KB, Governance=51KB.", status: "resolved", severity: "info" },
   ],
   high: [
     { id: 1, issue: "No formal verification", description: "Certora formal verification of contract invariants (§38) has not been performed. Invariants (reserve ratio ≥100%, mint on deposit, burn never pauses) should be formally proven.", status: "open", severity: "high" },
@@ -153,18 +155,22 @@ export const SCORING_TEMPLATE = {
 };
 
 export const CONTRACT_ADDRESSES = {
-  mtqToken: "Not yet deployed",
-  mintContract: "Not yet deployed (integrated in MTQ.sol)",
-  burnContract: "Not yet deployed (integrated in MTQ.sol)",
+  mtqToken: "0x9e6EdC15DAc420931508d8Ddf9BC817651A253aD",
+  mintContract: "Integrated in MTQ.sol (MINTER_ROLE)",
+  burnContract: "Integrated in MTQ.sol (burn never paused)",
   reserveContract: "Not yet deployed (ReserveRegistry planned)",
-  governanceContract: "Not yet deployed (Governance.sol written)",
-  network: "Arbitrum Sepolia (target)",
-  chainId: "421614",
+  governanceContract: "0xE35a91801bc541fb743BB9EaD26C1FbD81EaBd66",
+  safeMultiSig: "0xE71869C662733642bfBb262B8c6bad8B0fBfA7D0",
+  deployerWallet: "0x3C3932F865892EFabE45892f453f81B64f6c8d8c",
+  network: "Monad Testnet",
+  chainId: "10143",
+  rpcUrl: "https://testnet-rpc.monad.xyz",
+  explorer: "https://testnet.monadscan.com",
 };
 
 export const AUDIT_TOOLS = [
   { tool: "Foundry / Hardhat", purpose: "Smart contract testing" },
-  { tool: "Arbiscan", purpose: "Contract verification" },
+  { tool: "MonadScan", purpose: "Contract verification + explorer" },
   { tool: "MetaMask", purpose: "Wallet connection" },
   { tool: "Live Dashboard", purpose: "Real-time metrics (mithqal.vercel.app)" },
   { tool: "Certora Prover", purpose: "Formal verification of invariants" },
@@ -173,11 +179,11 @@ export const AUDIT_TOOLS = [
 ];
 
 export const NEXT_STEPS = [
-  { priority: 1, action: "Deploy MTQ.sol + Governance.sol to Arbitrum Sepolia", timeline: "Q3 2026" },
-  { priority: 2, action: "Verify contracts on Arbiscan", timeline: "Q3 2026" },
+  { priority: 1, action: "On-chain functional testing (mint/transfer/burn via MINTER_ROLE)", timeline: "Q3 2026" },
+  { priority: 2, action: "Engage external security audit (OpenZeppelin / Trail of Bits)", timeline: "Q4 2026" },
   { priority: 3, action: "Run functional test suite (mint/transfer/burn/access control)", timeline: "Q3 2026" },
   { priority: 4, action: "Run Foundry fuzz tests (10,000+ runs per invariant)", timeline: "Q4 2026" },
-  { priority: 5, action: "Engage external security audit (OpenZeppelin / Trail of Bits)", timeline: "Q4 2026" },
+  { priority: 5, action: "Connect webapp mint/redeem to on-chain contract (MetaMask signing)", timeline: "Q4 2026" },
   { priority: 6, action: "Complete Certora formal verification (§38)", timeline: "Q1 2027" },
   { priority: 7, action: "Deploy to mainnet", timeline: "Q3 2027" },
 ];

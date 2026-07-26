@@ -5,12 +5,16 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
 }
 
+// When using the libsql driver adapter, the datasource URL is only used by
+// Prisma's internal validation — the actual connection is handled by the
+// adapter in src/lib/db.ts (which reads DATABASE_URL for the real Turso URL).
 datasource db {
   provider = "sqlite"
-  url      = env("DATABASE_URL")
+  url      = "file:./prisma.db"
 }
 
 model User {
