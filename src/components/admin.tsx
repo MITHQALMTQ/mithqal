@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSession, signIn, signOut } from "next-auth/react";
 import { motion } from "framer-motion";
+import { SecurityPanel } from "@/components/security-panel";
+import { SystemStatus } from "@/components/system-status";
 import {
   Users,
   Crown,
@@ -599,6 +601,12 @@ function Console({ email }: { email: string }) {
         </div>
 
         <OracleAdminSection />
+
+        {/* P1: Institutional security UI + system status */}
+        <div className="mt-8 grid grid-cols-1 gap-4 lg:grid-cols-2">
+          <SecurityPanel />
+          <SystemStatus />
+        </div>
       </div>
     </div>
   );
