@@ -2272,3 +2272,91 @@ Stage Summary:
 - ✅ Accessibility: role="img" + aria-label on SVG, role="button" + tabIndex + onKeyDown on each orb, aria-hidden on decorative overlays.
 - ✅ Responsive via viewBox + w-full.
 - ✅ `bun run lint` — clean (0 errors, 0 warnings, exit 0).
+
+---
+Task ID: AUDIT5
+Agent: general-purpose sub-agent (Institution-page audit fixes — 92/100 → 98/100)
+
+Task: Implement 5 fixes from the third-party audit of public-site.tsx (the Institution page). Target: lift the audit score from 92 → 98 by adding (1) a compact monetary-engine visualization, (2) a live NAV/Reserve dashboard, (3) a prominent testnet-contract link in the hero, (4) re-ordering the Legal & Regulatory section higher up the page, and (5) verifying multi-language support is wired into the header.
+
+Reference Files Consulted:
+- /home/z/my-project/worklog.md (last 2 sections — Task MITHQAL-BRAIN + Task DIAGRAM — for context on the CurrencyWeightingIntro component, fmtUsd2 convention, and the /api/transparency response shape)
+- /home/z/my-project/src/components/public-site.tsx (1115 lines before edits; final 1634 lines after)
+- /home/z/my-project/src/components/animated-number.tsx (verified props: value, decimals, prefix, suffix, className; uses useSpring + useTransform)
+- /home/z/my-project/src/components/live-timestamp.tsx (verified props: isoString, label, showIcon, className; re-renders every 1s)
+- /home/z/my-project/src/components/verify-on-chain.tsx (already imported in public-site.tsx; MONAD_EXPLORER_BASE = "https://testnet.monadscan.com/address/")
+- /home/z/my-project/src/components/language-switcher.tsx (already implemented — EN/AR/FR dropdown via useLanguage context + LOCALES + LOCALE_META)
+- /home/z/my-project/src/components/global-header.tsx (already mounts <LanguageSwitcher /> alongside LiveIndicator, VerifyOnChainBadge, ThemeToggle, Shield v19.0 badge)
+- /home/z/my-project/src/app/layout.tsx (confirms <GlobalHeader /> is in the root layout, so the language switcher renders on EVERY page including the Institution page)
+- /home/z/my-project/src/app/api/transparency/route.ts (response shape: testnet.supply, testnet.nav, testnet.reserveRatio [a percentage ~100], testnet.lastUpdate, monetary.goldUsd, monetary.nav.market, monetary.reserveRatio.ratio, monetary.weights[].normalizedWeight/structuralWeight)
+- /home/z/my-project/src/components/transparency.tsx (cross-checked field semantics — state.testnet.reserveRatio is a PERCENTAGE compared with 100 in `state.testnet.reserveRatio < 100`, not a fraction)
+- /home/z/my-project/src/app/page.tsx (view switcher: ?view=engine deep-link handled on mount via writeView + history.replaceState — so a plain `<a href="/?view=engine">` works as a CTA)
+- /home/z/my-project/src/lib/oracle-data.ts (verified BASE_CURRENCIES array shape: 8 currencies with code/name/fx/cofer/swift/bis/lta — same order as the worked-example weights the task spec gave me)
+
+Work Log:
+
+**Fix 3 — Prominent testnet contract link in hero (lines 121-139):**
+Added a gold-pill `<a>` element between the hero lede paragraph and the CTA buttons. The link points to `https://testnet.monadscan.com/address/0x9e6EdC15DAc420931508d8Ddf9BC817651A253aD` with `target="_blank"` + `rel="noopener noreferrer"`. Visual: gold border + gold/[0.08] background + external-link icon. Text content: "🔗 MTQ on Monad Testnet: 0x9e6E…253aD" — matches the audit spec verbatim. Wrapped in `<Reveal delay={0.15}>` so it animates in after the lede but before the action buttons. Full aria-label + title for accessibility.
+
+**Fix 2 — LiveStateDashboard component (lines 167-384, ~218 lines):**
+New `<LiveStateDashboard />` component placed directly under the hero (between SiteHero and WhatItIs in the shell). Architecture:
+- `useState<LiveStateData>` with a `LIVE_FALLBACK` constant (supply=50_000_000, navMarket=1.0, reserveRatio=102.34, goldUsd=4053.7) — used before the first fetch lands and as a permanent fallback if the fetch errors (so the section never collapses to a blank shell).
+- `fetchData()` async function: GET /api/transparency with `cache: "no-store"`, parses `testnet.supply`, `monetary.nav.market`, `monetary.reserveRatio.ratio`, `monetary.goldUsd`, `testnet.lastUpdate`. Defensive `?? ` chains at every field, so a missing/partial response still yields a usable LiveStateData object.
+- `useEffect(() => { fetchData(); const id = setInterval(fetchData, 30_000); return () => clearInterval(id); }, [])` — fetch on mount + auto-refresh every 30 seconds (per the audit spec). Initial empty deps array is intentional — `fetchData` is stable per render and we don't want to re-run on every state change.
+- 4 KPI cards in `grid sm:grid-cols-2 xl:grid-cols-4`:
+  1. Total Supply — `AnimatedNumber` decimals=0 suffix=" MTQ" — Coins icon
+  2. NAV (Market) — `AnimatedNumber` decimals=4 prefix="$" — TrendingUp icon
+  3. Reserve Ratio — `AnimatedNumber` decimals=2 suffix="%" — Gauge icon; turns `text-reserve` if ≥100%, `text-destructive` if below 100% (matches the Constitution's invariant)
+  4. Gold Price — `AnimatedNumber` decimals=2 prefix="$" suffix="/oz" — CircleDollarSign icon
+- Each card: label (uppercase eyebrow), big animated value, caption row with "Live" indicator (green dot + "just now" / "stale"), source `/api/transparency`.
+- Header row: Eyebrow ("Live State · auto-refreshing every 30s") + h2 ("The Institution, in real time") on the left; on the right a pulsing green/red dot + "Live" / "Connecting…" / "Live data unavailable" + `<LiveTimestamp isoString={data.lastUpdate} label="updated" />`.
+- Footer: source label + a "Reserves breakdown →" link that scrolls to #s-reserves.
+
+**Fix 1 — MonetaryEngineCompact component (lines 702-966, ~265 lines):**
+New `<MonetaryEngineCompact />` component placed between Reserves and Governance in the shell. Architecture:
+- Section id `s-monetary-engine` — distinct from the existing `s-mtq` (token spec) so deep-links to either are unambiguous.
+- `FALLBACK_BASKET` constant — 8 currencies with the published v19.0 worked-example weights (USD 47.99%, EUR 19.03%, GBP 10.90%, JPY 10.32%, CNY 6.73%, CHF 2.00%, AUD 1.68%, CAD 1.36%) — verbatim from the audit task spec. Used before first fetch + permanent fallback.
+- `FALLBACK_GOLD_USD = 4053.7` — matches the audit spec example.
+- `CURRENCY_ACCENT` map — per-currency gradient classes (`from-gold/90 to-gold/40` for USD down to `from-gold/50 to-gold/15` for CAD). Heavier currencies get a brighter gradient so the visual hierarchy mirrors the basket hierarchy. All within the gold palette to stay native to the institutional theme.
+- `useEffect` on mount: fetch /api/transparency, parse `monetary.goldUsd` + `monetary.weights[]` (preferring `normalizedWeight` over `structuralWeight`), multiply by 100, sort descending by weight, setBasket. `let cancelled = false` guard prevents state updates after unmount.
+- Visualization (per audit spec): Gold anchor card at top (Crown icon + AnimatedNumber for $X,XXX.XX/oz + LiveTimestamp "spot") → ArrowRight rotated 90° (down arrow) → 8-row horizontal bar chart with code label / animated bar / percentage → down arrow → MTQ synthesis card at bottom (Coins icon + "ERC-20 on Monad" label).
+- Each bar is a `<motion.div>` with `initial={{ width: 0 }}` + `whileInView={{ width: widthPct% }}` + `viewport={{ once: true, margin: "-40px" }}` — animates in once on scroll. Stagger via `delay: 0.1 + i * 0.05`. `widthPct = (weight / maxWeight) * 100` — so the heaviest currency (USD ~47.99%) gets a 100%-width bar and the lightest (CAD ~1.36%) gets a ~2.8%-width bar. Visual proportions are correct, not absolute — this is the right choice for a "compact" visualization.
+- Σ badge in the basket header: `8-currency basket · Σ = {sumWeight.toFixed(2)}%` — surfaces that the weights sum to ~100% (auditable).
+- CTA: `<a href="/?view=engine">Explore the full interactive engine →</a>` — gold-bordered button-styled link. page.tsx's useEffect picks up `?view=engine` on mount and calls `writeView("engine")`, switching to the full MonetaryEngineExplained view. Plain anchor (not onClick+localStorage) so the link is shareable + bookmarkable + accessible (real `<a>` with target=_self by default).
+
+**Fix 4 — Legal section re-order (shell, lines 1607-1633):**
+Moved `<LegalStatus />` from position 12 (after Eligibility, before PhaseZeroTimeline) to position 4 (right after `<WhatItIs />`, before `<LayerZero />`). The shell now reads: SiteHero → LiveStateDashboard → WhatItIs → **LegalStatus** → LayerZero → Objectives → Invariants → AntiPlatform → SettlementUnit → Reserves → MonetaryEngineCompact → Governance → Lifecycle → Eligibility → PhaseZeroTimeline → StatusBoard → ContactForm → PublicFooter. The Legal section keeps its existing `id="s-legal"` (no rename) so any existing anchor links / sitemap entries still work. Placed Legal right after WhatItIs per the audit's exact wording ("right after the s-institution section") — builds institutional credibility (operating entity JOZOUR LLC, constitutional version, on-chain Safe Multi-Sig verification) before the reader encounters the doctrinal LayerZero content.
+
+**Fix 5 — Multi-language support verification (no code change):**
+Confirmed the LanguageSwitcher is already wired end-to-end:
+- `src/components/language-switcher.tsx` exists (87 lines) — globe-icon dropdown that lists LOCALES from `@/lib/i18n/messages`, dispatches `setLocale` via `useLanguage` context, closes on outside click / Escape, keyboard-accessible (button + listbox + role="option" + aria-selected).
+- `src/components/global-header.tsx` line 7 imports it, line 77 renders it: `<LanguageSwitcher />` — labelled with the comment `{/* Language switcher (audit recommendation #7: en/ar/fr) */}`.
+- `src/app/layout.tsx` line 7 imports GlobalHeader, line 101 renders it: `<GlobalHeader />` — mounted inside `<Providers>` (which provides the LanguageProvider context) so the switcher is active on EVERY page, including the Institution page (public-site.tsx).
+- The LanguageProvider context persists the chosen locale and re-renders consumers on change. Page.tsx's `<ViewSwitcher>` already uses `useLanguage().t(...)` for the localized view labels (`nav.institution`, etc.).
+- No action required — already meets the audit recommendation.
+
+**Imports added (line 3-59):**
+- `import { useEffect, useState } from "react";` — added `useEffect` (was previously only `useState`).
+- Added to the lucide-react destructure: `ExternalLink` (Fix 3 badge icon), `Activity` (LiveStateDashboard card-icon type), `TrendingUp` (NAV card icon), `Coins` (Supply + MTQ synthesis icons).
+- `import { AnimatedNumber } from "@/components/animated-number";` — used in both LiveStateDashboard (4 KPI values) and MonetaryEngineCompact (gold price).
+- `import { LiveTimestamp } from "@/components/live-timestamp";` — used in both LiveStateDashboard (header + per-card optional) and MonetaryEngineCompact (gold spot timestamp).
+
+**Verification:**
+- `cd /home/z/my-project && bun run lint 2>&1 | tail -5` → `$ eslint .` (exit 0, no warnings, no errors). CLEAN.
+- Initial lint run flagged a single warning: `Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')` at the LiveStateDashboard useEffect. The project's eslint config relaxes the `react-hooks/exhaustive-deps` rule, so my `// eslint-disable-next-line react-hooks/exhaustive-deps` comment was unused. Removed the comment — lint now fully clean.
+- `npx tsc --noEmit` → 0 errors in `public-site.tsx`. The 22 remaining TS errors are all in pre-existing unrelated files (db.ts, oracle-client.ts, oracle-data.ts, testnet-engine.ts, v19-infrastructure.ts, admin.tsx, contract-reader.ts, BigInt literals in API routes, z-ai SDK examples in skills/) — none introduced or affected by this task. Confirmed by reading the worklog Task MITHQAL-BRAIN section ("23 pre-existing errors remain in unrelated files... None of these were introduced or affected by this task — confirmed by stashing my changes and re-running tsc").
+- `wc -l src/components/public-site.tsx` → 1634 lines (was 1115; net +519).
+- All 5 audit fixes implemented and wired into the shell. The page order is now: Hero (with testnet link) → Live KPI dashboard → Institution (what it is) → Legal & Regulatory (moved up) → Layer 0 → Objectives → Invariants → Anti-platform → Settlement unit → Reserves → Monetary engine (new compact viz) → Governance → Lifecycle → Eligibility → Phase 0 timeline → Status board → Contact form → Footer.
+
+Stage Summary:
+- ✅ Fix 1 (PRIORITY 1) — MonetaryEngineCompact section added between Reserves and Governance. Gold anchor → 8-currency horizontal bar chart with AnimatedNumber for live gold price + framer-motion animated bar fills + LiveTimestamp → MTQ synthesis. CTA `/?view=engine` deep-links to the full interactive engine view. Live data from /api/transparency with published-weights fallback.
+- ✅ Fix 2 (PRIORITY 2) — LiveStateDashboard section added between Hero and WhatItIs. 4 KPI cards (Supply / NAV Market / Reserve Ratio / Gold Price), each with AnimatedNumber + LiveTimestamp + "Live" indicator + source label. Auto-refresh every 30s via setInterval. Graceful degradation to LIVE_FALLBACK on fetch error.
+- ✅ Fix 3 (PRIORITY 3) — Prominent gold-pill "🔗 MTQ on Monad Testnet: 0x9e6E…253aD" link with ExternalLink icon added in the hero (between lede and CTA buttons). Opens testnet.monadscan.com in a new tab. Full aria-label + title for screen readers.
+- ✅ Fix 4 (PRIORITY 4) — `<LegalStatus />` moved in the shell from after `<Eligibility />` to after `<WhatItIs />` (before `<LayerZero />`). Section id `s-legal` unchanged so existing anchor links still work. Builds institutional credibility (JOZOUR LLC operating entity + Constitution v19.0 + on-chain Safe Multi-Sig verification) right after the institutional framing.
+- ✅ Fix 5 (PRIORITY 5) — Verified LanguageSwitcher already exists (`src/components/language-switcher.tsx`), already imported in `global-header.tsx` (line 7), already mounted in `layout.tsx` (line 101 via `<GlobalHeader />` inside `<Providers>`). Visible on the Institution page header. EN/AR/FR locales already configured in `src/lib/i18n/messages.ts`. No code change required.
+- ✅ `bun run lint` — clean (0 errors, 0 warnings, exit 0).
+- ✅ `npx tsc --noEmit` — 0 new errors in `public-site.tsx`; all 22 remaining errors are pre-existing in unrelated files.
+- ✅ All existing sections preserved — only ADs (LiveStateDashboard, MonetaryEngineCompact) and one MOVE (LegalStatus). No existing section code was modified (except for adding the testnet link to SiteHero).
+- ✅ "use client" directive preserved at top of file (line 1).
+- ✅ Reveal, AnimatedNumber, LiveTimestamp, Badge, VerifyOnChain — all existing components reused. No new component dependencies introduced.
+- ✅ Gold/dark theme consistent — all new sections use the existing palette (var(--gold), bg-ink-soft, text-foreground, text-fg-muted, border-line) and the existing visual idioms (rounded-xl, scroll-mt-24, Eyebrow component, font-display headings, gold-text accents).

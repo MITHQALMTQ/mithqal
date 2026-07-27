@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import {
   Shield,
@@ -25,6 +25,10 @@ import {
   Crown,
   Loader2,
   Quote,
+  ExternalLink,
+  Activity,
+  TrendingUp,
+  Coins,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -51,6 +55,8 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { Logo } from "@/components/logo";
 import { VerifyOnChain } from "@/components/verify-on-chain";
+import { AnimatedNumber } from "@/components/animated-number";
+import { LiveTimestamp } from "@/components/live-timestamp";
 
 const Reveal = ({
   children,
@@ -112,6 +118,25 @@ function SiteHero() {
             {IDENTITY.lede}
           </p>
         </Reveal>
+        {/* Audit Fix 3 — Prominent testnet contract link in the hero.
+            The MTQ token contract is published on Monad Testnet; surfacing it
+            here — as a gold pill badge with the external-link icon — gives every
+            reader an immediate, one-click path to independent on-chain verification. */}
+        <Reveal delay={0.15}>
+          <a
+            href="https://testnet.monadscan.com/address/0x9e6EdC15DAc420931508d8Ddf9BC817651A253aD"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-6 inline-flex items-center gap-2 rounded-full border border-gold/50 bg-gold/[0.08] px-4 py-2 text-xs font-semibold text-gold shadow-[0_0_0_1px_color-mix(in_oklch,var(--gold)_30%,transparent),0_4px_20px_-8px_var(--gold)] transition hover:border-gold hover:bg-gold/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60"
+            aria-label="Verify the MTQ token contract on Monad Testnet explorer — address 0x9e6EdC15DAc420931508d8Ddf9BC817651A253aD — opens in a new tab"
+            title="MTQ Token · Monad Testnet explorer (opens in a new tab)"
+          >
+            <span aria-hidden="true">🔗</span>
+            <span>MTQ on Monad Testnet:</span>
+            <span className="font-mono text-[11px] text-gold/90">0x9e6E…253aD</span>
+            <ExternalLink className="h-3 w-3" aria-hidden="true" />
+          </a>
+        </Reveal>
         <Reveal delay={0.18}>
           <div className="mt-9 flex flex-wrap gap-3">
             <button
@@ -135,6 +160,224 @@ function SiteHero() {
         </Reveal>
       </div>
       <div className="gold-rule h-px w-full" />
+    </section>
+  );
+}
+
+/* ---------------- Live State Dashboard (Audit Fix 2) ---------------- */
+
+/**
+ * LiveStateDashboard — auto-refreshing (30s) KPI strip that surfaces the
+ * Institution's live monetary state right under the hero: total supply,
+ * market NAV, reserve ratio, and the live gold spot price.
+ *
+ * Pulls from the public /api/transparency endpoint (the same one the
+ * Transparency dashboard uses), so every number on this page is sourced from
+ * a single on-chain-derived, audit-grade API. Falls back to a graceful
+ * "live data unavailable" card on fetch failure rather than blocking the page.
+ */
+interface LiveStateData {
+  supply: number;
+  navMarket: number;
+  reserveRatio: number;
+  goldUsd: number;
+  lastUpdate: string;
+}
+
+// Used only when the fetch fails (or before the first response). Displayed in
+// the same KPI layout so the section never collapses to a blank shell.
+const LIVE_FALLBACK: LiveStateData = {
+  supply: 50_000_000,
+  navMarket: 1.0,
+  reserveRatio: 102.34,
+  goldUsd: 4053.7,
+  lastUpdate: new Date().toISOString(),
+};
+
+function LiveStateDashboard() {
+  const [data, setData] = useState<LiveStateData>(LIVE_FALLBACK);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchData = async () => {
+    try {
+      const res = await fetch("/api/transparency", { cache: "no-store" });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const json = (await res.json()) as {
+        testnet?: { supply?: number; nav?: number; reserveRatio?: number; lastUpdate?: string };
+        monetary?: { goldUsd?: number; nav?: { market?: number }; reserveRatio?: { ratio?: number } };
+        generatedAt?: string;
+      };
+      const next: LiveStateData = {
+        supply: json.testnet?.supply ?? LIVE_FALLBACK.supply,
+        navMarket: json.monetary?.nav?.market ?? json.testnet?.nav ?? LIVE_FALLBACK.navMarket,
+        reserveRatio:
+          json.monetary?.reserveRatio?.ratio ??
+          json.testnet?.reserveRatio ??
+          LIVE_FALLBACK.reserveRatio,
+        goldUsd: json.monetary?.goldUsd ?? LIVE_FALLBACK.goldUsd,
+        lastUpdate: json.testnet?.lastUpdate ?? json.generatedAt ?? new Date().toISOString(),
+      };
+      setData(next);
+      setError(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "transparency fetch failed");
+      // keep previous data — do not overwrite live numbers with the fallback
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+    const id = setInterval(fetchData, 30_000);
+    return () => clearInterval(id);
+  }, []);
+
+  const cards: Array<{
+    label: string;
+    icon: typeof Activity;
+    value: number;
+    decimals: number;
+    prefix?: string;
+    suffix?: string;
+    caption: string;
+    accent: string;
+  }> = [
+    {
+      label: "Total Supply",
+      icon: Coins,
+      value: data.supply,
+      decimals: 0,
+      suffix: " MTQ",
+      caption: "Mint − Burn · ERC-20 MTQ",
+      accent: "text-gold",
+    },
+    {
+      label: "NAV (Market)",
+      icon: TrendingUp,
+      value: data.navMarket,
+      decimals: 4,
+      prefix: "$",
+      caption: "Mark-to-market NAV per MTQ",
+      accent: "text-gold",
+    },
+    {
+      label: "Reserve Ratio",
+      icon: Gauge,
+      value: data.reserveRatio,
+      decimals: 2,
+      suffix: "%",
+      caption: data.reserveRatio >= 100 ? "Above 100% floor" : "BELOW FLOOR — paused",
+      accent: data.reserveRatio >= 100 ? "text-reserve" : "text-destructive",
+    },
+    {
+      label: "Gold Price",
+      icon: CircleDollarSign,
+      value: data.goldUsd,
+      decimals: 2,
+      prefix: "$",
+      suffix: "/oz",
+      caption: "Live spot · XAU/USD",
+      accent: "text-gold",
+    },
+  ];
+
+  return (
+    <section
+      id="s-live-state"
+      className="scroll-mt-24 border-b border-line/60 bg-ink-soft/40 px-5 py-10 sm:px-8 sm:py-12"
+      aria-label="Live monetary state"
+    >
+      <div className="mx-auto w-full max-w-6xl">
+        <Reveal>
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <Eyebrow>Live State · auto-refreshing every 30s</Eyebrow>
+              <h2 className="font-display mt-3 text-2xl leading-tight text-balance sm:text-3xl">
+                The Institution, in real time
+              </h2>
+            </div>
+            <div className="flex items-center gap-2 text-[11px] text-fg-muted">
+              <span className="relative flex h-2 w-2">
+                <span
+                  className={`absolute inline-flex h-full w-full rounded-full opacity-75 ${
+                    error ? "bg-destructive" : "bg-reserve"
+                  } ${loading ? "animate-ping" : ""}`}
+                />
+                <span
+                  className={`relative inline-flex h-2 w-2 rounded-full ${
+                    error ? "bg-destructive" : "bg-reserve"
+                  }`}
+                />
+              </span>
+              <span className="font-semibold uppercase tracking-[0.18em]">
+                {error ? "Live data unavailable" : loading ? "Connecting…" : "Live"}
+              </span>
+              <LiveTimestamp isoString={data.lastUpdate} label="updated" />
+            </div>
+          </div>
+        </Reveal>
+        <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          {cards.map((c, i) => {
+            const Icon = c.icon;
+            return (
+              <Reveal key={c.label} delay={i * 0.04}>
+                <div className="print-card h-full rounded-xl border border-line bg-ink-card p-5 transition hover:border-gold/40">
+                  <div className="flex items-center justify-between text-fg-muted">
+                    <span className="text-[10px] font-semibold uppercase tracking-[0.18em]">
+                      {c.label}
+                    </span>
+                    <Icon className={`h-4 w-4 ${c.accent}`} aria-hidden="true" />
+                  </div>
+                  <div className={`mt-3 font-display text-2xl sm:text-3xl ${c.accent}`}>
+                    <AnimatedNumber
+                      value={Number.isFinite(c.value) ? c.value : 0}
+                      decimals={c.decimals}
+                      prefix={c.prefix}
+                      suffix={c.suffix}
+                    />
+                  </div>
+                  <div className="mt-2 flex items-center justify-between gap-2 text-[11px] text-fg-muted">
+                    <span>{c.caption}</span>
+                    <span className="inline-flex items-center gap-1 text-[10px]">
+                      <span
+                        className={`h-1.5 w-1.5 rounded-full ${
+                          error ? "bg-destructive/70" : "bg-reserve/80"
+                        }`}
+                        aria-hidden="true"
+                      />
+                      {error ? "stale" : "just now"}
+                    </span>
+                  </div>
+                </div>
+              </Reveal>
+            );
+          })}
+        </div>
+        <Reveal delay={0.16}>
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-2 text-[11px] text-fg-muted">
+            <span>
+              Source:{" "}
+              <code className="rounded bg-ink-card px-1.5 py-0.5 font-mono text-[10px] text-gold/90">
+                /api/transparency
+              </code>{" "}
+              · derived from on-chain reserves + live oracle prices.
+            </span>
+            <button
+              onClick={() => {
+                document
+                  .getElementById("s-reserves")
+                  ?.scrollIntoView({ behavior: "smooth" });
+              }}
+              className="inline-flex items-center gap-1 transition hover:text-gold"
+            >
+              Reserves breakdown
+              <ArrowRight className="h-3 w-3" aria-hidden="true" />
+            </button>
+          </div>
+        </Reveal>
+      </div>
     </section>
   );
 }
@@ -448,6 +691,273 @@ function Reserves() {
                 </div>
               ))}
             </div>
+          </div>
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
+/* ---------------- Monetary Engine Compact (Audit Fix 1) ---------------- */
+
+/**
+ * MonetaryEngineCompact — a compact, inline visualization of the v19.0
+ * Monetary Engine's currency basket. It is NOT the full interactive Engine
+ * view — it shows the single core concept: Gold is the anchor → 8 sovereign
+ * currencies contribute weighted pressure → MTQ is the synthesised output.
+ *
+ * Pulls live weights from /api/transparency and falls back to the published
+ * worked-example weights if the API is unreachable, so the section never
+ * collapses to a blank card.
+ *
+ * The "Explore the full interactive engine →" CTA deep-links to ?view=engine,
+ * which page.tsx picks up and switches to the full Engine view.
+ */
+interface BasketCurrency {
+  code: string;
+  name: string;
+  weight: number; // percentage value, e.g. 47.99
+}
+
+// Published v19.0 worked-example weights (Part III) — used until the first
+// successful /api/transparency response lands, and as a permanent fallback.
+const FALLBACK_BASKET: BasketCurrency[] = [
+  { code: "USD", name: "US Dollar", weight: 47.99 },
+  { code: "EUR", name: "Euro", weight: 19.03 },
+  { code: "GBP", name: "Pound Sterling", weight: 10.9 },
+  { code: "JPY", name: "Japanese Yen", weight: 10.32 },
+  { code: "CNY", name: "Chinese Yuan", weight: 6.73 },
+  { code: "CHF", name: "Swiss Franc", weight: 2.0 },
+  { code: "AUD", name: "Australian Dollar", weight: 1.68 },
+  { code: "CAD", name: "Canadian Dollar", weight: 1.36 },
+];
+
+const FALLBACK_GOLD_USD = 4053.7;
+
+// Per-currency accent colour, used to tint each bar. Stays inside the gold
+// palette so the section feels native to the institutional dark/gold theme.
+const CURRENCY_ACCENT: Record<string, string> = {
+  USD: "from-gold/90 to-gold/40",
+  EUR: "from-gold/80 to-gold/30",
+  GBP: "from-gold/75 to-gold/30",
+  JPY: "from-gold/70 to-gold/25",
+  CNY: "from-gold/65 to-gold/25",
+  CHF: "from-gold/60 to-gold/20",
+  AUD: "from-gold/55 to-gold/20",
+  CAD: "from-gold/50 to-gold/15",
+};
+
+function MonetaryEngineCompact() {
+  const [goldUsd, setGoldUsd] = useState<number>(FALLBACK_GOLD_USD);
+  const [basket, setBasket] = useState<BasketCurrency[]>(FALLBACK_BASKET);
+  const [lastUpdate, setLastUpdate] = useState<string>(new Date().toISOString());
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/transparency", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((json: unknown) => {
+        if (cancelled || !json) return;
+        const j = json as {
+          monetary?: {
+            goldUsd?: number;
+            weights?: Array<{
+              code: string;
+              name?: string;
+              normalizedWeight?: number;
+              structuralWeight?: number;
+            }>;
+          };
+          generatedAt?: string;
+          testnet?: { lastUpdate?: string };
+        };
+        if (typeof j.monetary?.goldUsd === "number" && Number.isFinite(j.monetary.goldUsd)) {
+          setGoldUsd(j.monetary.goldUsd);
+        }
+        if (Array.isArray(j.monetary?.weights) && j.monetary.weights.length > 0) {
+          const parsed: BasketCurrency[] = j.monetary.weights
+            .map((w) => ({
+              code: w.code,
+              name: w.name ?? w.code,
+              weight:
+                (typeof w.normalizedWeight === "number"
+                  ? w.normalizedWeight
+                  : typeof w.structuralWeight === "number"
+                    ? w.structuralWeight
+                    : 0) * 100,
+            }))
+            .filter((w) => w.code)
+            .sort((a, b) => b.weight - a.weight);
+          if (parsed.length > 0) setBasket(parsed);
+        }
+        setLastUpdate(j.testnet?.lastUpdate ?? j.generatedAt ?? new Date().toISOString());
+      })
+      .catch(() => {
+        /* keep fallback */
+      })
+      .finally(() => {
+        /* no loading state — fallback is shown immediately */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const maxWeight = Math.max(...basket.map((c) => c.weight), 1);
+  const sumWeight = basket.reduce((s, c) => s + c.weight, 0);
+
+  return (
+    <section
+      id="s-monetary-engine"
+      className="scroll-mt-24 border-y border-line/60 bg-ink-soft/40 px-5 py-16 sm:px-8 sm:py-24"
+      aria-label="Monetary engine — currency basket visualization"
+    >
+      <div className="mx-auto w-full max-w-5xl">
+        <Reveal>
+          <Eyebrow>Article VI — The Monetary Engine</Eyebrow>
+          <h2 className="font-display mt-4 text-3xl leading-tight text-balance sm:text-5xl">
+            A weighted basket, anchored to gold, synthesised into MTQ
+          </h2>
+          <p className="mt-5 max-w-2xl text-[15px] leading-relaxed text-fg-muted sm:text-base">
+            MTQ&rsquo;s value is not discretionary. It is the deterministic output of a
+            transparent algorithm: gold anchors the basket&rsquo;s real value, eight
+            sovereign currencies contribute weighted pressure (COFER + SWIFT + BIS),
+            and MTQ is minted as the synthesised settlement unit. No ML, no HFT —
+            just constitutionally-bounded math.
+          </p>
+        </Reveal>
+
+        <Reveal delay={0.08}>
+          <div className="mt-10 rounded-2xl border border-gold/30 bg-gradient-to-b from-gold/[0.06] to-transparent p-6 sm:p-8">
+            {/* Gold anchor — top */}
+            <div className="rounded-xl border border-gold/50 bg-gold/[0.08] p-5">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full border border-gold/60 bg-gold/15">
+                    <Crown className="h-5 w-5 text-gold" aria-hidden="true" />
+                  </div>
+                  <div>
+                    <div className="font-display text-lg text-foreground sm:text-xl">
+                      GOLD — The Anchor
+                    </div>
+                    <div className="text-xs text-fg-muted">
+                      Real value numéraire · reserves held as allocated bullion
+                    </div>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="font-display text-xl text-gold sm:text-2xl">
+                    <AnimatedNumber
+                      value={goldUsd}
+                      decimals={2}
+                      prefix="$"
+                      suffix="/oz"
+                    />
+                  </div>
+                  <LiveTimestamp isoString={lastUpdate} label="spot" />
+                </div>
+              </div>
+            </div>
+
+            {/* Down arrow */}
+            <div className="my-3 flex justify-center text-gold/60" aria-hidden="true">
+              <ArrowRight className="h-5 w-5 rotate-90" />
+            </div>
+
+            {/* Currency basket — 8 horizontal bars */}
+            <div className="rounded-xl border border-line bg-ink-card p-5 sm:p-6">
+              <div className="mb-4 flex items-center justify-between gap-3">
+                <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-fg-muted">
+                  8-currency basket · Σ = {sumWeight.toFixed(2)}%
+                </div>
+                <div className="text-[10px] text-fg-muted">
+                  cap 60% · floor 0.5% · momentum-bounded
+                </div>
+              </div>
+              <ul className="space-y-3">
+                {basket.map((c, i) => {
+                  const widthPct = (c.weight / maxWeight) * 100;
+                  const accent =
+                    CURRENCY_ACCENT[c.code] ?? "from-gold/60 to-gold/20";
+                  return (
+                    <li key={c.code} className="grid grid-cols-[3.5rem_1fr_4rem] items-center gap-3 sm:grid-cols-[4.5rem_1fr_5rem]">
+                      <div className="flex items-baseline gap-1.5">
+                        <span className="font-display text-sm font-semibold text-gold">
+                          {c.code}
+                        </span>
+                      </div>
+                      <div
+                        className="relative h-3 overflow-hidden rounded-full border border-line/60 bg-ink"
+                        role="img"
+                        aria-label={`${c.name}: ${c.weight.toFixed(2)}% of basket`}
+                      >
+                        <motion.div
+                          initial={{ width: 0 }}
+                          whileInView={{ width: `${widthPct}%` }}
+                          viewport={{ once: true, margin: "-40px" }}
+                          transition={{
+                            duration: 0.9,
+                            delay: 0.1 + i * 0.05,
+                            ease: [0.22, 1, 0.36, 1],
+                          }}
+                          className={`h-full rounded-full bg-gradient-to-r ${accent}`}
+                        />
+                      </div>
+                      <div className="text-right font-mono text-xs text-fg-muted">
+                        {c.weight.toFixed(2)}%
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+
+            {/* Down arrow */}
+            <div className="my-3 flex justify-center text-gold/60" aria-hidden="true">
+              <ArrowRight className="h-5 w-5 rotate-90" />
+            </div>
+
+            {/* MTQ output — bottom */}
+            <div className="rounded-xl border border-gold/50 bg-gold/[0.08] p-5">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full border border-gold/60 bg-gold/15">
+                    <Coins className="h-5 w-5 text-gold" aria-hidden="true" />
+                  </div>
+                  <div>
+                    <div className="font-display text-lg text-foreground sm:text-xl">
+                      MTQ — The Synthesis
+                    </div>
+                    <div className="text-xs text-fg-muted">
+                      1 MTQ = basket value · minted on verified deposit
+                    </div>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="font-display text-xl text-gold sm:text-2xl">ERC-20</div>
+                  <div className="text-[10px] text-fg-muted">on Monad</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </Reveal>
+
+        <Reveal delay={0.16}>
+          <div className="mt-8 flex flex-wrap items-center justify-between gap-4">
+            <p className="max-w-2xl text-sm leading-relaxed text-fg-muted">
+              The full engine visualizes 5 layers — oracle aggregation, currency
+              weighting with cap/floor, shock absorber (EWMA), NAV derivation, and
+              reserve-ratio compliance — with shock-phase simulation.
+            </p>
+            <a
+              href="/?view=engine"
+              className="group inline-flex items-center gap-2 rounded-md border border-gold/50 bg-gold/[0.06] px-5 py-3 text-sm font-semibold text-gold transition hover:border-gold hover:bg-gold/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60"
+              aria-label="Open the full interactive Monetary Engine view"
+              title="Switch to the full interactive Monetary Engine view"
+            >
+              Explore the full interactive engine
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
+            </a>
           </div>
         </Reveal>
       </div>
@@ -1095,17 +1605,26 @@ export default function PublicSite() {
   return (
     <div className="flex flex-col">
       <SiteHero />
+      {/* Audit Fix 2 — Live state KPI dashboard directly under the hero. */}
+      <LiveStateDashboard />
       <WhatItIs />
+      {/* Audit Fix 4 — Legal & Regulatory Status moved up: surfaces the
+          operating entity + constitutional version right after the "what is
+          Mithqal" framing, building institutional credibility early. */}
+      <LegalStatus />
       <LayerZero />
       <Objectives />
       <Invariants />
       <AntiPlatform />
       <SettlementUnit />
       <Reserves />
+      {/* Audit Fix 1 — Compact monetary-engine visualization between the
+          reserves overview and governance, so the reader sees the basket
+          mechanism right after the reserve structure that backs it. */}
+      <MonetaryEngineCompact />
       <Governance />
       <Lifecycle />
       <Eligibility />
-      <LegalStatus />
       <PhaseZeroTimeline />
       <StatusBoard />
       <ContactForm />
