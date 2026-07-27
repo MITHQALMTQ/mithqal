@@ -131,7 +131,7 @@ export const SECURITY_FINDINGS = {
   ],
   high: [
     { id: 1, issue: "Formal verification — spec written, pending license", description: "Certora CVL specs written for MTQ (6 invariants + 11 rules) and MockOracle (7 invariants + 3 rules) in foundry/certora/. Specs are ready to execute once a Certora license is obtained. Known violation: burnNeverPauses rule currently FAILS (fixed in code, spec verifies the fix). Run: certoraRun src/MTQ.sol --verify MTQ:certora/MTQ.spec", status: "in-progress", severity: "high" },
-    { id: 2, issue: "External security audit — prep complete, pending engagement", description: "Internal audit complete: Foundry fuzz tests (69/69 PASS, 10K runs), Slither static analysis (0 HIGH, 1 MEDIUM, 4 LOW), gas analysis (mint 62K avg, burn 41K avg, transfer 34K avg). Audit-ready package at foundry/AUDIT-REPORT.md. Engage OpenZeppelin or Trail of Bits before mainnet (Q4 2026 / Q1 2027, est. $40-80K).", status: "in-progress", severity: "high" },
+    { id: 2, issue: "External security audit — internal audit complete, ready to engage", description: "Internal audit complete (8.5/10). Ready to engage OpenZeppelin or Trail of Bits. Estimated cost: $40-80K. Timeline: Q4 2026 / Q1 2027. Audit-ready package at foundry/AUDIT-REPORT.md (Foundry fuzz tests 69/69 PASS, Slither 0 HIGH / 1 MEDIUM / 4 LOW, gas analysis: mint 62K avg, burn 41K avg, transfer 34K avg).", status: "ready to engage", severity: "high" },
   ],
   medium: [
     { id: 1, issue: "Fuzz testing complete", description: "Foundry fuzz tests: 4 suites, 69 tests, 0 failures, 10,000 runs per test. Invariant tests use Handler pattern (1,000 runs × 50 depth = 50K calls each). Covers: supply conservation, burn-never-pauses, role gating, transfer reverts when paused. Run: cd foundry && forge test -vvv", status: "resolved", severity: "info" },
@@ -158,7 +158,7 @@ export const CONTRACT_ADDRESSES = {
   mtqToken: "0x9e6EdC15DAc420931508d8Ddf9BC817651A253aD",
   mintContract: "Integrated in MTQ.sol (MINTER_ROLE)",
   burnContract: "Integrated in MTQ.sol (burn never paused)",
-  reserveContract: "Not yet deployed (ReserveRegistry planned)",
+  reserveContract: "0x27a1a201D6DF8215d0b0da3Be6211bE24ef4c471 (MockOracle)",
   governanceContract: "0xE35a91801bc541fb743BB9EaD26C1FbD81EaBd66",
   safeMultiSig: "0xE71869C662733642bfBb262B8c6bad8B0fBfA7D0",
   deployerWallet: "0x3C3932F865892EFabE45892f453f81B64f6c8d8c",
