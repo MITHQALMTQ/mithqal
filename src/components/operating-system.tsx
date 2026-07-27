@@ -1440,7 +1440,7 @@ function ReserveHealthGauge() {
       </div>
 
       <div className="mt-3 flex flex-col items-center">
-        <svg viewBox="0 0 220 130" className="w-full max-w-[280px]" role="img" aria-label={`Reserve health index score: ${score} out of 100, ${label}`}>
+        <svg viewBox="0 0 220 170" className="w-full max-w-[280px]" role="img" aria-label={`Reserve health index score: ${score} out of 100, ${label}`}>
           {/* Background arc (full 180°) */}
           <path d={arcPath(0, 180)} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth={14} strokeLinecap="round" />
           {/* Colored fill (from right=0° to fillEndAngle) */}

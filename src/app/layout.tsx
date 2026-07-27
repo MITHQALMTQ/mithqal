@@ -4,7 +4,6 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { Providers } from "@/components/providers";
 import { ServiceWorkerRegister } from "@/components/service-worker-register";
-import { GlobalHeader } from "@/components/global-header";
 import { CommandPalette } from "@/components/command-palette";
 
 const geistSans = Geist({
@@ -98,7 +97,6 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} ${fraunces.variable} antialiased bg-background text-foreground`}
       >
         <Providers>
-          <GlobalHeader />
           <CommandPalette />
           {children}
           <Toaster />

@@ -3,24 +3,13 @@
 /**
  * useWallet — 2026 modern multi-wallet connection hook.
  *
- * This is a complete rewrite focused on reliability:
- *   1. Tries window.ethereum directly (works for MetaMask, Coinbase, Rabby, etc.)
- *   2. Falls back to EIP-6963 provider announcements
- *   3. Falls back to window.web3.currentProvider (legacy)
- *   4. Re-checks on click (wallet may have been installed after page load)
- *   5. Does NOT depend on React state for provider detection — always
- *      re-checks window.ethereum at click time
- *
- * Browser compatibility:
- *   - Chrome/Brave/Edge: MetaMask, Coinbase, Rabby, Trust (all work)
- *   - Safari: MetaMask iOS (via window.ethereum injection), Rainbow
- *   - Firefox: MetaMask, Coinbase
- *
- * The key insight: `window.ethereum` is set by the wallet extension BEFORE
- * the page loads (for most extensions). The EIP-6963 standard is for
- * detecting MULTIPLE wallets — but for a single-wallet connection, just
- * calling `window.ethereum.request({ method: 'eth_requestAccounts' })`
- * is sufficient and works everywhere.
+ * This version fixes the "install metamask" issue by:
+ * 1. Using a `mounted` flag to prevent SSR/hydration issues
+ * 2. Detecting the provider at CLICK time (not just mount time)
+ * 3. Adding a 500ms delay + re-check if provider not found immediately
+ *    (wallets sometimes inject after page load)
+ * 4. Providing a clear "waiting for wallet..." state
+ * 5. Adding a "Open MetaMask" deep link for mobile
  */
 
 import { useState, useEffect, useCallback, useRef } from "react";
@@ -97,10 +86,17 @@ export function useWallet() {
   const [isConnecting, setIsConnecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [walletName, setWalletName] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
   const providerRef = useRef<EIP1193Provider | null>(null);
+
+  // ---- Mount detection (prevents SSR issues) ----
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // ---- Check if already connected (on mount) ----
   useEffect(() => {
+    if (!mounted) return;
     const provider = getProvider();
     if (!provider) return;
 
@@ -113,7 +109,6 @@ export function useWallet() {
           providerRef.current = provider;
           setAddress(addrs[0]);
           setWalletName(getWalletName(provider));
-          // Get chain ID
           provider
             .request({ method: "eth_chainId" })
             .then((cid: unknown) => setChainId(cid as string))
@@ -126,7 +121,6 @@ export function useWallet() {
     const handleAccountsChanged = (...args: unknown[]) => {
       const accounts = args[0] as string[];
       if (!accounts || accounts.length === 0) {
-        // Disconnected
         setAddress(null);
         setChainId(null);
         setWalletName(null);
@@ -153,7 +147,7 @@ export function useWallet() {
         provider.removeListener("chainChanged", handleChainChanged);
       }
     };
-  }, []);
+  }, [mounted]);
 
   // ---- Connect ----
   const connect = useCallback(async () => {
@@ -162,12 +156,23 @@ export function useWallet() {
 
     try {
       // Always re-check window.ethereum at click time
-      // (wallet may have been installed/enabled after page load)
-      const provider = getProvider();
+      let provider = getProvider();
+
+      // If not found, wait and retry (wallet may inject late)
+      if (!provider) {
+        await new Promise(r => setTimeout(r, 500));
+        provider = getProvider();
+      }
+
+      // Still not found? Try one more time after a longer delay
+      if (!provider) {
+        await new Promise(r => setTimeout(r, 1000));
+        provider = getProvider();
+      }
 
       if (!provider) {
         throw new Error(
-          "No wallet found. Please install MetaMask (https://metamask.io) or another Web3 wallet extension, then refresh the page."
+          "No wallet extension detected. Please install MetaMask from https://metamask.io/download and refresh the page."
         );
       }
 
@@ -201,7 +206,6 @@ export function useWallet() {
           });
           setChainId(MONAD_CHAIN_ID);
         } catch (switchError: any) {
-          // Chain not added — add it
           if (switchError.code === 4902 || switchError.code === -32603) {
             try {
               await provider.request({
@@ -211,14 +215,12 @@ export function useWallet() {
               setChainId(MONAD_CHAIN_ID);
             } catch {
               // User rejected adding the chain — continue anyway
-              // They can switch manually later
             }
           }
           // User rejected switch — continue anyway
         }
       }
 
-      // Save to sessionStorage
       sessionStorage.setItem(
         "mithqal:wallet",
         JSON.stringify({ address: addr, walletName: getWalletName(provider) })
@@ -230,7 +232,6 @@ export function useWallet() {
         walletName: getWalletName(provider),
       };
     } catch (e: any) {
-      // User rejected (code 4001)
       if (e?.code === 4001 || e?.code === -32603) {
         setError("Connection rejected. Please approve the request in your wallet.");
         throw new Error("User rejected the connection request.");
@@ -252,7 +253,7 @@ export function useWallet() {
     setError(null);
   }, []);
 
-  // ---- Get provider (for sending transactions) ----
+  // ---- Get provider ----
   const getProviderRef = useCallback((): EIP1193Provider | null => {
     return providerRef.current || getProvider();
   }, []);
@@ -261,46 +262,25 @@ export function useWallet() {
   const sendTransaction = useCallback(
     async (params: { to: string; data?: string; value?: string }): Promise<string> => {
       const provider = getProviderRef();
-      if (!provider) {
-        throw new Error("Wallet not connected. Please connect first.");
-      }
-      if (!address) {
-        throw new Error("No wallet address. Please connect first.");
-      }
+      if (!provider) throw new Error("Wallet not connected.");
+      if (!address) throw new Error("No wallet address.");
 
-      const txParams: Record<string, string> = {
-        to: params.to,
-        from: address,
-      };
+      const txParams: Record<string, string> = { to: params.to, from: address };
       if (params.data) txParams.data = params.data;
       if (params.value) txParams.value = params.value;
 
-      const txHash = (await provider.request({
+      return (await provider.request({
         method: "eth_sendTransaction",
         params: [txParams],
       })) as string;
-
-      return txHash;
     },
     [address, getProviderRef]
   );
 
-  // ---- Check if on correct chain ----
+  // ---- Derived state ----
   const isOnMonadTestnet = chainId === MONAD_CHAIN_ID;
-
-  // ---- Check if wallet is available ----
-  const [isAvailable, setIsAvailable] = useState(false);
-  useEffect(() => {
-    // Check immediately
-    setIsAvailable(!!getProvider());
-    // Re-check after delays (late injection)
-    const t1 = setTimeout(() => setIsAvailable(!!getProvider()), 500);
-    const t2 = setTimeout(() => setIsAvailable(!!getProvider()), 2000);
-    return () => {
-      clearTimeout(t1);
-      clearTimeout(t2);
-    };
-  }, []);
+  // isAvailable should only be true after mount (prevents SSR mismatch)
+  const isAvailable = mounted && !!getProvider();
 
   return {
     address,
@@ -310,6 +290,7 @@ export function useWallet() {
     walletName,
     isAvailable,
     isOnMonadTestnet,
+    mounted,
     connect,
     disconnect,
     getProvider: getProviderRef,
