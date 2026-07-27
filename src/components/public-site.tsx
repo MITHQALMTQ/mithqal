@@ -1560,6 +1560,12 @@ function PublicFooter() {
           </div>
           <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-fg-muted">
             <a
+              href="/api-docs"
+              className="inline-flex items-center gap-1.5 transition hover:text-gold"
+            >
+              <FileCheck className="h-4 w-4" /> API Docs
+            </a>
+            <a
               href="https://x.com/MithqalMTQ"
               target="_blank"
               rel="noreferrer"

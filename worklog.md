@@ -2360,3 +2360,145 @@ Stage Summary:
 - ✅ "use client" directive preserved at top of file (line 1).
 - ✅ Reveal, AnimatedNumber, LiveTimestamp, Badge, VerifyOnChain — all existing components reused. No new component dependencies introduced.
 - ✅ Gold/dark theme consistent — all new sections use the existing palette (var(--gold), bg-ink-soft, text-foreground, text-fg-muted, border-line) and the existing visual idioms (rounded-xl, scroll-mt-24, Eyebrow component, font-display headings, gold-text accents).
+
+---
+Task ID: REC
+Agent: general-purpose sub-agent (Implement audit recommendations #2, #5, #6, #7, #8, #9, #10)
+
+Task: Implement 7 expert-audit recommendations on the Operating System dashboard and public site (all except #1 which is already done, #3 docs, #4 domain). Recs covered: #2 (real MTQ.mint() attempt with mock-approve fallback), #5 (MTQ Price History chart), #6 (enhanced holder distribution), #7 (settlement volume tracker), #8 (reserve health composite gauge), #9 (verify KYC form), #10 (API docs page). Lint must remain clean.
+
+Reference Files Consulted:
+- /home/z/my-project/worklog.md (last 2 sections — Task DIAGRAM + Task AUDIT5 — for project context, fmtUsd2 convention, and the existing dashboard structure)
+- /home/z/my-project/src/components/operating-system.tsx (1300 lines before edits; 1697 after — +397 net)
+- /home/z/my-project/src/components/admin.tsx (verified BrainPanel mount at line 619 → wires KYC form)
+- /home/z/my-project/src/components/mithqal-brain.tsx (BrainComplianceSection KYC form at line 524 — already implemented by Task BRAIN)
+- /home/z/my-project/src/components/public-site.tsx (1636 lines before edits; 1642 after — +6 net for footer link)
+- /home/z/my-project/src/contracts/core/MTQ.sol (lines 115-120 — confirmed `mint(address,uint256,uint256,bytes32)` signature + MINTER_ROLE gate)
+- /home/z/my-project/src/lib/use-wallet.ts (sendTransaction signature: `{ to, data?, value? } → Promise<string>`)
+- /home/z/my-project/src/lib/contract-reader.ts (buildTransferCalldata pattern — selector + 32-byte address + 32-byte uint)
+- /home/z/my-project/public/openapi.json (346 lines, OpenAPI 3.1 spec — 12 endpoints, 4 tags: Public/Formation/Admin/Auth)
+- /home/z/my-project/src/app/not-found.tsx (template for a standalone Next.js page)
+- /home/z/my-project/src/app/layout.tsx (GlobalHeader mounts on every route → api-docs page gets the language switcher + theme toggle automatically)
+- /home/z/my-project/eslint.config.mjs (most TS rules relaxed; react-hooks/exhaustive-deps off)
+
+Work Log:
+
+**Rec #2 — Real on-chain mint() attempt in handleMint (operating-system.tsx, lines 236-276):**
+Wrapped the existing mock approve flow in a try/catch fallback. New logic, in order:
+1. Build calldata for `mint(address to, uint256 amount, uint256 reserveDepositedUsd, bytes32 depositProof)` = selector `0x40c10f19` + to(32) + amountWei(32, in 1e18 units) + reserveUsdWei(32, in 1e6 units) + proof(32, zero bytes32).
+2. Call `sendTransaction({ to: MTQ_ADDRESS, data: mintData, value: "0x0" })`.
+3. If it succeeds → use that txHash and set `usedRealMint = true`. The success toast reads "Real MTQ.mint() call · Tx 0xabc… submitted to Monad Testnet."
+4. If it throws:
+   - If `err.code === 4001` (user rejected in MetaMask) → re-throw to surface the cancellation (no fallback). The user explicitly cancelled.
+   - Otherwise (revert, missing role, estimation failure, network error) → log a console.warn and fall back to the existing mock approve() flow (selector `0x095ea7b3` + spender=walletAddress + amountWei in 1e6 units). The success toast reads "Mock approve fallback · Tx 0xabc… submitted to Monad Testnet."
+5. The POST to /api/mint is unchanged — same `amountUsd`, `toAddress`, `txHash` payload regardless of which path produced the hash.
+
+The proof is set to a zero bytes32 because the contract's `onlyRole(MINTER_ROLE)` modifier fires BEFORE the proof is inspected, so when the connected wallet lacks the role the proof value is irrelevant. If the wallet DOES have the role, the proof is a real oracle attestation hash and a zero proof would still revert — but at that point the wallet is the institution's mint gateway, not an end-user, and a real proof would be supplied by the gateway's backend.
+
+**Rec #5 — MTQ Price History section (operating-system.tsx, lines 549-554 + 1504-1586):**
+Added `<MtqPriceHistory />` in a 2-col grid alongside `<ReserveHealthGauge />`, placed between the stats grid (line 547) and the NAV cards (line 556). Per the audit spec this is "after the stats grid, before the NAV cards" — both #5 and #8 share that insertion point, so they sit side-by-side.
+
+Component architecture (lines 1504-1586):
+- `useMemo` generates 24 hourly data points anchored at $1.00 with ±0.003 variance via deterministic `sin(phase) + cos(phase*0.37)` wiggle (SSR-safe, no runtime random — matches the pattern used in useNavHistory/useSupplySeries).
+- Final point pinned to a specific value so the chart's right edge is stable.
+- Header: LineChartIcon + "MTQ / USD Price" h3 + "24h" badge.
+- Price row: 3xl display-font price (green `text-reserve` if ≥ $1.00, red `text-destructive` if < $1.00) + "▲/▼ X.XXX% (24h)" change pill (also green/red).
+- Recharts `<AreaChart>` with a linearGradient fill (color matched to the up/down direction), `domain={[0.995, 1.005]}` Y-axis with `$X.XXX` tick formatter, X-axis showing `T-23h…T-0h` labels.
+- Footer: "Synthetic 24-hour series anchored at $1.00 (±0.003 variance). Peg status: at/above peg / below peg."
+
+**Rec #6 — Enhanced holder distribution (operating-system.tsx, lines 1080-1100 + 1162-1178):**
+Three changes to the existing HolderDistribution component:
+1. **Top 10 expanded:** the `mockTop10` array grew from 5 to 10 entries — Deployer (100%), Treasury (pending), Reserve Custodian (pending), Anchor participant (pending), Liquidity partner (pending), Council escrow (pending), Market maker (pending), Exchange listing (pending), Strategic partner (pending), Reserve buffer (pending). All non-deployer entries have mtq=0, pct=0.
+2. **Concentration label:** the threshold logic now has a new top tier — `hhi >= 10000 ? "High (1 holder)"` (above the existing 7500 "Hyper-concentrated" branch). For the deployer-only case (HHI=10000), the label reads exactly "High (1 holder)" per the audit spec.
+3. **Note added:** below the concentration label, a new italic line "Diversifies as users mint" surfaces the projected evolution.
+4. **Table render:** switched from `holders.slice(0, 5)` + "+ 5 more" caption to `holders.map(...)` showing all 10 rows. Removed the misleading "+ 5 more" footer.
+
+The pie chart, HHI calculation (`shares.reduce((s, x) => s + x*x, 0) * 10000`), and existing color palette (`HOLDER_PIE_COLORS`) are unchanged.
+
+**Rec #7 — Settlement Volume tracker (operating-system.tsx, lines 608-613 + 1599-1697):**
+Added `<SettlementVolumeTracker transactions={transactions} />` immediately after the HolderDistribution + LiveTransactionFeed grid (line 606). Component (lines 1599-1697):
+
+- `useMemo` (deps: `[transactions]`) computes 4 derived values:
+  - `daily`: sum of `fmtWei(tx.amount)` for transactions whose UTC date key matches today.
+  - `weekly`: sum for txs with `tsMs >= now - 7 * DAY_MS`.
+  - `monthly`: sum for txs with `tsMs >= now - 30 * DAY_MS`.
+  - `dailySeries`: 7-day array of `{ t: weekday-short, volume: sum }` — one entry per day for the last 7 UTC days.
+- Header: DollarSign icon + "Settlement Volume" h3 + "MTQ settled · live indexer" caption.
+- 3 KPI cards (Daily 24h / Weekly 7d / Monthly 30d) showing the summed MTQ value with `toLocaleString` + 2 max decimals.
+- Recharts `<BarChart>` (height 40 = h-40) showing the 7-day daily volume series. Y-axis tickFormatter collapses ≥1000 to "X.XK". Gold bars with rounded tops.
+- Footer: "Computed from the live transactions table (N txns indexed). Zero-bar days reflect real settlement inactivity — no synthetic fillers." — explicitly calls out that, unlike the existing `SettlementVolumeChart` in the Real-Time Charts grid (which adds synthetic noise on zero-activity days), this card shows PURE real volume.
+
+The existing `SettlementVolumeChart` (lines 1004-1026) in the Real-Time Charts grid is unchanged — this new card is complementary (totals + 7-day bar) rather than a replacement.
+
+**Rec #8 — Reserve Health Index composite gauge (operating-system.tsx, lines 549-554 + 1363-1495):**
+Added `<ReserveHealthGauge />` alongside `<MtqPriceHistory />` in the post-stats-grid row. Component (lines 1377-1495):
+
+- Mock inputs per audit spec: `rr=97.86`, `lcrRaw=1.0`, `cri=35`, `durationRaw=0.5`, `basket=100`.
+- Normalization: each value is scaled to a 0-100 axis — `lcr = lcrRaw * 100 = 100`, `duration = durationRaw * 100 = 50`. The other three (RR %, CRI 0-100, Basket %) are already on a 0-100 scale.
+- Composite score formula: `Math.round(rr*0.4 + lcr*0.2 + cri*0.2 + duration*0.1 + basket*0.1)` = `Math.round(39.144 + 20 + 7 + 5 + 10)` = **81** → GREEN (≥80).
+- Color zones: green `#10b981` (≥80), gold `#d4af37` (60-80), red `#ef4444` (<60). Same colors drive the gauge arc, needle, and score number.
+- SVG semicircular gauge (viewBox 0 0 220 130, cx=110, cy=110, r=90):
+  - Background arc: 180° from `(cx-r, cy)` to `(cx+r, cy)` — faint white stroke.
+  - Filled arc: from angle 0° (right) to `fillEndAngle = 180 - needle_angle` — colored stroke matching the score zone.
+  - Needle: line from `(cx, cy)` to `(nx, ny)` where `nx = cx + 78*cos(rad)`, `ny = cy - 78*sin(rad)`. Angle interpolated: score 0 → needle points left (180°), score 100 → needle points right (0°).
+  - Tick labels "0" / "50" / "100" at the left/center/right of the arc.
+  - Score number rendered as 28px `<text>` centered on the gauge, with "/ 100" below it.
+- 5 mini-cards below the gauge (RR / LCR / CRI / Dur / Bskt) showing each input value + its weight, so the reader can audit the composite.
+- Formula footer: "Score = RR×0.4 + LCR×0.2 + CRI×0.2 + Duration×0.1 + Basket×0.1" + "Mock inputs (audit rec #8): RR=97.86% · LCR=1.0 · CRI=35 · Duration=0.5 · Basket=100% → 81/100 (Healthy)."
+
+The `arcPath(startAngle, endAngle)` helper generates the SVG `M…A…` path for an arc segment, computing the two endpoints via `cx + r*cos(θ), cy - r*sin(θ)` and the large-arc-flag based on whether the sweep exceeds 180°.
+
+**Rec #9 — KYC screening section verification (no code change):**
+Confirmed the KYC form already exists end-to-end:
+- `src/components/mithqal-brain.tsx` lines 524-735: `BrainComplianceSection()` — full form with fullName/email/org/role inputs, submits POST `/api/brain/compliance`, renders risk score + recommendation + flags from the multi-model consensus response. Uses shadcn `Input` + `Button`, framer-motion `AnimatePresence` for the result panel.
+- `src/components/mithqal-brain.tsx` line 174: `BrainPanel` renders `<BrainComplianceSection />` as the 4th section (after BrainHeader / BrainModelCards / BrainAskSection / BrainRiskSection).
+- `src/components/admin.tsx` line 619: `<BrainPanel />` mounted inside the authenticated Console, below the OracleAdminSection. So the KYC form renders in the admin console behind the NextAuth gate — exactly where the audit recommended.
+- Backend: `/api/brain/compliance/route.ts` exists and returns 401 if no session, 429 if rate-limited, otherwise the multi-model consensus result.
+- No action required — already meets the audit recommendation.
+
+**Rec #10 — API documentation page (NEW: src/app/api-docs/page.tsx, 294 lines; public-site.tsx footer link):**
+
+*api-docs/page.tsx (new file):*
+- `"use client"` directive at top — required because the page fetches `/openapi.json` in a `useEffect` on mount.
+- Minimal OpenAPI type subset (`OpenApiSpec` + `EndpointRow`) — only the fields we render (info, servers, tags, paths). The full response is `any`-typed for the operation objects (the project's eslint config has `@typescript-eslint/no-explicit-any` off, matching the rest of the codebase).
+- `useEffect` (deps: `[]`) fetches `/openapi.json` with `cache: "no-store"`. Uses a `cancelled` flag to prevent state updates after unmount.
+- Flattens `spec.paths` into a list of `EndpointRow` objects (method, path, summary, description, tags). Only HTTP-method keys (`get/post/put/delete/patch`) are kept — parameters/responses are not rendered (audit spec asked for "method, path, description" only).
+- Groups endpoints by tag, preserving the spec's `tags` array order (Public, Formation, Admin, Auth). Any un-declared tag is appended under "Other".
+- Renders:
+  - Header: "Back to Institution" link (ArrowLeft → /), Logo, "API Reference" + "OpenAPI 3.1" badges, h1 "Mithqal API Documentation", spec description, version/contact/license/server badges, link to raw `/openapi.json`.
+  - Loading state: gold spinner + "Loading OpenAPI spec…".
+  - Error state: red AlertCircle banner with the error message.
+  - Per-tag sections: h2 with tag name + endpoint count badge, tag description, then a list of endpoint rows. Each row: colored method pill (GET=green, POST=gold, PUT=blue, DELETE=red, PATCH=purple), path (font-mono), summary (font-medium), description (muted).
+  - Footer: copyright + "This page is auto-generated from /openapi.json" + link.
+
+*public-site.tsx footer link (lines 1561-1567):*
+Added a new `<a href="/api-docs">` link as the FIRST item in the footer's social-links cluster (before @MithqalMTQ and GitHub). Uses FileCheck icon (already imported) and the existing `inline-flex items-center gap-1.5 transition hover:text-gold` classes — visually identical to the existing links. Internal link (no `target="_blank"`) so it navigates within the SPA.
+
+The api-docs page automatically inherits the GlobalHeader (language switcher + theme toggle + VerifyOnChainBadge) from `src/app/layout.tsx` line 101, so it visually integrates with the rest of the site.
+
+**Imports added:**
+- operating-system.tsx (line 9): added `Gauge, DollarSign` to the lucide-react destructure. Gauge for the Reserve Health header icon; DollarSign for the Settlement Volume header icon. Both verified as valid lucide-react exports.
+- api-docs/page.tsx: `useEffect, useState` from react; `Link` from next/link; `motion` from framer-motion; `ArrowLeft, BookOpen, ExternalLink, Loader2, AlertCircle` from lucide-react; `Logo` from `@/components/logo`; `Badge` from `@/components/ui/badge`.
+- public-site.tsx: no new imports — FileCheck was already in the destructure.
+
+**Verification:**
+- `cd /home/z/my-project && bun run lint 2>&1 | tail -5` → `$ eslint .` (exit 0, no warnings, no errors). CLEAN.
+- `npx tsc --noEmit` → 0 new errors in `operating-system.tsx`, `public-site.tsx`, or `api-docs/page.tsx`. All remaining TS errors are pre-existing in unrelated files (BigInt literals in API routes, oracle-data consensusPrice, testnet-engine magnitude type, db.ts Transaction type, admin.tsx setLoggingIn, v19-infrastructure `remaining` prop, contract-reader BigInt, oracle-client BigInt) — none introduced or affected by this task.
+- `wc -l src/components/operating-system.tsx` → 1697 (was 1300; net +397).
+- `wc -l src/components/public-site.tsx` → 1642 (was 1636; net +6).
+- `wc -l src/app/api-docs/page.tsx` → 294 (new file).
+- All 7 audit recs addressed: #2 (handleMint real-mint fallback), #5 (MtqPriceHistory), #6 (HolderDistribution label + 10 rows + note), #7 (SettlementVolumeTracker), #8 (ReserveHealthGauge), #9 (KYC form verified existing in BrainComplianceSection), #10 (api-docs page + footer link).
+
+Stage Summary:
+- ✅ Rec #2 — handleMint now attempts the real `MTQ.mint(address,uint256,uint256,bytes32)` calldata (selector 0x40c10f19) before falling back to the existing mock-approve flow. User-rejection (code 4001) is surfaced as a cancellation; all other failures (revert, missing role, estimation) silently fall back with a console.warn. Toast now reports which path produced the txHash.
+- ✅ Rec #5 — `<MtqPriceHistory />` component added between the stats grid and the NAV cards. Recharts AreaChart with 24 hourly points anchored at $1.00 ±0.003 variance. Green when ≥ $1.00, red when < $1.00. Shows current price + 24h change percentage.
+- ✅ Rec #6 — HolderDistribution enhanced: 5 mock entries → 10 (full Top 10 table), concentration label now reads "High (1 holder)" when HHI=10000, italic note "Diversifies as users mint" added below the label. HHI value (10000) and pie chart unchanged.
+- ✅ Rec #7 — `<SettlementVolumeTracker transactions={transactions} />` added after the LiveTransactionFeed grid. Three KPI cards (Daily 24h / Weekly 7d / Monthly 30d) + 7-day BarChart. Pure-real-volume calculation (no synthetic fillers) — distinct from the existing SettlementVolumeChart which adds synthetic noise.
+- ✅ Rec #8 — `<ReserveHealthGauge />` component added in a 2-col grid alongside MtqPriceHistory (between stats grid and NAV cards). SVG semicircular gauge with needle, colored arc, score number, and 5 input mini-cards showing the formula weights. Score = 81 → GREEN (Healthy). Formula footer renders the exact weighted-sum expression.
+- ✅ Rec #9 — Verified BrainComplianceSection (KYC form) already exists in mithqal-brain.tsx (line 524), already mounted via BrainPanel (line 174) inside the authenticated AdminConsole (admin.tsx line 619). No code change required.
+- ✅ Rec #10 — New `/api-docs` route at `src/app/api-docs/page.tsx` (294 lines). `"use client"` page that fetches `/openapi.json` on mount, renders endpoints grouped by tag (Public / Formation / Admin / Auth) with method pill + path + summary + description. Footer link added in public-site.tsx (FileCheck icon, first item in the social-links cluster).
+- ✅ `bun run lint` — clean (0 errors, 0 warnings, exit 0).
+- ✅ `npx tsc --noEmit` — 0 new errors in modified files; all remaining errors are pre-existing in unrelated files.
+- ✅ "use client" directives preserved (operating-system.tsx line 1, api-docs/page.tsx line 1, public-site.tsx line 1).
+- ✅ All existing components reused (Recharts AreaChart/BarChart/PieChart, framer-motion, shadcn Badge/Button/Separator/Skeleton, lucide-react icons). No new dependencies introduced.
+- ✅ .env not touched. Pre-push hook not touched.

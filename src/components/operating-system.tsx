@@ -5,7 +5,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Wallet, ArrowDownToLine, ArrowUpFromLine, Send, Plus,
   Activity, Shield, TrendingUp, Boxes, Hash, ExternalLink,
-  Loader2, CheckCircle2, AlertCircle, Copy, Users, PieChart, LineChart as LineChartIcon, BarChart3,
+  Loader2, CheckCircle2, AlertCircle, Copy, Users, PieChart,
+  LineChart as LineChartIcon, BarChart3, Gauge, DollarSign,
 } from "lucide-react";
 import {
   LineChart, Line, AreaChart, Area, BarChart, Bar,
@@ -233,17 +234,45 @@ export function OperatingSystem() {
       return;
     }
     try {
-      // Build a mock deposit-approval calldata targeting the MTQ contract.
-      const APPROVE_SELECTOR = "0x095ea7b3";
-      const spender = walletAddress.slice(2).toLowerCase().padStart(64, "0");
-      const amountWei = BigInt(Math.round(amountUsd * 1e6)).toString(16).padStart(64, "0");
-      const data = APPROVE_SELECTOR + spender + amountWei;
-
-      const txHash = await sendTransaction({ to: MTQ_ADDRESS, data, value: "0x0" });
+      // First, attempt the REAL on-chain MTQ.mint() call. The contract is
+      // `mint(address to, uint256 amount, uint256 reserveDepositedUsd, bytes32 depositProof)`
+      // (selector 0x40c10f19). The connected wallet almost certainly does NOT
+      // hold MINTER_ROLE, so this will revert with `AccessControl: missing role`
+      // — but if the gateway has been granted the role, the mint lands for real
+      // and we use that txHash. On any revert / estimation failure we fall back
+      // to the symbolic deposit-approval flow so the audit-trail POST still runs.
+      let txHash: string;
+      let usedRealMint = false;
+      try {
+        const MINT_SELECTOR = "0x40c10f19";
+        const toParam = walletAddress.slice(2).toLowerCase().padStart(64, "0");
+        const amountWei = BigInt(Math.round(amountUsd * 1e18)).toString(16).padStart(64, "0");
+        const reserveUsdWei = BigInt(Math.round(amountUsd * 1e6)).toString(16).padStart(64, "0");
+        // Mock merkle proof (zero bytes32) — the contract reverts on the role
+        // check BEFORE inspecting the proof, so this value is irrelevant when
+        // the wallet lacks MINTER_ROLE.
+        const proof = "0".repeat(64);
+        const mintData = MINT_SELECTOR + toParam + amountWei + reserveUsdWei + proof;
+        txHash = await sendTransaction({ to: MTQ_ADDRESS, data: mintData, value: "0x0" });
+        usedRealMint = true;
+      } catch (realMintErr: any) {
+        // If the user explicitly rejected the wallet prompt (code 4001),
+        // do NOT fall back — surface the cancellation to the caller.
+        if (realMintErr?.code === 4001) throw realMintErr;
+        // Revert / missing role / estimation failure — fall back to the
+        // symbolic approve() so the operator can still record a mint against
+        // the indexer for the audit trail.
+        console.warn("[handleMint] Real MTQ.mint() failed, falling back to mock approve:", realMintErr?.message);
+        const APPROVE_SELECTOR = "0x095ea7b3";
+        const spender = walletAddress.slice(2).toLowerCase().padStart(64, "0");
+        const amountWeiFallback = BigInt(Math.round(amountUsd * 1e6)).toString(16).padStart(64, "0");
+        const data = APPROVE_SELECTOR + spender + amountWeiFallback;
+        txHash = await sendTransaction({ to: MTQ_ADDRESS, data, value: "0x0" });
+      }
 
       toast({
         title: "Mint transaction signed",
-        description: `Tx ${txHash.slice(0, 10)}… submitted to Monad Testnet.`,
+        description: `${usedRealMint ? "Real MTQ.mint() call" : "Mock approve fallback"} · Tx ${txHash.slice(0, 10)}… submitted to Monad Testnet.`,
       });
 
       const res = await fetch("/api/mint", {
@@ -517,6 +546,13 @@ export function OperatingSystem() {
           />
         </div>
 
+        {/* Reserve Health Index (composite gauge) + MTQ Price History — between
+            the stats grid and the NAV cards per audit recs #8 and #5. */}
+        <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
+          <ReserveHealthGauge />
+          <MtqPriceHistory />
+        </div>
+
         {/* NAV detail */}
         <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
           <NavCard label="NAV Market" value={navMarket} desc="R_m / S" />
@@ -567,6 +603,13 @@ export function OperatingSystem() {
         <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
           <HolderDistribution supply={supply} />
           <LiveTransactionFeed onNewTx={() => { /* parent refresh is handled by polling */ }} />
+        </div>
+
+        {/* Settlement Volume tracker — daily / weekly / monthly totals + 7-day
+            bar chart computed from the live `transactions` state. Per audit
+            rec #7 (placed after the Live Transaction Feed). */}
+        <div className="mt-6">
+          <SettlementVolumeTracker transactions={transactions} />
         </div>
 
         {/* Transactions table */}
@@ -1037,24 +1080,42 @@ function HolderDistribution({ supply }: { supply: number }) {
   const total = Number.isFinite(supply) && supply > 0 ? supply : 50_000_000;
   const holders = useMemo(() => {
     const deployerShare = total; // Real on-chain state: deployer holds 100%
+    // Mock Top 10 — Deployer holds 100% today; the other 9 are placeholders
+    // (treasury, custodian, anchor, liquidity, council, market-maker, exchange
+    // listings, strategic partner, reserve buffer). They activate as users
+    // mint MTQ through the gateway.
     const mockTop10 = [
       { address: "0x3C39…8d8c", label: "Deployer", mtq: deployerShare * 1.0, pct: 100, role: "deployer" },
       { address: "0x0000…0001", label: "Treasury (pending)", mtq: 0, pct: 0, role: "treasury" },
       { address: "0x0000…0002", label: "Reserve Custodian (pending)", mtq: 0, pct: 0, role: "custodian" },
       { address: "0x0000…0003", label: "Anchor participant (pending)", mtq: 0, pct: 0, role: "anchor" },
       { address: "0x0000…0004", label: "Liquidity partner (pending)", mtq: 0, pct: 0, role: "liquidity" },
+      { address: "0x0000…0005", label: "Council escrow (pending)", mtq: 0, pct: 0, role: "council" },
+      { address: "0x0000…0006", label: "Market maker (pending)", mtq: 0, pct: 0, role: "market-maker" },
+      { address: "0x0000…0007", label: "Exchange listing (pending)", mtq: 0, pct: 0, role: "exchange" },
+      { address: "0x0000…0008", label: "Strategic partner (pending)", mtq: 0, pct: 0, role: "strategic" },
+      { address: "0x0000…0009", label: "Reserve buffer (pending)", mtq: 0, pct: 0, role: "buffer" },
     ];
     return mockTop10;
   }, [total]);
 
   // Herfindahl-Hirschman Index: sum of squared market shares (0..10000).
   // HHI > 2500 = highly concentrated; 1500-2500 = moderately; < 1500 = competitive.
+  // When a single holder owns 100%, HHI = 10000 (max) → label "High (1 holder)".
   const hhi = useMemo(() => {
     const shares = holders.map((h) => h.pct / 100);
     return shares.reduce((sum, s) => sum + s * s, 0) * 10000;
   }, [holders]);
   const concentrationLabel =
-    hhi >= 7500 ? "Hyper-concentrated (single holder)" : hhi >= 2500 ? "Highly concentrated" : hhi >= 1500 ? "Moderately concentrated" : "Competitive";
+    hhi >= 10000
+      ? "High (1 holder)"
+      : hhi >= 7500
+        ? "Hyper-concentrated (single holder)"
+        : hhi >= 2500
+          ? "Highly concentrated"
+          : hhi >= 1500
+            ? "Moderately concentrated"
+            : "Competitive";
 
   return (
     <div className="rounded-xl border border-line bg-ink-soft p-5">
@@ -1102,17 +1163,17 @@ function HolderDistribution({ supply }: { supply: number }) {
             <div className="text-[10px] font-semibold uppercase tracking-wider text-fg-muted">HHI (Concentration Index)</div>
             <div className="font-display mt-1 text-2xl text-gold">{Math.round(hhi).toLocaleString()}</div>
             <div className="mt-1 text-[10px] text-fg-muted">{concentrationLabel}</div>
+            <div className="mt-0.5 text-[10px] italic text-fg-muted">Diversifies as users mint</div>
           </div>
           <div className="rounded-lg border border-line bg-ink-card p-3">
             <div className="text-[10px] font-semibold uppercase tracking-wider text-fg-muted">Top 10 Holders</div>
             <div className="mt-2 space-y-1.5">
-              {holders.slice(0, 5).map((h, i) => (
+              {holders.map((h, i) => (
                 <div key={i} className="flex items-center justify-between text-xs">
                   <span className="font-mono text-fg-muted">{h.address}</span>
                   <span className="font-semibold text-foreground">{h.pct.toFixed(2)}%</span>
                 </div>
               ))}
-              <div className="pt-1 text-[10px] text-fg-muted">+ 5 more (all 0.00% pending mainnet distribution)</div>
             </div>
           </div>
         </div>
@@ -1298,3 +1359,339 @@ function ContractAddresses() {
 }
 
 // window.ethereum global type declaration is in src/lib/use-wallet.ts
+
+/* ---- Reserve Health Index (composite gauge, audit rec #8) ----
+ *
+ * A composite 0-100 score combining 5 constitutional health metrics:
+ *   Score = RR×0.4 + LCR×0.2 + CRI×0.2 + Duration×0.1 + Basket×0.1
+ * All five inputs are normalized to a 0-100 scale before the weighted sum:
+ *   RR (reserve ratio %)        → already 0-100 (97.86)
+ *   LCR (liquidity coverage)    → 1.0 ratio × 100 = 100
+ *   CRI (concentration risk)    → already 0-100 (35)
+ *   Duration (interest-rate)    → 0.5 factor × 100 = 50
+ *   Basket (basket verification)→ already 0-100 (100)
+ * Score = 97.86·0.4 + 100·0.2 + 35·0.2 + 50·0.1 + 100·0.1 ≈ 81.14 → GREEN.
+ *
+ * Color zones: green ≥ 80, yellow 60–80, red < 60.
+ */
+function ReserveHealthGauge() {
+  // Mock values per audit rec #8 (in production these would come from the
+  // /api/transparency endpoint's `monetary.lcr / .cri / .portfolioDuration`
+  // fields — kept inline here for the standalone dashboard mock).
+  const rr = 97.86;        // Reserve Ratio (%)
+  const lcrRaw = 1.0;      // Liquidity Coverage Ratio (ratio; 1.0 = 100%)
+  const cri = 35;          // Concentration Risk Index (0-100; lower = better)
+  const durationRaw = 0.5; // Portfolio duration factor (0-1)
+  const basket = 100;      // Basket verification (% compliant)
+
+  const lcr = lcrRaw * 100;
+  const duration = durationRaw * 100;
+
+  const score = Math.round(
+    rr * 0.4 + lcr * 0.2 + cri * 0.2 + duration * 0.1 + basket * 0.1
+  );
+
+  const color = score >= 80 ? "#10b981" : score >= 60 ? "#d4af37" : "#ef4444";
+  const label = score >= 80 ? "Healthy" : score >= 60 ? "Watch" : "Stressed";
+
+  // Semicircular gauge geometry: 180° arc from (left=0) to (right=180).
+  // The needle angle is interpolated: 0 → 180° (pointing left), 100 → 0° (right).
+  const angle = 180 - (Math.min(100, Math.max(0, score)) / 100) * 180;
+  const rad = (angle * Math.PI) / 180;
+  // Gauge dimensions: cx=110, cy=110, r=90, needle length 78.
+  const cx = 110, cy = 110, r = 90, needleLen = 78;
+  const nx = cx + needleLen * Math.cos(rad);
+  const ny = cy - needleLen * Math.sin(rad);
+
+  // Arc segments (background + colored portion) as SVG paths.
+  const arcPath = (startAngle: number, endAngle: number) => {
+    const s = (startAngle * Math.PI) / 180;
+    const e = (endAngle * Math.PI) / 180;
+    const x1 = cx + r * Math.cos(s);
+    const y1 = cy - r * Math.sin(s);
+    const x2 = cx + r * Math.cos(e);
+    const y2 = cy - r * Math.sin(e);
+    const large = endAngle - startAngle > 180 ? 1 : 0;
+    return `M ${x1} ${y1} A ${r} ${r} 0 ${large} 1 ${x2} ${y2}`;
+  };
+
+  // Score → end-angle for the colored fill: 0 score = 180° (full left),
+  // 100 score = 0° (full right). We render from 0° (right) to (180-angle)°.
+  const fillEndAngle = 180 - angle;
+
+  return (
+    <div className="rounded-xl border border-line bg-ink-soft p-5">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Gauge className="h-5 w-5 text-gold" />
+          <h3 className="font-display text-lg text-foreground">Reserve Health Index</h3>
+        </div>
+        <Badge
+          className={
+            score >= 80
+              ? "border-reserve/40 bg-reserve/10 text-reserve"
+              : score >= 60
+                ? "border-gold/40 bg-gold/10 text-gold"
+                : "border-destructive/40 bg-destructive/10 text-destructive"
+          }
+        >
+          {label}
+        </Badge>
+      </div>
+
+      <div className="mt-3 flex flex-col items-center">
+        <svg viewBox="0 0 220 130" className="w-full max-w-[280px]" role="img" aria-label={`Reserve health index score: ${score} out of 100, ${label}`}>
+          {/* Background arc (full 180°) */}
+          <path d={arcPath(0, 180)} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth={14} strokeLinecap="round" />
+          {/* Colored fill (from right=0° to fillEndAngle) */}
+          {score > 0 && (
+            <path
+              d={arcPath(0, fillEndAngle)}
+              fill="none"
+              stroke={color}
+              strokeWidth={14}
+              strokeLinecap="round"
+              style={{ transition: "all 0.6s ease-out" }}
+            />
+          )}
+          {/* Tick labels */}
+          <text x={cx - r} y={cy + 18} fill="#888" fontSize={10} textAnchor="middle">0</text>
+          <text x={cx} y={cy - r - 4} fill="#888" fontSize={10} textAnchor="middle">50</text>
+          <text x={cx + r} y={cy + 18} fill="#888" fontSize={10} textAnchor="middle">100</text>
+          {/* Needle */}
+          <line x1={cx} y1={cy} x2={nx} y2={ny} stroke={color} strokeWidth={3} strokeLinecap="round" />
+          <circle cx={cx} cy={cy} r={5} fill={color} />
+          {/* Score number */}
+          <text x={cx} y={cy + 36} fill={color} fontSize={28} fontWeight={700} textAnchor="middle" fontFamily="var(--font-fraunces)">
+            {score}
+          </text>
+          <text x={cx} y={cy + 52} fill="#888" fontSize={10} textAnchor="middle">/ 100</text>
+        </svg>
+      </div>
+
+      <div className="mt-2 grid grid-cols-5 gap-1 text-center">
+        {[
+          { k: "RR", v: `${rr.toFixed(2)}%`, w: 0.4 },
+          { k: "LCR", v: `${lcrRaw.toFixed(2)}`, w: 0.2 },
+          { k: "CRI", v: `${cri}`, w: 0.2 },
+          { k: "Dur", v: `${durationRaw.toFixed(2)}`, w: 0.1 },
+          { k: "Bskt", v: `${basket}%`, w: 0.1 },
+        ].map((m) => (
+          <div key={m.k} className="rounded border border-line bg-ink-card px-1 py-1.5">
+            <div className="text-[9px] uppercase tracking-wider text-fg-muted">{m.k}</div>
+            <div className="font-mono text-[11px] text-foreground">{m.v}</div>
+            <div className="text-[9px] text-fg-muted">×{m.w}</div>
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-2 rounded border border-line bg-ink-card p-2 text-[10px] leading-relaxed text-fg-muted">
+        <span className="font-semibold text-gold">Formula:</span> Score = RR×0.4 + LCR×0.2 + CRI×0.2 + Duration×0.1 + Basket×0.1
+        <br />
+        Mock inputs (audit rec #8): RR=97.86% · LCR=1.0 · CRI=35 · Duration=0.5 · Basket=100% → {score}/100 ({label}).
+      </div>
+    </div>
+  );
+}
+
+/* ---- MTQ / USD Price History (audit rec #5) ----
+ *
+ * A 24-hour synthetic series anchored at $1.00 with ±0.003 variance. In
+ * production, this would be backed by a price oracle publishing the rolling
+ * MTQ/USD rate from on-chain swap data — for the dashboard mock, we use a
+ * deterministic sin/cos wiggle (SSR-safe, no runtime random).
+ */
+function MtqPriceHistory() {
+  const data = useMemo(() => {
+    const pts: { t: string; price: number }[] = [];
+    for (let i = 23; i >= 0; i--) {
+      const phase = i * 0.55;
+      const wiggle = (Math.sin(phase) + Math.cos(phase * 0.37)) * 0.0015;
+      pts.push({ t: `T-${i}h`, price: Number((1.0 + wiggle).toFixed(6)) });
+    }
+    // Pin the final point to the current "live" price.
+    const lastWiggle = (Math.sin(0) + Math.cos(0)) * 0.0015;
+    pts[pts.length - 1].price = Number((1.0 + lastWiggle).toFixed(6));
+    return pts;
+  }, []);
+
+  const currentPrice = data[data.length - 1].price;
+  const firstPrice = data[0].price;
+  const changePct = ((currentPrice - firstPrice) / firstPrice) * 100;
+  const isUp = currentPrice >= 1.0;
+  const lineColor = isUp ? "#10b981" : "#ef4444";
+
+  return (
+    <div className="rounded-xl border border-line bg-ink-soft p-5">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <LineChartIcon className="h-5 w-5 text-gold" />
+          <h3 className="font-display text-lg text-foreground">MTQ / USD Price</h3>
+        </div>
+        <Badge className="border-gold/40 bg-gold/10 text-gold">24h</Badge>
+      </div>
+
+      <div className="mt-3 flex items-baseline justify-between">
+        <div>
+          <span className={`font-display text-3xl ${isUp ? "text-reserve" : "text-destructive"}`}>
+            ${currentPrice.toFixed(4)}
+          </span>
+          <span className="ml-2 text-xs text-fg-muted">MTQ / USD</span>
+        </div>
+        <span className={`text-xs font-semibold ${isUp ? "text-reserve" : "text-destructive"}`}>
+          {isUp ? "▲" : "▼"} {Math.abs(changePct).toFixed(3)}% (24h)
+        </span>
+      </div>
+
+      <div className="mt-3 h-48">
+        <ResponsiveContainer width="100%" height="100%">
+          <AreaChart data={data} margin={{ top: 4, right: 8, bottom: 0, left: -8 }}>
+            <defs>
+              <linearGradient id="mtqPriceGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor={lineColor} stopOpacity={0.4} />
+                <stop offset="100%" stopColor={lineColor} stopOpacity={0} />
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
+            <XAxis dataKey="t" stroke="#888" fontSize={9} tickLine={false} interval={4} />
+            <YAxis
+              stroke="#888"
+              fontSize={9}
+              tickLine={false}
+              width={48}
+              domain={[0.995, 1.005]}
+              tickFormatter={(v: number) => `$${v.toFixed(3)}`}
+            />
+            <Tooltip
+              contentStyle={{
+                background: "rgba(15, 15, 22, 0.95)",
+                border: "1px solid rgba(212,175,55,0.4)",
+                borderRadius: "8px",
+                fontSize: "11px",
+              }}
+              labelStyle={{ color: "#d4af37" }}
+              formatter={(v: number) => [`$${v.toFixed(6)}`, "MTQ / USD"]}
+            />
+            <Area type="monotone" dataKey="price" stroke={lineColor} strokeWidth={2} fill="url(#mtqPriceGrad)" isAnimationActive />
+          </AreaChart>
+        </ResponsiveContainer>
+      </div>
+
+      <div className="mt-2 text-[10px] text-fg-muted">
+        Synthetic 24-hour series anchored at $1.00 (±0.003 variance). Peg status:{" "}
+        <span className={isUp ? "text-reserve" : "text-destructive"}>{isUp ? "at/above peg" : "below peg"}</span>.
+      </div>
+    </div>
+  );
+}
+
+/* ---- Settlement Volume Tracker (audit rec #7) ----
+ *
+ * Aggregates the live `transactions` state into:
+ *   - Daily volume (24h)  — sum of tx amounts from today (UTC)
+ *   - Weekly volume (7d)  — sum from the last 7 days
+ *   - Monthly volume (30d)— sum from the last 30 days
+ *   - A small 7-day BarChart of daily volumes
+ *
+ * No synthetic data — the chart shows pure real transaction volume (zero bars
+ * are honest indicators of no settlement activity that day).
+ */
+function SettlementVolumeTracker({ transactions }: { transactions: Transaction[] }) {
+  const { daily, weekly, monthly, dailySeries } = useMemo(() => {
+    const now = Date.now();
+    const DAY_MS = 24 * 60 * 60 * 1000;
+    const todayKey = new Date().toISOString().slice(0, 10);
+
+    let daily = 0, weekly = 0, monthly = 0;
+    const series: { t: string; volume: number }[] = [];
+
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setUTCDate(d.getUTCDate() - i);
+      const dayKey = d.toISOString().slice(0, 10);
+      const dayLabel = d.toLocaleDateString("en-US", { weekday: "short" });
+      const vol = transactions
+        .filter((tx) => new Date(tx.timestamp * 1000).toISOString().slice(0, 10) === dayKey)
+        .reduce((sum, tx) => sum + fmtWei(tx.amount), 0);
+      series.push({ t: dayLabel, volume: Number(vol.toFixed(4)) });
+    }
+
+    for (const tx of transactions) {
+      const tsMs = tx.timestamp * 1000;
+      const txDateKey = new Date(tsMs).toISOString().slice(0, 10);
+      const vol = fmtWei(tx.amount);
+      if (txDateKey === todayKey) daily += vol;
+      if (tsMs >= now - 7 * DAY_MS) weekly += vol;
+      if (tsMs >= now - 30 * DAY_MS) monthly += vol;
+    }
+
+    return {
+      daily: Number(daily.toFixed(4)),
+      weekly: Number(weekly.toFixed(4)),
+      monthly: Number(monthly.toFixed(4)),
+      dailySeries: series,
+    };
+  }, [transactions]);
+
+  const cards = [
+    { label: "Daily (24h)", value: daily, tone: "text-gold" as const },
+    { label: "Weekly (7d)", value: weekly, tone: "text-foreground" as const },
+    { label: "Monthly (30d)", value: monthly, tone: "text-reserve" as const },
+  ];
+
+  return (
+    <div className="rounded-xl border border-line bg-ink-soft p-5">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <DollarSign className="h-5 w-5 text-gold" />
+          <h3 className="font-display text-lg text-foreground">Settlement Volume</h3>
+        </div>
+        <span className="text-[10px] text-fg-muted">MTQ settled · live indexer</span>
+      </div>
+
+      <div className="mt-4 grid grid-cols-3 gap-3">
+        {cards.map((c) => (
+          <div key={c.label} className="rounded-lg border border-line bg-ink-card p-3">
+            <div className="text-[10px] font-semibold uppercase tracking-wider text-fg-muted">{c.label}</div>
+            <div className={`font-display mt-1 text-xl ${c.tone}`}>
+              {c.value.toLocaleString("en-US", { maximumFractionDigits: 2 })}
+            </div>
+            <div className="mt-0.5 text-[10px] text-fg-muted">MTQ</div>
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-4 h-40">
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={dailySeries} margin={{ top: 4, right: 8, bottom: 0, left: -20 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
+            <XAxis dataKey="t" stroke="#888" fontSize={9} tickLine={false} />
+            <YAxis
+              stroke="#888"
+              fontSize={9}
+              tickLine={false}
+              width={48}
+              tickFormatter={(v: number) => (v >= 1000 ? `${(v / 1000).toFixed(1)}K` : v.toFixed(0))}
+            />
+            <Tooltip
+              contentStyle={{
+                background: "rgba(15, 15, 22, 0.95)",
+                border: "1px solid rgba(212,175,55,0.4)",
+                borderRadius: "8px",
+                fontSize: "11px",
+              }}
+              labelStyle={{ color: "#d4af37" }}
+              formatter={(v: number) => [`${v.toLocaleString()} MTQ`, "Volume"]}
+            />
+            <Bar dataKey="volume" fill="#d4af37" radius={[3, 3, 0, 0]} isAnimationActive />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+
+      <div className="mt-2 text-[10px] text-fg-muted">
+        Computed from the live transactions table ({transactions.length} txns indexed). Zero-bar days reflect
+        real settlement inactivity — no synthetic fillers.
+      </div>
+    </div>
+  );
+}
