@@ -95,17 +95,16 @@ export function OperatingSystem() {
   const [loading, setLoading] = useState(true);
 
   // ---- Wallet connection (robust multi-wallet hook) ----
+  const wallet = useWallet();
   const {
     address: walletAddress,
     isConnecting: connecting,
     isAvailable: walletAvailable,
     walletName,
     error: walletError,
-    connect: connectWallet,
-    disconnect: disconnectWallet,
     sendTransaction,
     getProvider,
-  } = useWallet();
+  } = wallet;
 
   // Fetch contract info
   const fetchContract = useCallback(async () => {
@@ -174,7 +173,7 @@ export function OperatingSystem() {
 
   const handleConnect = async () => {
     try {
-      const result = await connectWallet();
+      const result = await wallet.connect();
       if (result?.address) {
         toast({
           title: "Wallet connected",
@@ -192,7 +191,7 @@ export function OperatingSystem() {
   };
 
   const handleDisconnect = () => {
-    disconnectWallet();
+    wallet.disconnect();
     setBalance(null);
     toast({ title: "Wallet disconnected" });
   };
