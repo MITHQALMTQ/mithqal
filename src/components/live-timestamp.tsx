@@ -4,17 +4,20 @@
  * LiveTimestamp — renders "Xs ago" / "Xm ago" / "Xh ago" for a given ISO
  * timestamp and re-renders every second so the label stays live.
  *
+ * HYDRATION FIX: This component uses a `mounted` state to ensure the server
+ * and client render the same initial content. On the server (and the first
+ * client render), we render a static placeholder. After mount, we switch to
+ * live time-based values. This prevents the "Hydration failed because the
+ * server rendered text didn't match the client" error.
+ *
  * Color convention:
  *   • < 30 s  → text-reserve (green) — fresh
  *   • 30 s–5 m → text-gold (amber)  — recent
  *   • > 5 m   → text-fg-muted      — stale
  *
  * Accessibility:
- *   • role="time" is not a thing — we use <time dateTime={iso}> with a
- *     humanized text child so screen readers can read both the human + the
- *     machine-readable form.
- *   • aria-label includes the full ISO timestamp + the "Xs ago" humanization
- *     so the context is never lost.
+ *   • <time dateTime={iso}> with humanized text child
+ *   • aria-label includes the full ISO timestamp + humanization
  */
 
 import { useEffect, useState } from "react";
@@ -61,19 +64,44 @@ export function LiveTimestamp({
   showIcon = true,
   className,
 }: LiveTimestampProps) {
+  // mounted = false on server + first client render → prevents hydration mismatch
+  // mounted = true after useEffect runs → switches to live values
+  const [mounted, setMounted] = useState(false);
   const [, setTick] = useState(0);
 
   useEffect(() => {
+    setMounted(true);
     const id = setInterval(() => setTick((t) => t + 1), 1000);
     return () => clearInterval(id);
   }, []);
 
+  // Parse the target date
   const targetDate = new Date(isoString);
   const isValid = !Number.isNaN(targetDate.getTime());
+
+  // On server + first client render: show static "—" placeholder
+  // After mount: show live values
+  if (!mounted) {
+    return (
+      <time
+        dateTime={isValid ? targetDate.toISOString() : ""}
+        className={
+          className ??
+          "inline-flex items-center gap-1 text-[10px] font-medium text-fg-muted"
+        }
+        aria-label={`${label}: —`}
+      >
+        {showIcon && <Clock className="h-2.5 w-2.5" aria-hidden="true" />}
+        <span aria-hidden="true">{label}:</span>
+        <span aria-hidden="true">—</span>
+      </time>
+    );
+  }
+
+  // After mount: compute live values
   const diffMs = Date.now() - (isValid ? targetDate.getTime() : Date.now());
   const human = isValid ? humanize(diffMs) : "—";
   const tone = toneClass(diffMs);
-
   const fullIso = isValid ? targetDate.toISOString() : "";
 
   return (
@@ -83,7 +111,7 @@ export function LiveTimestamp({
         className ??
         `inline-flex items-center gap-1 text-[10px] font-medium ${tone}`
       }
-      title={isValid ? targetDate.toLocaleString() : "Unknown timestamp"}
+      title={isValid ? targetDate.toISOString() : "Unknown timestamp"}
       aria-label={`${label}: ${human}${isValid ? ` (${fullIso})` : ""}`}
     >
       {showIcon && <Clock className="h-2.5 w-2.5" aria-hidden="true" />}

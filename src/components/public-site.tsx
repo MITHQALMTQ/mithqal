@@ -186,12 +186,14 @@ interface LiveStateData {
 
 // Used only when the fetch fails (or before the first response). Displayed in
 // the same KPI layout so the section never collapses to a blank shell.
+// NOTE: lastUpdate is a static string to prevent hydration mismatch —
+// it's replaced with live data after mount via useEffect.
 const LIVE_FALLBACK: LiveStateData = {
   supply: 50_000_000,
   navMarket: 1.0,
   reserveRatio: 102.34,
   goldUsd: 4053.7,
-  lastUpdate: new Date().toISOString(),
+  lastUpdate: "",
 };
 
 function LiveStateDashboard() {
@@ -216,7 +218,7 @@ function LiveStateDashboard() {
           json.testnet?.reserveRatio ??
           LIVE_FALLBACK.reserveRatio,
         goldUsd: json.monetary?.goldUsd ?? LIVE_FALLBACK.goldUsd,
-        lastUpdate: json.testnet?.lastUpdate ?? json.generatedAt ?? new Date().toISOString(),
+        lastUpdate: json.testnet?.lastUpdate ?? json.generatedAt ?? "",
       };
       setData(next);
       setError(null);
@@ -750,7 +752,7 @@ const CURRENCY_ACCENT: Record<string, string> = {
 function MonetaryEngineCompact() {
   const [goldUsd, setGoldUsd] = useState<number>(FALLBACK_GOLD_USD);
   const [basket, setBasket] = useState<BasketCurrency[]>(FALLBACK_BASKET);
-  const [lastUpdate, setLastUpdate] = useState<string>(new Date().toISOString());
+  const [lastUpdate, setLastUpdate] = useState<string>("");
 
   useEffect(() => {
     let cancelled = false;
@@ -790,7 +792,7 @@ function MonetaryEngineCompact() {
             .sort((a, b) => b.weight - a.weight);
           if (parsed.length > 0) setBasket(parsed);
         }
-        setLastUpdate(j.testnet?.lastUpdate ?? j.generatedAt ?? new Date().toISOString());
+        setLastUpdate(j.testnet?.lastUpdate ?? j.generatedAt ?? "");
       })
       .catch(() => {
         /* keep fallback */

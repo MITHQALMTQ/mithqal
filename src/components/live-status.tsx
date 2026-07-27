@@ -36,9 +36,10 @@ const POLL_INTERVAL_MS = 30_000;
 
 export function LiveStatus() {
   const [summary, setSummary] = useState<OnchainSummary | null>(null);
-  const [lastUpdated, setLastUpdated] = useState<string>(() => new Date().toISOString());
+  const [lastUpdated, setLastUpdated] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const [, setTick] = useState(0); // forces re-render every second
   const mountedRef = useRef(true);
 
@@ -64,6 +65,7 @@ export function LiveStatus() {
 
   useEffect(() => {
     mountedRef.current = true;
+    setMounted(true);
     fetchTests();
     const pollId = setInterval(fetchTests, POLL_INTERVAL_MS);
     const tickId = setInterval(() => setTick((t) => t + 1), 1000);
@@ -74,10 +76,13 @@ export function LiveStatus() {
     };
   }, [fetchTests]);
 
-  // ---- compute "Xs ago" string ----
-  const elapsedSec = Math.max(0, Math.round((Date.now() - new Date(lastUpdated).getTime()) / 1000));
-  const agoLabel =
-    elapsedSec < 5
+  // ---- compute "Xs ago" string (only after mount to prevent hydration mismatch) ----
+  const elapsedSec = mounted && lastUpdated
+    ? Math.max(0, Math.round((Date.now() - new Date(lastUpdated).getTime()) / 1000))
+    : 0;
+  const agoLabel = !mounted
+    ? "·"
+    : elapsedSec < 5
       ? "just now"
       : elapsedSec < 60
         ? `${elapsedSec}s ago`
