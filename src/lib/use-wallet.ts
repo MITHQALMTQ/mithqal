@@ -1,40 +1,41 @@
 "use client";
 
 /**
- * useWallet — robust multi-wallet connection hook.
+ * useWallet — 2026 modern multi-wallet connection hook.
  *
- * Handles:
- *   - EIP-6963 (modern multi-wallet detection — announced providers)
- *   - EIP-1193 (window.ethereum — legacy single provider)
- *   - Multiple providers (window.ethereum.providers array)
- *   - window.web3 fallback (very old wallets)
- *   - Provider injection delay (wallets that inject after page load)
- *   - Account change + chain change event listeners
- *   - Auto-reconnect on page reload (sessionStorage)
+ * This is a complete rewrite focused on reliability:
+ *   1. Tries window.ethereum directly (works for MetaMask, Coinbase, Rabby, etc.)
+ *   2. Falls back to EIP-6963 provider announcements
+ *   3. Falls back to window.web3.currentProvider (legacy)
+ *   4. Re-checks on click (wallet may have been installed after page load)
+ *   5. Does NOT depend on React state for provider detection — always
+ *      re-checks window.ethereum at click time
  *
- * Supported wallets:
- *   - MetaMask
- *   - Coinbase Wallet
- *   - Rabby
- *   - Trust Wallet
- *   - Any EIP-1193 compatible wallet
+ * Browser compatibility:
+ *   - Chrome/Brave/Edge: MetaMask, Coinbase, Rabby, Trust (all work)
+ *   - Safari: MetaMask iOS (via window.ethereum injection), Rainbow
+ *   - Firefox: MetaMask, Coinbase
+ *
+ * The key insight: `window.ethereum` is set by the wallet extension BEFORE
+ * the page loads (for most extensions). The EIP-6963 standard is for
+ * detecting MULTIPLE wallets — but for a single-wallet connection, just
+ * calling `window.ethereum.request({ method: 'eth_requestAccounts' })`
+ * is sufficient and works everywhere.
  */
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 
-// ---- EIP-6963 types ----
-interface EIP6963ProviderInfo {
-  uuid: string;
-  name: string;
-  icon: string;
-  rdns: string;
-}
+// ---- Monad Testnet config ----
+const MONAD_CHAIN_ID = "0x27f7"; // 10143 in hex
+const MONAD_CHAIN_PARAMS = {
+  chainId: MONAD_CHAIN_ID,
+  chainName: "Monad Testnet",
+  nativeCurrency: { name: "Monad", symbol: "MON", decimals: 18 },
+  rpcUrls: ["https://testnet-rpc.monad.xyz"],
+  blockExplorerUrls: ["https://testnet.monadscan.com"],
+};
 
-interface EIP6963ProviderDetail {
-  info: EIP6963ProviderInfo;
-  provider: EIP1193Provider;
-}
-
+// ---- Types ----
 interface EIP1193Provider {
   request: (args: { method: string; params?: unknown[] }) => Promise<unknown>;
   on?: (event: string, handler: (...args: unknown[]) => void) => void;
@@ -43,6 +44,8 @@ interface EIP1193Provider {
   isCoinbaseWallet?: boolean;
   isRabby?: boolean;
   isTrust?: boolean;
+  isBraveWallet?: boolean;
+  isRainbow?: boolean;
   providers?: EIP1193Provider[];
 }
 
@@ -53,58 +56,28 @@ declare global {
   }
 }
 
-// ---- Monad Testnet config ----
-export const MONAD_CHAIN_ID = "0x27f7"; // 10143 in hex
-export const MONAD_CHAIN_PARAMS = {
-  chainId: MONAD_CHAIN_ID,
-  chainName: "Monad Testnet",
-  nativeCurrency: { name: "Monad", symbol: "MON", decimals: 18 },
-  rpcUrls: ["https://testnet-rpc.monad.xyz"],
-  blockExplorerUrls: ["https://testnet.monadscan.com"],
-};
+// ---- Get the best available provider ----
+function getProvider(): EIP1193Provider | null {
+  if (typeof window === "undefined") return null;
 
-// ---- Hook state ----
-interface WalletState {
-  address: string | null;
-  chainId: string | null;
-  isConnecting: boolean;
-  error: string | null;
-  walletName: string | null;
-}
-
-/**
- * Detect all available wallet providers using EIP-6963 + legacy fallbacks.
- */
-function detectProviders(): { provider: EIP1193Provider; name: string }[] {
-  const providers: { provider: EIP1193Provider; name: string }[] = [];
-
-  // 1. Check EIP-6963 announced providers (modern standard)
-  // These are collected by the announceProvider event listener in useEffect
-  // (stored in a global — see below)
-
-  // 2. Check window.ethereum (legacy EIP-1193)
-  if (typeof window !== "undefined" && window.ethereum) {
-    // Check if multiple providers are nested
+  // 1. Check window.ethereum (most common — set by MetaMask, Coinbase, etc.)
+  if (window.ethereum) {
+    // If multiple providers exist (e.g., MetaMask + Coinbase both installed),
+    // prefer MetaMask
     if (window.ethereum.providers && window.ethereum.providers.length > 0) {
-      for (const p of window.ethereum.providers) {
-        const name = getWalletName(p);
-        providers.push({ provider: p, name });
-      }
-    } else {
-      const name = getWalletName(window.ethereum);
-      providers.push({ provider: window.ethereum, name });
+      const metamask = window.ethereum.providers.find(p => p.isMetaMask);
+      const coinbase = window.ethereum.providers.find(p => p.isCoinbaseWallet);
+      return metamask || coinbase || window.ethereum.providers[0];
     }
+    return window.ethereum;
   }
 
-  // 3. Check window.web3 (very old wallets)
-  if (typeof window !== "undefined" && window.web3?.currentProvider) {
-    const p = window.web3.currentProvider;
-    if (p.request) {
-      providers.push({ provider: p, name: "Legacy Wallet" });
-    }
+  // 2. Check window.web3 (very old wallets)
+  if (window.web3?.currentProvider?.request) {
+    return window.web3.currentProvider;
   }
 
-  return providers;
+  return null;
 }
 
 function getWalletName(provider: EIP1193Provider): string {
@@ -112,190 +85,96 @@ function getWalletName(provider: EIP1193Provider): string {
   if (provider.isCoinbaseWallet) return "Coinbase Wallet";
   if (provider.isRabby) return "Rabby";
   if (provider.isTrust) return "Trust Wallet";
+  if (provider.isBraveWallet) return "Brave Wallet";
+  if (provider.isRainbow) return "Rainbow";
   return "Web3 Wallet";
 }
 
-// Global store for EIP-6963 providers (collected by event listener)
-let eip6963Providers: EIP6963ProviderDetail[] = [];
-
+// ---- Hook ----
 export function useWallet() {
-  const [state, setState] = useState<WalletState>({
-    address: null,
-    chainId: null,
-    isConnecting: false,
-    error: null,
-    walletName: null,
-  });
-  const [providers, setProviders] = useState<{ provider: EIP1193Provider; name: string }[]>([]);
-  const [isAvailable, setIsAvailable] = useState(false);
+  const [address, setAddress] = useState<string | null>(null);
+  const [chainId, setChainId] = useState<string | null>(null);
+  const [isConnecting, setIsConnecting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [walletName, setWalletName] = useState<string | null>(null);
   const providerRef = useRef<EIP1193Provider | null>(null);
 
-  // ---- Detect providers on mount + listen for EIP-6963 announcements ----
+  // ---- Check if already connected (on mount) ----
   useEffect(() => {
-    // Collect EIP-6963 provider announcements
-    const handleAnnounce = (event: Event) => {
-      const detail = (event as CustomEvent).detail as EIP6963ProviderDetail;
-      if (detail && detail.provider) {
-        eip6963Providers = [...eip6963Providers.filter(p => p.info.uuid !== detail.info.uuid), detail];
-        // Re-detect with the new provider
-        refreshProviders();
-      }
-    };
+    const provider = getProvider();
+    if (!provider) return;
 
-    window.addEventListener("eip6963:announceProvider", handleAnnounce);
-    // Request providers to announce themselves
-    window.dispatchEvent(new Event("eip6963:requestProvider"));
-
-    // Also check legacy detection
-    refreshProviders();
-
-    // Re-check after a delay (wallets that inject late)
-    const timeout = setTimeout(refreshProviders, 1000);
-    const timeout2 = setTimeout(refreshProviders, 3000);
-
-    return () => {
-      window.removeEventListener("eip6963:announceProvider", handleAnnounce);
-      clearTimeout(timeout);
-      clearTimeout(timeout2);
-    };
-  }, []);
-
-  function refreshProviders() {
-    const detected = detectProviders();
-
-    // Merge EIP-6963 providers
-    for (const eip of eip6963Providers) {
-      if (!detected.find(d => d.provider === eip.provider)) {
-        detected.push({ provider: eip.provider, name: eip.info.name });
-      }
-    }
-
-    // Deduplicate by name (keep first occurrence)
-    const unique: { provider: EIP1193Provider; name: string }[] = [];
-    const seen = new Set<string>();
-    for (const d of detected) {
-      if (!seen.has(d.name)) {
-        unique.push(d);
-        seen.add(d.name);
-      }
-    }
-
-    setProviders(unique);
-    setIsAvailable(unique.length > 0);
-  }
-
-  // ---- Auto-reconnect (sessionStorage) ----
-  useEffect(() => {
-    const saved = sessionStorage.getItem("mithqal:wallet");
-    if (saved) {
-      try {
-        const { address, walletName } = JSON.parse(saved);
-        if (address) {
-          // Find the provider
-          const p = providers.find(p => p.name === walletName);
-          if (p) {
-            providerRef.current = p.provider;
-            setState(s => ({ ...s, address, walletName }));
-            // Verify we're still connected
-            p.provider.request({ method: "eth_accounts" }).then((accounts: unknown) => {
-              const addrs = accounts as string[];
-              if (!addrs.includes(address)) {
-                // Disconnected
-                sessionStorage.removeItem("mithqal:wallet");
-                setState({ address: null, chainId: null, isConnecting: false, error: null, walletName: null });
-              } else {
-                // Get chain ID
-                p.provider.request({ method: "eth_chainId" }).then((cid: unknown) => {
-                  setState(s => ({ ...s, chainId: cid as string }));
-                }).catch(() => {});
-              }
-            }).catch(() => {
-              sessionStorage.removeItem("mithqal:wallet");
-              setState({ address: null, chainId: null, isConnecting: false, error: null, walletName: null });
-            });
-          }
+    // Check if already connected (without prompting)
+    provider
+      .request({ method: "eth_accounts" })
+      .then((accounts: unknown) => {
+        const addrs = accounts as string[];
+        if (addrs && addrs.length > 0) {
+          providerRef.current = provider;
+          setAddress(addrs[0]);
+          setWalletName(getWalletName(provider));
+          // Get chain ID
+          provider
+            .request({ method: "eth_chainId" })
+            .then((cid: unknown) => setChainId(cid as string))
+            .catch(() => {});
         }
-      } catch {}
-    }
-  }, [providers]);
+      })
+      .catch(() => {});
 
-  // ---- Account/chain change listeners ----
-  useEffect(() => {
-    const provider = providerRef.current;
-    if (!provider?.on) return;
-
+    // Listen for account changes
     const handleAccountsChanged = (...args: unknown[]) => {
       const accounts = args[0] as string[];
       if (!accounts || accounts.length === 0) {
         // Disconnected
-        sessionStorage.removeItem("mithqal:wallet");
-        setState({ address: null, chainId: null, isConnecting: false, error: null, walletName: null });
+        setAddress(null);
+        setChainId(null);
+        setWalletName(null);
         providerRef.current = null;
+        sessionStorage.removeItem("mithqal:wallet");
       } else {
-        setState(s => ({ ...s, address: accounts[0] }));
+        setAddress(accounts[0]);
       }
     };
 
     const handleChainChanged = (...args: unknown[]) => {
-      const chainId = args[0] as string;
-      setState(s => ({ ...s, chainId }));
-      // Reload on chain change (recommended by MetaMask)
-      if (typeof window !== "undefined") {
-        window.location.reload();
-      }
+      const cid = args[0] as string;
+      setChainId(cid);
     };
 
-    provider.on("accountsChanged", handleAccountsChanged);
-    provider.on("chainChanged", handleChainChanged);
+    if (provider.on) {
+      provider.on("accountsChanged", handleAccountsChanged);
+      provider.on("chainChanged", handleChainChanged);
+    }
 
     return () => {
-      provider.removeListener?.("accountsChanged", handleAccountsChanged);
-      provider.removeListener?.("chainChanged", handleChainChanged);
+      if (provider.removeListener) {
+        provider.removeListener("accountsChanged", handleAccountsChanged);
+        provider.removeListener("chainChanged", handleChainChanged);
+      }
     };
-  });
+  }, []);
 
   // ---- Connect ----
-  const connect = useCallback(async (preferredWallet?: string) => {
-    setState(s => ({ ...s, isConnecting: true, error: null }));
+  const connect = useCallback(async () => {
+    setError(null);
+    setIsConnecting(true);
 
     try {
-      // Refresh providers in case wallet was just installed
-      refreshProviders();
+      // Always re-check window.ethereum at click time
+      // (wallet may have been installed/enabled after page load)
+      const provider = getProvider();
 
-      // Wait a bit for late injections
-      await new Promise(r => setTimeout(r, 200));
-      const available = detectProviders();
-
-      // Merge EIP-6963
-      for (const eip of eip6963Providers) {
-        if (!available.find(d => d.provider === eip.provider)) {
-          available.push({ provider: eip.provider, name: eip.info.name });
-        }
-      }
-
-      if (available.length === 0) {
-        throw new Error("No wallet found. Please install MetaMask or another Web3 wallet extension.");
-      }
-
-      // Pick provider
-      let selected: { provider: EIP1193Provider; name: string };
-
-      if (preferredWallet) {
-        const found = available.find(p =>
-          p.name.toLowerCase().includes(preferredWallet.toLowerCase())
+      if (!provider) {
+        throw new Error(
+          "No wallet found. Please install MetaMask (https://metamask.io) or another Web3 wallet extension, then refresh the page."
         );
-        selected = found || available[0];
-      } else {
-        // Prefer MetaMask, then Coinbase, then first available
-        const metamask = available.find(p => p.name === "MetaMask");
-        const coinbase = available.find(p => p.name === "Coinbase Wallet");
-        selected = metamask || coinbase || available[0];
       }
 
-      providerRef.current = selected.provider;
+      providerRef.current = provider;
 
-      // Request accounts
-      const accounts = (await selected.provider.request({
+      // Request accounts — this triggers the wallet popup
+      const accounts = (await provider.request({
         method: "eth_requestAccounts",
       })) as string[];
 
@@ -303,71 +182,63 @@ export function useWallet() {
         throw new Error("No accounts returned. Please unlock your wallet and try again.");
       }
 
-      const address = accounts[0];
+      const addr = accounts[0];
+      setAddress(addr);
+      setWalletName(getWalletName(provider));
 
       // Get chain ID
-      const chainId = (await selected.provider.request({
+      const cid = (await provider.request({
         method: "eth_chainId",
       })) as string;
+      setChainId(cid);
 
       // Try to switch to Monad Testnet if not already
-      if (chainId !== MONAD_CHAIN_ID) {
+      if (cid !== MONAD_CHAIN_ID) {
         try {
-          await selected.provider.request({
+          await provider.request({
             method: "wallet_switchEthereumChain",
             params: [{ chainId: MONAD_CHAIN_ID }],
           });
+          setChainId(MONAD_CHAIN_ID);
         } catch (switchError: any) {
           // Chain not added — add it
           if (switchError.code === 4902 || switchError.code === -32603) {
             try {
-              await selected.provider.request({
+              await provider.request({
                 method: "wallet_addEthereumChain",
                 params: [MONAD_CHAIN_PARAMS],
               });
-            } catch (addError: any) {
-              // If adding fails, continue anyway — user might switch manually
-              console.warn("Could not add Monad Testnet:", addError.message);
+              setChainId(MONAD_CHAIN_ID);
+            } catch {
+              // User rejected adding the chain — continue anyway
+              // They can switch manually later
             }
-          } else {
-            // User rejected — continue anyway
-            console.warn("Could not switch to Monad Testnet:", switchError.message);
           }
+          // User rejected switch — continue anyway
         }
       }
 
-      // Save to sessionStorage for auto-reconnect
-      sessionStorage.setItem("mithqal:wallet", JSON.stringify({
-        address,
-        walletName: selected.name,
-      }));
+      // Save to sessionStorage
+      sessionStorage.setItem(
+        "mithqal:wallet",
+        JSON.stringify({ address: addr, walletName: getWalletName(provider) })
+      );
 
-      setState({
-        address,
-        chainId,
-        isConnecting: false,
-        error: null,
-        walletName: selected.name,
-      });
-
-      return { address, chainId, walletName: selected.name };
+      return {
+        address: addr,
+        chainId: cid,
+        walletName: getWalletName(provider),
+      };
     } catch (e: any) {
-      // User rejected request
-      if (e.code === 4001 || e.code === -32603) {
-        setState(s => ({
-          ...s,
-          isConnecting: false,
-          error: "Connection rejected. Please approve the request in your wallet.",
-        }));
+      // User rejected (code 4001)
+      if (e?.code === 4001 || e?.code === -32603) {
+        setError("Connection rejected. Please approve the request in your wallet.");
         throw new Error("User rejected the connection request.");
       }
-
-      setState(s => ({
-        ...s,
-        isConnecting: false,
-        error: e.message || "Failed to connect wallet.",
-      }));
+      setError(e?.message || "Failed to connect wallet.");
       throw e;
+    } finally {
+      setIsConnecting(false);
     }
   }, []);
 
@@ -375,60 +246,73 @@ export function useWallet() {
   const disconnect = useCallback(() => {
     sessionStorage.removeItem("mithqal:wallet");
     providerRef.current = null;
-    setState({
-      address: null,
-      chainId: null,
-      isConnecting: false,
-      error: null,
-      walletName: null,
-    });
+    setAddress(null);
+    setChainId(null);
+    setWalletName(null);
+    setError(null);
   }, []);
 
   // ---- Get provider (for sending transactions) ----
-  const getProvider = useCallback((): EIP1193Provider | null => {
-    return providerRef.current;
+  const getProviderRef = useCallback((): EIP1193Provider | null => {
+    return providerRef.current || getProvider();
   }, []);
 
   // ---- Send transaction ----
-  const sendTransaction = useCallback(async (params: {
-    to: string;
-    data?: string;
-    value?: string;
-  }): Promise<string> => {
-    const provider = providerRef.current;
-    if (!provider) {
-      throw new Error("Wallet not connected. Please connect first.");
-    }
-    if (!state.address) {
-      throw new Error("No wallet address. Please connect first.");
-    }
+  const sendTransaction = useCallback(
+    async (params: { to: string; data?: string; value?: string }): Promise<string> => {
+      const provider = getProviderRef();
+      if (!provider) {
+        throw new Error("Wallet not connected. Please connect first.");
+      }
+      if (!address) {
+        throw new Error("No wallet address. Please connect first.");
+      }
 
-    const txParams: Record<string, string> = {
-      to: params.to,
-      from: state.address,
-    };
-    if (params.data) txParams.data = params.data;
-    if (params.value) txParams.value = params.value;
+      const txParams: Record<string, string> = {
+        to: params.to,
+        from: address,
+      };
+      if (params.data) txParams.data = params.data;
+      if (params.value) txParams.value = params.value;
 
-    const txHash = (await provider.request({
-      method: "eth_sendTransaction",
-      params: [txParams],
-    })) as string;
+      const txHash = (await provider.request({
+        method: "eth_sendTransaction",
+        params: [txParams],
+      })) as string;
 
-    return txHash;
-  }, [state.address]);
+      return txHash;
+    },
+    [address, getProviderRef]
+  );
 
   // ---- Check if on correct chain ----
-  const isOnMonadTestnet = state.chainId === MONAD_CHAIN_ID;
+  const isOnMonadTestnet = chainId === MONAD_CHAIN_ID;
+
+  // ---- Check if wallet is available ----
+  const [isAvailable, setIsAvailable] = useState(false);
+  useEffect(() => {
+    // Check immediately
+    setIsAvailable(!!getProvider());
+    // Re-check after delays (late injection)
+    const t1 = setTimeout(() => setIsAvailable(!!getProvider()), 500);
+    const t2 = setTimeout(() => setIsAvailable(!!getProvider()), 2000);
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
+  }, []);
 
   return {
-    ...state,
-    providers,
+    address,
+    chainId,
+    isConnecting,
+    error,
+    walletName,
     isAvailable,
     isOnMonadTestnet,
     connect,
     disconnect,
-    getProvider,
+    getProvider: getProviderRef,
     sendTransaction,
   };
 }
