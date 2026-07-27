@@ -19,6 +19,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { Logo } from "@/components/logo";
 import { buildTransferCalldata } from "@/lib/contract-reader";
+import { useWallet } from "@/lib/use-wallet";
 
 /* ---- Types ---- */
 
@@ -82,14 +83,6 @@ const fmtTime = (ts: number) => new Date(ts * 1000).toLocaleString();
 const shortAddr = (a: string) => `${a.slice(0, 8)}…${a.slice(-6)}`;
 
 const MTQ_ADDRESS = "0x9e6EdC15DAc420931508d8Ddf9BC817651A253aD";
-const MONAD_CHAIN_ID = "0x27f7"; // 10143 in hex
-const MONAD_CHAIN_PARAMS = {
-  chainId: MONAD_CHAIN_ID,
-  chainName: "Monad Testnet",
-  nativeCurrency: { name: "Monad", symbol: "MON", decimals: 18 },
-  rpcUrls: ["https://testnet-rpc.monad.xyz"],
-  blockExplorerUrls: ["https://testnet.monadscan.com"],
-};
 
 /* ---- Main Component ---- */
 
@@ -99,9 +92,20 @@ export function OperatingSystem() {
   const [balance, setBalance] = useState<Balance | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [feeSummary, setFeeSummary] = useState<FeeSummary[]>([]);
-  const [walletAddress, setWalletAddress] = useState<string | null>(null);
-  const [connecting, setConnecting] = useState(false);
   const [loading, setLoading] = useState(true);
+
+  // ---- Wallet connection (robust multi-wallet hook) ----
+  const {
+    address: walletAddress,
+    isConnecting: connecting,
+    isAvailable: walletAvailable,
+    walletName,
+    error: walletError,
+    connect: connectWallet,
+    disconnect: disconnectWallet,
+    sendTransaction,
+    getProvider,
+  } = useWallet();
 
   // Fetch contract info
   const fetchContract = useCallback(async () => {
@@ -144,9 +148,17 @@ export function OperatingSystem() {
   }, []);
 
   // Initial load
-  useEffect(() => {
-    Promise.all([fetchContract(), fetchTransactions()]).finally(() => setLoading(false));
+  const initLoad = useCallback(async () => {
+    try {
+      await Promise.all([fetchContract(), fetchTransactions()]);
+    } finally {
+      setLoading(false);
+    }
   }, [fetchContract, fetchTransactions]);
+
+  useEffect(() => {
+    initLoad();
+  }, [initLoad]);
 
   // Auto-refresh every 30s
   useEffect(() => {
@@ -158,72 +170,42 @@ export function OperatingSystem() {
     return () => clearInterval(interval);
   }, [fetchContract, fetchTransactions, fetchBalance, walletAddress]);
 
-  // ---- MetaMask integration ----
+  // ---- Wallet connection handlers (using useWallet hook) ----
 
-  const connectWallet = async () => {
-    if (typeof window === "undefined" || !window.ethereum) {
-      toast({
-        title: "MetaMask not found",
-        description: "Install MetaMask browser extension to connect.",
-        variant: "destructive",
-      });
-      return;
-    }
-    setConnecting(true);
+  const handleConnect = async () => {
     try {
-      // Request accounts
-      const accounts = (await window.ethereum.request({
-        method: "eth_requestAccounts",
-      })) as string[];
-      const address = accounts[0];
-      setWalletAddress(address);
-
-      // Check if on Monad Testnet
-      const chainId = (await window.ethereum.request({ method: "eth_chainId" })) as string;
-      if (chainId !== MONAD_CHAIN_ID) {
-        // Try to switch to Monad Testnet
-        try {
-          await window.ethereum.request({
-            method: "wallet_switchEthereumChain",
-            params: [{ chainId: MONAD_CHAIN_ID }],
-          });
-        } catch (switchError: any) {
-          // Chain not added — add it
-          if (switchError.code === 4902) {
-            await window.ethereum.request({
-              method: "wallet_addEthereumChain",
-              params: [MONAD_CHAIN_PARAMS],
-            });
-          } else {
-            throw switchError;
-          }
-        }
+      const result = await connectWallet();
+      if (result?.address) {
+        toast({
+          title: "Wallet connected",
+          description: `Connected via ${result.walletName} as ${shortAddr(result.address)}`,
+        });
+        await fetchBalance(result.address);
       }
-
-      toast({
-        title: "Wallet connected",
-        description: `Connected as ${shortAddr(address)}`,
-      });
-      await fetchBalance(address);
     } catch (e: any) {
       toast({
         title: "Connection failed",
-        description: e.message || "Could not connect to MetaMask",
+        description: e?.message || "Could not connect to wallet",
         variant: "destructive",
       });
-    } finally {
-      setConnecting(false);
     }
   };
 
-  // Add MTQ token to MetaMask
+  const handleDisconnect = () => {
+    disconnectWallet();
+    setBalance(null);
+    toast({ title: "Wallet disconnected" });
+  };
+
+  // Add MTQ token to wallet
   const addToMetaMask = async () => {
-    if (typeof window === "undefined" || !window.ethereum) {
-      toast({ title: "MetaMask not found", variant: "destructive" });
+    const provider = getProvider();
+    if (!provider) {
+      toast({ title: "Wallet not connected", variant: "destructive" });
       return;
     }
     try {
-      await window.ethereum.request({
+      await provider.request({
         method: "wallet_watchAsset",
         params: {
           type: "ERC20",
@@ -234,61 +216,41 @@ export function OperatingSystem() {
             image: "https://mithqal.vercel.app/mithqal-logo.png",
           },
         },
-      });
-      toast({ title: "MTQ added to MetaMask", description: "Token visible in your wallet" });
+      } as any);
+      toast({ title: "MTQ added to wallet", description: "Token visible in your wallet" });
     } catch (e: any) {
-      toast({ title: "Failed to add token", description: e.message, variant: "destructive" });
+      toast({ title: "Failed to add token", description: e?.message, variant: "destructive" });
     }
   };
 
-  // Mint — MetaMask signing flow + /api/mint record.
-  // 1. Validates wallet connected.
-  // 2. Builds a mock "approve deposit" calldata (ERC-20 approve selector).
-  // 3. Sends via MetaMask eth_sendTransaction; user signs in their wallet.
-  // 4. On success, POSTs the txHash to /api/mint to record the audit trail.
+  // Mint — wallet signing flow + /api/mint record.
   const handleMint = async (amountUsd: number) => {
-    if (typeof window === "undefined" || !window.ethereum) {
-      toast({
-        title: "MetaMask not found",
-        description: "Install the MetaMask browser extension to mint MTQ.",
-        variant: "destructive",
-      });
+    if (!walletAddress) {
+      toast({ title: "Connect wallet first", description: "Click Connect Wallet to begin.", variant: "destructive" });
       return;
     }
-    if (!walletAddress) {
-      toast({ title: "Connect wallet first", variant: "destructive" });
+    if (!walletAvailable) {
+      toast({ title: "No wallet found", description: "Install MetaMask or another Web3 wallet.", variant: "destructive" });
       return;
     }
     try {
       // Build a mock deposit-approval calldata targeting the MTQ contract.
-      // Selector 0x095ea7b3 = approve(address,uint256). We approve 0 amount
-      // — the call is symbolic (signature proves user intent) and never
-      // transfers real funds. The resulting tx_hash is recorded below.
       const APPROVE_SELECTOR = "0x095ea7b3";
       const spender = walletAddress.slice(2).toLowerCase().padStart(64, "0");
       const amountWei = BigInt(Math.round(amountUsd * 1e6)).toString(16).padStart(64, "0");
       const data = APPROVE_SELECTOR + spender + amountWei;
 
-      // MetaMask prompts the user to sign the transaction.
-      const txHash = (await window.ethereum.request({
-        method: "eth_sendTransaction",
-        params: [{ from: walletAddress, to: MTQ_ADDRESS, data, value: "0x0" }],
-      })) as string;
+      const txHash = await sendTransaction({ to: MTQ_ADDRESS, data, value: "0x0" });
 
       toast({
         title: "Mint transaction signed",
         description: `Tx ${txHash.slice(0, 10)}… submitted to Monad Testnet.`,
       });
 
-      // Record the resulting tx_hash via /api/mint (public, rate-limited).
       const res = await fetch("/api/mint", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          amountUsd,
-          toAddress: walletAddress,
-          txHash,
-        }),
+        body: JSON.stringify({ amountUsd, toAddress: walletAddress, txHash }),
       });
       if (res.ok) {
         toast({
@@ -299,14 +261,9 @@ export function OperatingSystem() {
         await fetchBalance(walletAddress);
       } else {
         const err = await res.json().catch(() => ({}));
-        toast({
-          title: "Mint record failed",
-          description: err?.error || `HTTP ${res.status}`,
-          variant: "destructive",
-        });
+        toast({ title: "Mint record failed", description: err?.error || `HTTP ${res.status}`, variant: "destructive" });
       }
     } catch (e: any) {
-      // MetaMask user-rejection (code 4001) is expected — friendly message.
       if (e?.code === 4001) {
         toast({ title: "Mint cancelled", description: "You rejected the transaction." });
       } else {
@@ -316,19 +273,7 @@ export function OperatingSystem() {
   };
 
   // Redeem — wire to POST /api/redeem with a mock burn tx hash.
-  // 1. Validates amount > 0 + wallet connected.
-  // 2. Builds a mock burn calldata (ERC-20 burn selector — symbolic only).
-  // 3. Sends via MetaMask eth_sendTransaction.
-  // 4. POSTs { mtqAmount, fromAddress, txHash } to /api/redeem.
   const handleRedeem = async (mtqAmount: number) => {
-    if (typeof window === "undefined" || !window.ethereum) {
-      toast({
-        title: "MetaMask not found",
-        description: "Install the MetaMask browser extension to redeem MTQ.",
-        variant: "destructive",
-      });
-      return;
-    }
     if (!walletAddress) {
       toast({ title: "Connect wallet first", variant: "destructive" });
       return;
@@ -338,47 +283,28 @@ export function OperatingSystem() {
       return;
     }
     try {
-      // Mock burn calldata: approve(spender=0x0, amount) on the MTQ contract —
-      // symbolic signature proving the user intends to redeem. Real burn is
-      // triggered by MTQ.burn() which requires MINTER_ROLE / role gating.
       const APPROVE_SELECTOR = "0x095ea7b3";
       const spender = "0".repeat(64);
       const amountWei = BigInt(Math.round(mtqAmount * 1e6)).toString(16).padStart(64, "0");
       const data = APPROVE_SELECTOR + spender + amountWei;
 
-      const txHash = (await window.ethereum.request({
-        method: "eth_sendTransaction",
-        params: [{ from: walletAddress, to: MTQ_ADDRESS, data, value: "0x0" }],
-      })) as string;
-
-      toast({
-        title: "Burn transaction signed",
-        description: `Tx ${txHash.slice(0, 10)}… submitted to Monad Testnet.`,
-      });
+      const txHash = await sendTransaction({ to: MTQ_ADDRESS, data, value: "0x0" });
 
       const res = await fetch("/api/redeem", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          mtqAmount,
-          fromAddress: walletAddress,
-          txHash,
-        }),
+        body: JSON.stringify({ mtqAmount, fromAddress: walletAddress, txHash }),
       });
       if (res.ok) {
         toast({
           title: "Redeem recorded",
-          description: `${mtqAmount} MTQ burned · ${txHash.slice(0, 10)}…`,
+          description: `${mtqAmount} MTQ → USD (fee: 0.05%) · ${txHash.slice(0, 10)}…`,
         });
         await fetchTransactions();
         await fetchBalance(walletAddress);
       } else {
         const err = await res.json().catch(() => ({}));
-        toast({
-          title: "Redeem record failed",
-          description: err?.error || `HTTP ${res.status}`,
-          variant: "destructive",
-        });
+        toast({ title: "Redeem failed", description: err?.error || `HTTP ${res.status}`, variant: "destructive" });
       }
     } catch (e: any) {
       if (e?.code === 4001) {
@@ -389,20 +315,8 @@ export function OperatingSystem() {
     }
   };
 
-  // Transfer — real ERC-20 transfer via MetaMask + /api/transfer record.
-  // 1. Validates address + amount.
-  // 2. Builds ERC-20 transfer calldata via buildTransferCalldata (from contract-reader).
-  // 3. Sends via MetaMask: eth_sendTransaction { to: MTQ_ADDRESS, data, from }.
-  // 4. POSTs { fromAddress, toAddress, amount (wei), txHash } to /api/transfer.
+  // Transfer — real ERC-20 transfer via wallet + /api/transfer record.
   const handleTransfer = async (toAddress: string, mtqAmount: number) => {
-    if (typeof window === "undefined" || !window.ethereum) {
-      toast({
-        title: "MetaMask not found",
-        description: "Install the MetaMask browser extension to transfer MTQ.",
-        variant: "destructive",
-      });
-      return;
-    }
     if (!walletAddress) {
       toast({ title: "Connect wallet first", variant: "destructive" });
       return;
@@ -420,14 +334,10 @@ export function OperatingSystem() {
       return;
     }
     try {
-      // MTQ has 18 decimals.
       const amountWei = BigInt(Math.round(mtqAmount * 1e18));
       const data = buildTransferCalldata(toAddress, amountWei);
 
-      const txHash = (await window.ethereum.request({
-        method: "eth_sendTransaction",
-        params: [{ from: walletAddress, to: MTQ_ADDRESS, data, value: "0x0" }],
-      })) as string;
+      const txHash = await sendTransaction({ to: MTQ_ADDRESS, data, value: "0x0" });
 
       toast({
         title: "Transfer submitted",
@@ -555,22 +465,25 @@ export function OperatingSystem() {
           </div>
           <div className="flex flex-wrap items-center gap-2">
             {!walletAddress ? (
-              <Button onClick={connectWallet} disabled={connecting} size="sm">
+              <Button onClick={handleConnect} disabled={connecting} size="sm">
                 {connecting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Wallet className="mr-2 h-4 w-4" />}
-                Connect MetaMask
+                {connecting ? "Connecting..." : "Connect Wallet"}
               </Button>
             ) : (
               <>
                 <Button onClick={addToMetaMask} variant="outline" size="sm">
-                  <Plus className="mr-2 h-4 w-4" /> Add MTQ to MetaMask
+                  <Plus className="mr-2 h-4 w-4" /> Add MTQ
                 </Button>
                 {balance && (
                   <a href={balance.explorerLink} target="_blank" rel="noreferrer">
                     <Button variant="ghost" size="sm">
-                      <ExternalLink className="mr-2 h-4 w-4" /> View on MonadScan
+                      <ExternalLink className="mr-2 h-4 w-4" /> MonadScan
                     </Button>
                   </a>
                 )}
+                <Button onClick={handleDisconnect} variant="ghost" size="sm">
+                  Disconnect
+                </Button>
               </>
             )}
           </div>
@@ -1385,14 +1298,4 @@ function ContractAddresses() {
   );
 }
 
-/* ---- TypeScript global for window.ethereum ---- */
-
-declare global {
-  interface Window {
-    ethereum?: {
-      request: (args: { method: string; params?: unknown[] }) => Promise<unknown>;
-      on?: (event: string, handler: (...args: unknown[]) => void) => void;
-      removeListener?: (event: string, handler: (...args: unknown[]) => void) => void;
-    };
-  }
-}
+// window.ethereum global type declaration is in src/lib/use-wallet.ts
