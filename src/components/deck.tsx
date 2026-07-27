@@ -324,11 +324,14 @@ export default function InvestorDeck() {
 
           {/* Bottom chrome — dots + nav buttons */}
           <div className="mt-3 flex flex-col items-center gap-4 sm:mt-4 sm:flex-row sm:justify-between">
-            {/* Progress dots */}
+            {/* UI9 Fix 7 — Slide thumbnails: numbered pills with title tooltips.
+                Replaces the bare dot row with clickable numbered pills so the
+                user sees their absolute position (01, 02, …) and the slide
+                title on hover, instead of anonymous dots. */}
             <div
-              className="flex flex-wrap items-center justify-center gap-2"
+              className="flex flex-wrap items-center justify-center gap-1.5"
               role="tablist"
-              aria-label="Slide navigation"
+              aria-label="Slide navigation thumbnails"
             >
               {SLIDES.map((s, i) => {
                 const active = i === index;
@@ -338,14 +341,17 @@ export default function InvestorDeck() {
                     role="tab"
                     aria-selected={active}
                     aria-label={`Go to slide ${i + 1}: ${s.title}`}
+                    title={`${PAD2(i + 1)} · ${s.title.replace(/\.$/, "")}`}
                     onClick={() => goTo(i)}
                     className={cn(
-                      "h-2.5 rounded-full transition-all duration-300",
+                      "flex h-7 items-center justify-center rounded-md border px-2 font-mono text-[10px] tabular-nums transition-all duration-200",
                       active
-                        ? "w-6 bg-gold"
-                        : "w-2.5 bg-line hover:bg-gold-deep",
+                        ? "border-gold bg-gold text-ink"
+                        : "border-line bg-ink-card text-fg-muted hover:border-gold/40 hover:text-gold",
                     )}
-                  />
+                  >
+                    {PAD2(i + 1)}
+                  </button>
                 );
               })}
             </div>

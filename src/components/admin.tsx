@@ -253,7 +253,7 @@ function LoginCard({
             <Button
               type="submit"
               disabled={loggingIn}
-              className="w-full bg-gold text-ink hover:bg-gold-soft disabled:opacity-50"
+              className="w-full bg-gold text-ink hover:bg-gold/90 disabled:opacity-50"
             >
               {loggingIn ? (
                 <>

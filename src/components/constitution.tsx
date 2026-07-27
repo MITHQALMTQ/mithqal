@@ -250,6 +250,35 @@ export default function ConstitutionDocs() {
               />
             ) : null}
 
+            {/* UI9 Fix 8 — Article progress indicator. Shows the current
+                position in the 47-article sequence + a thin gold progress
+                bar. Hidden on the preamble (currentIndex === 0 → 0 of 47). */}
+            <div className="mt-10">
+              <div className="flex items-center justify-between text-[10px] font-semibold uppercase tracking-[0.18em] text-fg-muted">
+                <span>
+                  {activeId === "preamble"
+                    ? "Preamble"
+                    : `Article ${currentIndex} of ${ALL_ARTICLES.length}`}
+                </span>
+                <span className="font-mono tabular-nums text-gold">
+                  {Math.round(
+                    (currentIndex / Math.max(1, navItems.length - 1)) * 100
+                  )}
+                  % read
+                </span>
+              </div>
+              <div className="mt-2 h-1 w-full overflow-hidden rounded-full bg-ink-card">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-gold-deep to-gold transition-all duration-500"
+                  style={{
+                    width: `${Math.round(
+                      (currentIndex / Math.max(1, navItems.length - 1)) * 100
+                    )}%`,
+                  }}
+                />
+              </div>
+            </div>
+
             {/* Prev / Next */}
             <Separator className="my-10 bg-line" />
             <div className="flex items-stretch justify-between gap-4">

@@ -93,6 +93,9 @@ export function OperatingSystem() {
   const [balance, setBalance] = useState<Balance | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [feeSummary, setFeeSummary] = useState<FeeSummary[]>([]);
+  // UI9 Fix 5 — Tabbed density control. Groups 11 sections into 4 tabs:
+  // Overview / Operations / Analytics / Contracts.
+  const [activeTab, setActiveTab] = useState<"overview" | "operations" | "analytics" | "contracts">("overview");
   const [loading, setLoading] = useState(true);
 
   // ---- Wallet connection (robust multi-wallet hook) ----
@@ -517,7 +520,33 @@ export function OperatingSystem() {
           </div>
         </div>
 
+        {/* UI9 Fix 5 — Tab bar (Overview / Operations / Analytics / Contracts) */}
+        <div className="mt-6 inline-flex items-center gap-1 rounded-lg border border-line bg-ink-soft/50 p-1">
+          {([
+            { id: "overview", label: "Overview" },
+            { id: "operations", label: "Operations" },
+            { id: "analytics", label: "Analytics" },
+            { id: "contracts", label: "Contracts" },
+          ] as const).map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              onClick={() => setActiveTab(t.id)}
+              aria-pressed={activeTab === t.id}
+              className={`rounded-md px-3 py-1.5 text-xs font-semibold transition ${
+                activeTab === t.id
+                  ? "bg-gold text-ink"
+                  : "text-fg-muted hover:text-foreground"
+              }`}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+
         {/* Stats grid */}
+        {activeTab === "overview" ? (
+          <>
         <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
           <StatCard
             icon={<Boxes className="h-4 w-4" />}
@@ -563,8 +592,12 @@ export function OperatingSystem() {
           />
           <NavCard label="NAV Stress" value={navStress} desc="R_l / S (liquidation)" />
         </div>
+          </>
+        ) : null}
 
         {/* Action cards: Mint / Redeem / Transfer */}
+        {activeTab === "operations" ? (
+          <>
         <div className="mt-8">
           <h2 className="font-display text-xl text-foreground">Operations</h2>
           <p className="mt-1 text-xs text-fg-muted">
@@ -578,8 +611,12 @@ export function OperatingSystem() {
             <TransferCard onTransfer={handleTransfer} disabled={!walletAddress} />
           </div>
         </div>
+          </>
+        ) : null}
 
         {/* Real-time charts */}
+        {activeTab === "analytics" ? (
+          <>
         <div className="mt-8">
           <h2 className="font-display text-xl text-foreground">Real-Time Charts</h2>
           <p className="mt-1 text-xs text-fg-muted">
@@ -611,8 +648,12 @@ export function OperatingSystem() {
         <div className="mt-6">
           <SettlementVolumeTracker transactions={transactions} />
         </div>
+          </>
+        ) : null}
 
         {/* Transactions table */}
+        {activeTab === "operations" ? (
+          <>
         <div className="mt-8">
           <div className="flex items-center justify-between">
             <h2 className="font-display text-xl text-foreground">Transaction History</h2>
@@ -700,10 +741,16 @@ export function OperatingSystem() {
             </table>
           </div>
         </div>
+          </>
+        ) : null}
 
         {/* Contract addresses */}
-        <Separator className="my-8 bg-line" />
-        <ContractAddresses />
+        {activeTab === "contracts" ? (
+          <>
+            <Separator className="my-8 bg-line" />
+            <ContractAddresses />
+          </>
+        ) : null}
       </div>
     </div>
   );

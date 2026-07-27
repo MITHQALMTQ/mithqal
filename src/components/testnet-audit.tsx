@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import {
   Shield, FileCheck, AlertTriangle, CheckCircle2, XCircle,
   FlaskConical, Lock, Gauge, ClipboardList, ArrowRight,
-  Building2, Calendar, Loader2,
+  Building2, Calendar, Loader2, ChevronRight,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -32,6 +32,47 @@ const Eyebrow = ({ children }: { children: React.ReactNode }) => (
 
 const severityColor = (s: string) => s === "critical" ? "text-destructive" : s === "high" ? "text-gold" : s === "medium" ? "text-gold/70" : "text-fg-muted";
 const severityBg = (s: string) => s === "critical" ? "border-destructive/40 bg-destructive/10" : s === "high" ? "border-gold/40 bg-gold/10" : s === "medium" ? "border-gold/20 bg-gold/5" : "border-line bg-ink-card";
+
+/* ============================================================
+ * UI9 Fix 6 — ExpandableDetails helper
+ * ------------------------------------------------------------
+ * Wraps detailed findings (fuzz tests, gas analysis, Certora
+ * specs, security findings, etc.) in a <details> element. The
+ * summary row (clickable label + count badge + chevron) stays
+ * visible by default; the body expands on click.
+ * ============================================================ */
+
+function ExpandableDetails({
+  label,
+  count,
+  defaultOpen = false,
+  children,
+}: {
+  label: string;
+  count?: string;
+  defaultOpen?: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <details
+      open={defaultOpen}
+      className="group mt-4 rounded-lg border border-line bg-ink-soft/30 p-4"
+    >
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 [&::-webkit-details-marker]:hidden">
+        <span className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-gold">
+          <ChevronRight className="h-3.5 w-3.5 transition-transform duration-300 group-open:rotate-90" />
+          {label}
+        </span>
+        {count ? (
+          <Badge className="border-gold/30 bg-gold/10 text-[10px] font-semibold text-gold hover:bg-gold/10">
+            {count}
+          </Badge>
+        ) : null}
+      </summary>
+      <div className="mt-4">{children}</div>
+    </details>
+  );
+}
 
 /* ============================================================
  * OnChainTestBadge — live "9/9 PASS" badge sourced from
@@ -277,6 +318,7 @@ export default function TestnetAudit() {
             <Eyebrow>Audit Methodology — 6 Steps</Eyebrow>
             <h2 className="font-display mt-4 text-2xl sm:text-4xl">Full audit process</h2>
           </div>
+          <ExpandableDetails label="Show methodology steps" count={`${AUDIT_STEPS.length} steps`}>
           <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {AUDIT_STEPS.map((step) => (
               <div key={step.step} className="glass card-hover rounded-xl p-5">
@@ -295,6 +337,7 @@ export default function TestnetAudit() {
               </div>
             ))}
           </div>
+          </ExpandableDetails>
         </Reveal>
 
         {/* Functional Testing Results */}
@@ -304,6 +347,7 @@ export default function TestnetAudit() {
             <h2 className="font-display mt-4 text-2xl sm:text-4xl">Test results</h2>
             <p className="mt-3 text-sm text-fg-muted">Simulator functional tests via the live API. On-chain tests pending contract deployment.</p>
           </div>
+          <ExpandableDetails label="Show functional test results" count={`${FUNCTIONAL_TESTS.mint.length + FUNCTIONAL_TESTS.transfer.length + FUNCTIONAL_TESTS.burn.length} tests`}>
           <div className="mt-6 grid gap-4 lg:grid-cols-3">
             {([
               { title: "Mint Function", tests: FUNCTIONAL_TESTS.mint, icon: ArrowRight },
@@ -336,6 +380,7 @@ export default function TestnetAudit() {
               </div>
             ))}
           </div>
+          </ExpandableDetails>
         </Reveal>
 
         {/* Constitutional Compliance */}
@@ -344,6 +389,7 @@ export default function TestnetAudit() {
             <Eyebrow>Step 4 — Constitutional Compliance</Eyebrow>
             <h2 className="font-display mt-4 text-2xl sm:text-4xl">Constitutional compliance verification</h2>
           </div>
+          <ExpandableDetails label="Show compliance matrix" count={`${CONSTITUTIONAL_COMPLIANCE.length} requirements`}>
           <div className="glass mt-6 overflow-hidden rounded-2xl">
             <div className="max-h-[50vh] overflow-y-auto">
               <table className="w-full min-w-[700px] text-sm">
@@ -368,6 +414,7 @@ export default function TestnetAudit() {
               </table>
             </div>
           </div>
+          </ExpandableDetails>
         </Reveal>
 
         {/* Security Findings */}
@@ -376,6 +423,7 @@ export default function TestnetAudit() {
             <Eyebrow>Step 3 — Security Findings</Eyebrow>
             <h2 className="font-display mt-4 text-2xl sm:text-4xl">Security findings</h2>
           </div>
+          <ExpandableDetails label="Show findings (incl. fuzz tests, gas analysis, Certora specs)" count={`${SECURITY_FINDINGS.critical.length + SECURITY_FINDINGS.high.length + SECURITY_FINDINGS.medium.length + SECURITY_FINDINGS.low.length} findings`}>
           <div className="mt-6 space-y-4">
             {([
               { label: "Critical Issues", items: SECURITY_FINDINGS.critical },
@@ -408,6 +456,7 @@ export default function TestnetAudit() {
               </div>
             ))}
           </div>
+          </ExpandableDetails>
         </Reveal>
 
         {/* Scoring */}
@@ -416,6 +465,7 @@ export default function TestnetAudit() {
             <Eyebrow>Final Assessment</Eyebrow>
             <h2 className="font-display mt-4 text-2xl sm:text-4xl">Scoring & final assessment</h2>
           </div>
+          <ExpandableDetails label="Show scoring breakdown" count={`${categories.length} categories`} defaultOpen>
           <div className="glass mt-6 rounded-2xl p-6">
             <div className="overflow-x-auto">
               <table className="w-full min-w-[600px] text-sm">
@@ -450,6 +500,7 @@ export default function TestnetAudit() {
               <span className="text-sm text-fg-muted">Contracts live on Monad Testnet (9/9 on-chain tests PASS, fuzz tests 69/69 PASS) — pending external audit.</span>
             </div>
           </div>
+          </ExpandableDetails>
         </Reveal>
 
         {/* Next Steps */}
@@ -458,6 +509,7 @@ export default function TestnetAudit() {
             <Eyebrow>Next Steps</Eyebrow>
             <h2 className="font-display mt-4 text-2xl sm:text-4xl">Roadmap to mainnet</h2>
           </div>
+          <ExpandableDetails label="Show roadmap" count={`${NEXT_STEPS.length} steps`}>
           <div className="glass mt-6 rounded-2xl p-6">
             <div className="space-y-3">
               {NEXT_STEPS.map((s) => (
@@ -473,12 +525,14 @@ export default function TestnetAudit() {
               ))}
             </div>
           </div>
+          </ExpandableDetails>
         </Reveal>
 
         {/* Audit Tools */}
         <Reveal>
           <div className="mt-6 glass rounded-xl p-5">
             <div className="text-[11px] font-semibold uppercase tracking-wider text-gold">Audit Tools</div>
+            <ExpandableDetails label="Show audit toolchain" count={`${AUDIT_TOOLS.length} tools`}>
             <div className="mt-3 flex flex-wrap gap-2">
               {AUDIT_TOOLS.map((t) => (
                 <div key={t.tool} className="flex items-center gap-2 rounded-lg border border-line bg-ink px-3 py-2 text-xs">
@@ -487,6 +541,7 @@ export default function TestnetAudit() {
                 </div>
               ))}
             </div>
+            </ExpandableDetails>
           </div>
         </Reveal>
 

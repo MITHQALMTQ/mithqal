@@ -94,51 +94,40 @@ function SiteHero() {
   return (
     <section id="s-top" className="relative overflow-hidden grain-bg">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,color-mix(in_oklch,var(--gold)_14%,transparent),transparent_60%)]" />
-      <div className="relative mx-auto w-full max-w-6xl px-5 pb-20 pt-16 sm:px-8 sm:pb-28 sm:pt-24">
+      <div className="relative mx-auto w-full max-w-6xl px-5 pb-10 pt-10 sm:px-8 sm:pb-14 sm:pt-12">
         <Reveal>
           <Badge className="border-gold/40 bg-gold/10 text-gold hover:bg-gold/10">
             Constitutional Monetary Institution · Est. under the v19.0 Constitution
           </Badge>
         </Reveal>
         <Reveal delay={0.05}>
-          <div className="mt-8 flex items-center gap-5">
-            <Logo className="h-16 w-16 shrink-0 sm:h-20 sm:w-20" />
+          <div className="mt-5 flex items-center gap-5">
+            <Logo className="h-14 w-14 shrink-0 sm:h-16 sm:w-16" />
             <div>
-              <h1 className="font-display text-5xl leading-[0.95] tracking-tight sm:text-7xl">
+              <h1 className="font-display text-4xl leading-[0.95] tracking-tight sm:text-6xl">
                 <span className="gold-text">Mithqal</span>
               </h1>
-              <p className="mt-2 font-display text-xl text-fg-muted sm:text-2xl">
+              <p className="mt-1 font-display text-lg text-fg-muted sm:text-xl">
                 {IDENTITY.tagline}
               </p>
             </div>
           </div>
         </Reveal>
-        <Reveal delay={0.12}>
-          <p className="mt-8 max-w-3xl text-lg leading-relaxed text-foreground/90 sm:text-xl">
+        <Reveal delay={0.1}>
+          <p className="mt-4 max-w-3xl text-base leading-relaxed text-foreground/90 sm:text-lg">
             {IDENTITY.lede}
           </p>
         </Reveal>
-        {/* Audit Fix 3 — Prominent testnet contract link in the hero.
-            The MTQ token contract is published on Monad Testnet; surfacing it
-            here — as a gold pill badge with the external-link icon — gives every
-            reader an immediate, one-click path to independent on-chain verification. */}
-        <Reveal delay={0.15}>
-          <a
-            href="https://testnet.monadscan.com/address/0x9e6EdC15DAc420931508d8Ddf9BC817651A253aD"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-6 inline-flex items-center gap-2 rounded-full border border-gold/50 bg-gold/[0.08] px-4 py-2 text-xs font-semibold text-gold shadow-[0_0_0_1px_color-mix(in_oklch,var(--gold)_30%,transparent),0_4px_20px_-8px_var(--gold)] transition hover:border-gold hover:bg-gold/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60"
-            aria-label="Verify the MTQ token contract on Monad Testnet explorer — address 0x9e6EdC15DAc420931508d8Ddf9BC817651A253aD — opens in a new tab"
-            title="MTQ Token · Monad Testnet explorer (opens in a new tab)"
-          >
-            <span aria-hidden="true">🔗</span>
-            <span>MTQ on Monad Testnet:</span>
-            <span className="font-mono text-[11px] text-gold/90">0x9e6E…253aD</span>
-            <ExternalLink className="h-3 w-3" aria-hidden="true" />
-          </a>
+        {/* Live KPI bar — merged into the hero (Audit Fix 2 redesign) so the
+            Institution's live monetary state is visible above the fold,
+            immediately under the value proposition. */}
+        <Reveal delay={0.14}>
+          <div className="mt-5">
+            <LiveStateDashboard />
+          </div>
         </Reveal>
         <Reveal delay={0.18}>
-          <div className="mt-9 flex flex-wrap gap-3">
+          <div className="mt-6 flex flex-wrap gap-3">
             <button
               onClick={() =>
                 document.getElementById("s-institution")?.scrollIntoView({ behavior: "smooth" })
@@ -157,6 +146,25 @@ function SiteHero() {
               Express interest
             </button>
           </div>
+        </Reveal>
+        {/* Audit Fix 3 — Prominent testnet contract link in the hero.
+            The MTQ token contract is published on Monad Testnet; surfacing it
+            here — as a gold pill badge with the external-link icon — gives every
+            reader an immediate, one-click path to independent on-chain verification. */}
+        <Reveal delay={0.22}>
+          <a
+            href="https://testnet.monadscan.com/address/0x9e6EdC15DAc420931508d8Ddf9BC817651A253aD"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-5 inline-flex items-center gap-2 rounded-full border border-gold/50 bg-gold/[0.08] px-4 py-2 text-xs font-semibold text-gold shadow-[0_0_0_1px_color-mix(in_oklch,var(--gold)_30%,transparent),0_4px_20px_-8px_var(--gold)] transition hover:border-gold hover:bg-gold/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60"
+            aria-label="Verify the MTQ token contract on Monad Testnet explorer — address 0x9e6EdC15DAc420931508d8Ddf9BC817651A253aD — opens in a new tab"
+            title="MTQ Token · Monad Testnet explorer (opens in a new tab)"
+          >
+            <span aria-hidden="true">🔗</span>
+            <span>MTQ on Monad Testnet:</span>
+            <span className="font-mono text-[11px] text-gold/90">0x9e6E…253aD</span>
+            <ExternalLink className="h-3 w-3" aria-hidden="true" />
+          </a>
         </Reveal>
       </div>
       <div className="gold-rule h-px w-full" />
@@ -285,102 +293,96 @@ function LiveStateDashboard() {
     },
   ];
 
+  // Compact KPI bar — designed to live inside the hero (no section chrome).
+  // Renders a single inline status row + a 4-card grid. The status indicator
+  // collapses to "Connecting…" on first load, "Live" on success, and
+  // "Live data unavailable" on persistent failure (with the previous values
+  // retained so the section never collapses to a blank shell).
   return (
-    <section
-      id="s-live-state"
-      className="scroll-mt-24 border-b border-line/60 bg-ink-soft/40 px-5 py-10 sm:px-8 sm:py-12"
-      aria-label="Live monetary state"
-    >
-      <div className="mx-auto w-full max-w-6xl">
-        <Reveal>
-          <div className="flex flex-wrap items-end justify-between gap-3">
-            <div>
-              <Eyebrow>Live State · auto-refreshing every 30s</Eyebrow>
-              <h2 className="font-display mt-3 text-2xl leading-tight text-balance sm:text-3xl">
-                The Institution, in real time
-              </h2>
-            </div>
-            <div className="flex items-center gap-2 text-[11px] text-fg-muted">
-              <span className="relative flex h-2 w-2">
-                <span
-                  className={`absolute inline-flex h-full w-full rounded-full opacity-75 ${
-                    error ? "bg-destructive" : "bg-reserve"
-                  } ${loading ? "animate-ping" : ""}`}
-                />
-                <span
-                  className={`relative inline-flex h-2 w-2 rounded-full ${
-                    error ? "bg-destructive" : "bg-reserve"
-                  }`}
-                />
-              </span>
-              <span className="font-semibold uppercase tracking-[0.18em]">
-                {error ? "Live data unavailable" : loading ? "Connecting…" : "Live"}
-              </span>
-              <LiveTimestamp isoString={data.lastUpdate} label="updated" />
-            </div>
-          </div>
-        </Reveal>
-        <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          {cards.map((c, i) => {
-            const Icon = c.icon;
-            return (
-              <Reveal key={c.label} delay={i * 0.04}>
-                <div className="print-card h-full rounded-xl border border-line bg-ink-card p-5 transition hover:border-gold/40">
-                  <div className="flex items-center justify-between text-fg-muted">
-                    <span className="text-[10px] font-semibold uppercase tracking-[0.18em]">
-                      {c.label}
-                    </span>
-                    <Icon className={`h-4 w-4 ${c.accent}`} aria-hidden="true" />
-                  </div>
-                  <div className={`mt-3 font-display text-2xl sm:text-3xl ${c.accent}`}>
-                    <AnimatedNumber
-                      value={Number.isFinite(c.value) ? c.value : 0}
-                      decimals={c.decimals}
-                      prefix={c.prefix}
-                      suffix={c.suffix}
-                    />
-                  </div>
-                  <div className="mt-2 flex items-center justify-between gap-2 text-[11px] text-fg-muted">
-                    <span>{c.caption}</span>
-                    <span className="inline-flex items-center gap-1 text-[10px]">
-                      <span
-                        className={`h-1.5 w-1.5 rounded-full ${
-                          error ? "bg-destructive/70" : "bg-reserve/80"
-                        }`}
-                        aria-hidden="true"
-                      />
-                      {error ? "stale" : "just now"}
-                    </span>
-                  </div>
-                </div>
-              </Reveal>
-            );
-          })}
-        </div>
-        <Reveal delay={0.16}>
-          <div className="mt-4 flex flex-wrap items-center justify-between gap-2 text-[11px] text-fg-muted">
-            <span>
-              Source:{" "}
-              <code className="rounded bg-ink-card px-1.5 py-0.5 font-mono text-[10px] text-gold/90">
-                /api/transparency
-              </code>{" "}
-              · derived from on-chain reserves + live oracle prices.
-            </span>
-            <button
-              onClick={() => {
-                document
-                  .getElementById("s-reserves")
-                  ?.scrollIntoView({ behavior: "smooth" });
-              }}
-              className="inline-flex items-center gap-1 transition hover:text-gold"
-            >
-              Reserves breakdown
-              <ArrowRight className="h-3 w-3" aria-hidden="true" />
-            </button>
-          </div>
-        </Reveal>
+    <div aria-label="Live monetary state">
+      <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-[11px] text-fg-muted">
+        <span className="inline-flex items-center gap-2">
+          <span className="relative flex h-2 w-2">
+            <span
+              className={`absolute inline-flex h-full w-full rounded-full opacity-75 ${
+                error ? "bg-destructive" : "bg-reserve"
+              } ${loading ? "animate-ping" : ""}`}
+            />
+            <span
+              className={`relative inline-flex h-2 w-2 rounded-full ${
+                error ? "bg-destructive" : "bg-reserve"
+              }`}
+            />
+          </span>
+          <span className="font-semibold uppercase tracking-[0.18em]">
+            {error
+              ? "Live data unavailable"
+              : loading
+                ? "Connecting…"
+                : "Live · auto-refresh 30s"}
+          </span>
+        </span>
+        <LiveTimestamp isoString={data.lastUpdate} label="updated" />
       </div>
-    </section>
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        {cards.map((c) => {
+          const Icon = c.icon;
+          return (
+            <div
+              key={c.label}
+              className="rounded-xl border border-line bg-ink-card p-4 transition hover:border-gold/40"
+            >
+              <div className="flex items-center justify-between text-fg-muted">
+                <span className="text-[10px] font-semibold uppercase tracking-[0.18em]">
+                  {c.label}
+                </span>
+                <Icon className={`h-4 w-4 ${c.accent}`} aria-hidden="true" />
+              </div>
+              <div className={`mt-2 font-display text-xl sm:text-2xl ${c.accent}`}>
+                <AnimatedNumber
+                  value={Number.isFinite(c.value) ? c.value : 0}
+                  decimals={c.decimals}
+                  prefix={c.prefix}
+                  suffix={c.suffix}
+                />
+              </div>
+              <div className="mt-1 flex items-center justify-between gap-2 text-[10px] text-fg-muted">
+                <span className="truncate">{c.caption}</span>
+                <span className="inline-flex shrink-0 items-center gap-1">
+                  <span
+                    className={`h-1.5 w-1.5 rounded-full ${
+                      error ? "bg-destructive/70" : "bg-reserve/80"
+                    }`}
+                    aria-hidden="true"
+                  />
+                  {error ? "stale" : "now"}
+                </span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-[10px] text-fg-muted">
+        <span>
+          Source:{" "}
+          <code className="rounded bg-ink-card px-1.5 py-0.5 font-mono text-[10px] text-gold/90">
+            /api/transparency
+          </code>{" "}
+          · on-chain reserves + live oracle prices.
+        </span>
+        <button
+          onClick={() => {
+            document
+              .getElementById("s-reserves")
+              ?.scrollIntoView({ behavior: "smooth" });
+          }}
+          className="inline-flex items-center gap-1 transition hover:text-gold"
+        >
+          Reserves breakdown
+          <ArrowRight className="h-3 w-3" aria-hidden="true" />
+        </button>
+      </div>
+    </div>
   );
 }
 
@@ -388,7 +390,7 @@ function LiveStateDashboard() {
 
 function WhatItIs() {
   return (
-    <section id="s-institution" className="scroll-mt-24 px-5 py-16 sm:px-8 sm:py-24">
+    <section id="s-institution" className="scroll-mt-24 border-y border-line/60 bg-ink-soft/40 px-5 py-8 sm:px-8 sm:py-12">
       <div className="mx-auto w-full max-w-6xl">
         <Reveal>
           <Eyebrow>The Institution</Eyebrow>
@@ -403,26 +405,11 @@ function WhatItIs() {
             technology.
           </p>
         </Reveal>
-        <div className="mt-10 grid gap-5 lg:grid-cols-2">
+        <div className="mt-8 grid gap-5 lg:grid-cols-2">
+          {/* LEFT — Mithqal IS (green checkmarks). Lead with the affirmative
+              column so the reader encounters what the Institution IS before
+              what it is NOT. */}
           <Reveal>
-            <div className="h-full rounded-2xl border border-line bg-ink-soft p-6 sm:p-7">
-              <div className="flex items-center gap-2 text-gold">
-                <X className="h-4 w-4" />
-                <span className="text-[11px] font-semibold uppercase tracking-[0.22em]">
-                  Mithqal is not
-                </span>
-              </div>
-              <ul className="mt-5 space-y-3">
-                {IDENTITY.not.map((n) => (
-                  <li key={n} className="flex items-center gap-3 text-sm text-fg-muted">
-                    <span className="h-1 w-1 rounded-full bg-gold/60" />
-                    <span className="line-through decoration-gold/40">{n}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </Reveal>
-          <Reveal delay={0.08}>
             <div className="h-full rounded-2xl border border-reserve/40 bg-reserve/[0.06] p-6 sm:p-7">
               <div className="flex items-center gap-2 text-reserve">
                 <Check className="h-4 w-4" />
@@ -440,6 +427,26 @@ function WhatItIs() {
               </ul>
             </div>
           </Reveal>
+          {/* RIGHT — Mithqal is NOT (red X marks). Mirrors the left column so
+              the reader can scan both lists side by side. */}
+          <Reveal delay={0.08}>
+            <div className="h-full rounded-2xl border border-destructive/40 bg-destructive/[0.06] p-6 sm:p-7">
+              <div className="flex items-center gap-2 text-destructive">
+                <X className="h-4 w-4" />
+                <span className="text-[11px] font-semibold uppercase tracking-[0.22em]">
+                  Mithqal is not
+                </span>
+              </div>
+              <ul className="mt-5 space-y-3">
+                {IDENTITY.not.map((n) => (
+                  <li key={n} className="flex items-start gap-3 text-sm text-fg-muted">
+                    <X className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
+                    <span>{n}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </Reveal>
         </div>
       </div>
     </section>
@@ -450,7 +457,7 @@ function WhatItIs() {
 
 function Objectives() {
   return (
-    <section id="s-objectives" className="scroll-mt-24 px-5 py-16 sm:px-8 sm:py-24">
+    <section id="s-objectives" className="scroll-mt-24 px-5 py-8 sm:px-8 sm:py-12">
       <div className="mx-auto w-full max-w-6xl">
         <Reveal>
           <Eyebrow>Article I — Constitutional Objectives</Eyebrow>
@@ -483,7 +490,7 @@ function Objectives() {
 
 function Invariants() {
   return (
-    <section id="s-invariants" className="scroll-mt-24 border-y border-line/60 bg-ink-soft/40 px-5 py-16 sm:px-8 sm:py-24">
+    <section id="s-invariants" className="scroll-mt-24 border-y border-line/60 bg-ink-soft/40 px-5 py-8 sm:px-8 sm:py-12">
       <div className="mx-auto w-full max-w-6xl">
         <Reveal>
           <Eyebrow>Priority 1 — Constitutional Invariants</Eyebrow>
@@ -515,7 +522,7 @@ function Invariants() {
 
 function AntiPlatform() {
   return (
-    <section id="s-anti-platform" className="scroll-mt-24 px-5 py-16 sm:px-8 sm:py-24">
+    <section id="s-anti-platform" className="scroll-mt-24 px-5 py-8 sm:px-8 sm:py-12">
       <div className="mx-auto w-full max-w-6xl">
         <Reveal>
           <Eyebrow>Article V — Anti-Platform</Eyebrow>
@@ -573,7 +580,7 @@ function AntiPlatform() {
 
 function SettlementUnit() {
   return (
-    <section id="s-mtq" className="scroll-mt-24 border-y border-line/60 bg-ink-soft/40 px-5 py-16 sm:px-8 sm:py-24">
+    <section id="s-mtq" className="scroll-mt-24 border-y border-line/60 bg-ink-soft/40 px-5 py-8 sm:px-8 sm:py-12">
       <div className="mx-auto w-full max-w-6xl">
         <Reveal>
           <Eyebrow>The Settlement Unit — MTQ</Eyebrow>
@@ -639,7 +646,7 @@ function SettlementUnit() {
 
 function Reserves() {
   return (
-    <section id="s-reserves" className="scroll-mt-24 px-5 py-16 sm:px-8 sm:py-24">
+    <section id="s-reserves" className="scroll-mt-24 px-5 py-8 sm:px-8 sm:py-12">
       <div className="mx-auto w-full max-w-6xl">
         <Reveal>
           <Eyebrow>Reserves & Transparency</Eyebrow>
@@ -811,7 +818,7 @@ function MonetaryEngineCompact() {
   return (
     <section
       id="s-monetary-engine"
-      className="scroll-mt-24 border-y border-line/60 bg-ink-soft/40 px-5 py-16 sm:px-8 sm:py-24"
+      className="scroll-mt-24 border-y border-line/60 bg-ink-soft/40 px-5 py-8 sm:px-8 sm:py-12"
       aria-label="Monetary engine — currency basket visualization"
     >
       <div className="mx-auto w-full max-w-5xl">
@@ -971,7 +978,7 @@ function MonetaryEngineCompact() {
 
 function Governance() {
   return (
-    <section id="s-governance" className="scroll-mt-24 border-y border-line/60 bg-ink-soft/40 px-5 py-16 sm:px-8 sm:py-24">
+    <section id="s-governance" className="scroll-mt-24 px-5 py-8 sm:px-8 sm:py-12">
       <div className="mx-auto w-full max-w-6xl">
         <Reveal>
           <Eyebrow>Governance</Eyebrow>
@@ -1031,7 +1038,7 @@ function Lifecycle() {
         ? "border-line bg-ink-soft text-fg-muted"
         : "border-line/60 bg-ink-soft/50 text-fg-muted";
   return (
-    <section id="s-lifecycle" className="scroll-mt-24 px-5 py-16 sm:px-8 sm:py-24">
+    <section id="s-lifecycle" className="scroll-mt-24 border-y border-line/60 bg-ink-soft/40 px-5 py-8 sm:px-8 sm:py-12">
       <div className="mx-auto w-full max-w-6xl">
         <Reveal>
           <Eyebrow>Article XIV — Institutional Lifecycle</Eyebrow>
@@ -1073,7 +1080,7 @@ function Lifecycle() {
 
 function Eligibility() {
   return (
-    <section id="s-eligibility" className="scroll-mt-24 border-y border-line/60 bg-ink-soft/40 px-5 py-16 sm:px-8 sm:py-24">
+    <section id="s-eligibility" className="scroll-mt-24 px-5 py-8 sm:px-8 sm:py-12">
       <div className="mx-auto w-full max-w-6xl">
         <Reveal>
           <Eyebrow>Who Mithqal serves</Eyebrow>
@@ -1132,7 +1139,7 @@ function StatusBoard() {
         ? "border-gold/40 bg-gold/[0.08] text-gold"
         : "border-line bg-ink-soft text-fg-muted";
   return (
-    <section id="s-status" className="scroll-mt-24 px-5 py-16 sm:px-8 sm:py-24">
+    <section id="s-status" className="scroll-mt-24 px-5 py-8 sm:px-8 sm:py-12">
       <div className="mx-auto w-full max-w-6xl">
         <Reveal>
           <Eyebrow>Build in public</Eyebrow>
@@ -1166,7 +1173,7 @@ function StatusBoard() {
 
 function LayerZero() {
   return (
-    <section id="s-layer-zero" className="scroll-mt-24 border-y border-line/60 bg-ink-soft/40 px-5 py-16 sm:px-8 sm:py-24">
+    <section id="s-layer-zero" className="scroll-mt-24 border-y border-line/60 bg-ink-soft/40 px-5 py-8 sm:px-8 sm:py-12">
       <div className="mx-auto w-full max-w-6xl">
         <Reveal>
           <Eyebrow>Layer 0 — The Institutional Foundation</Eyebrow>
@@ -1202,7 +1209,7 @@ function LayerZero() {
 
 function LegalStatus() {
   return (
-    <section id="s-legal" className="scroll-mt-24 px-5 py-16 sm:px-8 sm:py-24">
+    <section id="s-legal" className="scroll-mt-24 px-5 py-8 sm:px-8 sm:py-12">
       <div className="mx-auto w-full max-w-6xl">
         <Reveal>
           <Eyebrow>Legal & Regulatory Status</Eyebrow>
@@ -1318,7 +1325,7 @@ function PhaseZeroTimeline() {
     }
   };
   return (
-    <section id="s-phase-zero" className="scroll-mt-24 border-y border-line/60 bg-ink-soft/40 px-5 py-16 sm:px-8 sm:py-24">
+    <section id="s-phase-zero" className="scroll-mt-24 border-y border-line/60 bg-ink-soft/40 px-5 py-8 sm:px-8 sm:py-12">
       <div className="mx-auto w-full max-w-6xl">
         <Reveal>
           <Eyebrow>Current Status — Phase 0: Formation</Eyebrow>
@@ -1423,7 +1430,7 @@ function ContactForm() {
   };
 
   return (
-    <section id="s-contact" className="scroll-mt-24 border-t border-line/60 bg-ink-soft/40 px-5 py-16 sm:px-8 sm:py-24">
+    <section id="s-contact" className="scroll-mt-24 border-t border-line/60 bg-ink-soft/40 px-5 py-8 sm:px-8 sm:py-12">
       <div className="mx-auto w-full max-w-3xl">
         <Reveal>
           <Eyebrow>Formation Committee</Eyebrow>
@@ -1613,8 +1620,9 @@ export default function PublicSite() {
   return (
     <div className="flex flex-col">
       <SiteHero />
-      {/* Audit Fix 2 — Live state KPI dashboard directly under the hero. */}
-      <LiveStateDashboard />
+      {/* LiveStateDashboard is now mounted INSIDE SiteHero (Audit Fix 2
+          redesign) so the live KPI bar is visible above the fold — see
+          LiveStateDashboard() return shape (a div, not a section). */}
       <WhatItIs />
       {/* Audit Fix 4 — Legal & Regulatory Status moved up: surfaces the
           operating entity + constitutional version right after the "what is

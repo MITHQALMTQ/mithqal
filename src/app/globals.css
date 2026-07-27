@@ -205,6 +205,21 @@
   background: var(--gold-deep);
 }
 
+/* ===== UI9 Fix 9 — State-of-art micro-interactions ===== */
+/* Smooth scrolling for in-page anchor jumps + section navigation */
+html {
+  scroll-behavior: smooth;
+}
+/* Gold text selection — institutional accent */
+::selection {
+  background: rgba(201, 162, 39, 0.3);
+  color: #fff;
+}
+::-moz-selection {
+  background: rgba(201, 162, 39, 0.3);
+  color: #fff;
+}
+
 /* ===== Utilities ===== */
 .font-display {
   font-family: var(--font-fraunces), Georgia, serif;

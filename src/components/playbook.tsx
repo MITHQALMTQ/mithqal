@@ -88,29 +88,44 @@ function SectionShell({
   eyebrow,
   title,
   intro,
+  icon: Icon,
   children,
 }: {
   id: string;
   eyebrow: string;
   title: React.ReactNode;
   intro?: React.ReactNode;
+  icon?: typeof Shield;
   children: React.ReactNode;
 }) {
   return (
-    <section id={id} className="scroll-mt-24 px-5 py-16 sm:px-8 sm:py-24">
+    <section id={id} className="scroll-mt-24 px-5 py-8 sm:px-8 sm:py-12">
       <div className="mx-auto w-full max-w-6xl">
         <Reveal>
-          <Eyebrow>{eyebrow}</Eyebrow>
-          <h2 className="font-display mt-4 text-3xl leading-tight text-balance sm:text-5xl">
+          <div className="flex items-center gap-3">
+            {Icon ? (
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-gold/30 bg-gold/[0.06]">
+                <Icon className="h-4 w-4 text-gold" aria-hidden="true" />
+              </span>
+            ) : null}
+            <Eyebrow>{eyebrow}</Eyebrow>
+          </div>
+          <h2 className="font-display mt-4 text-3xl leading-tight text-balance sm:text-4xl">
             {title}
           </h2>
           {intro ? (
-            <p className="mt-5 max-w-2xl text-[15px] leading-relaxed text-fg-muted sm:text-base">
+            <p className="mt-4 max-w-2xl text-[15px] leading-relaxed text-fg-muted sm:text-base">
               {intro}
             </p>
           ) : null}
         </Reveal>
-        <div className="mt-10 sm:mt-12">{children}</div>
+        {/* Section body wrapped in a bordered card with a subtle ink-soft
+            background — gives each major section an explicit visual frame
+            (per redesign spec) so the page reads as a stack of cards rather
+            than a wall of text. Inner cards use bg-ink-card for contrast. */}
+        <div className="mt-6 rounded-xl border border-line bg-ink-soft p-5 sm:p-6">
+          {children}
+        </div>
       </div>
     </section>
   );
@@ -248,7 +263,7 @@ function Hero() {
   return (
     <section id="top" className="relative overflow-hidden grain-bg">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,color-mix(in_oklch,var(--gold)_14%,transparent),transparent_60%)]" />
-      <div className="relative mx-auto w-full max-w-6xl px-5 pb-20 pt-20 sm:px-8 sm:pb-28 sm:pt-28">
+      <div className="relative mx-auto w-full max-w-6xl px-5 pb-10 pt-10 sm:px-8 sm:pb-14 sm:pt-12">
         <Reveal>
           <div className="flex items-center gap-2">
             <Badge className="border-gold/40 bg-gold/10 text-gold hover:bg-gold/10">
@@ -261,11 +276,11 @@ function Hero() {
         </Reveal>
 
         <Reveal delay={0.05}>
-          <div className="mt-8 flex flex-col items-start gap-6 sm:flex-row sm:items-center">
-            <Logo className="h-20 w-20 shrink-0 sm:h-24 sm:w-24" />
-            <h1 className="font-display text-5xl leading-[0.95] tracking-tight sm:text-7xl">
+          <div className="mt-5 flex flex-col items-start gap-5 sm:flex-row sm:items-center">
+            <Logo className="h-16 w-16 shrink-0 sm:h-20 sm:w-20" />
+            <h1 className="font-display text-4xl leading-[0.95] tracking-tight sm:text-6xl">
               <span className="gold-text">Mithqal</span>
-              <span className="block text-2xl font-normal text-fg-muted sm:text-3xl">
+              <span className="block text-xl font-normal text-fg-muted sm:text-2xl">
                 a constitutional settlement institution
               </span>
             </h1>
@@ -273,9 +288,10 @@ function Hero() {
         </Reveal>
 
         <Reveal delay={0.12}>
-          <p className="mt-8 max-w-2xl text-lg leading-relaxed text-fg-muted sm:text-xl">
+          <p className="mt-5 max-w-2xl text-base leading-relaxed text-fg-muted sm:text-lg">
             A fully-reserved, neutral rail for cross-border trade — built on an
-            institution-grade Constitution. We have <span className="text-gold">no company,
+            institution-grade Constitution. We have{" "}
+            <span className="font-semibold text-foreground">no company,
             no team, no budget</span>. We have the single most valuable thing a monetary
             institution can hold: a credible, un-gameable blueprint. This is the A-to-Z
             plan to convert that blueprint into capital, custody and a live settlement rail.
@@ -283,7 +299,7 @@ function Hero() {
         </Reveal>
 
         <Reveal delay={0.18}>
-          <div className="mt-9 flex flex-wrap gap-3">
+          <div className="mt-6 flex flex-wrap gap-3">
             <button
               onClick={() =>
                 document.getElementById("roadmap")?.scrollIntoView({ behavior: "smooth" })
@@ -311,18 +327,18 @@ function Hero() {
         </Reveal>
 
         <Reveal delay={0.24}>
-          <div className="mt-14 grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-line bg-line sm:grid-cols-4">
+          <div className="mt-8 grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-line bg-line sm:grid-cols-4">
             {[
               { k: "Blueprint", v: "v19.0", s: "1.46M-char Constitution" },
               { k: "Capital", v: "$0", s: "Zero budget — sweat equity" },
               { k: "Entity", v: "None", s: "No company, yet" },
               { k: "Target raise", v: "$0.25–8M", s: "Pre-seed → Seed (Entity B)" },
             ].map((c) => (
-              <div key={c.k} className="bg-ink-soft p-5">
+              <div key={c.k} className="bg-ink-soft p-4 sm:p-5">
                 <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-fg-muted">
                   {c.k}
                 </div>
-                <div className="font-display mt-2 text-2xl text-foreground">{c.v}</div>
+                <div className="font-display mt-2 text-xl text-foreground sm:text-2xl">{c.v}</div>
                 <div className="mt-1 text-xs text-fg-muted">{c.s}</div>
               </div>
             ))}
@@ -343,12 +359,13 @@ function StatusSection() {
     <SectionShell
       id="status"
       eyebrow="Where we stand"
+      icon={CircleDollarSign}
       title={<>We are honest about the starting line</>}
       intro="Mithqal is not a 10-page whitepaper. It is an institution-grade constitutional specification. But an institution is not a specification. Here is exactly what we hold — and exactly what is missing."
     >
       <div className="grid gap-6 lg:grid-cols-2">
         <Reveal>
-          <div className="print-card rounded-2xl border border-line bg-ink-soft p-6 sm:p-7">
+          <div className="print-card rounded-2xl border border-line bg-ink-card p-6 sm:p-7">
             <div className="flex items-center gap-2 text-reserve">
               <Check className="h-4 w-4" />
               <span className="text-[11px] font-semibold uppercase tracking-[0.22em]">
@@ -361,7 +378,7 @@ function StatusSection() {
                   <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-reserve" />
                   <div>
                     <div className="font-medium text-foreground">{h.label}</div>
-                    <div className="text-sm text-fg-muted">{h.note}</div>
+                    <div className="text-sm leading-relaxed text-fg-muted">{h.note}</div>
                   </div>
                 </li>
               ))}
@@ -370,7 +387,7 @@ function StatusSection() {
         </Reveal>
 
         <Reveal delay={0.08}>
-          <div className="print-card rounded-2xl border border-line bg-ink-soft p-6 sm:p-7">
+          <div className="print-card rounded-2xl border border-line bg-ink-card p-6 sm:p-7">
             <div className="flex items-center gap-2 text-gold">
               <X className="h-4 w-4" />
               <span className="text-[11px] font-semibold uppercase tracking-[0.22em]">
@@ -383,7 +400,7 @@ function StatusSection() {
                   <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-gold" />
                   <div>
                     <div className="font-medium text-foreground">{m.label}</div>
-                    <div className="text-sm text-fg-muted">{m.note}</div>
+                    <div className="text-sm leading-relaxed text-fg-muted">{m.note}</div>
                   </div>
                 </li>
               ))}
@@ -397,7 +414,7 @@ function StatusSection() {
           <Quote className="mt-0.5 h-5 w-5 shrink-0 text-gold" />
           <p className="text-[15px] leading-relaxed text-foreground">
             The asset is not the token, the brand or the GitHub. The asset is the{" "}
-            <span className="text-gold">constitutional credibility</span> the blueprint
+            <span className="font-semibold text-foreground">constitutional credibility</span> the blueprint
             already encodes. Every step in this plan is engineered to convert that
             credibility into capital, custody, and a live reserve — without ever selling
             a single unbacked unit of MTQ.
@@ -417,6 +434,7 @@ function TruthSection() {
     <SectionShell
       id="truth"
       eyebrow="The brutal truth"
+      icon={Lock}
       title={
         <>
           You cannot fundraise by{" "}
@@ -428,7 +446,7 @@ function TruthSection() {
       <div className="grid gap-4 md:grid-cols-2">
         {INVARIANTS.map((inv, i) => (
           <Reveal key={inv.k} delay={i * 0.05}>
-            <div className="print-card group h-full rounded-xl border border-line bg-ink-soft p-6 transition-colors hover:border-gold/40">
+            <div className="print-card group h-full rounded-xl border border-line bg-ink-card p-6 transition-colors hover:border-gold/40">
               <div className="flex items-center gap-2.5">
                 <Lock className="h-4 w-4 text-gold" />
                 <h3 className="font-display text-lg text-foreground">{inv.k}</h3>
@@ -446,7 +464,7 @@ function TruthSection() {
             <span className="text-fg-muted">
               fundraising must flow through a
             </span>
-            <span className="font-semibold text-gold">separate equity vehicle</span>
+            <span className="font-semibold text-foreground">separate equity vehicle</span>
             <span className="text-fg-muted">— not the monetary institution, and never via MTQ.</span>
           </div>
         </div>
@@ -464,6 +482,7 @@ function ArchitectureSection() {
     <SectionShell
       id="architecture"
       eyebrow="The structural unlock"
+      icon={Building2}
       title={
         <>
           A three-entity split makes fundraising{" "}
@@ -479,7 +498,7 @@ function ArchitectureSection() {
               className={`print-card relative h-full overflow-hidden rounded-2xl border p-6 sm:p-7 ${
                 e.raiseHere
                   ? "border-gold/50 bg-gold/[0.06]"
-                  : "border-line bg-ink-soft"
+                  : "border-line bg-ink-card"
               }`}
             >
               {e.raiseHere ? (
@@ -529,10 +548,10 @@ function ArchitectureSection() {
               d: "The Institution is a utility; the company is a vendor. Regulators can licence each on its own terms.",
             },
           ].map((c) => (
-            <div key={c.t} className="rounded-xl border border-line bg-ink-soft p-5">
+            <div key={c.t} className="rounded-xl border border-line bg-ink-card p-5">
               <c.icon className="h-5 w-5 text-gold" />
               <div className="mt-3 font-semibold text-foreground">{c.t}</div>
-              <p className="mt-1.5 text-sm text-fg-muted">{c.d}</p>
+              <p className="mt-1.5 text-sm leading-relaxed text-fg-muted">{c.d}</p>
             </div>
           ))}
         </div>
@@ -550,6 +569,7 @@ function PositioningSection() {
     <SectionShell
       id="positioning"
       eyebrow="Reframing the mission"
+      icon={Target}
       title={
         <>
           “#1 choice for traders” becomes{" "}
@@ -560,7 +580,7 @@ function PositioningSection() {
     >
       <div className="grid gap-6 lg:grid-cols-2">
         <Reveal>
-          <div className="print-card h-full rounded-2xl border border-line bg-ink-soft p-6 sm:p-7">
+          <div className="print-card h-full rounded-2xl border border-line bg-ink-card p-6 sm:p-7">
             <div className="flex items-center gap-2 text-gold">
               <X className="h-4 w-4" />
               <span className="text-[11px] font-semibold uppercase tracking-[0.22em]">
@@ -569,7 +589,7 @@ function PositioningSection() {
             </div>
             <ul className="mt-5 space-y-3">
               {POSITIONING.not.map((n) => (
-                <li key={n} className="flex items-center gap-3 text-sm text-fg-muted">
+                <li key={n} className="flex items-center gap-3 text-sm leading-relaxed text-fg-muted">
                   <span className="h-1 w-1 rounded-full bg-gold/60" />
                   <span className="line-through decoration-gold/40">{n}</span>
                 </li>
@@ -601,7 +621,7 @@ function PositioningSection() {
       <Reveal delay={0.12}>
         <p className="mt-6 text-center font-display text-xl text-fg-muted sm:text-2xl">
           The positioning is the{" "}
-          <span className="text-gold">T-bill of crypto settlement</span> — boring,
+          <span className="font-semibold text-foreground">T-bill of crypto settlement</span> — boring,
           neutral, over-collateralised. That is what institutions actually want.
         </p>
       </Reveal>
@@ -618,6 +638,7 @@ function FundingSection() {
     <SectionShell
       id="funding"
       eyebrow="Where the money comes from"
+      icon={Banknote}
       title={
         <>
           Six sources, sequenced — not{" "}
@@ -629,7 +650,7 @@ function FundingSection() {
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {FUNDING_SOURCES.map((s, i) => (
           <Reveal key={s.who} delay={i * 0.05}>
-            <div className="print-card flex h-full flex-col rounded-xl border border-line bg-ink-soft p-6">
+            <div className="print-card flex h-full flex-col rounded-xl border border-line bg-ink-card p-6">
               <div className="flex items-start justify-between gap-3">
                 <CircleDollarSign className="h-5 w-5 shrink-0 text-gold" />
                 <Badge className="border-line bg-ink-card text-[10px] text-fg-muted hover:bg-ink-card">
@@ -777,7 +798,7 @@ const ganttStatusLabel: Record<GanttStatus, string> = {
 function GanttChart() {
   return (
     <Reveal>
-      <div className="print-card rounded-2xl border border-line bg-ink-soft p-5 sm:p-7">
+      <div className="print-card rounded-2xl border border-line bg-ink-card p-5 sm:p-7">
         <div className="flex items-center gap-2 text-gold">
           <Calendar className="h-4 w-4" />
           <span className="text-[11px] font-semibold uppercase tracking-[0.22em]">
@@ -909,6 +930,7 @@ function RoadmapSection() {
     <SectionShell
       id="roadmap"
       eyebrow="The five phases"
+      icon={Calendar}
       title={
         <>
           From zero budget to a live settlement rail in{" "}
@@ -929,7 +951,7 @@ function RoadmapSection() {
                 <span className="absolute left-0 top-1 flex h-11 w-11 items-center justify-center rounded-full border border-gold/40 bg-ink text-sm font-bold text-gold sm:h-[52px] sm:w-[52px]">
                   {i}
                 </span>
-                <div className="print-card rounded-2xl border border-line bg-ink-soft p-6 sm:p-7">
+                <div className="print-card rounded-2xl border border-line bg-ink-card p-6 sm:p-7">
                   <div className="flex flex-wrap items-center gap-3">
                     <span className="rounded-md bg-gold/12 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-gold">
                       {p.n}
@@ -949,12 +971,12 @@ function RoadmapSection() {
                       Raise: <span className="text-gold">{p.raise}</span>
                     </span>
                   </div>
-                  <p className="mt-4 text-sm text-fg-muted">{p.goal}</p>
+                  <p className="mt-4 text-sm leading-relaxed text-fg-muted">{p.goal}</p>
                   <div className="mt-5 grid gap-2 sm:grid-cols-2">
                     {p.milestones.map((m) => (
                       <div
                         key={m}
-                        className="flex items-start gap-2 rounded-lg bg-ink-card px-3 py-2 text-sm text-foreground"
+                        className="flex items-start gap-2 rounded-lg bg-ink px-3 py-2 text-sm leading-relaxed text-foreground"
                       >
                         <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-reserve" />
                         <span>{m}</span>
@@ -1025,6 +1047,7 @@ function SprintSection() {
     <SectionShell
       id="sprint"
       eyebrow="The next 90 days"
+      icon={Rocket}
       title={
         <>
           Zero-budget sprint —{" "}
@@ -1035,7 +1058,7 @@ function SprintSection() {
     >
       {/* Task progress legend */}
       <Reveal>
-        <div className="mb-5 flex flex-wrap items-center gap-x-5 gap-y-2 rounded-xl border border-line bg-ink-soft px-4 py-3 text-[11px] text-fg-muted">
+        <div className="mb-5 flex flex-wrap items-center gap-x-5 gap-y-2 rounded-xl border border-line bg-ink-card px-4 py-3 text-[11px] text-fg-muted">
           <span className="font-semibold uppercase tracking-[0.18em] text-fg-muted">
             Task status
           </span>
@@ -1062,7 +1085,7 @@ function SprintSection() {
           const StatusIcon = meta.Icon;
           return (
             <Reveal key={s.week} delay={i * 0.04}>
-              <div className="print-card flex h-full flex-col rounded-xl border border-line bg-ink-soft p-5">
+              <div className="print-card flex h-full flex-col rounded-xl border border-line bg-ink-card p-5">
                 <div className="flex items-center gap-2">
                   <span className="font-display text-2xl text-gold">{String(i + 1).padStart(2, "0")}</span>
                   <div className="min-w-0 flex-1">
@@ -1083,7 +1106,7 @@ function SprintSection() {
                   {s.tasks.map((t, ti) => (
                     <li
                       key={t}
-                      className="flex items-start gap-2 text-sm text-fg-muted"
+                      className="flex items-start gap-2 text-sm leading-relaxed text-fg-muted"
                       title={`Task ${ti + 1} · ${meta.label}`}
                     >
                       <span
@@ -1113,6 +1136,7 @@ function MoatSection() {
     <SectionShell
       id="moat"
       eyebrow="Becoming #1"
+      icon={Shield}
       title={
         <>
           The moat is{" "}
@@ -1124,7 +1148,7 @@ function MoatSection() {
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {MOAT.map((m, i) => (
           <Reveal key={m.title} delay={i * 0.05}>
-            <div className="print-card h-full rounded-xl border border-line bg-ink-soft p-6">
+            <div className="print-card h-full rounded-xl border border-line bg-ink-card p-6">
               <Shield className="h-5 w-5 text-gold" />
               <h3 className="font-display mt-4 text-lg text-foreground">{m.title}</h3>
               <p className="mt-2 text-sm leading-relaxed text-fg-muted">{m.body}</p>
@@ -1137,7 +1161,7 @@ function MoatSection() {
             <p className="mt-4 font-display text-lg text-foreground">
               The wedge
             </p>
-            <p className="mt-2 text-sm text-fg-muted">
+            <p className="mt-2 text-sm leading-relaxed text-fg-muted">
               Be the most boring, most audited, most over-collateralised settlement unit
               in crypto. Institutions do not want alpha from their settlement rail — they
               want finality, neutrality and a guarantee it cannot be corrupted.
@@ -1158,6 +1182,7 @@ function RisksSection() {
     <SectionShell
       id="risks"
       eyebrow="Risk register"
+      icon={AlertTriangle}
       title={<>What kills us — and how we survive it</>}
       intro="A constitutional institution is a fortress, not a gamble. These are the eight ways this fails, and the structural mitigation already written into the blueprint for each."
     >
@@ -1175,8 +1200,8 @@ function RisksSection() {
                   <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-gold" />
                   <span className="text-sm font-medium text-foreground">{r.risk}</span>
                 </div>
-                <div className="col-span-3 text-sm text-fg-muted">{r.impact}</div>
-                <div className="col-span-5 text-sm text-foreground">{r.mitigation}</div>
+                <div className="col-span-3 text-sm leading-relaxed text-fg-muted">{r.impact}</div>
+                <div className="col-span-5 text-sm leading-relaxed text-foreground">{r.mitigation}</div>
               </div>
             </Reveal>
           ))}
@@ -1195,6 +1220,7 @@ function ActionsSection() {
     <SectionShell
       id="actions"
       eyebrow="Start now"
+      icon={CheckCircle2}
       title={
         <>
           Your immediate next actions
@@ -1205,7 +1231,7 @@ function ActionsSection() {
       <div className="grid gap-3 sm:grid-cols-2">
         {NEXT_ACTIONS.map((a, i) => (
           <Reveal key={a.t} delay={i * 0.04}>
-            <div className="flex items-start gap-3 rounded-xl border border-line bg-ink-soft p-5">
+            <div className="flex items-start gap-3 rounded-xl border border-line bg-ink-card p-5">
               <span className="font-display flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-gold/30 bg-gold/10 text-sm font-bold text-gold">
                 {i + 1}
               </span>
@@ -1227,7 +1253,7 @@ function ActionsSection() {
               <h3 className="font-display text-2xl text-foreground sm:text-3xl">
                 The blueprint is the asset. Let&apos;s build the institution around it.
               </h3>
-              <p className="mt-3 max-w-xl text-sm text-fg-muted">
+              <p className="mt-3 max-w-xl text-sm leading-relaxed text-fg-muted">
                 Lock the spec. Incorporate the operating company. Publish the Constitution.
                 Ship the testnet. Open the data room. Close the pre-seed.
               </p>
@@ -1271,7 +1297,7 @@ function Footer() {
               </div>
             </div>
           </div>
-          <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-fg-muted">
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm leading-relaxed text-fg-muted">
             <a
               href="https://x.com/MithqalMTQ"
               target="_blank"

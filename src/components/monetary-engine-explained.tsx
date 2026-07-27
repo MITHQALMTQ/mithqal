@@ -55,6 +55,7 @@ import {
   RefreshCw,
   PiggyBank,
   Wallet,
+  ChevronRight,
 } from "lucide-react";
 
 /* ============================================================
@@ -238,6 +239,32 @@ export function MonetaryEngineExplained({ data }: { data?: WeightingData | null 
   const [usdDecline, setUsdDecline] = useState<number>(-10);
   const [reducedMotion, setReducedMotion] = useState<boolean>(false);
 
+  /* ---- UI9 Fix 4 — Section navigation + collapse/expand all ---- */
+  const SECTIONS_META = [
+    { id: "overview", label: "Overview" },
+    { id: "layers", label: "5 Layers" },
+    { id: "astrolabe", label: "Astrolabe" },
+    { id: "simulator", label: "Simulator" },
+    { id: "goldsilver", label: "Gold & Silver" },
+    { id: "minting", label: "Minting" },
+    { id: "guardrails", label: "Guardrails" },
+  ] as const;
+  const [openMap, setOpenMap] = useState<Record<string, boolean>>(
+    () => Object.fromEntries(SECTIONS_META.map((s) => [s.id, true])) as Record<string, boolean>
+  );
+  const toggleSection = (id: string) =>
+    setOpenMap((prev) => ({ ...prev, [id]: !prev[id] }));
+  const allOpen = SECTIONS_META.every((s) => openMap[s.id]);
+  const toggleAll = () => {
+    const next = !allOpen;
+    setOpenMap(Object.fromEntries(SECTIONS_META.map((s) => [s.id, next])) as Record<string, boolean>);
+  };
+  const scrollToSection = (id: string) => {
+    if (typeof document !== "undefined") {
+      document.getElementById(`me-${id}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
+
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
     const update = () => setReducedMotion(mq.matches);
@@ -303,44 +330,84 @@ export function MonetaryEngineExplained({ data }: { data?: WeightingData | null 
       {/* Subtle grain wash */}
       <div className="pointer-events-none absolute inset-0 grain-bg opacity-60" />
       <div className="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+        {/* ===================== UI9 Fix 4 — Section nav + Collapse/Expand All ===================== */}
+        <div className="sticky top-0 z-30 -mx-4 mb-4 border-b border-line bg-ink/85 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-fg-muted">Jump to:</span>
+            {SECTIONS_META.map((s, i) => (
+              <button
+                key={s.id}
+                type="button"
+                onClick={() => scrollToSection(s.id)}
+                className="inline-flex items-center gap-1.5 rounded-full border border-line bg-ink-card px-2.5 py-1 text-[11px] font-medium text-fg-muted transition hover:border-gold/40 hover:text-gold"
+              >
+                <span className="font-mono text-gold">{i + 1}</span>
+                <span>{s.label}</span>
+              </button>
+            ))}
+            <button
+              type="button"
+              onClick={toggleAll}
+              aria-label={allOpen ? "Collapse all sections" : "Expand all sections"}
+              className="ml-auto inline-flex items-center gap-1.5 rounded-md border border-gold/40 bg-gold/10 px-3 py-1 text-[11px] font-semibold text-gold transition hover:bg-gold/20"
+            >
+              {allOpen ? "Collapse All" : "Expand All"}
+            </button>
+          </div>
+        </div>
+
         {/* ===================== SECTION 1 — HERO ===================== */}
-        <HeroSection />
+        <CollapsibleSection id="me-overview" label="1 · Overview" open={openMap["overview"]} onToggle={() => toggleSection("overview")}>
+          <HeroSection />
+        </CollapsibleSection>
 
         {/* ===================== SECTION 2 — 5 LAYERS ===================== */}
-        <FiveLayersSection />
+        <CollapsibleSection id="me-layers" label="2 · The 5 Layers" open={openMap["layers"]} onToggle={() => toggleSection("layers")}>
+          <FiveLayersSection />
+        </CollapsibleSection>
 
         {/* ===================== SECTION 3 — ASTROLABE ===================== */}
-        <AstrolabeSection
-          weights={currentWeights}
-          baseline={liveBaseline}
-          center={center}
-          activeCode={activeCode}
-          hasShock={hasShock}
-          reducedMotion={reducedMotion}
-        />
+        <CollapsibleSection id="me-astrolabe" label="3 · Currency Basket Astrolabe" open={openMap["astrolabe"]} onToggle={() => toggleSection("astrolabe")}>
+          <AstrolabeSection
+            weights={currentWeights}
+            baseline={liveBaseline}
+            center={center}
+            activeCode={activeCode}
+            hasShock={hasShock}
+            reducedMotion={reducedMotion}
+          />
+        </CollapsibleSection>
 
         {/* ===================== SECTION 4 — INTERACTIVE SIMULATOR ===================== */}
-        <SimulatorSection
-          mode={mode}
-          onModeChange={handleModeChange}
-          selected={selected}
-          onSelect={setSelected}
-          shockPct={shockPct}
-          onShockPct={setShockPct}
-          usdDecline={usdDecline}
-          onUsdDecline={setUsdDecline}
-          momentumResult={momentumResult}
-          usdResult={usdResult}
-        />
+        <CollapsibleSection id="me-simulator" label="4 · Interactive Simulator" open={openMap["simulator"]} onToggle={() => toggleSection("simulator")}>
+          <SimulatorSection
+            mode={mode}
+            onModeChange={handleModeChange}
+            selected={selected}
+            onSelect={setSelected}
+            shockPct={shockPct}
+            onShockPct={setShockPct}
+            usdDecline={usdDecline}
+            onUsdDecline={setUsdDecline}
+            momentumResult={momentumResult}
+            usdResult={usdResult}
+          />
+        </CollapsibleSection>
 
         {/* ===================== SECTION 5 — GOLD & SILVER ===================== */}
-        <GoldSilverSection />
+        <CollapsibleSection id="me-goldsilver" label="5 · Gold & Silver Anchor" open={openMap["goldsilver"]} onToggle={() => toggleSection("goldsilver")}>
+          <GoldSilverSection />
+        </CollapsibleSection>
 
         {/* ===================== SECTION 6 — MINTING FLOW ===================== */}
-        <MintingFlowSection reducedMotion={reducedMotion} />
+        <CollapsibleSection id="me-minting" label="6 · How Minting Works" open={openMap["minting"]} onToggle={() => toggleSection("minting")}>
+          <MintingFlowSection reducedMotion={reducedMotion} />
+        </CollapsibleSection>
 
         {/* ===================== SECTION 7 — GUARDRAILS ===================== */}
-        <GuardrailsSection />
+        <CollapsibleSection id="me-guardrails" label="7 · Constitutional Guardrails" open={openMap["guardrails"]} onToggle={() => toggleSection("guardrails")}>
+          <GuardrailsSection />
+        </CollapsibleSection>
 
         {/* Footer */}
         <footer className="border-t border-line py-12 text-center">
@@ -353,6 +420,53 @@ export function MonetaryEngineExplained({ data }: { data?: WeightingData | null 
           </p>
         </footer>
       </div>
+    </div>
+  );
+}
+
+/* ============================================================
+ * UI9 Fix 4 — CollapsibleSection wrapper
+ * ------------------------------------------------------------
+ * Wraps each existing section function in a collapsible container
+ * with a small numbered label + chevron. Does NOT modify the inner
+ * section's content (so all existing animations + layouts are
+ * preserved when expanded).
+ * ============================================================ */
+
+function CollapsibleSection({
+  id,
+  label,
+  open,
+  onToggle,
+  children,
+}: {
+  id: string;
+  label: string;
+  open: boolean;
+  onToggle: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <div id={id} className="scroll-mt-24">
+      <button
+        type="button"
+        onClick={onToggle}
+        aria-expanded={open}
+        aria-controls={`${id}-body`}
+        className="flex w-full items-center justify-between gap-3 border-t border-line/60 py-3 text-left transition hover:bg-ink-soft/40"
+      >
+        <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-gold">
+          {label}
+        </span>
+        <ChevronRight
+          className={`h-4 w-4 shrink-0 text-gold transition-transform duration-300 ${open ? "rotate-90" : ""}`}
+        />
+      </button>
+      {open ? (
+        <div id={`${id}-body`} role="region">
+          {children}
+        </div>
+      ) : null}
     </div>
   );
 }

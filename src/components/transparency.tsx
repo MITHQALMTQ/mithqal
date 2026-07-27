@@ -553,6 +553,10 @@ export default function TransparencyDashboard() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [refreshedAt, setRefreshedAt] = useState<string>(new Date().toISOString());
+  // Progressive disclosure (UI9 Fix 2): "Quick View" shows KPIs + Currency
+  // Weighting + the 3 reserve layer cards. "Detailed View" reveals everything
+  // (reserve allocation sliders, safeguards, charts, on-chain verify, etc.).
+  const [detailedView, setDetailedView] = useState(false);
 
   const fetchState = useCallback(async (silent = false) => {
     if (!silent) setRefreshing(true);
@@ -650,6 +654,41 @@ export default function TransparencyDashboard() {
               surfaces the Institution&apos;s live state in real time — every MTQ minted, every
               reserve tier, every proof of reserves, and the formation progress. Anyone can audit
               it. That is the point.
+            </p>
+          </Reveal>
+
+          {/* Quick View / Detailed View toggle (UI9 Fix 2 — progressive disclosure) */}
+          <Reveal delay={0.12}>
+            <div className="mt-6 inline-flex items-center gap-1 rounded-lg border border-line bg-ink-soft p-1">
+              <button
+                type="button"
+                onClick={() => setDetailedView(false)}
+                aria-pressed={!detailedView}
+                className={`rounded-md px-3 py-1.5 text-xs font-semibold transition ${
+                  !detailedView
+                    ? "bg-gold text-ink"
+                    : "text-fg-muted hover:text-foreground"
+                }`}
+              >
+                Quick View
+              </button>
+              <button
+                type="button"
+                onClick={() => setDetailedView(true)}
+                aria-pressed={detailedView}
+                className={`rounded-md px-3 py-1.5 text-xs font-semibold transition ${
+                  detailedView
+                    ? "bg-gold text-ink"
+                    : "text-fg-muted hover:text-foreground"
+                }`}
+              >
+                Detailed View
+              </button>
+            </div>
+            <p className="mt-2 text-[11px] text-fg-muted">
+              {detailedView
+                ? "Showing the full audit trail — allocation sliders, charts, on-chain proof, cadence, and formation milestones."
+                : "Showing KPIs, currency weighting, and the 3-layer reserve snapshot. Switch to Detailed View for the full audit trail."}
             </p>
           </Reveal>
         </div>
@@ -844,7 +883,7 @@ export default function TransparencyDashboard() {
         </Reveal>
 
         {/* Dynamic Reserve Allocation (FIX 1) + Mean Reversion/Shock (FIX 2) + Liquidity Overlay (FIX 5) */}
-        {state?.monetary ? (
+        {detailedView && state?.monetary ? (
           <Reveal>
             <ReserveAllocationPanel
               totalReserve={state.monetary.reserves.market}
@@ -863,7 +902,7 @@ export default function TransparencyDashboard() {
         ) : null}
 
         {/* Gold Anchor Section (FIX 4 + VLM FIX 4) */}
-        {state?.monetary ? (
+        {detailedView && state?.monetary ? (
           <Reveal>
             <GoldAnchorSection
               goldUsd={state.monetary.goldUsd}
@@ -875,6 +914,7 @@ export default function TransparencyDashboard() {
         ) : null}
 
         {/* Reserve composition + Pie Chart (VLM FIX 3) */}
+        {detailedView ? (
         <Reveal>
           <div className="mt-6">
             <div className="flex items-center gap-2">
@@ -941,8 +981,10 @@ export default function TransparencyDashboard() {
             </div>
           </div>
         </Reveal>
+        ) : null}
 
         {/* Reserve Tier Breakdown — donut chart (P1) */}
+        {detailedView ? (
         <Reveal>
           <div className="mt-6">
             <div className="flex items-center gap-2">
@@ -995,8 +1037,10 @@ export default function TransparencyDashboard() {
             </div>
           </div>
         </Reveal>
+        ) : null}
 
         {/* Recent operations — the public audit trail */}
+        {detailedView ? (
         <Reveal>
           <div className="mt-6">
             <div className="flex items-center gap-2">
@@ -1071,6 +1115,7 @@ export default function TransparencyDashboard() {
             </div>
           </div>
         </Reveal>
+        ) : null}
 
         {/* Monetary Engine v19.0 — Constitutional Monetary Infrastructure */}
         {state?.monetary ? (
@@ -1190,6 +1235,11 @@ export default function TransparencyDashboard() {
                 </div>
               </div>
 
+              {/* Detailed-view-only contents (UI9 Fix 2): basket table, data
+                  sources label, fee schedule. Hidden in Quick View to keep
+                  the section readable as a 3-NAV snapshot. */}
+              {detailedView ? (
+                <>
               {/* 8-currency basket table — with column tooltips */}
               <div className="mt-5 overflow-x-auto rounded-xl border border-line">
                 <table className="w-full min-w-[760px] text-sm">
@@ -1291,23 +1341,28 @@ export default function TransparencyDashboard() {
                   </div>
                 ))}
               </div>
+                </>
+              ) : null}
             </div>
           </Reveal>
         ) : null}
 
         {/* NAV History (VLM FIX 3) */}
-        {state ? (
+        {detailedView && state ? (
           <Reveal>
             <NavHistoryChart currentNav={state.testnet.nav} />
           </Reveal>
         ) : null}
 
         {/* On-chain Verification (VLM FIX 5) */}
+        {detailedView ? (
         <Reveal>
           <OnChainVerificationSection porHash={state?.testnet.porHash ?? POR_HASH_DISPLAY} />
         </Reveal>
+        ) : null}
 
         {/* Formation progress */}
+        {detailedView ? (
         <Reveal>
           <div className="mt-6 rounded-2xl border border-line bg-ink-soft p-6 sm:p-7">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -1369,8 +1424,10 @@ export default function TransparencyDashboard() {
             </ul>
           </div>
         </Reveal>
+        ) : null}
 
         {/* Transparency cadence */}
+        {detailedView ? (
         <Reveal>
           <div className="mt-6 overflow-hidden rounded-2xl border border-line">
             <div className="border-b border-line bg-ink-card px-6 py-3">
@@ -1394,6 +1451,7 @@ export default function TransparencyDashboard() {
             </div>
           </div>
         </Reveal>
+        ) : null}
 
         <Separator className="my-8 bg-line" />
         <div className="flex flex-col gap-3 rounded-xl border border-gold/30 bg-gold/[0.05] p-5 sm:flex-row sm:items-center sm:justify-between">

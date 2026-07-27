@@ -181,7 +181,41 @@ const Eyebrow = ({ children }: { children: React.ReactNode }) => (
   </div>
 );
 
-function Section({ id, eyebrow, title, intro, children }: { id: string; eyebrow: string; title: React.ReactNode; intro?: React.ReactNode; children: React.ReactNode }) {
+function Section({ id, eyebrow, title, intro, children, count, defaultOpen = false }: { id: string; eyebrow: string; title: React.ReactNode; intro?: React.ReactNode; children: React.ReactNode; count?: React.ReactNode; defaultOpen?: boolean }) {
+  // UI9 Fix 3 — Progressive disclosure: when `count` is provided the section
+  // collapses into a <details> element with only the title + count visible
+  // by default. Click to reveal the intro + content. When `count` is omitted
+  // the section renders as before (always expanded).
+  if (count !== undefined) {
+    return (
+      <section id={id} className="scroll-mt-24 px-5 py-6 sm:px-8 sm:py-8">
+        <div className="mx-auto w-full max-w-6xl">
+          <details open={defaultOpen} className="group rounded-2xl border border-line bg-ink-soft/40 p-5 sm:p-6">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-4 [&::-webkit-details-marker]:hidden">
+              <div className="min-w-0 flex-1">
+                <Eyebrow>{eyebrow}</Eyebrow>
+                <h2 className="font-display mt-3 flex items-center gap-3 text-2xl text-balance sm:text-3xl">
+                  <span>{title}</span>
+                </h2>
+              </div>
+              <div className="flex shrink-0 items-center gap-3">
+                {count !== null ? (
+                  <Badge className="border-gold/30 bg-gold/10 text-[10px] font-semibold text-gold hover:bg-gold/10">
+                    {count}
+                  </Badge>
+                ) : null}
+                <ChevronRight className="h-4 w-4 shrink-0 text-gold transition-transform duration-300 group-open:rotate-90" />
+              </div>
+            </summary>
+            <div className="mt-5">
+              {intro ? <p className="max-w-2xl text-sm leading-relaxed text-fg-muted sm:text-base">{intro}</p> : null}
+              <div className="mt-6">{children}</div>
+            </div>
+          </details>
+        </div>
+      </section>
+    );
+  }
   return (
     <section id={id} className="scroll-mt-24 px-5 py-12 sm:px-8 sm:py-16">
       <div className="mx-auto w-full max-w-6xl">
@@ -238,14 +272,14 @@ export default function InfrastructureView() {
       ) : (
         <div className="mx-auto max-w-6xl px-5 pb-20 sm:px-8">
           {/* §45 Constitutional Invariants */}
-          <Section id="invariants" eyebrow="§45 — Non-Amendable Provisions" title={<>21 Constitutional Invariants</>} intro="These provisions define the permanent identity of the Institution. They cannot be modified, suspended, overridden, or reinterpreted by any amendment, policy, emergency measure, or governance decision.">
+          <Section id="invariants" eyebrow="§45 — Non-Amendable Provisions" title={<>Constitutional Invariants</>} intro="These provisions define the permanent identity of the Institution. They cannot be modified, suspended, overridden, or reinterpreted by any amendment, policy, emergency measure, or governance decision." count={`${data.invariants.length} provisions`}>
             <InvariantsSection invariants={data.invariants} />
           </Section>
 
           <Separator className="bg-line" />
 
           {/* §53 Constitutional Constants Registry */}
-          <Section id="constants" eyebrow="§53 — Constitutional Constants" title={<>Constants Registry</>} intro="The quantitative parameters of the Monetary Engine. Modifiable only through the full Constitutional Amendment Process (§43) with independent technical, economic, legal, and Sharia review.">
+          <Section id="constants" eyebrow="§53 — Constitutional Constants" title={<>Constants Registry</>} intro="The quantitative parameters of the Monetary Engine. Modifiable only through the full Constitutional Amendment Process (§43) with independent technical, economic, legal, and Sharia review." count={`${data.constants.length} constants`}>
             <div className="glass overflow-hidden rounded-xl">
               <div className="max-h-[60vh] overflow-y-auto overflow-x-auto">
                 <table className="w-full min-w-[700px] text-sm">
@@ -272,7 +306,7 @@ export default function InfrastructureView() {
           <Separator className="bg-line" />
 
           {/* §37 Assurance Framework */}
-          <Section id="proofs" eyebrow="§37 — Proof of Reserves" title={<>7-Proof Assurance Framework</>} intro="Every circulating MTQ is continuously verified by 7 independent proofs — reserve existence, sufficiency, ratio, liquidity, risk, oracle integrity, and constitutional compliance. Published daily.">
+          <Section id="proofs" eyebrow="§37 — Proof of Reserves" title={<>Assurance Framework</>} intro="Every circulating MTQ is continuously verified by 7 independent proofs — reserve existence, sufficiency, ratio, liquidity, risk, oracle integrity, and constitutional compliance. Published daily." count={`${data.assuranceFramework.length} proofs`}>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               {data.assuranceFramework.map((proof) => (
                 <div key={proof.type} className="glass card-hover rounded-lg p-4">
@@ -294,7 +328,7 @@ export default function InfrastructureView() {
           <Separator className="bg-line" />
 
           {/* §34 Redemption Hierarchy */}
-          <Section id="redemption" eyebrow="§34 — Redemption Sequencing" title={<>Constitutional Redemption Hierarchy</>} intro="Redemptions are satisfied using the most liquid assets first. Gold — the constitutional anchor — is NEVER liquidated while sufficient eligible assets remain.">
+          <Section id="redemption" eyebrow="§34 — Redemption Sequencing" title={<>Constitutional Redemption Hierarchy</>} intro="Redemptions are satisfied using the most liquid assets first. Gold — the constitutional anchor — is NEVER liquidated while sufficient eligible assets remain." count={`${data.redemptionHierarchy.length} tiers`}>
             <div className="glass rounded-xl p-6">
               <div className="space-y-2">
                 {data.redemptionHierarchy.map((tier, i) => (
@@ -314,7 +348,7 @@ export default function InfrastructureView() {
           <Separator className="bg-line" />
 
           {/* §35 Settlement Finality */}
-          <Section id="settlement" eyebrow="§35 — Settlement Finality" title={<>6-Stage Settlement Pipeline</>} intro="Settlement is NOT final until all 6 constitutional validations complete. Each stage is deterministic, auditable, and independently verifiable.">
+          <Section id="settlement" eyebrow="§35 — Settlement Finality" title={<>Settlement Pipeline</>} intro="Settlement is NOT final until all 6 constitutional validations complete. Each stage is deterministic, auditable, and independently verifiable." count={`${data.settlementPipeline.length} stages`}>
             <div className="glass rounded-xl p-6">
               <div className="space-y-2">
                 {data.settlementPipeline.map((stage) => (
@@ -382,7 +416,7 @@ export default function InfrastructureView() {
           <Separator className="bg-line" />
 
           {/* §49 Sharia */}
-          <Section id="sharia" eyebrow="§49 — Sharia Governance" title={<>Sharia Compliance Framework</>} intro="Continuous compliance with Islamic finance principles through an independent Constitutional Sharia Governance Framework. AAOIFI standards, independent Sharia Committee, prohibition of Riba, Gharar, and Haram industries.">
+          <Section id="sharia" eyebrow="§49 — Sharia Governance" title={<>Sharia Compliance Framework</>} intro="Continuous compliance with Islamic finance principles through an independent Constitutional Sharia Governance Framework. AAOIFI standards, independent Sharia Committee, prohibition of Riba, Gharar, and Haram industries." count={`${data.shariaRequirements.length} requirements`}>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {data.shariaRequirements.map((s) => (
                 <div key={s.requirement} className="glass card-hover rounded-lg p-4">
@@ -398,7 +432,7 @@ export default function InfrastructureView() {
           <Separator className="bg-line" />
 
           {/* §40 Stress Testing */}
-          <Section id="stress" eyebrow="§40 — Stress Testing" title={<>Constitutional Stress Scenarios</>} intro="Continuous quantitative stress testing demonstrates that constitutional solvency, liquidity, and settlement continuity remain preserved under adverse market conditions.">
+          <Section id="stress" eyebrow="§40 — Stress Testing" title={<>Constitutional Stress Scenarios</>} intro="Continuous quantitative stress testing demonstrates that constitutional solvency, liquidity, and settlement continuity remain preserved under adverse market conditions." count={`${data.stressScenarios.length} categories`}>
             <div className="grid gap-3 sm:grid-cols-2">
               {data.stressScenarios.map((cat) => (
                 <div key={cat.category} className="glass card-hover rounded-lg p-4">
