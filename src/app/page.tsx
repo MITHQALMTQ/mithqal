@@ -1,6 +1,7 @@
 "use client";
 
 import { useSyncExternalStore, useEffect } from "react";
+import { useSession } from "next-auth/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { BookOpen, Landmark, FlaskConical, Presentation, ScrollText, LayoutDashboard, Eye, Network, ShieldCheck, Cpu, Compass, HelpCircle } from "lucide-react";
 import Playbook from "@/components/playbook";
@@ -108,7 +109,7 @@ export default function Page() {
     <div className="print-page flex min-h-screen flex-col bg-ink text-foreground">
       <ViewSwitcher view={view} setView={setView} />
       <CommandPalette />
-      <main className="flex-1">
+      <main id="main-content" className="flex-1">
         <AnimatePresence mode="wait">
           <motion.div
             key={view}
@@ -118,7 +119,7 @@ export default function Page() {
             transition={{ duration: 0.25, ease: "easeOut" }}
           >
             {view === "playbook" ? (
-              <Playbook />
+              <PlaybookGate />
             ) : view === "testnet" ? (
               <TestnetDashboard />
             ) : view === "os" ? (
@@ -145,6 +146,35 @@ export default function Page() {
           </motion.div>
         </AnimatePresence>
       </main>
+    </div>
+  );
+}
+
+/* ---- Playbook auth gate (P0 fix: prevent public access to strategic document) ---- */
+function PlaybookGate() {
+  const { data: session } = useSession();
+  if (session) return <Playbook />;
+  return (
+    <div className="grain-bg flex min-h-screen items-center justify-center px-5">
+      <div className="max-w-md text-center">
+        <BookOpen className="mx-auto mb-4 h-12 w-12 text-gold" />
+        <h2 className="font-display text-2xl text-foreground">Strategic Document</h2>
+        <p className="mt-2 text-sm text-fg-muted">
+          The Execution Playbook is a confidential strategic document available to authenticated operators.
+        </p>
+        <p className="mt-4 text-xs text-fg-muted">
+          Switch to the Admin view to sign in, then return here.
+        </p>
+        <button
+          onClick={() => {
+            localStorage.setItem("mithqal.view", "admin");
+            window.dispatchEvent(new Event("mithqal:view-change"));
+          }}
+          className="mt-6 rounded-md bg-gold px-5 py-2.5 text-sm font-semibold text-ink transition hover:bg-gold/90"
+        >
+          Go to Admin Sign In
+        </button>
+      </div>
     </div>
   );
 }

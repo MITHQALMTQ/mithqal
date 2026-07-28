@@ -24,7 +24,7 @@ const fraunces = Fraunces({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://mithqal.io"),
+  metadataBase: new URL("https://mithqal.vercel.app"),
   title: {
     default: "Mithqal — Constitutional Settlement Institution",
     template: "%s · Mithqal",
@@ -48,7 +48,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://mithqal.io",
+    url: "https://mithqal.vercel.app",
     siteName: "Mithqal",
     title: "Mithqal — Constitutional Settlement Institution",
     description:
@@ -96,6 +96,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${fraunces.variable} antialiased bg-background text-foreground`}
       >
+        <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[200] focus:rounded-md focus:bg-gold focus:px-4 focus:py-2 focus:text-ink">
+          Skip to main content
+        </a>
         <Providers>
           <CommandPalette />
           {children}
