@@ -1443,7 +1443,7 @@ function GoldSilverSection() {
     <section className="border-t border-line py-16 sm:py-20">
       <SectionHeader
         eyebrow="05 — The Anchor"
-        title="Gold does two jobs, and neither one moves"
+        title="Gold does two jobs, and neither role shifts with currency weight changes"
         lede="Gold isn't a currency competing for space in the basket above. It plays two separate, quieter roles."
       />
 
@@ -1569,7 +1569,7 @@ function GoldSilverSection() {
           <span className="font-semibold text-gold">Key insight:</span> gold is{" "}
           <em>not</em> in the currency basket — it is a separate structural layer governed by constitutional ranges. When
           currencies drop against gold → their weight decreases → but the gold{" "}
-          <span className="font-semibold text-gold">reserve layer (16%)</span> doesn't change.
+          <span className="font-semibold text-gold">reserve layer (target: 20% of total, within 15–25% range)</span> remains within its constitutional range.
         </p>
       </Reveal>
     </section>
