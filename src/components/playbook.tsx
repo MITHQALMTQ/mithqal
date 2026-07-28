@@ -330,8 +330,8 @@ function Hero() {
           <div className="mt-8 grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-line bg-line sm:grid-cols-4">
             {[
               { k: "Blueprint", v: "v19.0", s: "1.46M-char Constitution" },
-              { k: "Capital", v: "$0", s: "Zero budget — sweat equity" },
-              { k: "Entity", v: "None", s: "No company, yet" },
+              { k: "Capital", v: "Pre-seed", s: "Pre-institutional — founder dedication phase" },
+              { k: "Entity", v: "JOZOUR LLC", s: "Registered (NJ, USA)" },
               { k: "Target raise", v: "$0.25–8M", s: "Pre-seed → Seed (Entity B)" },
             ].map((c) => (
               <div key={c.k} className="bg-ink-soft p-4 sm:p-5">
@@ -426,14 +426,14 @@ function StatusSection() {
 }
 
 /* ------------------------------------------------------------------ */
-/*  The brutal truth — invariants                                      */
+/*  Strategic Assessment — invariants                                      */
 /* ------------------------------------------------------------------ */
 
 function TruthSection() {
   return (
     <SectionShell
       id="truth"
-      eyebrow="The brutal truth"
+      eyebrow="Strategic Assessment"
       icon={Lock}
       title={
         <>
@@ -1183,7 +1183,7 @@ function RisksSection() {
       id="risks"
       eyebrow="Risk register"
       icon={AlertTriangle}
-      title={<>What kills us — and how we survive it</>}
+      title={<>Risk Register and Mitigation Framework</>}
       intro="A constitutional institution is a fortress, not a gamble. These are the eight ways this fails, and the structural mitigation already written into the blueprint for each."
     >
       <div className="overflow-hidden rounded-2xl border border-line">

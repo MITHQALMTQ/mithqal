@@ -6,12 +6,12 @@ export const STATUS = {
     { label: "Blueprint v19.0 — FINAL", note: "Full constitutional specification (reserves, governance, compliance, post-quantum, lifecycle)" },
     { label: "GitHub repository", note: "github.com/MITHQALMTQ/mithqal" },
     { label: "X / Twitter presence", note: "@MithqalMTQ" },
-    { label: "Founder conviction", note: "Zero budget, full commitment" },
+    { label: "Founder commitment", note: "Pre-institutional capital phase — built through founder dedication" },
   ],
   missing: [
     { label: "Legal entity — JOZOUR LLC", note: "JOZOUR LLC registered (NJ, USA). Foundation pending." },
-    { label: "Team (none)", note: "No co-founders, no advisors of record, no Council" },
-    { label: "Capital ($0)", note: "No runway, no custody, no audits" },
+    { label: "Formation Committee", note: "Recruitment underway — advisors and Council nominees being approached" },
+    { label: "Capital", note: "Pre-seed phase — institutional capital anticipated upon anchor participant confirmation" },
     { label: "Working testnet ✅", note: "Deployed on Monad Testnet. 9/9 on-chain tests PASS." },
   ],
 };
@@ -57,7 +57,7 @@ export const PHASES = [
     n: "Phase 0",
     title: "Formation & Credibility",
     window: "Months 0–3",
-    capital: "$0 (sweat equity)",
+    capital: "Pre-institutional",
     goal: "Convert the blueprint into a Term-Sheet-ready narrative + a live testnet + a Formation Committee candidate list.",
     milestones: [
       "Operating company (Entity B) incorporated — low-cost jurisdiction",
