@@ -2973,3 +2973,295 @@ Stage Summary:
 - ✅ All existing content, sections, data, and API calls preserved. No removals.
 - ✅ No new libraries introduced. Only existing components, hooks, and CSS
   utilities were reused.
+
+---
+Task ID: FREE
+Agent: general-purpose sub-agent (Implement ALL free recommendations + FAQ page)
+
+Task: Implement every free-of-charge recommendation in RECOMMENDATIONS.md /
+VLM-RECOMMENDATIONS.md (groups A4-A5, B6-B7, C1, D1/D3/D5, E4) plus ship a
+new searchable FAQ page as a 12th top-level view.
+
+Reference Files Consulted:
+- /home/z/my-project/worklog.md (last 2 sections — Task UI9 + Task REDESIGN —
+  for the existing design system tokens, the Section/Reveal pattern, the
+  Quick View/Detailed View toggle on transparency.tsx, the OS page
+  ReserveHealthGauge reference, the ALL_ARTICLES.length === 47 verification
+  note, and the rate-limit library's enforceRateLimit signature)
+- /home/z/my-project/src/components/transparency.tsx (lines 519-532 — local
+  LiveTimestamp helper; lines 830 — KPI grid closing Reveal; lines 1225-1248
+  — §22A basket verification card; the TransparencyState.generatedAt field
+  definition at line 167)
+- /home/z/my-project/src/components/operating-system.tsx (lines 1491-1609 —
+  the existing ReserveHealthGauge mock-implementation, used as the visual +
+  formula reference for E4's live-data variant on the Transparency page)
+- /home/z/my-project/src/app/api/transparency/route.ts (line 169 — confirmed
+  generatedAt is returned in the response payload, used by A4)
+- /home/z/my-project/src/lib/rate-limit.ts (the enforceRateLimit helper —
+  takes namespace, req, maxRequests, windowMs; returns Response | null)
+- /home/z/my-project/src/app/api/mint/route.ts + redeem/route.ts +
+  transfer/route.ts + brain/route.ts + brain/risk/route.ts +
+  brain/anomaly/route.ts (existing rate-limit usage — confirmed transfer,
+  brain, brain/risk, brain/anomaly already enforce the spec'd limits)
+- /home/z/my-project/src/lib/use-wallet.ts (lines 38-40 — the placeholder
+  WC_PROJECT_ID; lines 297-308 — the existing WalletConnect option that
+  always advertised itself as `installed: true`)
+- /home/z/my-project/src/components/deck.tsx (lines 314-323 — confirmed the
+  slide counter "01 / 10" already renders + navigates through all 10 slides
+  via the pill row at lines 336-356)
+- /home/z/my-project/src/components/constitution.tsx (lines 129-138 — the
+  top bar where the count badge would sit)
+- /home/z/my-project/src/app/not-found.tsx (the visual language reference
+  for the new error.tsx — gold seal + dark grain-bg + center stack)
+- /home/z/my-project/src/lib/db.ts (db.$executeRawUnsafe — used by the
+  /api/health db probe to run SELECT 1)
+
+Work Log:
+
+**A4 — "Last updated" timestamp below KPI grid (transparency.tsx):**
+Added a new Reveal block immediately after the KPI grid `</Reveal>` (was
+line 830). It renders `<LiveTimestamp iso={state.generatedAt} label="Last updated" />`
+— the local LiveTimestamp helper (defined at line 519) already re-renders
+every second so the relative time ("3s ago") stays live. The timestamp
+uses the `generatedAt` field returned by /api/transparency (line 169 of
+the route), which is `new Date().toISOString()` set on every snapshot.
+The block is wrapped in `{state ? (...) : null}` so it doesn't render
+during the initial loading skeleton.
+
+**A5 — "Powered by Monad" badge in PublicFooter (public-site.tsx):**
+Added a new anchor link to the existing footer link row (was line 1591).
+The badge is a gold pill (`border-gold/40 bg-gold/10 text-gold`) with a
+Hexagon icon + the text "Powered by Monad" + an ExternalLink icon,
+opening https://testnet.monadscan.com in a new tab. Added `Hexagon` to
+the lucide-react import block at the top of the file. The existing footer
+links (API Docs, @MithqalMTQ, GitHub, Constitution v19.0) and the
+copyright / legal paragraphs below are unchanged.
+
+**B6 — Constitution 47 articles verified + count badge (constitution.tsx):**
+Verified (via `bun -e 'const {ALL_ARTICLES} = require("./src/lib/constitution-data.ts"); console.log(ALL_ARTICLES.length)'`)
+that ALL_ARTICLES.length === 47 — all 47 articles + the preamble are
+rendered via the existing LAYERS.flatMap + ALL_ARTICLES search + prev/next
+nav paths (no rendering bug). Added a Badge to the top-bar next to
+"The Constitution" title showing "{ALL_ARTICLES.length} Articles · v19.0
+Constitution" — `hidden ... sm:inline-flex` so it doesn't crowd the bar on
+mobile. Badge is read-only (gold tone) — it surfaces the spec scale at a
+glance.
+
+**B7 — Deck 10 slides verified (deck.tsx):**
+Verified (via `bun -e 'const {SLIDES} = require("./src/lib/deck-data.ts"); console.log(SLIDES.length)'`)
+that SLIDES.length === 10. The existing slide counter (lines 314-323)
+already shows "01/10" through "10/10" via `<span>{PAD2(index + 1)}</span>
+<span>/</span><span>{PAD2(TOTAL)}</span>`, the numbered pill row
+(lines 336-356) already navigates through all 10 slides, and the Prev/Next
+buttons + arrow-key shortcuts already enforce the 0..9 bounds via the
+`goTo` clamping helper. No changes needed — task spec satisfied by the
+existing implementation.
+
+**C1 — WalletConnect Project ID placeholder + "Coming soon" fallback
+(use-wallet.ts):**
+Replaced the bare `const WC_PROJECT_ID = "8e6e0e2e..."` with a 4-step
+operator-onboarding comment block + a runtime check that reads
+`process.env.NEXT_PUBLIC_WC_PROJECT_ID` (returns the env value if set and
+not equal to the placeholder, else falls back to the placeholder). A new
+boolean `WALLETCONNECT_ENABLED = WC_PROJECT_ID !== WC_PLACEHOLDER` is
+derived. The WalletConnect option in `getWalletOptions()` now sets:
+  - `description`: "Scan with any mobile wallet" when enabled, else
+    "Coming soon — operator must set NEXT_PUBLIC_WC_PROJECT_ID"
+  - `installed: WALLETCONNECT_ENABLED` (was hardcoded `true`)
+  - `downloadUrl: "https://cloud.walletconnect.com"` (was unset)
+  - `connect()`: throws a clear Error if !WALLETCONNECT_ENABLED before
+    attempting the dynamic `import("@walletconnect/sign-client")` — so
+    clicking the option in the modal shows the error toast rather than
+    a silent SignClient.init failure with the placeholder ID.
+
+**D1 — Rate limiting verified + tightened (mint + redeem):**
+- mint/route.ts: changed `enforceRateLimit("mint", req, 20, 60_000)` →
+  `enforceRateLimit("mint", req, 10, 60_000)` (10/min/IP per spec). Also
+  updated the doc-comment + inline comment to reflect the new limit.
+- redeem/route.ts: same change — 20 → 10/min/IP, comments updated.
+- transfer/route.ts: verified `enforceRateLimit("transfer", req, 20, 60_000)`
+  already enforces 20/min/IP (spec said "already has 20/min — verify").
+- brain/route.ts: verified `enforceRateLimit("brain-query", req, 5, 60_000)`
+  already enforces 5/min/IP (spec said "already has, verify").
+- brain/risk/route.ts: verified `enforceRateLimit("brain-risk", req, 5, 60_000)`
+  already enforces 5/min/IP — matches spec, no change needed.
+- brain/anomaly/route.ts: verified `enforceRateLimit("brain-anomaly", req, 5, 60_000)`
+  already enforces 5/min/IP — matches spec, no change needed.
+
+**D3 — /api/health endpoint (new file src/app/api/health/route.ts):**
+New GET handler that probes four upstream dependencies in parallel:
+  - db:     `await db.$executeRawUnsafe("SELECT 1")` via the libsql client
+  - rpc:    POST `eth_blockNumber` to https://testnet-rpc.monad.xyz (5s
+            timeout; checks res.ok + json.result + json.error)
+  - oracle: GET `${origin}/api/oracle` (8s timeout; origin resolved from
+            VERCEL_URL → NEXT_PUBLIC_APP_URL → localhost:3000 fallback)
+  - smtp:   checks `process.env.SMTP_HOST` is set (does NOT send email)
+Returns 200 + `{ status: "healthy", checks, generatedAt }` when every
+probe's `ok: true`, else 503 + `{ status: "degraded", checks, generatedAt }`.
+Each check includes `latencyMs` + `detail` (block number, fetchedAt,
+SMTP_HOST) + `error` string on failure. Unauthenticated + not
+rate-limited so external monitors can poll freely.
+
+**D5 — error.tsx error boundary (new file src/app/error.tsx):**
+New "use client" error boundary (Next.js convention — must be client so
+the reset() action can re-render the failing subtree). Renders a
+grain-bg center stack matching the not-found.tsx visual language: Logo,
+red "Error" pill, "Something went wrong" headline (with gold-text on
+"wrong"), explanation paragraph, three CTAs (Try again → reset();
+Reload page → window.location.reload(); Return to the Institution →
+Link to "/"). Below the CTAs, a collapsible <details> "Technical
+details" panel shows the error.message (red mono), error.digest (the
+stable Next.js id), and error.stack (muted, max-h-48 scroll). The
+useEffect on `[error]` logs to console.error so any future
+error-reporting service (Sentry etc.) can hook in.
+
+**E4 — Reserve Health gauge on Transparency page (transparency.tsx):**
+Added a new `ReserveHealthGauge` function component (lines 546-697) that
+takes `rr, lcrRaw, cri, durationRaw, maxDuration, basket` props and
+computes the same 0-100 score as the OS page gauge:
+  Score = RR×0.4 + LCR×0.2 + CRI×0.2 + Duration×0.1 + Basket×0.1
+with inputs normalized to 0-100:
+  - RR already 0-100 (e.g. 97.86)
+  - LCR × 100 (capped at 100)
+  - CRI kept as-is (already 0-100)
+  - Duration inverted: `(1 - portfolioDuration / maxDuration) × 100`
+    so a portfolio at 0y contributes 100, one at the max (0.75y)
+    contributes 0
+  - Basket = 100 if §22A verification passed, 0 otherwise
+The SVG semicircular gauge + needle + tick labels + 5-metric breakdown
+strip + formula caption mirror the OS page implementation. Mounted the
+gauge inside the Monetary Engine section, right after the §22A Basket
+Verification card (so it's visible in both Quick View and Detailed View),
+passing live values from `state.monetary`:
+  `<ReserveHealthGauge rr={state.monetary.reserveRatio.ratio}
+     lcrRaw={state.monetary.lcr.ratio}
+     cri={state.monetary.cri.cri}
+     durationRaw={state.monetary.portfolioDuration}
+     maxDuration={state.monetary.maxDuration ?? 0.75}
+     basket={state.monetary.basketVerification.passed ? 100 : 0} />`
+
+**Part 2 — FAQ page (new file src/components/faq.tsx, 530 lines):**
+New "use client" component with 20 Q&As (the full set listed in the
+task spec). Structure:
+  - Hero section: Badge ("FAQ"), Badge ("20 questions · v19.0"), Logo +
+    "Frequently Asked" headline (gold-text), intro paragraph
+  - Search input: filters by multi-word AND query across question +
+    answer + category + tags. Clear (X) button appears when query is
+    non-empty. Uses `matchesQuery` helper that splits on whitespace
+    and requires every token to match.
+  - Category pills: 6 options (All, Identity, Reserves, Governance,
+    Operations, Technical). Each shows a count badge. Active pill uses
+    `bg-gold text-ink`, inactive uses border-line + hover gold.
+  - Question list: numbered (01-20), each row is a button that toggles
+    an AnimatePresence panel. Chevron rotates 90° on open. Each row
+    shows the question + a category icon (Landmark/Banknote/Scale/
+    Coins/Cpu) + category label. Open panel shows the answer + a
+    row of #tag chips.
+  - Empty state: when filters yield 0 results, shows a HelpCircle icon,
+    the unmatched query, and a "Reset filters" button.
+  - CTA card: "Still have questions?" → links to /?view=constitution
+    and /?view=transparency (both open in new tabs via ExternalLink
+    icon cue).
+  - Footer: separator + "20 questions · 5 categories · Mithqal v19.0
+    Constitutional Settlement Institution. Nothing here constitutes an
+    offer to sell securities or any MTQ unit."
+
+Uses only existing imports: motion + AnimatePresence from framer-motion;
+Search, ChevronDown, HelpCircle, X, ExternalLink, Shield, Banknote,
+Scale, Landmark, Coins, Cpu from lucide-react; Badge + Separator from
+shadcn/ui; Logo + Reveal from the existing components. No new
+dependencies introduced. The Shield import is used only as the type
+reference `typeof Shield` in the CATEGORIES array typing.
+
+**Part 3 — FAQ wired into page.tsx + command-palette.tsx:**
+page.tsx changes:
+  - Added `HelpCircle` to the lucide-react import block
+  - Added `import FAQ from "@/components/faq";`
+  - Added `"faq"` to the `View` union type
+  - Added `{ id: "faq", label: "FAQ", icon: HelpCircle, hint: "Frequently asked", tKey: "nav.faq" }` to the VIEWS array (positioned after "deck", before "playbook")
+  - Added `"faq"` to the VALID_VIEWS array
+  - Added the render branch `: view === "faq" ? (<FAQ />) :` to the
+    view-switching ternary (positioned after "engine", before the
+    PublicSite fallback)
+
+command-palette.tsx changes:
+  - Added `HelpCircle` to the lucide-react import block
+  - Added `"faq"` to the `ViewId` union type
+  - Added a new PaletteItem to the VIEWS array:
+    `{ id: "v-faq", type: "view", label: "FAQ",
+       hint: "Frequently asked questions", icon: HelpCircle,
+       keywords: "faq help questions answers reserves governance sharia fees wallet connect brain",
+       run: () => navigateToView("faq") }`
+    The keywords field ensures Cmd+K searches for "sharia", "fees",
+    "wallet connect", etc. all surface the FAQ entry.
+
+**Verification:**
+- `cd /home/z/my-project && bun run lint 2>&1 | tail -5` → `$ eslint .`
+  (exit 0, no warnings, no errors). CLEAN.
+- `npx tsc --noEmit` → 0 new errors in any modified file. The single
+  error in `src/lib/use-wallet.ts(159,11)` (`Property 'modal' does not
+  exist on type ...`) is pre-existing — verified by `git stash` then
+  re-running tsc (it appears at line 144 in the unmodified file, which
+  is exactly 15 lines above the post-edit location because my comment
+  block added 15 lines). All other tsc errors are in unrelated files
+  (admin.tsx setLoggingIn, operating-system.tsx `never` types,
+  oracle-data.ts consensusPrice, testnet-engine.ts magnitude,
+  v19-infrastructure.ts remaining, db.ts Transaction/Client mismatch,
+  BigInt-literal errors in oracle-client/contract-reader/onchain-test,
+  `update` method missing on testnetOperation in the seed routes).
+- `wc -l` final counts: faq.tsx 530 (new), error.tsx 125 (new),
+  api/health/route.ts 189 (new), transparency.tsx 3357 (was 3180; +177
+  for ReserveHealthGauge + A4 timestamp + E4 mount), public-site.tsx
+  1664 (was 1651; +13 for Hexagon import + Powered by Monad badge),
+  constitution.tsx 680 (was 674; +6 for the count badge),
+  deck.tsx 475 (unchanged — already spec-compliant), use-wallet.ts 455
+  (was 428; +27 for the WC_PROJECT_ID env check + Coming soon fallback
+  + downloadUrl field + connect guard), page.tsx 206 (was 203; +3 for
+  the FAQ View + VIEWS entry + render branch), command-palette.tsx 480
+  (was 478; +2 for HelpCircle import + v-faq PaletteItem),
+  api/mint/route.ts 164 (unchanged line count — only changed 20 → 10
+  in two places + updated comments), api/redeem/route.ts 171
+  (unchanged — same minor edits).
+- All existing sections, content, data, API calls, and components
+  preserved. No section was removed. No data was modified. Only
+  conditional additions + a new view + new API route + new error
+  boundary were introduced.
+- "use client" directives preserved on all interactive components
+  (transparency.tsx, public-site.tsx, constitution.tsx, deck.tsx,
+  use-wallet.ts, faq.tsx, page.tsx, command-palette.tsx, error.tsx).
+- All existing components reused (Reveal, Badge, Separator, motion,
+  framer-motion AnimatePresence, lucide-react icons, Logo, LiveTimestamp,
+  MetricTooltip, DetailModal). No new component dependencies introduced.
+- Gold/dark theme consistent — only the existing palette tokens were
+  used (bg-ink, bg-ink-soft, bg-ink-card, border-line, text-gold,
+  text-gold-soft, text-reserve, text-destructive, text-fg-muted,
+  text-foreground, gold-text class, grain-bg class).
+
+Stage Summary:
+- ✅ A4 — Last updated timestamp below KPI grid in transparency.tsx
+- ✅ A5 — Powered by Monad badge in public-site.tsx footer
+- ✅ B6 — Constitution 47 articles verified; "47 Articles · v19.0
+  Constitution" badge added to the top bar
+- ✅ B7 — Deck 10 slides verified; slide counter + pill nav already
+  present (no changes needed)
+- ✅ C1 — WalletConnect Project ID placeholder made explicit via env
+  var + "Coming soon" fallback when not configured
+- ✅ D1 — Rate limiting tightened on mint + redeem (20→10/min/IP);
+  transfer, brain, brain/risk, brain/anomaly verified at spec'd limits
+- ✅ D3 — /api/health endpoint created (DB, RPC, oracle, SMTP probes;
+  200/503 with healthy/degraded payload)
+- ✅ D5 — error.tsx root error boundary created (Try again + Reload +
+  Return to Institution + collapsible technical details)
+- ✅ E4 — Reserve Health gauge added to transparency.tsx, fed by live
+  /api/transparency data (RR/LCR/CRI/Duration/Basket inputs)
+- ✅ Part 2 — FAQ page created (20 Q&As, searchable, accordion,
+  gold/dark theme, 5 categories)
+- ✅ Part 3 — FAQ wired into page.tsx (View type, VIEWS array,
+  VALID_VIEWS, render branch) + command-palette.tsx (ViewId, VIEWS,
+  keywords)
+- ✅ `bun run lint` — clean (0 errors, 0 warnings, exit 0)
+- ✅ `npx tsc --noEmit` — 0 new errors in modified files; the single
+  use-wallet.ts modal error is pre-existing
+- ✅ All existing content, sections, data, and API calls preserved
+- ✅ No new libraries introduced. Only existing components, hooks,
+  and CSS utilities were reused

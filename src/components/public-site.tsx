@@ -29,6 +29,7 @@ import {
   Activity,
   TrendingUp,
   Coins,
+  Hexagon,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -1591,6 +1592,19 @@ function PublicFooter() {
             <span className="inline-flex items-center gap-1.5">
               <FileCheck className="h-4 w-4" /> Constitution v19.0
             </span>
+            {/* A5 — Powered by Monad badge. Links to the Monad Testnet explorer
+                so visitors can verify MTQ on-chain. */}
+            <a
+              href="https://testnet.monadscan.com"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1.5 rounded-full border border-gold/40 bg-gold/10 px-2.5 py-1 text-[11px] font-semibold text-gold transition hover:border-gold hover:bg-gold/20"
+              title="Mithqal is deployed on Monad Testnet — open the explorer (opens in a new tab)"
+            >
+              <Hexagon className="h-3 w-3" aria-hidden="true" />
+              Powered by Monad
+              <ExternalLink className="h-3 w-3" aria-hidden="true" />
+            </a>
           </div>
         </div>
         <Separator className="my-6 bg-line" />

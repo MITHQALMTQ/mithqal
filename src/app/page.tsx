@@ -2,7 +2,7 @@
 
 import { useSyncExternalStore, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { BookOpen, Landmark, FlaskConical, Presentation, ScrollText, LayoutDashboard, Eye, Network, ShieldCheck, Cpu, Compass } from "lucide-react";
+import { BookOpen, Landmark, FlaskConical, Presentation, ScrollText, LayoutDashboard, Eye, Network, ShieldCheck, Cpu, Compass, HelpCircle } from "lucide-react";
 import Playbook from "@/components/playbook";
 import PublicSite from "@/components/public-site";
 import TestnetDashboard from "@/components/testnet";
@@ -12,6 +12,7 @@ import AdminConsole from "@/components/admin";
 import TransparencyDashboard from "@/components/transparency";
 import InfrastructureView from "@/components/infrastructure";
 import TestnetAudit from "@/components/testnet-audit";
+import FAQ from "@/components/faq";
 import { OperatingSystem } from "@/components/operating-system";
 import { MonetaryEngineExplained } from "@/components/monetary-engine-explained";
 import { LiveStatus } from "@/components/live-status";
@@ -20,7 +21,7 @@ import { useLanguage } from "@/components/language-provider";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { ThemeToggle } from "@/components/theme-toggle";
 
-type View = "institution" | "transparency" | "infrastructure" | "playbook" | "testnet" | "audit" | "deck" | "constitution" | "admin" | "os" | "engine";
+type View = "institution" | "transparency" | "infrastructure" | "playbook" | "testnet" | "audit" | "deck" | "constitution" | "admin" | "os" | "engine" | "faq";
 
 const STORAGE_KEY = "mithqal.view";
 const CHANGE_EVENT = "mithqal:view-change";
@@ -40,6 +41,7 @@ const VIEWS: ViewDef[] = [
   { id: "os", label: "OS", icon: Cpu, hint: "Operating System", tKey: "nav.os" },
   { id: "audit", label: "Audit", icon: ShieldCheck, hint: "Testnet validation v1.0", tKey: "nav.audit" },
   { id: "deck", label: "Deck", icon: Presentation, hint: "Investor teaser", tKey: "nav.deck" },
+  { id: "faq", label: "FAQ", icon: HelpCircle, hint: "Frequently asked", tKey: "nav.faq" },
   { id: "playbook", label: "Playbook", icon: BookOpen, hint: "Internal · COO/PM", tKey: "nav.playbook" },
   { id: "admin", label: "Admin", icon: LayoutDashboard, hint: "Intake pipeline", tKey: "nav.admin" },
 ];
@@ -56,7 +58,7 @@ function subscribe(cb: () => void) {
   };
 }
 
-const VALID_VIEWS: View[] = ["institution", "transparency", "infrastructure", "constitution", "testnet", "os", "audit", "deck", "playbook", "admin", "engine"];
+const VALID_VIEWS: View[] = ["institution", "transparency", "infrastructure", "constitution", "testnet", "os", "audit", "deck", "playbook", "admin", "engine", "faq"];
 
 function getSnapshot(): View {
   const v = window.localStorage.getItem(STORAGE_KEY);
@@ -135,6 +137,8 @@ export default function Page() {
               <InfrastructureView />
             ) : view === "engine" ? (
               <MonetaryEngineExplained />
+            ) : view === "faq" ? (
+              <FAQ />
             ) : (
               <PublicSite />
             )}

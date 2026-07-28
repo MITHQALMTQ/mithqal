@@ -16,7 +16,7 @@ import { enforceRateLimit } from "@/lib/rate-limit";
  *   - Public endpoint (no operator auth required for testnet simulation).
  *     The frontend submits a MetaMask-signed mock burn transaction and
  *     posts the resulting tx_hash here for the indexer to record.
- *   - Rate-limited to 20 redeems/min/IP.
+ *   - Rate-limited to 10 redeems/min/IP.
  *   - On mainnet, this endpoint should require an EIP-191 signed message
  *     from `fromAddress` to authenticate the burn request before recording.
  *
@@ -27,9 +27,9 @@ import { enforceRateLimit } from "@/lib/rate-limit";
  *   { ok: true, txHash, type: "redeem", mtqAmount, fee, recorded: true }
  */
 export async function POST(req: Request) {
-  // Public endpoint (testnet simulation), but rate-limited (20 redeems/min/IP).
+  // Public endpoint (testnet simulation), but rate-limited (10 redeems/min/IP).
   // On mainnet: require EIP-191 signature from fromAddress for authentication.
-  const blocked = enforceRateLimit("redeem", req, 20, 60_000);
+  const blocked = enforceRateLimit("redeem", req, 10, 60_000);
   if (blocked) return blocked;
 
   let body: unknown;

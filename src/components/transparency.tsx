@@ -544,6 +544,159 @@ const CADENCE = [
 ];
 
 /* ============================================================
+ * ReserveHealthGauge (E4) — live composite 0-100 health score.
+ *
+ * Same formula as the OS page gauge:
+ *   Score = RR×0.4 + LCR×0.2 + CRI×0.2 + Duration×0.1 + Basket×0.1
+ *
+ * Inputs are normalized to 0-100 before the weighted sum:
+ *   RR (%)       → already 0-100 (e.g. 97.86)
+ *   LCR (ratio)  → × 100 (1.0 → 100)
+ *   CRI (0-100)  → already 0-100 (lower = better, but kept as-is so the
+ *                  weight contributes the raw index — high CRI lowers score)
+ *   Duration     → expressed as a 0-1 compliance fraction
+ *                  (0 = no compliance headroom used; 1 = max allowed duration).
+ *                  Computed as portfolioDuration / maxDuration.
+ *   Basket       → 100 if §22A verification passed, 0 otherwise.
+ *
+ * Color zones: green ≥ 80, yellow 60–80, red < 60.
+ * ============================================================ */
+
+function ReserveHealthGauge({
+  rr,
+  lcrRaw,
+  cri,
+  durationRaw,
+  maxDuration,
+  basket,
+}: {
+  rr: number;
+  lcrRaw: number;
+  cri: number;
+  durationRaw: number;
+  maxDuration: number;
+  basket: number;
+}) {
+  const lcr = Math.min(100, lcrRaw * 100);
+  const durationFrac = maxDuration > 0 ? Math.min(1, durationRaw / maxDuration) : 0;
+  // Duration contributes inversely — a portfolio at the max duration uses
+  // all the headroom; one at 0 uses none. Score contribution: 100 → 0 as
+  // duration rises. We flip so longer duration → lower score.
+  const duration = (1 - durationFrac) * 100;
+
+  const score = Math.round(
+    clamp(rr, 0, 100) * 0.4 +
+      lcr * 0.2 +
+      clamp(cri, 0, 100) * 0.2 +
+      duration * 0.1 +
+      basket * 0.1,
+  );
+
+  const color = score >= 80 ? "#10b981" : score >= 60 ? "#d4af37" : "#ef4444";
+  const label = score >= 80 ? "Healthy" : score >= 60 ? "Watch" : "Stressed";
+
+  // Semicircular gauge geometry: 180° arc from (left=0) to (right=180).
+  // The needle angle is interpolated: 0 → 180° (pointing left), 100 → 0° (right).
+  const angle = 180 - (Math.min(100, Math.max(0, score)) / 100) * 180;
+  const rad = (angle * Math.PI) / 180;
+  const cx = 110, cy = 110, r = 90, needleLen = 78;
+  const nx = cx + needleLen * Math.cos(rad);
+  const ny = cy - needleLen * Math.sin(rad);
+
+  const arcPath = (startAngle: number, endAngle: number) => {
+    const s = (startAngle * Math.PI) / 180;
+    const e = (endAngle * Math.PI) / 180;
+    const x1 = cx + r * Math.cos(s);
+    const y1 = cy - r * Math.sin(s);
+    const x2 = cx + r * Math.cos(e);
+    const y2 = cy - r * Math.sin(e);
+    const large = endAngle - startAngle > 180 ? 1 : 0;
+    return `M ${x1} ${y1} A ${r} ${r} 0 ${large} 1 ${x2} ${y2}`;
+  };
+
+  const fillEndAngle = 180 - angle;
+
+  return (
+    <div className="mt-4 rounded-xl border border-line bg-ink-soft p-5">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Gauge className="h-5 w-5 text-gold" />
+          <h3 className="font-display text-lg text-foreground">Reserve Health Index</h3>
+        </div>
+        <Badge
+          className={
+            score >= 80
+              ? "border-reserve/40 bg-reserve/10 text-reserve"
+              : score >= 60
+                ? "border-gold/40 bg-gold/10 text-gold"
+                : "border-destructive/40 bg-destructive/10 text-destructive"
+          }
+        >
+          {label}
+        </Badge>
+      </div>
+
+      <div className="mt-3 flex flex-col items-center">
+        <svg
+          viewBox="0 0 220 170"
+          className="w-full max-w-[280px]"
+          role="img"
+          aria-label={`Reserve health index score: ${score} out of 100, ${label}`}
+        >
+          {/* Background arc (full 180°) */}
+          <path d={arcPath(0, 180)} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth={14} strokeLinecap="round" />
+          {/* Colored fill */}
+          {score > 0 && (
+            <path
+              d={arcPath(0, fillEndAngle)}
+              fill="none"
+              stroke={color}
+              strokeWidth={14}
+              strokeLinecap="round"
+              style={{ transition: "all 0.6s ease-out" }}
+            />
+          )}
+          {/* Tick labels */}
+          <text x={cx - r} y={cy + 18} fill="#888" fontSize={10} textAnchor="middle">0</text>
+          <text x={cx} y={cy - r - 4} fill="#888" fontSize={10} textAnchor="middle">50</text>
+          <text x={cx + r} y={cy + 18} fill="#888" fontSize={10} textAnchor="middle">100</text>
+          {/* Needle */}
+          <line x1={cx} y1={cy} x2={nx} y2={ny} stroke={color} strokeWidth={3} strokeLinecap="round" />
+          <circle cx={cx} cy={cy} r={5} fill={color} />
+          {/* Score number */}
+          <text x={cx} y={cy + 36} fill={color} fontSize={28} fontWeight={700} textAnchor="middle" fontFamily="var(--font-fraunces)">
+            {score}
+          </text>
+          <text x={cx} y={cy + 52} fill="#888" fontSize={10} textAnchor="middle">/ 100</text>
+        </svg>
+      </div>
+
+      <div className="mt-2 grid grid-cols-5 gap-1 text-center">
+        {[
+          { k: "RR", v: `${rr.toFixed(2)}%`, w: 0.4 },
+          { k: "LCR", v: `${lcrRaw.toFixed(2)}`, w: 0.2 },
+          { k: "CRI", v: `${cri.toFixed(0)}`, w: 0.2 },
+          { k: "Dur", v: `${durationRaw.toFixed(2)}y`, w: 0.1 },
+          { k: "Bskt", v: `${basket}%`, w: 0.1 },
+        ].map((m) => (
+          <div key={m.k} className="rounded border border-line bg-ink-card px-1 py-1.5">
+            <div className="text-[9px] uppercase tracking-wider text-fg-muted">{m.k}</div>
+            <div className="font-mono text-[11px] text-foreground">{m.v}</div>
+            <div className="text-[9px] text-fg-muted">×{m.w}</div>
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-2 rounded border border-line bg-ink-card p-2 text-[10px] leading-relaxed text-fg-muted">
+        <span className="font-semibold text-gold">Formula:</span> Score = RR×0.4 + LCR×0.2 + CRI×0.2 + Duration×0.1 + Basket×0.1
+        <br />
+        Live inputs from /api/transparency — RR={rr.toFixed(2)}% · LCR={lcrRaw.toFixed(2)} · CRI={cri.toFixed(0)} · Duration={durationRaw.toFixed(2)}y (cap {maxDuration.toFixed(2)}y) · Basket={basket}% → {score}/100 ({label}).
+      </div>
+    </div>
+  );
+}
+
+/* ============================================================
  * Main component
  * ============================================================ */
 
@@ -828,6 +981,18 @@ export default function TransparencyDashboard() {
             )}
           </div>
         </Reveal>
+
+        {/* A4 — "Last updated" timestamp below the KPI grid.
+            Uses the `generatedAt` field returned by /api/transparency so the
+            reader always knows how fresh the snapshot is. Re-renders every
+            second so the relative time ("3s ago") stays live. */}
+        {state ? (
+          <Reveal>
+            <div className="mt-3 flex items-center justify-end">
+              <LiveTimestamp iso={state.generatedAt} label="Last updated" />
+            </div>
+          </Reveal>
+        ) : null}
 
         {/* Proof of Reserves + op count */}
         <Reveal>
@@ -1234,6 +1399,19 @@ export default function TransparencyDashboard() {
                   </div>
                 </div>
               </div>
+
+              {/* E4 — Reserve Health Index (composite gauge, live data).
+                  Same 0–100 score as the OS page gauge:
+                    Score = RR×0.4 + LCR×0.2 + CRI×0.2 + Duration×0.1 + Basket×0.1
+                  Uses live /api/transparency fields (no mock). */}
+              <ReserveHealthGauge
+                rr={state.monetary.reserveRatio.ratio}
+                lcrRaw={state.monetary.lcr.ratio}
+                cri={state.monetary.cri.cri}
+                durationRaw={state.monetary.portfolioDuration}
+                maxDuration={state.monetary.maxDuration ?? 0.75}
+                basket={state.monetary.basketVerification.passed ? 100 : 0}
+              />
 
               {/* Detailed-view-only contents (UI9 Fix 2): basket table, data
                   sources label, fee schedule. Hidden in Quick View to keep

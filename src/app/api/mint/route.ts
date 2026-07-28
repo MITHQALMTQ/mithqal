@@ -16,7 +16,7 @@ import { enforceRateLimit } from "@/lib/rate-limit";
  *   - Public endpoint (no operator auth required for testnet simulation).
  *     The frontend submits a MetaMask-signed mock mint transaction and
  *     posts the resulting tx_hash here for the indexer to record.
- *   - Rate-limited to 20 mints/min/IP to prevent abuse.
+ *   - Rate-limited to 10 mints/min/IP to prevent abuse.
  *   - On mainnet, this endpoint MUST be re-gated: custody partner verifies
  *     the deposit, then operator's MINTER_ROLE wallet mints MTQ to the
  *     user, and the resulting tx_hash is recorded here (audit trail only).
@@ -28,9 +28,9 @@ import { enforceRateLimit } from "@/lib/rate-limit";
  *   { ok: true, txHash, type: "mint", amountUsd, fee, recorded: true }
  */
 export async function POST(req: Request) {
-  // Public endpoint (testnet simulation), but rate-limited (20 mints/min/IP).
+  // Public endpoint (testnet simulation), but rate-limited (10 mints/min/IP).
   // On mainnet this MUST be re-gated to operator auth + custody confirmation.
-  const blocked = enforceRateLimit("mint", req, 20, 60_000);
+  const blocked = enforceRateLimit("mint", req, 10, 60_000);
   if (blocked) return blocked;
 
   let body: unknown;

@@ -136,6 +136,13 @@ export default function ConstitutionDocs() {
                   v19.0 · citable reference
                 </div>
               </div>
+              {/* B6 — Article count indicator. Verified ALL_ARTICLES.length === 47
+                  (see worklog Task ID UI9 Fix 8). The badge makes the article
+                  count + spec version visible at the top, so readers know what
+                  the document contains at a glance. */}
+              <Badge className="ml-1 hidden border-gold/40 bg-gold/10 text-gold hover:bg-gold/10 sm:inline-flex">
+                {ALL_ARTICLES.length} Articles · v19.0 Constitution
+              </Badge>
             </div>
           </div>
           <div className="relative hidden max-w-xs flex-1 sm:block">

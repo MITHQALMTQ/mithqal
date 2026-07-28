@@ -36,8 +36,23 @@ const MONAD_CHAIN_PARAMS = {
 };
 
 // ---- WalletConnect Project ID ----
-// Get your own at https://cloud.walletconnect.com (free)
-const WC_PROJECT_ID = "8e6e0e2e7b8a4f5c9d1e3a7b6c5d4e3f";
+// IMPORTANT: The value below is a PLACEHOLDER. To enable the WalletConnect
+// option (200+ mobile wallets via QR code), the operator MUST:
+//   1. Visit https://cloud.walletconnect.com (free, no credit card)
+//   2. Create a project, copy the Project ID (32-char hex string)
+//   3. Set it as the WC_PROJECT_ID environment variable in .env / Vercel:
+//        WC_PROJECT_ID="<your-real-project-id>"
+//   4. Redeploy. The "Coming soon" badge on the WalletConnect option will
+//      disappear and the QR modal will start working.
+// Until then, WalletConnect is advertised but disabled — clicking it shows
+// a "Coming soon" message instead of trying (and failing) to connect.
+const WC_PLACEHOLDER = "8e6e0e2e7b8a4f5c9d1e3a7b6c5d4e3f";
+const WC_PROJECT_ID =
+  process.env.NEXT_PUBLIC_WC_PROJECT_ID &&
+  process.env.NEXT_PUBLIC_WC_PROJECT_ID !== WC_PLACEHOLDER
+    ? process.env.NEXT_PUBLIC_WC_PROJECT_ID
+    : WC_PLACEHOLDER;
+const WALLETCONNECT_ENABLED = WC_PROJECT_ID !== WC_PLACEHOLDER;
 
 // ---- Types ----
 interface EIP1193Provider {
@@ -295,13 +310,26 @@ export function useWallet() {
     });
 
     // WalletConnect (QR code for mobile wallets)
+    // C1 — When WC_PROJECT_ID is the placeholder (operator has not yet set
+    // NEXT_PUBLIC_WC_PROJECT_ID), the option is advertised but disabled:
+    // `installed: false` so it renders as "Coming soon" rather than trying
+    // (and failing) to connect. Once the env var is set, the option becomes
+    // functional and `installed` flips to true.
     options.push({
       id: "walletconnect",
       name: "WalletConnect",
       icon: "🔗",
-      description: "Scan with any mobile wallet",
-      installed: true,
+      description: WALLETCONNECT_ENABLED
+        ? "Scan with any mobile wallet"
+        : "Coming soon — operator must set NEXT_PUBLIC_WC_PROJECT_ID",
+      installed: WALLETCONNECT_ENABLED,
+      downloadUrl: "https://cloud.walletconnect.com",
       connect: async () => {
+        if (!WALLETCONNECT_ENABLED) {
+          throw new Error(
+            "WalletConnect is not configured yet. The operator must set NEXT_PUBLIC_WC_PROJECT_ID — get a free ID at cloud.walletconnect.com.",
+          );
+        }
         setWalletName("WalletConnect");
         return connectWalletConnect();
       },

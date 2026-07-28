@@ -36,6 +36,7 @@ import {
   Presentation,
   BookOpen,
   LayoutDashboard,
+  HelpCircle,
   Coins,
   ArrowLeftRight,
   Mail,
@@ -73,7 +74,8 @@ type ViewId =
   | "audit"
   | "deck"
   | "playbook"
-  | "admin";
+  | "admin"
+  | "faq";
 
 function navigateToView(view: ViewId) {
   if (typeof window === "undefined") return;
@@ -141,6 +143,7 @@ const VIEWS: PaletteItem[] = [
   { id: "v-os", type: "view", label: "OS", hint: "Operating System", icon: Cpu, run: () => navigateToView("os") },
   { id: "v-audit", type: "view", label: "Audit", hint: "Testnet validation v1.0", icon: ShieldCheck, run: () => navigateToView("audit") },
   { id: "v-deck", type: "view", label: "Deck", hint: "Investor teaser", icon: Presentation, run: () => navigateToView("deck") },
+  { id: "v-faq", type: "view", label: "FAQ", hint: "Frequently asked questions", icon: HelpCircle, keywords: "faq help questions answers reserves governance sharia fees wallet connect brain", run: () => navigateToView("faq") },
   { id: "v-playbook", type: "view", label: "Playbook", hint: "Internal · COO/PM", icon: BookOpen, run: () => navigateToView("playbook") },
   { id: "v-admin", type: "view", label: "Admin", hint: "Intake pipeline", icon: LayoutDashboard, run: () => navigateToView("admin") },
 ];
