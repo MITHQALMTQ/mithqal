@@ -710,8 +710,8 @@ Work Log:
   - v19.0-stable tag verified present (immutable anti-rollback anchor)
 - **Secrets redaction:**
   - Found SMTP password + admin password referenced in worklog.md (tracked file)
-  - Redacted: hydy-rsgb-nunf-nazn → <REDACTED:icloud-app-password>
-  - Redacted: Mithqal-84cf444c0770468a6981d099 → <REDACTED:admin-password>
+  - Redacted: <REDACTED:icloud-app-password> → <REDACTED:icloud-app-password>
+  - Redacted: <REDACTED:admin-password> → <REDACTED:admin-password>
   - Verified: 0 secrets in tracked files after redaction
 - **Vercel/GitHub/Turso sync verification:**
   - GitHub: local HEAD = remote HEAD (5528911) — in sync
