@@ -98,7 +98,7 @@ export function OperatingSystem() {
   const [activeTab, setActiveTab] = useState<"overview" | "operations" | "analytics" | "contracts">("overview");
   const [loading, setLoading] = useState(true);
 
-  // ---- Wallet connection (robust multi-wallet hook) ----
+  // ---- Wallet connection (universal multi-wallet hook) ----
   const wallet = useWallet();
   const {
     address: walletAddress,
@@ -108,6 +108,10 @@ export function OperatingSystem() {
     error: walletError,
     sendTransaction,
     getProvider,
+    showWalletModal,
+    walletOptions,
+    connectWithWallet,
+    closeWalletModal,
   } = wallet;
 
   // Fetch contract info
@@ -518,6 +522,69 @@ export function OperatingSystem() {
               </>
             )}
           </div>
+
+          {/* Universal Wallet Selector Modal */}
+          {showWalletModal && !walletAddress && (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={closeWalletModal}>
+              <div
+                className="mx-4 w-full max-w-md rounded-2xl border border-line bg-ink-soft p-6 shadow-2xl"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="mb-4 flex items-center justify-between">
+                  <h3 className="font-display text-lg text-foreground">Connect Wallet</h3>
+                  <button onClick={closeWalletModal} className="text-fg-muted hover:text-foreground" aria-label="Close">
+                    ✕
+                  </button>
+                </div>
+                <p className="mb-4 text-xs text-fg-muted">
+                  Choose how you want to connect. Mithqal supports all major wallets.
+                </p>
+                <div className="space-y-2">
+                  {walletOptions.map((option) => (
+                    <button
+                      key={option.id}
+                      onClick={() => connectWithWallet(option).catch(() => {})}
+                      disabled={connecting}
+                      className="flex w-full items-center gap-3 rounded-xl border border-line bg-ink-card p-3 text-left transition hover:border-gold/40 hover:bg-gold/[0.03] disabled:opacity-50"
+                    >
+                      <span className="text-2xl">{option.icon}</span>
+                      <div className="flex-1">
+                        <div className="text-sm font-semibold text-foreground">{option.name}</div>
+                        <div className="text-[11px] text-fg-muted">{option.description}</div>
+                      </div>
+                      {option.installed ? (
+                        <span className="text-[10px] font-semibold text-reserve">DETECTED</span>
+                      ) : option.downloadUrl ? (
+                        <a
+                          href={option.downloadUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-[10px] font-semibold text-gold hover:underline"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          GET →
+                        </a>
+                      ) : null}
+                    </button>
+                  ))}
+                </div>
+                <div className="mt-4 border-t border-line pt-3 text-center">
+                  <p className="text-[10px] text-fg-muted">
+                    New to crypto?{" "}
+                    <a href="https://ethereum.org/en/wallets/find-wallet/" target="_blank" rel="noreferrer" className="text-gold hover:underline">
+                      Find a wallet →
+                    </a>
+                  </p>
+                </div>
+                {connecting && (
+                  <div className="mt-3 flex items-center justify-center gap-2 text-xs text-gold">
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                    Connecting...
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* UI9 Fix 5 — Tab bar (Overview / Operations / Analytics / Contracts) */}

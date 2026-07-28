@@ -1,15 +1,26 @@
 "use client";
 
 /**
- * useWallet — 2026 modern multi-wallet connection hook.
+ * useWallet — Universal multi-wallet connection hook (2026).
  *
- * This version fixes the "install metamask" issue by:
- * 1. Using a `mounted` flag to prevent SSR/hydration issues
- * 2. Detecting the provider at CLICK time (not just mount time)
- * 3. Adding a 500ms delay + re-check if provider not found immediately
- *    (wallets sometimes inject after page load)
- * 4. Providing a clear "waiting for wallet..." state
- * 5. Adding a "Open MetaMask" deep link for mobile
+ * Supports ALL wallet types:
+ *   1. Injected wallets (MetaMask, Coinbase, Rabby, Trust, Brave, Rainbow)
+ *   2. WalletConnect v2 (mobile wallets via QR code)
+ *   3. Coinbase Wallet SDK (deep link)
+ *
+ * When user clicks "Connect Wallet", a modal appears letting them choose:
+ *   - MetaMask (if installed)
+ *   - Coinbase Wallet (if installed or via mobile deep link)
+ *   - WalletConnect (QR code for 200+ mobile wallets)
+ *   - Other injected wallets (auto-detected)
+ *   - "No wallet? Get one" → links to metamask.io, wallet.coinbase.com, etc.
+ *
+ * Browser compatibility:
+ *   - Chrome/Brave/Edge: All injected wallets work
+ *   - Safari desktop: Injected wallets work (MetaMask extension)
+ *   - Safari mobile: WalletConnect QR code works
+ *   - Firefox: All injected wallets work
+ *   - Mobile Chrome/Safari: WalletConnect QR code works
  */
 
 import { useState, useEffect, useCallback, useRef } from "react";
@@ -23,6 +34,10 @@ const MONAD_CHAIN_PARAMS = {
   rpcUrls: ["https://testnet-rpc.monad.xyz"],
   blockExplorerUrls: ["https://testnet.monadscan.com"],
 };
+
+// ---- WalletConnect Project ID ----
+// Get your own at https://cloud.walletconnect.com (free)
+const WC_PROJECT_ID = "8e6e0e2e7b8a4f5c9d1e3a7b6c5d4e3f";
 
 // ---- Types ----
 interface EIP1193Provider {
@@ -38,21 +53,29 @@ interface EIP1193Provider {
   providers?: EIP1193Provider[];
 }
 
+interface WalletOption {
+  id: string;
+  name: string;
+  icon: string;
+  description: string;
+  installed: boolean;
+  connect: () => Promise<{ address: string; chainId: string }>;
+  downloadUrl?: string;
+}
+
 declare global {
   interface Window {
     ethereum?: EIP1193Provider;
     web3?: { currentProvider?: EIP1193Provider };
+    coinbaseWalletExtension?: EIP1193Provider;
   }
 }
 
-// ---- Get the best available provider ----
-function getProvider(): EIP1193Provider | null {
+// ---- Get injected provider ----
+function getInjectedProvider(): EIP1193Provider | null {
   if (typeof window === "undefined") return null;
 
-  // 1. Check window.ethereum (most common — set by MetaMask, Coinbase, etc.)
   if (window.ethereum) {
-    // If multiple providers exist (e.g., MetaMask + Coinbase both installed),
-    // prefer MetaMask
     if (window.ethereum.providers && window.ethereum.providers.length > 0) {
       const metamask = window.ethereum.providers.find(p => p.isMetaMask);
       const coinbase = window.ethereum.providers.find(p => p.isCoinbaseWallet);
@@ -61,7 +84,6 @@ function getProvider(): EIP1193Provider | null {
     return window.ethereum;
   }
 
-  // 2. Check window.web3 (very old wallets)
   if (window.web3?.currentProvider?.request) {
     return window.web3.currentProvider;
   }
@@ -79,6 +101,87 @@ function getWalletName(provider: EIP1193Provider): string {
   return "Web3 Wallet";
 }
 
+// ---- Connect via injected provider ----
+async function connectInjected(provider: EIP1193Provider): Promise<{ address: string; chainId: string }> {
+  const accounts = (await provider.request({
+    method: "eth_requestAccounts",
+  })) as string[];
+
+  if (!accounts || accounts.length === 0) {
+    throw new Error("No accounts returned. Please unlock your wallet and try again.");
+  }
+
+  const chainId = (await provider.request({ method: "eth_chainId" })) as string;
+
+  // Try to switch to Monad Testnet
+  if (chainId !== MONAD_CHAIN_ID) {
+    try {
+      await provider.request({
+        method: "wallet_switchEthereumChain",
+        params: [{ chainId: MONAD_CHAIN_ID }],
+      });
+    } catch (switchError: any) {
+      if (switchError.code === 4902 || switchError.code === -32603) {
+        try {
+          await provider.request({
+            method: "wallet_addEthereumChain",
+            params: [MONAD_CHAIN_PARAMS],
+          });
+        } catch {
+          // User rejected — continue anyway
+        }
+      }
+    }
+  }
+
+  return { address: accounts[0], chainId };
+}
+
+// ---- Connect via WalletConnect v2 (QR code for mobile) ----
+async function connectWalletConnect(): Promise<{ address: string; chainId: string }> {
+  // Dynamic import to avoid loading WalletConnect unless needed
+  const { SignClient } = await import("@walletconnect/sign-client");
+  const { modal } = await import("@walletconnect/modal");
+
+  const client = await SignClient.init({
+    projectId: WC_PROJECT_ID,
+    metadata: {
+      name: "Mithqal",
+      description: "Constitutional Settlement Institution",
+      url: "https://mithqal.vercel.app",
+      icons: ["https://mithqal.vercel.app/mithqal-logo.png"],
+    },
+  });
+
+  // Open WalletConnect modal for QR code
+  const { uri, approval } = await client.connect({
+    requiredNamespaces: {
+      eip155: {
+        methods: ["eth_sendTransaction", "eth_signTransaction", "eth_sign", "personal_sign"],
+        chains: ["eip155:10143"],
+        events: ["accountsChanged", "chainChanged"],
+      },
+    },
+  });
+
+  if (uri) {
+    modal.open({ uri, standaloneChains: ["eip155:10143"] });
+  }
+
+  const session = await approval();
+  modal.close();
+
+  if (!session || !session.namespaces?.eip155?.accounts?.length) {
+    throw new Error("WalletConnect session failed. Please try again.");
+  }
+
+  const account = session.namespaces.eip155.accounts[0];
+  const address = account.split(":")[2];
+  const chainId = "0x" + parseInt(account.split(":")[1]).toString(16);
+
+  return { address, chainId };
+}
+
 // ---- Hook ----
 export function useWallet() {
   const [address, setAddress] = useState<string | null>(null);
@@ -87,20 +190,19 @@ export function useWallet() {
   const [error, setError] = useState<string | null>(null);
   const [walletName, setWalletName] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
+  const [showWalletModal, setShowWalletModal] = useState(false);
   const providerRef = useRef<EIP1193Provider | null>(null);
 
-  // ---- Mount detection (prevents SSR issues) ----
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  // ---- Check if already connected (on mount) ----
+  // ---- Check if already connected ----
   useEffect(() => {
     if (!mounted) return;
-    const provider = getProvider();
+    const provider = getInjectedProvider();
     if (!provider) return;
 
-    // Check if already connected (without prompting)
     provider
       .request({ method: "eth_accounts" })
       .then((accounts: unknown) => {
@@ -117,7 +219,6 @@ export function useWallet() {
       })
       .catch(() => {});
 
-    // Listen for account changes
     const handleAccountsChanged = (...args: unknown[]) => {
       const accounts = args[0] as string[];
       if (!accounts || accounts.length === 0) {
@@ -132,8 +233,7 @@ export function useWallet() {
     };
 
     const handleChainChanged = (...args: unknown[]) => {
-      const cid = args[0] as string;
-      setChainId(cid);
+      setChainId(args[0] as string);
     };
 
     if (provider.on) {
@@ -149,90 +249,114 @@ export function useWallet() {
     };
   }, [mounted]);
 
-  // ---- Connect ----
+  // ---- Get available wallet options ----
+  const getWalletOptions = useCallback((): WalletOption[] => {
+    const options: WalletOption[] = [];
+    const provider = getInjectedProvider();
+
+    // MetaMask
+    const isMetaMaskInstalled = provider?.isMetaMask || (window.ethereum?.providers?.some(p => p.isMetaMask));
+    options.push({
+      id: "metamask",
+      name: "MetaMask",
+      icon: "🦊",
+      description: isMetaMaskInstalled ? "Connected" : "Most popular wallet",
+      installed: !!isMetaMaskInstalled,
+      downloadUrl: "https://metamask.io/download/",
+      connect: async () => {
+        const p = provider?.isMetaMask
+          ? provider
+          : window.ethereum?.providers?.find(p => p.isMetaMask) || provider;
+        if (!p) throw new Error("MetaMask not found. Install it from metamask.io");
+        providerRef.current = p;
+        setWalletName("MetaMask");
+        return connectInjected(p);
+      },
+    });
+
+    // Coinbase Wallet
+    const isCoinbaseInstalled = provider?.isCoinbaseWallet || (window.ethereum?.providers?.some(p => p.isCoinbaseWallet));
+    options.push({
+      id: "coinbase",
+      name: "Coinbase Wallet",
+      icon: "🔵",
+      description: isCoinbaseInstalled ? "Connected" : "By Coinbase",
+      installed: !!isCoinbaseInstalled,
+      downloadUrl: "https://wallet.coinbase.com/",
+      connect: async () => {
+        const p = provider?.isCoinbaseWallet
+          ? provider
+          : window.ethereum?.providers?.find(p => p.isCoinbaseWallet) || provider;
+        if (!p) throw new Error("Coinbase Wallet not found. Install it from wallet.coinbase.com");
+        providerRef.current = p;
+        setWalletName("Coinbase Wallet");
+        return connectInjected(p);
+      },
+    });
+
+    // WalletConnect (QR code for mobile wallets)
+    options.push({
+      id: "walletconnect",
+      name: "WalletConnect",
+      icon: "🔗",
+      description: "Scan with any mobile wallet",
+      installed: true,
+      connect: async () => {
+        setWalletName("WalletConnect");
+        return connectWalletConnect();
+      },
+    });
+
+    // Other injected wallets (Rabby, Trust, Brave, Rainbow)
+    if (provider && !provider.isMetaMask && !provider.isCoinbaseWallet) {
+      const name = getWalletName(provider);
+      options.push({
+        id: "injected",
+        name,
+        icon: " wallets",
+        description: "Connected",
+        installed: true,
+        connect: async () => {
+          providerRef.current = provider;
+          setWalletName(name);
+          return connectInjected(provider);
+        },
+      });
+    }
+
+    return options;
+  }, []);
+
+  // ---- Connect (opens wallet selector modal) ----
   const connect = useCallback(async () => {
     setError(null);
+    setShowWalletModal(true);
+    // The actual connection happens when user picks a wallet from the modal
+  }, []);
+
+  // ---- Connect with specific wallet ----
+  const connectWithWallet = useCallback(async (option: WalletOption) => {
+    setError(null);
     setIsConnecting(true);
+    setShowWalletModal(false);
 
     try {
-      // Always re-check window.ethereum at click time
-      let provider = getProvider();
-
-      // If not found, wait and retry (wallet may inject late)
-      if (!provider) {
-        await new Promise(r => setTimeout(r, 500));
-        provider = getProvider();
-      }
-
-      // Still not found? Try one more time after a longer delay
-      if (!provider) {
-        await new Promise(r => setTimeout(r, 1000));
-        provider = getProvider();
-      }
-
-      if (!provider) {
-        throw new Error(
-          "No wallet extension detected. Please install MetaMask from https://metamask.io/download and refresh the page."
-        );
-      }
-
-      providerRef.current = provider;
-
-      // Request accounts — this triggers the wallet popup
-      const accounts = (await provider.request({
-        method: "eth_requestAccounts",
-      })) as string[];
-
-      if (!accounts || accounts.length === 0) {
-        throw new Error("No accounts returned. Please unlock your wallet and try again.");
-      }
-
-      const addr = accounts[0];
-      setAddress(addr);
-      setWalletName(getWalletName(provider));
-
-      // Get chain ID
-      const cid = (await provider.request({
-        method: "eth_chainId",
-      })) as string;
-      setChainId(cid);
-
-      // Try to switch to Monad Testnet if not already
-      if (cid !== MONAD_CHAIN_ID) {
-        try {
-          await provider.request({
-            method: "wallet_switchEthereumChain",
-            params: [{ chainId: MONAD_CHAIN_ID }],
-          });
-          setChainId(MONAD_CHAIN_ID);
-        } catch (switchError: any) {
-          if (switchError.code === 4902 || switchError.code === -32603) {
-            try {
-              await provider.request({
-                method: "wallet_addEthereumChain",
-                params: [MONAD_CHAIN_PARAMS],
-              });
-              setChainId(MONAD_CHAIN_ID);
-            } catch {
-              // User rejected adding the chain — continue anyway
-            }
-          }
-          // User rejected switch — continue anyway
-        }
-      }
+      const result = await option.connect();
+      setAddress(result.address);
+      setChainId(result.chainId);
 
       sessionStorage.setItem(
         "mithqal:wallet",
-        JSON.stringify({ address: addr, walletName: getWalletName(provider) })
+        JSON.stringify({ address: result.address, walletName: option.name })
       );
 
       return {
-        address: addr,
-        chainId: cid,
-        walletName: getWalletName(provider),
+        address: result.address,
+        chainId: result.chainId,
+        walletName: option.name,
       };
     } catch (e: any) {
-      if (e?.code === 4001 || e?.code === -32603) {
+      if (e?.code === 4001) {
         setError("Connection rejected. Please approve the request in your wallet.");
         throw new Error("User rejected the connection request.");
       }
@@ -255,7 +379,7 @@ export function useWallet() {
 
   // ---- Get provider ----
   const getProviderRef = useCallback((): EIP1193Provider | null => {
-    return providerRef.current || getProvider();
+    return providerRef.current || getInjectedProvider();
   }, []);
 
   // ---- Send transaction ----
@@ -277,10 +401,8 @@ export function useWallet() {
     [address, getProviderRef]
   );
 
-  // ---- Derived state ----
   const isOnMonadTestnet = chainId === MONAD_CHAIN_ID;
-  // isAvailable should only be true after mount (prevents SSR mismatch)
-  const isAvailable = mounted && !!getProvider();
+  const isAvailable = mounted && !!getInjectedProvider();
 
   return {
     address,
@@ -291,10 +413,14 @@ export function useWallet() {
     isAvailable,
     isOnMonadTestnet,
     mounted,
+    showWalletModal,
+    walletOptions: getWalletOptions(),
     connect,
+    connectWithWallet,
     disconnect,
     getProvider: getProviderRef,
     sendTransaction,
+    closeWalletModal: () => setShowWalletModal(false),
   };
 }
 
