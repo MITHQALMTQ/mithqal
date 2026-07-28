@@ -239,7 +239,7 @@ export const RISKS = [
 export const MOAT = [
   { title: "Constitutional credibility", body: "An 850k-char, institution-grade Constitution that most rivals cannot match. Credibility is the product." },
   { title: "Verifiable 100%+ reserves", body: "Daily cryptographic Proof-of-Reserves + quarterly independent audits. Reserves always ≥ supply, by invariant." },
-  { title: "Anti-platform permanence", body: "The 'cannot be corrupted' guarantee is permanently frozen — the structural moat against drift that every commercial stablecoin lacks." },
+  { title: "Anti-platform permanence", body: "The 'cannot be corrupted' assurance is permanently frozen — the structural moat against drift that every commercial stablecoin lacks." },
   { title: "Institutional governance", body: "Council + Independent Review Panel + published decision trail. Designed to be trusted by banks, not flippers." },
   { title: "Neutrality by design", body: "No political, jurisdictional or monetary-policy alignment. Complementary to sovereign currencies, not competitive." },
 ];

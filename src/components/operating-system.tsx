@@ -1535,7 +1535,7 @@ function ReserveHealthGauge() {
       <div className="mt-2 rounded border border-line bg-ink-card p-2 text-[10px] leading-relaxed text-fg-muted">
         <span className="font-semibold text-gold">Formula:</span> Score = RR×0.4 + LCR×0.2 + CRI×0.2 + Duration×0.1 + Basket×0.1
         <br />
-        Mock inputs (audit rec #8): RR=97.86% · LCR=1.0 · CRI=35 · Duration=0.5 · Basket=100% → {score}/100 ({label}).
+        Illustrative inputs (audit rec #8): RR=97.86% · LCR=1.0 · CRI=35 · Duration=0.5 · Basket=100% → {score}/100 ({label}).
       </div>
     </div>
   );

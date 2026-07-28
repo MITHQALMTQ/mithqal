@@ -1145,7 +1145,7 @@ function FourForcesGrid() {
       n: 2,
       title: "Mean Reversion",
       icon: RefreshCw,
-      desc: "A gentle pull back toward the currency's own 5-year average weight, so a single volatile quarter can't permanently distort the basket.",
+      desc: "A gentle pull back toward the currency's own 5-year average weight, so a single volatile quarter cannot permanently distort the basket.",
     },
     {
       n: 3,
@@ -1292,7 +1292,7 @@ function UsdShareMode({
         Scenario — USD loses 10%+ share across COFER, SWIFT and BIS
       </h3>
       <p className="mt-2 max-w-3xl text-sm leading-relaxed text-fg-muted">
-        This isn't a single bad year for the dollar against gold — it's the dollar losing ground in
+        This isn't a single bad year for the dollar against gold — it is the dollar losing ground in
         all three inputs behind Structural Weight at once: less held in official reserves, less used
         to settle trade, less traded for liquidity. Pick how much it loses, and watch what the engine
         does with the difference.
@@ -1445,7 +1445,7 @@ function GoldSilverSection() {
                 <Scale className="h-5 w-5 text-gold" />
               </div>
               <h3 className="font-display text-lg text-foreground">
-                First — it's the ruler
+                First — it is the ruler
               </h3>
             </div>
             <p className="mt-3 text-sm leading-relaxed text-fg-muted">
@@ -1464,7 +1464,7 @@ function GoldSilverSection() {
                 <Crown className="h-5 w-5 text-gold" />
               </div>
               <h3 className="font-display text-lg text-foreground">
-                Second — it's held directly
+                Second — it is held directly
               </h3>
             </div>
             <p className="mt-3 text-sm leading-relaxed text-fg-muted">
@@ -1557,7 +1557,7 @@ function GoldSilverSection() {
       <Reveal>
         <p className="mt-8 max-w-3xl text-sm leading-relaxed text-fg-muted">
           <span className="font-semibold text-gold">Key insight:</span> gold is{" "}
-          <em>not</em> in the currency basket — it's a separate, fixed structural layer. When
+          <em>not</em> in the currency basket — it is a separate, fixed structural layer. When
           currencies drop against gold → their weight decreases → but the gold{" "}
           <span className="font-semibold text-gold">reserve layer (16%)</span> doesn't change.
         </p>
