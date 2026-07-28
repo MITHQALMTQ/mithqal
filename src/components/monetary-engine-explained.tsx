@@ -90,8 +90,9 @@ interface CurrencySpec {
 interface ReserveSpec {
   code: string;
   name: string;
-  pct: number; // percent 0..100
+  pct: number; // policy target percent 0..100
   color: string;
+  range: string; // constitutional range (e.g. "70–80%")
 }
 
 /** Baseline 8-currency basket — matches the Constitution worked example (Part III). */
@@ -106,12 +107,20 @@ const BASELINE_CURRENCIES: CurrencySpec[] = [
   { code: "CAD", name: "Canadian Dollar",  weight: 1.10,  color: "#5C7A7A" },
 ];
 
-/** Reserve layers — STATIC, constitutionally fixed. */
+/**
+ * Reserve layers — constitutional RANGES (fixed) with policy TARGETS (dynamic within range).
+ * Per Section 23 of the v19.0 Constitution:
+ *   - Fiat: 70–80% range, 75% policy target
+ *   - Bullion: 15–25% range, 20% policy target (gold 60-95% of bullion = 16% of total, silver 5-40% = 4%)
+ *   - Stablecoins: 2–8% range, 5% policy target
+ * Section 23.2: "Actual reserve allocations MAY vary within the constitutional ranges"
+ * Section 23.7: "The Bullion Layer SHALL be allocated dynamically between gold and silver"
+ */
 const RESERVE_LAYERS: ReserveSpec[] = [
-  { code: "FIAT",   name: "Fiat basket",  pct: 75, color: "#8A7A55" },
-  { code: "GOLD",   name: "Gold",         pct: 16, color: "#D4AF37" },
-  { code: "SILVER", name: "Silver",       pct: 4,  color: "#B7BCC0" },
-  { code: "STABLE", name: "Stablecoins",  pct: 5,  color: "#4A4638" },
+  { code: "FIAT",   name: "Fiat basket",  pct: 75, color: "#8A7A55", range: "70–80%" },
+  { code: "GOLD",   name: "Gold",         pct: 16, color: "#D4AF37", range: "60–95% of bullion" },
+  { code: "SILVER", name: "Silver",       pct: 4,  color: "#B7BCC0", range: "5–40% of bullion" },
+  { code: "STABLE", name: "Stablecoins",  pct: 5,  color: "#4A4638", range: "2–8%" },
 ];
 
 const CONCENTRATION_CAP = 60; // %
@@ -703,7 +712,7 @@ function AstrolabeSection({
           reducedMotion={reducedMotion}
         />
         <p className="mt-4 max-w-xl text-center font-mono text-[11.5px] text-fg-muted">
-          Outer — currency basket (weight-sized) · Inner — reserve layers (fixed) · Center — basket stability index
+          Outer — currency basket (weight-sized) · Inner — reserve layers (policy targets within constitutional ranges) · Center — basket stability index
         </p>
       </div>
 
@@ -761,7 +770,7 @@ function AstrolabeSection({
         })}
       </div>
 
-      {/* Reserve layer strip (static reminder) */}
+      {/* Reserve layer strip — constitutional ranges with policy targets */}
       <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
         {RESERVE_LAYERS.map((r) => (
           <div
@@ -775,8 +784,9 @@ function AstrolabeSection({
             <div className="font-mono text-xl text-foreground">{r.pct}%</div>
             <div className="mt-1 text-[11.5px] text-fg-muted">{r.name}</div>
             <div className="mt-2 text-[10px] uppercase tracking-wider text-gold-deep">
-              Constitutionally fixed
+              Range: {r.range}
             </div>
+            <div className="text-[9px] text-fg-muted mt-1">Policy target · dynamic within range</div>
           </div>
         ))}
       </div>
@@ -1378,7 +1388,7 @@ function UsdShareMode({
           "Redistributes the freed share across the other seven eligible currencies in proportion to their existing weight — the largest holders of the rest of the basket gain the most, automatically, not by anyone's choice.",
           "Renormalizes the full basket back to exactly 100%.",
           "Re-checks the result against the 60% concentration cap and 0.5% floor — a USD decline only ever moves it further from the cap, never closer.",
-          "Leaves the gold, silver and stablecoin reserve layer completely untouched. That allocation is fixed by constitution — it was never USD's to begin with.",
+          "Leaves the gold, silver and stablecoin reserve layer completely untouched. That allocation is governed by constitutional ranges — it was never USD's to begin with.",
         ].map((step, i) => (
           <li key={i} className="flex items-start gap-3">
             <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gold font-mono text-xs font-bold text-ink">
@@ -1469,7 +1479,7 @@ function GoldSilverSection() {
             </div>
             <p className="mt-3 text-sm leading-relaxed text-fg-muted">
               Alongside the currency basket, roughly a fifth of total reserves sit in physical gold
-              and silver — a fixed structural layer that target-holds its share regardless of which
+              and silver — a structural layer governed by constitutional ranges that target-holds its share regardless of which
               currency in the basket above is having a good or bad year. Drag the slider above into
               deeply negative territory and watch: the outer ring reshuffles. The inner ring
               doesn't.
@@ -1557,7 +1567,7 @@ function GoldSilverSection() {
       <Reveal>
         <p className="mt-8 max-w-3xl text-sm leading-relaxed text-fg-muted">
           <span className="font-semibold text-gold">Key insight:</span> gold is{" "}
-          <em>not</em> in the currency basket — it is a separate, fixed structural layer. When
+          <em>not</em> in the currency basket — it is a separate structural layer governed by constitutional ranges. When
           currencies drop against gold → their weight decreases → but the gold{" "}
           <span className="font-semibold text-gold">reserve layer (16%)</span> doesn't change.
         </p>
