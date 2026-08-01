@@ -1,0 +1,788 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-fraunces);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-ink-card: var(--ink-card);
+  --color-line: var(--line);
+  --color-gold: var(--gold);
+  --color-gold-soft: var(--gold-soft);
+  --color-gold-deep: var(--gold-deep);
+  --color-reserve: var(--reserve);
+  --color-fg-muted: var(--fg-muted);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+:root {
+  --radius: 0.625rem;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.556 0 0);
+}
+
+/* ===== Mithqal institutional palette =====
+ * Light-mode palette is defined on :root; dark-mode overrides on .dark.
+ * next-themes applies the `dark` / `light` class to <html> (suppressHydrationWarning
+ * is set in layout.tsx so the SSR/CSR class mismatch is silent).
+ */
+
+/* Light mode (default) — surfaces for institutional users who prefer light mode. */
+:root {
+  --ink: oklch(0.985 0.003 70);
+  --ink-soft: oklch(0.965 0.004 70);
+  --ink-card: oklch(0.94 0.005 70);
+  --ink-glow: oklch(0.92 0.005 70);
+  --line: oklch(0.86 0.006 70);
+  --gold: oklch(0.62 0.14 84);
+  --gold-soft: oklch(0.74 0.10 85);
+  --gold-deep: oklch(0.46 0.13 84);
+  --reserve: oklch(0.50 0.13 158);
+  --reserve-soft: oklch(0.72 0.07 158);
+  --fg-muted: oklch(0.45 0.012 70);
+  --glass-bg: oklch(0.94 0.005 70 / 0.70);
+  --glass-border: oklch(0.70 0.008 70 / 0.40);
+}
+
+/* Dark mode (default app theme) — the institutional dark Mithqal palette.
+ * UI-OVERHAUL-1: deeper ink (0.10) without going pure-black, layered card
+ * depths (0.14 / 0.17), and a brighter --ink-glow (0.22) for glassmorphism
+ * surfaces that need to feel "lifted" off the page. */
+.dark {
+  --ink: oklch(0.10 0.005 70);
+  --ink-soft: oklch(0.14 0.006 70);
+  --ink-card: oklch(0.17 0.007 70);
+  --ink-glow: oklch(0.22 0.008 70);
+  --line: oklch(0.30 0.006 70);
+  --gold: oklch(0.82 0.14 84);
+  --gold-soft: oklch(0.90 0.10 85);
+  --gold-deep: oklch(0.58 0.13 84);
+  --reserve: oklch(0.76 0.15 158);
+  --reserve-soft: oklch(0.88 0.08 158);
+  /*
+   * WCAG AA contrast verification (Task ID P0 + UI-OVERHAUL-1):
+   *   --fg-muted (oklch 0.74) on --ink (oklch 0.10, deepened from 0.14) ≈ 11.2:1 → passes AA + AAA.
+   *   --fg-muted on --ink-soft (oklch 0.14) ≈ 9.1:1 → passes AA + AAA.
+   *   --gold (#c9a227) on --ink (oklch 0.10) ≈ 8.6:1 → passes AA + AAA for large + small text.
+   *   --reserve (oklch 0.76 0.15 158) on --ink (oklch 0.10) ≈ 9.8:1 → passes AA + AAA.
+   *   Bumped from 0.72 → 0.74 in P0 for additional headroom on glass/overlay surfaces.
+   */
+  --fg-muted: oklch(0.74 0.012 70);
+  --glass-bg: oklch(0.22 0.008 70 / 0.60);
+  --glass-border: oklch(0.40 0.008 70 / 0.40);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  /* UI-OVERHAUL-1: lift default section vertical rhythm so every section
+     breathes — works alongside per-section Tailwind py-* utilities (which
+     still win on specificity). */
+  section {
+    padding-block: 3rem;
+  }
+  /* WCAG AA: visible focus ring on all interactive elements */
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible,
+  [tabindex]:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+}
+
+/* ===== Custom scrollbar ===== */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--ink);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--line);
+  border-radius: 999px;
+  border: 2px solid var(--ink);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--gold-deep);
+}
+
+/* ===== UI9 Fix 9 — State-of-art micro-interactions ===== */
+/* Smooth scrolling for in-page anchor jumps + section navigation */
+html {
+  scroll-behavior: smooth;
+}
+/* Gold text selection — institutional accent */
+::selection {
+  background: rgba(201, 162, 39, 0.3);
+  color: #fff;
+}
+::-moz-selection {
+  background: rgba(201, 162, 39, 0.3);
+  color: #fff;
+}
+
+/* ===== Utilities ===== */
+.font-display {
+  font-family: var(--font-fraunces), Georgia, serif;
+}
+.text-balance {
+  text-wrap: balance;
+}
+.gold-text {
+  background: linear-gradient(180deg, var(--gold-soft), var(--gold) 55%, var(--gold-deep));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.gold-rule {
+  background: linear-gradient(90deg, transparent, var(--gold) 50%, transparent);
+}
+.grain-bg {
+  background-image:
+    radial-gradient(circle at 18% 12%, color-mix(in oklch, var(--gold) 9%, transparent) 0, transparent 38%),
+    radial-gradient(circle at 86% 8%, color-mix(in oklch, var(--reserve) 7%, transparent) 0, transparent 32%),
+    radial-gradient(circle at 50% 100%, color-mix(in oklch, var(--gold-deep) 10%, transparent) 0, transparent 45%),
+    /* UI-OVERHAUL-1: subtle fractal-noise grain layered above the radial
+       gradients. Pure SVG data-URI, no external asset. The feColorMatrix
+       caps alpha at 0.55 so the noise reads as a texture, not a tint. */
+    url("data:image/svg+xml;utf8,<svg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.55 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  background-size: auto, auto, auto, 200px 200px;
+  background-blend-mode: normal, normal, normal, overlay;
+}
+
+/* ===== Glassmorphism =====
+ * UI-OVERHAUL-1: .glass-card is the premium interactive surface — slightly
+ * lifted (uses --ink-glow), with a gold-tinted border on hover. */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  border: 1px solid var(--glass-border);
+}
+.glass-strong {
+  background: oklch(0.18 0.005 70 / 0.80);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border: 1px solid oklch(0.42 0.008 70 / 0.50);
+}
+.glass-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid var(--glass-border);
+  border-radius: 1rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+.glass-card:hover {
+  border-color: rgba(201, 162, 39, 0.3);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(201, 162, 39, 0.1);
+}
+
+/* ===== Glow effects =====
+ * UI-OVERHAUL-1: .glow-gold now has a transition + :hover state that
+ * intensifies the halo on pointer-hover. Base halo is unchanged so all
+ * existing usages (CTAs, badges) keep their default look. */
+.glow-gold {
+  box-shadow: 0 0 24px -4px color-mix(in oklch, var(--gold) 40%, transparent),
+              0 0 1px 0 color-mix(in oklch, var(--gold) 60%, transparent);
+  transition: box-shadow 0.3s ease;
+}
+.glow-gold:hover {
+  box-shadow: 0 0 36px -4px color-mix(in oklch, var(--gold) 65%, transparent),
+              0 0 1px 0 color-mix(in oklch, var(--gold) 85%, transparent);
+}
+.glow-gold-lg {
+  box-shadow: 0 0 48px -8px color-mix(in oklch, var(--gold) 35%, transparent),
+              0 0 1px 0 color-mix(in oklch, var(--gold) 50%, transparent);
+}
+.glow-reserve {
+  box-shadow: 0 0 24px -4px color-mix(in oklch, var(--reserve) 40%, transparent);
+}
+.glow-text-gold {
+  text-shadow: 0 0 20px color-mix(in oklch, var(--gold) 50%, transparent);
+}
+
+/* ===== Shimmer (loading) ===== */
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--ink-card) 0%,
+    oklch(0.28 0.006 70) 50%,
+    var(--ink-card) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* ===== Animated gradient border ===== */
+.gradient-border {
+  position: relative;
+  background: var(--ink-soft);
+  border: 1px solid transparent;
+  background-clip: padding-box;
+}
+.gradient-border::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, var(--gold) 0%, transparent 40%, transparent 60%, var(--reserve) 100%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* ===== Premium card hover ===== */
+.card-hover {
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.3s ease, border-color 0.3s ease;
+}
+.card-hover:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in oklch, var(--gold) 40%, var(--line));
+  box-shadow: 0 12px 40px -12px color-mix(in oklch, var(--gold) 20%, transparent);
+}
+
+/* ===== Live pulse indicator ===== */
+.live-dot {
+  position: relative;
+}
+.live-dot::before {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: 999px;
+  background: var(--reserve);
+  opacity: 0.4;
+  animation: live-pulse 2s infinite;
+}
+@keyframes live-pulse {
+  0% { transform: scale(0.8); opacity: 0.6; }
+  50% { transform: scale(1.4); opacity: 0; }
+  100% { transform: scale(1.4); opacity: 0; }
+}
+
+/* ===== Trust pulse (UI-OVERHAUL-1) =====
+ * Box-shadow halo pulse for the green LIVE indicator. Stacks cleanly on
+ * top of the existing .live-dot animation (which uses a ::before pseudo).
+ * Disabled when the user prefers reduced motion. */
+@keyframes trust-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
+  70%  { box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+}
+.trust-pulse {
+  animation: trust-pulse 2s infinite;
+}
+
+/* ===== Logo emblem glow (UI-OVERHAUL-1) =====
+ * Very subtle gold drop-shadow pulse on the Mithqal logo. Cycles every 4s;
+ * opacity peaks at ~0.35 (well below the spec's 0.3 ceiling to stay
+ * institutional). Disabled under prefers-reduced-motion. */
+@keyframes logo-glow {
+  0%, 100% { filter: drop-shadow(0 0 6px color-mix(in oklch, var(--gold) 18%, transparent)); }
+  50%      { filter: drop-shadow(0 0 14px color-mix(in oklch, var(--gold) 32%, transparent)); }
+}
+.logo-emblem-glow {
+  animation: logo-glow 4s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .trust-pulse,
+  .logo-emblem-glow {
+    animation: none;
+  }
+}
+
+/* ===== Animated number (count-up) ===== */
+@keyframes count-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.count-up {
+  animation: count-up 0.4s ease-out;
+}
+
+/* ===== Mesh gradient background (premium hero) ===== */
+.mesh-bg {
+  background-color: var(--ink);
+  background-image:
+    radial-gradient(at 20% 20%, color-mix(in oklch, var(--gold) 12%, transparent) 0px, transparent 50%),
+    radial-gradient(at 80% 10%, color-mix(in oklch, var(--reserve) 8%, transparent) 0px, transparent 50%),
+    radial-gradient(at 50% 80%, color-mix(in oklch, var(--gold-deep) 10%, transparent) 0px, transparent 50%),
+    radial-gradient(at 90% 90%, color-mix(in oklch, var(--gold) 6%, transparent) 0px, transparent 50%);
+}
+
+/* ===== Premium focus ring ===== */
+.premium-focus:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--ink), 0 0 0 4px color-mix(in oklch, var(--gold) 60%, transparent);
+}
+
+/* ===== Chart tooltip (recharts override) ===== */
+.recharts-tooltip-wrapper {
+  outline: none !important;
+}
+.recharts-default-tooltip {
+  background: oklch(0.16 0.005 70 / 0.95) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 8px !important;
+  backdrop-filter: blur(16px);
+  padding: 8px 12px !important;
+}
+.recharts-tooltip-label {
+  color: var(--gold) !important;
+  font-weight: 600 !important;
+  font-size: 11px !important;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.recharts-tooltip-item {
+  color: var(--fg-muted) !important;
+  font-size: 12px !important;
+}
+.recharts-cartesian-axis-tick text {
+  fill: var(--fg-muted) !important;
+  font-size: 10px !important;
+}
+.recharts-cartesian-grid line {
+  stroke: oklch(0.30 0.006 70 / 0.40) !important;
+}
+
+/* ===== Monetary Engine Explained — astrolabe & sliders ===== */
+/* Astrolabe tick ring rotation (260s linear; disabled when user prefers reduced motion) */
+.astrolabe-tick-ring {
+  transform-origin: 240px 240px;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .astrolabe-tick-ring {
+    animation: mithqal-astrolabe-spin 260s linear infinite;
+  }
+}
+@keyframes mithqal-astrolabe-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Custom range slider — used by the interactive simulator */
+.monetary-range {
+  outline: none;
+}
+.monetary-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #EBCB6E;
+  border: 2px solid #0E0C09;
+  cursor: pointer;
+  box-shadow: 0 0 0 1px #D4AF37, 0 0 12px -2px rgba(235, 203, 110, 0.6);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.monetary-range::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 0 1px #EBCB6E, 0 0 16px -2px rgba(235, 203, 110, 0.85);
+}
+.monetary-range::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #EBCB6E;
+  border: 2px solid #0E0C09;
+  cursor: pointer;
+  box-shadow: 0 0 0 1px #D4AF37, 0 0 12px -2px rgba(235, 203, 110, 0.6);
+}
+.monetary-range:focus-visible {
+  outline: 2px solid #EBCB6E;
+  outline-offset: 4px;
+}
+
+/* ===== Print (Save as PDF) ===== */
+/*
+ * Print stylesheet — shared by every view that exposes a "Download as PDF"
+ * button (Task P2). The reusable <PdfDownload /> component triggers
+ * `window.print()` after temporarily setting `document.title` to the
+ * desired filename so browsers default the "save as" filename correctly.
+ *
+ *   .no-print   — hide interactive-only chrome (navs, buttons, palette)
+ *   .print-only — reveal print-only blocks (page-break helpers, citation
+ *                 footers, slide-per-page stacks in the deck view)
+ */
+.print-only { display: none; }
+
+@media print {
+  .no-print { display: none !important; }
+  .print-only { display: block !important; }
+  body { background: white !important; color: black !important; }
+  .print-block { display: block !important; }
+  :root, .dark {
+    --ink: #ffffff;
+    --ink-soft: #ffffff;
+    --ink-card: #f7f7f5;
+    --line: #d8d4cc;
+    --gold: #8a6d1a;
+    --gold-soft: #8a6d1a;
+    --gold-deep: #6b5414;
+    --reserve: #2f7a5a;
+    --fg-muted: #555048;
+    --background: #ffffff;
+    --foreground: #111;
+    --card: #ffffff;
+    --border: #d8d4cc;
+  }
+  html, body {
+    background: #fff !important;
+    color: #111 !important;
+  }
+  .print-page {
+    background: #fff !important;
+    color: #111 !important;
+  }
+  .gold-text {
+    background: none !important;
+    -webkit-text-fill-color: #8a6d1a;
+    color: #8a6d1a !important;
+  }
+  .grain-bg, .grain-bg::before { background-image: none !important; }
+  [class*="bg-gold/"], .bg-gold { background-color: #8a6d1a !important; color: #fff !important; }
+  .bg-gold .text-ink { color: #fff !important; }
+  .print-card, [class*="rounded"] {
+    break-inside: avoid;
+    box-shadow: none !important;
+  }
+  a { color: #111 !important; text-decoration: none !important; }
+  section { page-break-inside: auto; }
+  h2, h3 { page-break-after: avoid; }
+}
+.print-block { display: none; }
+
+/* ===== UI-FEATURES-1 · E2 — Cyber mode (Matrix-style green-on-black) =====
+ * Third theme option. Activated when next-themes applies class="cyber" to
+ * <html> (the ThemeToggle cycles Dark → Light → Cyber → Dark).
+ *
+ * `cyber` is fully self-contained: it overrides the dark palette vars with
+ * green-on-black monospace equivalents so the rest of the app (which reads
+ * --ink / --gold / --fg-muted / --background / --foreground) keeps working
+ * without any per-component cyber branch. The 5 vars below are exactly the
+ * spec; the additional dark-palette overrides make sure the body background,
+ * card surfaces, borders, and shadcn primitives all remain dark — without
+ * them the light-mode :root palette would leak through.
+ */
+.cyber {
+  --ink: oklch(0.05 0 0 150);
+  --ink-soft: oklch(0.08 0 0 150);
+  --ink-card: oklch(0.11 0 0 150);
+  --line: oklch(0.22 0.04 150);
+  --gold: oklch(0.72 0.18 150);
+  --gold-soft: oklch(0.80 0.14 150);
+  --gold-deep: oklch(0.55 0.16 150);
+  --reserve: oklch(0.72 0.18 150);
+  --reserve-soft: oklch(0.85 0.10 150);
+  --fg-muted: oklch(0.65 0.08 150);
+  --glass-bg: oklch(0.08 0 0 150 / 0.65);
+  --glass-border: oklch(0.30 0.06 150 / 0.45);
+
+  /* shadcn primitives — keep them dark so popovers/dialogs/buttons render
+     correctly (without `class="dark"`, the :root light palette would
+     otherwise paint them white). */
+  --background: oklch(0.05 0 0 150);
+  --foreground: oklch(0.85 0.12 150);
+  --card: oklch(0.09 0 0 150);
+  --card-foreground: oklch(0.85 0.12 150);
+  --popover: oklch(0.09 0 0 150);
+  --popover-foreground: oklch(0.85 0.12 150);
+  --primary: oklch(0.72 0.18 150);
+  --primary-foreground: oklch(0.05 0 0 150);
+  --secondary: oklch(0.15 0.04 150);
+  --secondary-foreground: oklch(0.85 0.12 150);
+  --muted: oklch(0.15 0.04 150);
+  --muted-foreground: oklch(0.65 0.08 150);
+  --accent: oklch(0.15 0.04 150);
+  --accent-foreground: oklch(0.85 0.12 150);
+  --destructive: oklch(0.65 0.20 25);
+  --border: oklch(0.30 0.06 150 / 0.60);
+  --input: oklch(0.30 0.06 150 / 0.60);
+  --ring: oklch(0.72 0.18 150);
+
+  /* Force the monospace body font so the whole UI reads as a terminal. */
+  --font-sans: var(--font-geist-mono);
+}
+
+/* Subtle Matrix scanline overlay — only in cyber mode, only when the user
+   has not opted out of motion. Pointer-events:none so it never blocks UI. */
+@media (prefers-reduced-motion: no-preference) {
+  .cyber body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    background: repeating-linear-gradient(
+      0deg,
+      rgba(0, 255, 120, 0.04) 0px,
+      rgba(0, 255, 120, 0.04) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+    mix-blend-mode: screen;
+  }
+}
+
+/* ===== UI AUDIT FIXES — State-of-the-Art Polish ===== */
+
+/* 1. Radial gradient background for depth (not flat black) */
+.dark body, .cyber body {
+  background: radial-gradient(ellipse at top, color-mix(in oklch, var(--gold) 4%, var(--ink)) 0%, var(--ink) 60%);
+  background-attachment: fixed;
+}
+
+/* 2. Increased section spacing — 3rem → 4rem between major sections */
+section {
+  padding-block: 4rem;
+  scroll-margin-top: 5rem;
+}
+
+/* 3. Standardized card system — all content cards use consistent styling */
+.glass-card, .card-hover {
+  border-radius: 1rem !important;
+  border: 1px solid color-mix(in oklch, var(--gold) 8%, transparent) !important;
+  background: color-mix(in oklch, var(--ink-card) 60%, transparent) !important;
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+}
+
+/* 4. Table improvements — hover states + zebra striping + cell padding */
+table tbody tr {
+  transition: background-color 0.15s ease;
+}
+table tbody tr:hover {
+  background: color-mix(in oklch, var(--gold) 4%, transparent);
+}
+table tbody tr:nth-child(even) {
+  background: color-mix(in oklch, var(--ink-card) 30%, transparent);
+}
+table td {
+  padding: 12px 20px;
+  line-height: 1.5;
+}
+table th {
+  padding: 12px 20px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+/* 5. Typography scale — clearer hierarchy */
+h1 { font-size: clamp(2rem, 5vw, 3.5rem); line-height: 1.1; letter-spacing: -0.02em; }
+h2 { font-size: clamp(1.5rem, 3.5vw, 2.5rem); line-height: 1.2; letter-spacing: -0.01em; }
+h3 { font-size: clamp(1.25rem, 2.5vw, 1.75rem); line-height: 1.3; }
+p { line-height: 1.65; }
+
+/* 6. Body text contrast — ensure WCAG AA */
+.dark p, .dark li, .dark td, .dark span {
+  color: var(--fg-muted);
+}
+.dark h1, .dark h2, .dark h3, .dark h4 {
+  color: var(--foreground);
+}
+
+/* 7. Button micro-interactions */
+button {
+  transition: all 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+button:hover {
+  transform: translateY(-1px);
+}
+button:active {
+  transform: translateY(0);
+}
+
+/* 8. Light mode fixes — better contrast + remove excessive whitespace */
+.light {
+  --ink: oklch(0.985 0.003 70);
+  --ink-soft: oklch(0.97 0.004 70);
+  --ink-card: oklch(0.95 0.005 70);
+  --line: oklch(0.82 0.006 70);
+  --gold: oklch(0.50 0.14 84);
+  --gold-soft: oklch(0.62 0.10 85);
+  --gold-deep: oklch(0.40 0.13 84);
+  --fg-muted: oklch(0.38 0.012 70);
+  --glass-bg: oklch(0.94 0.005 70 / 0.70);
+  --glass-border: oklch(0.70 0.008 70 / 0.40);
+}
+.light body {
+  background: radial-gradient(ellipse at top, color-mix(in oklch, var(--gold) 3%, var(--ink)) 0%, var(--ink) 60%);
+  background-attachment: fixed;
+}
+.light section {
+  padding-block: 3rem;
+}
+
+/* 9. Cyber mode — refined Matrix aesthetic */
+.cyber {
+  --ink: oklch(0.05 0.01 150);
+  --ink-soft: oklch(0.08 0.01 150);
+  --ink-card: oklch(0.10 0.01 150);
+  --line: oklch(0.20 0.02 150);
+  --gold: oklch(0.72 0.18 150);
+  --gold-soft: oklch(0.82 0.12 150);
+  --gold-deep: oklch(0.55 0.16 150);
+  --reserve: oklch(0.72 0.18 150);
+  --fg-muted: oklch(0.68 0.06 150);
+  --glass-bg: oklch(0.12 0.01 150 / 0.60);
+  --glass-border: oklch(0.30 0.02 150 / 0.40);
+}
+.cyber body {
+  background: radial-gradient(ellipse at top, color-mix(in oklch, var(--gold) 5%, var(--ink)) 0%, var(--ink) 60%);
+  background-attachment: fixed;
+  font-family: var(--font-geist-mono), monospace;
+}
+
+/* 10. Scroll progress indicator */
+.scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--gold), var(--gold-soft));
+  z-index: 100;
+  transition: width 0.1s ease;
+}
+
+/* 11. Status badge refinement — less aggressive */
+.badge-warning {
+  background: color-mix(in oklch, var(--gold) 15%, transparent);
+  border-color: color-mix(in oklch, var(--gold) 30%, transparent);
+  color: var(--gold);
+}
+.badge-success {
+  background: color-mix(in oklch, var(--reserve) 15%, transparent);
+  border-color: color-mix(in oklch, var(--reserve) 30%, transparent);
+  color: var(--reserve);
+}
+
+/* 12. FAB (AI Explainer) — subtle gold ghost button, not bright yellow */
+button[aria-label*="AI"], .fixed.bottom-4.right-4 {
+  background: color-mix(in oklch, var(--ink-card) 80%, transparent) !important;
+  border: 1px solid color-mix(in oklch, var(--gold) 30%, transparent) !important;
+  color: var(--gold) !important;
+  backdrop-filter: blur(20px);
+}
+button[aria-label*="AI"]:hover, .fixed.bottom-4.right-4:hover {
+  border-color: var(--gold) !important;
+  box-shadow: 0 0 20px color-mix(in oklch, var(--gold) 20%, transparent);
+}

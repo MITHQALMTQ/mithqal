@@ -1,0 +1,37 @@
+[profile.default]
+src = "src"
+out = "out"
+libs = ["lib"]
+solc_version = "0.8.24"
+auto_detect_solc = true
+optimizer = true
+optimizer_runs = 200
+via_ir = false
+
+# Remappings — map @openzeppelin to the installed Foundry dependency
+remappings = [
+  "@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/",
+  "@openzeppelin/contracts/access/=lib/openzeppelin-contracts/contracts/access/",
+  "@openzeppelin/contracts/utils/=lib/openzeppelin-contracts/contracts/utils/",
+]
+
+# Fuzz testing configuration — target 10,000+ runs per invariant (§38)
+[profile.default.fuzz]
+runs = 10000
+max_test_rejects = 100000
+seed = "0x6d69746871616c00000000000000000000000000000000000000000000000000"
+
+# Invariant testing configuration
+[profile.default.invariant]
+runs = 1000
+depth = 50
+fail_on_revert = false
+
+# Gas reporting
+[profile.gas-report]
+runs = 10000
+gas_reports = ["MTQ", "MockOracle", "Governance"]
+
+[profile.ci]
+fuzz = { runs = 1000 }
+invariant = { runs = 100 }

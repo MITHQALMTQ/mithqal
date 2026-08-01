@@ -1,0 +1,5 @@
+{
+  "crons": [
+    { "path": "/api/proofs/publish", "schedule": "0 0 * * *" }
+  ]
+}
