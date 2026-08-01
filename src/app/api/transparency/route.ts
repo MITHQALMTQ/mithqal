@@ -19,7 +19,16 @@ export async function GET() {
       db.formationInterest.count(),
     ]);
 
-    const state = deriveState(ops, liveData.goldUsd, oracleSnapshotData.silverUsd > 0 ? oracleSnapshotData.silverUsd : 58.76);
+    // Fetch live oracle data from free APIs (gold price, FX rates, crypto)
+    const liveData = await getLiveOracleData();
+    const oracle = toOracleSnapshot(liveData);
+
+    // Silver price from on-chain oracle snapshot
+    const oracleSnapshotData = await getOracleSnapshot();
+    const silverPrice = oracleSnapshotData.silverUsd > 0 ? oracleSnapshotData.silverUsd : 58.76;
+
+    // Derive state with live gold + silver prices for dynamic NAV revaluation
+    const state = deriveState(ops, liveData.goldUsd, silverPrice);
     const recent = [...ops]
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
       .slice(0, 8)
@@ -32,10 +41,6 @@ export async function GET() {
         porHash: o.porHash,
         createdAt: o.createdAt.toISOString(),
       }));
-
-    // Fetch live oracle data from free APIs (gold price, FX rates, crypto)
-    const liveData = await getLiveOracleData();
-    const oracle = toOracleSnapshot(liveData);
 
     // Build reserve assets using LIVE gold AND LIVE silver prices.
     // Allocation per §23-29: DYNAMIC within constitutional ranges.
@@ -59,10 +64,9 @@ export async function GET() {
     //   - Current gold volatility (if high, reduce bullion slightly)
     //
     // The allocation is computed each time from live conditions, NOT hardcoded.
-    const oracleSnapshotData = await getOracleSnapshot();
     const totalReserve = state.reserveValue || 50_000_000;
     const goldPrice = liveData.goldUsd;
-    const silverPrice = oracleSnapshotData.silverUsd > 0 ? oracleSnapshotData.silverUsd : 58.76;
+    // silverPrice already set above from oracleSnapshotData
 
     // ---- DYNAMIC ALLOCATION COMPUTATION (§23-29) ----
     // Start with policy targets (§23.1)

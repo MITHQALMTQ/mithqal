@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { Moon, Sun, Terminal } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -9,13 +9,11 @@ import { cn } from "@/lib/utils";
  *
  * Cycles: Dark → Light → Cyber → Dark.
  *
- * Implementation: directly manipulates the `class` attribute on <html>.
- * The toggle reads the current theme from localStorage on mount via
- * useEffect (NOT during render) to avoid hydration mismatches.
- *
- * The server always renders the "dark" placeholder (Moon icon). After
- * hydration, useEffect runs and updates the state to the stored theme.
- * This guarantees server and client render identical HTML on first paint.
+ * Uses useSyncExternalStore to read the theme from <html>'s class list
+ * (kept in sync by the inline script in layout.tsx + applyTheme()).
+ * This avoids useEffect + setState (which triggers the
+ * react-hooks/set-state-in-effect lint rule) and prevents hydration
+ * mismatches because the server snapshot always returns "dark".
  */
 
 type Theme = "dark" | "light" | "cyber";
@@ -37,43 +35,43 @@ function applyTheme(theme: Theme) {
   try {
     localStorage.setItem("mithqal-theme", theme);
   } catch {}
+  // Dispatch event so useSyncExternalStore picks up the change
+  window.dispatchEvent(new Event("mithqal-theme-change"));
 }
 
-export function ThemeToggle() {
-  // Always start with "dark" on both server and client (defaultTheme="dark").
-  // useEffect will sync to the stored preference AFTER hydration.
-  const [current, setCurrent] = useState<Theme>("dark");
-  const [mounted, setMounted] = useState(false);
+function subscribeTheme(cb: () => void) {
+  if (typeof window === "undefined") return () => {};
+  window.addEventListener("mithqal-theme-change", cb);
+  window.addEventListener("storage", cb);
+  return () => {
+    window.removeEventListener("mithqal-theme-change", cb);
+    window.removeEventListener("storage", cb);
+  };
+}
 
-  // Read stored theme AFTER hydration (useEffect, not during render)
-  useEffect(() => {
-    const stored = getStoredTheme();
-    setCurrent(stored);
-    setMounted(true);
-  }, []);
+function getThemeSnapshot(): Theme {
+  if (typeof document === "undefined") return "dark";
+  const list = document.documentElement.classList;
+  if (list.contains("light")) return "light";
+  if (list.contains("cyber")) return "cyber";
+  return "dark";
+}
+
+function getThemeServerSnapshot(): Theme {
+  return "dark";
+}
+
+// useSyncExternalStore import
+import { useSyncExternalStore } from "react";
+
+export function ThemeToggle() {
+  const current = useSyncExternalStore(subscribeTheme, getThemeSnapshot, getThemeServerSnapshot);
 
   const cycle = useCallback(() => {
     const next: Theme = current === "dark" ? "light" : current === "light" ? "cyber" : "dark";
     applyTheme(next);
-    setCurrent(next);
   }, [current]);
 
-  // Before mount: render the dark-mode placeholder (Moon icon).
-  // This matches what the server renders, preventing hydration mismatch.
-  if (!mounted) {
-    return (
-      <button
-        type="button"
-        aria-label="Switch to light mode"
-        title="Switch to light mode"
-        className="inline-flex h-7 w-7 items-center justify-center rounded-full text-fg-muted hover:bg-ink-card/60 hover:text-gold transition-all"
-      >
-        <Sun className="h-4 w-4" aria-hidden="true" />
-      </button>
-    );
-  }
-
-  // After mount: render the actual theme toggle
   const nextTheme: Theme = current === "dark" ? "light" : current === "light" ? "cyber" : "dark";
   const ariaLabel =
     nextTheme === "light"
