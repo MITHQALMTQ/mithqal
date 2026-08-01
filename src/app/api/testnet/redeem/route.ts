@@ -1,10 +1,14 @@
 import { NextResponse } from "next/server";
 import { db, ensureSchema } from "@/lib/db";
-import { deriveState, computeRedemption, PAR } from "@/lib/testnet-engine";
+import { deriveState, computeRedemption } from "@/lib/testnet-engine";
+import { getLiveOracleData } from "@/lib/live-oracle";
+import { getOracleSnapshot } from "@/lib/oracle-client";
 
 // POST /api/testnet/redeem — burn MTQ for proportional reserves.
-// Redemption is NEVER suspended (constitutional invariant). A 0.05% fee
-// is deducted from the claim.
+// §36.3: Redemption Value = Burned MTQ × Current NAV
+// NAV is DYNAMIC (§3.1: NAV_m = R_m / S) — NOT pegged to $1.
+// If reserves > supply (NAV > $1), you get MORE dollars per MTQ.
+// Redemption is NEVER suspended (constitutional invariant).
 export async function POST(req: Request) {
   let body: unknown;
   try {
@@ -27,29 +31,33 @@ export async function POST(req: Request) {
   try {
     await ensureSchema();
     const ops = await db.testnetOperation.findMany({ orderBy: { createdAt: "asc" } });
-    const stateBefore = deriveState(ops);
+
+    // Get live gold + silver prices for dynamic reserve revaluation
+    const liveData = await getLiveOracleData();
+    const oracleSnap = await getOracleSnapshot();
+    const goldPrice = liveData.goldUsd;
+    const silverPrice = oracleSnap.silverUsd > 0 ? oracleSnap.silverUsd : 58.76;
+
+    const stateBefore = deriveState(ops, goldPrice, silverPrice);
     const outcome = computeRedemption(stateBefore, mtq);
     if (!outcome.valid) {
       return NextResponse.json({ error: outcome.reason }, { status: 400 });
     }
 
-    // Record the burn. amountUsd stored is the gross claim (pre-fee) so the
-    // ledger reflects the proportional reserves removed; fee captured in
-    // the response.
     const created = await db.testnetOperation.create({
       data: {
         type: "redeem",
         amountUsd: outcome.claimUsd,
         mtq,
         participant,
-        nav: 0,
-        reserveRatio: 0,
+        nav: outcome.nav,
+        reserveRatio: stateBefore.reserveRatio,
         porHash: "",
       },
     });
 
     const allOps = await db.testnetOperation.findMany({ orderBy: { createdAt: "asc" } });
-    const stateAfter = deriveState(allOps);
+    const stateAfter = deriveState(allOps, goldPrice, silverPrice);
 
     await db.testnetOperation.update({
       where: { id: created.id },
@@ -66,6 +74,7 @@ export async function POST(req: Request) {
       feeUsd: outcome.feeUsd,
       netUsd: outcome.netUsd,
       claimUsd: outcome.claimUsd,
+      nav: outcome.nav,
       state: { ...stateAfter, operations: recent },
     });
   } catch (err) {

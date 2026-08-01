@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
 import { db, ensureSchema } from "@/lib/db";
 import { deriveState } from "@/lib/testnet-engine";
+import { getLiveOracleData } from "@/lib/live-oracle";
+import { getOracleSnapshot } from "@/lib/oracle-client";
 
-// GET /api/testnet — derived reserve state + recent operations ledger +
-// time-series chart data (supply, reserveRatio, NAV over time).
+// GET /api/testnet — derived reserve state with DYNAMIC NAV.
+// NAV = R_m / S (§3.1) — revalued using live gold + silver prices.
 export async function GET() {
   try {
     await ensureSchema()
@@ -11,7 +13,14 @@ export async function GET() {
       orderBy: { createdAt: "asc" },
       take: 1000,
     });
-    const state = deriveState(ops);
+
+    // Get live prices for dynamic reserve revaluation
+    const liveData = await getLiveOracleData();
+    const oracleSnap = await getOracleSnapshot();
+    const goldPrice = liveData.goldUsd;
+    const silverPrice = oracleSnap.silverUsd > 0 ? oracleSnap.silverUsd : 58.76;
+
+    const state = deriveState(ops, goldPrice, silverPrice);
 
     // Build time-series for charts: replay ops in chronological order,
     // recording supply + ratio + NAV after each operation.

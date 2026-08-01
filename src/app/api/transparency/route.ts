@@ -19,7 +19,7 @@ export async function GET() {
       db.formationInterest.count(),
     ]);
 
-    const state = deriveState(ops);
+    const state = deriveState(ops, liveData.goldUsd, oracleSnapshotData.silverUsd > 0 ? oracleSnapshotData.silverUsd : 58.76);
     const recent = [...ops]
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
       .slice(0, 8)
@@ -216,6 +216,20 @@ export async function GET() {
     }
 
     return NextResponse.json({
+      // §1 Numeraire Independence — Multi-currency NAV
+      // 1 MTQ expressed in all 8 basket currencies (§1: NAV_m(m) = FX_{n→m} × NAV_m(n))
+      navMultiCurrency: {
+        USD: parseFloat(state.nav.toFixed(6)),
+        EUR: parseFloat((state.nav * (liveData.fxRates.EUR || 0.87)).toFixed(6)),
+        JPY: parseFloat((state.nav * (1 / (liveData.fxRates.JPY || 0.0063))).toFixed(2)),
+        GBP: parseFloat((state.nav * (liveData.fxRates.GBP || 0.74)).toFixed(6)),
+        CNY: parseFloat((state.nav * (1 / (liveData.fxRates.CNY || 0.14))).toFixed(4)),
+        CHF: parseFloat((state.nav * (liveData.fxRates.CHF || 0.81)).toFixed(6)),
+        AUD: parseFloat((state.nav * (1 / (liveData.fxRates.AUD || 0.67))).toFixed(6)),
+        CAD: parseFloat((state.nav * (1 / (liveData.fxRates.CAD || 0.71))).toFixed(6)),
+        goldPerOz: liveData.goldUsd,
+        silverPerOz: silverPrice,
+      },
       // §23-29 Dynamic Reserve Allocation metadata
       allocation: {
         fiatRatio: parseFloat((fiatRatio * 100).toFixed(2)),

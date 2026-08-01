@@ -1,11 +1,13 @@
 import { NextResponse } from "next/server";
 import { db, ensureSchema } from "@/lib/db";
-import { deriveState, canMint, PAR } from "@/lib/testnet-engine";
-import { mintFee } from "@/lib/monetary-engine-v19";
+import { deriveState, canMint, computeMint } from "@/lib/testnet-engine";
+import { getLiveOracleData } from "@/lib/live-oracle";
+import { getOracleSnapshot } from "@/lib/oracle-client";
 
-// POST /api/testnet/mint — mint MTQ 1:1 against a verified (simulated)
-// reserve deposit. Enforces the 100%+ reserve invariant: minting is paused
-// if the reserve ratio is below 100%.
+// POST /api/testnet/mint — mint MTQ against a verified reserve deposit.
+// §36.2: Minted MTQ = (Deposit - Fee) / Current NAV
+// NAV is DYNAMIC (§3.1: NAV_m = R_m / S) — NOT pegged to $1.
+// If reserves > supply (ratio > 100%), NAV > $1 → you get FEWER MTQ per dollar.
 export async function POST(req: Request) {
   let body: unknown;
   try {
@@ -31,7 +33,14 @@ export async function POST(req: Request) {
   try {
     await ensureSchema();
     const ops = await db.testnetOperation.findMany({ orderBy: { createdAt: "asc" } });
-    const stateBefore = deriveState(ops);
+
+    // Get live gold + silver prices for dynamic reserve revaluation
+    const liveData = await getLiveOracleData();
+    const oracleSnap = await getOracleSnapshot();
+    const goldPrice = liveData.goldUsd;
+    const silverPrice = oracleSnap.silverUsd > 0 ? oracleSnap.silverUsd : 58.76;
+
+    const stateBefore = deriveState(ops, goldPrice, silverPrice);
     const guard = canMint(stateBefore);
     if (!guard.ok) {
       return NextResponse.json(
@@ -40,27 +49,27 @@ export async function POST(req: Request) {
       );
     }
 
-    // 1 MTQ per $1 deposited at par. Mint fee (§9.1): min(amount × 0.05%, $5,000).
-    const fee = mintFee(amountUsd);
-    const netDeposit = amountUsd - fee;
-    const mtq = netDeposit / PAR;
+    // §36.2: Minted MTQ = (Deposit - Fee) / Current NAV
+    const outcome = computeMint(stateBefore, amountUsd);
+    if (!outcome.valid) {
+      return NextResponse.json({ error: outcome.reason }, { status: 400 });
+    }
 
     const created = await db.testnetOperation.create({
       data: {
         type: "mint",
         amountUsd,
-        mtq,
+        mtq: outcome.mtq,
         participant,
-        nav: 0, // placeholder; recompute below
-        reserveRatio: 0,
+        nav: outcome.nav,
+        reserveRatio: stateBefore.reserveRatio,
         porHash: "",
       },
     });
 
-    // Recompute the post-op state so we can persist the authoritative NAV,
-    // reserve ratio and PoR hash on the operation itself (auditability).
+    // Recompute the post-op state with live prices
     const allOps = await db.testnetOperation.findMany({ orderBy: { createdAt: "asc" } });
-    const stateAfter = deriveState(allOps);
+    const stateAfter = deriveState(allOps, goldPrice, silverPrice);
 
     await db.testnetOperation.update({
       where: { id: created.id },
@@ -74,8 +83,10 @@ export async function POST(req: Request) {
     const recent = await recentOps();
     return NextResponse.json({
       ok: true,
-      feeUsd: fee,
-      netDepositUsd: netDeposit,
+      feeUsd: outcome.feeUsd,
+      netDepositUsd: outcome.netDepositUsd,
+      mtq: outcome.mtq,
+      nav: outcome.nav,
       state: { ...stateAfter, operations: recent },
     });
   } catch (err) {
