@@ -322,14 +322,35 @@ runScenario("Reserve allocation: Gold +30% shifts bullion above 25% cap", () => 
   console.log(`  ANALYSIS: Gold rally pushes bullion above 25% → §29 rebalancing trigger`);
   console.log(`  ANALYSIS: Rebalance: sell excess gold, buy fiat/stablecoin to restore range`);
   
-  // Check rebalancing triggers
-  const triggers = detectRebalanceTriggers(
-    new Map([["fiat", fiatValue / totalReserve], ["bullion", bullionValue / totalReserve], ["stablecoin", stableValue / totalReserve]]),
-    new Map([["fiat", 0.75], ["bullion", 0.20], ["stablecoin", 0.05]]),
-    state.reserveRatio.ratio,
-    state.lcr.ratio,
-    0.02
-  );
+  // Check rebalancing triggers — §29 RebalanceContext (v19 §29.1)
+  // Pass layer weights both as currentWeights (for §29.1 weight_drift
+  // at the layer level) and as layerWeights (for §29.1 layer_breach
+  // against constitutional layer ranges §23-25).
+  const triggers = detectRebalanceTriggers({
+    currentWeights: new Map([
+      ["fiat", fiatValue / totalReserve],
+      ["bullion", bullionValue / totalReserve],
+      ["stablecoin", stableValue / totalReserve],
+    ]),
+    targetWeights: new Map([
+      ["fiat", 0.75],
+      ["bullion", 0.20],
+      ["stablecoin", 0.05],
+    ]),
+    reserveRatio: state.reserveRatio.ratio,
+    lcr: state.lcr.ratio,
+    rebalanceThreshold: 0.02,
+    layerWeights: new Map([
+      ["fiat", fiatValue / totalReserve],
+      ["bullion", bullionValue / totalReserve],
+      ["stablecoin", stableValue / totalReserve],
+    ]),
+    layerRanges: new Map([
+      ["fiat", { min: 0.70, max: 0.80 }],
+      ["bullion", { min: 0.15, max: 0.25 }],
+      ["stablecoin", { min: 0.02, max: 0.08 }],
+    ]),
+  });
   console.log(`  Rebalance triggers: ${triggers.length}`);
   for (const t of triggers) {
     console.log(`    → ${t.type}: ${t.description} [${t.severity}]`);

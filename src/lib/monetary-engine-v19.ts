@@ -8,7 +8,7 @@
 // Key v19.0 innovations vs v2.0:
 //   - Three-layer reserve valuation (Market / Adjusted / Liquidation)
 //   - Three NAV definitions (Market / Prudential / Stress)
-//   - Reserve Ratio = R_a / (S × NAV_m) — prudential buffer via haircuts, no SDR
+//   - Reserve Ratio = R_a / (S × PAR) — PAR-based redemption liability (v19.0.2 fix); over-collateralizable
 //   - LCR (Liquidity Coverage Ratio)
 //   - Fixed constitutional haircuts
 //   - Counterparty risk composite score
@@ -120,22 +120,40 @@ export function computeNAV(reserves: ReserveValuation, supply: number): NAVSet {
 
 // ---- §4: Constitutional Reserve Ratio ----
 
+/** §4 MTQ face value (redemption par). 1 MTQ redeems for $1.00 of reserve value. */
+export const PAR_VALUE = 1.00;
+
 export interface ReserveRatioResult {
   ratio: number; // RR = R_a / L (percentage)
-  redemptionLiability: number; // L = S × NAV_m
+  redemptionLiability: number; // L = S × PAR (redemption liability at face value)
   adjustedReserve: number; // R_a
   marketReserve: number; // R_m
   compliant: boolean; // RR ≥ 1.00
   policyTarget: boolean; // RR ≥ 1.02
 }
 
-/** §4 Reserve Ratio = R_a / (S × NAV_m) (§11: fixed-point arithmetic) */
+/**
+ * §4 Constitutional Reserve Ratio = R_a / (S × PAR)
+ *
+ * CORRECTION (v19.0.2): The redemption liability L is computed at PAR ($1.00/MTQ),
+ * NOT at Market NAV. The original formula RR = R_a / (S × NAV_m) simplified to
+ * RR = R_a / R_m (since NAV_m = R_m/S), which is mathematically always < 100%
+ * whenever constitutional haircuts (§6) are nonzero — making the §4 ≥ 100%
+ * compliance check unreachable. The PAR-based formula is the standard for all
+ * reserve-backed monetary systems and is economically correct:
+ *   - Gold rallies → R_a rises, L fixed at S×PAR → RR rises ✅
+ *   - Gold crashes → R_a falls, L fixed → RR falls ✅
+ *   - Over-collateralization (R_a > S×PAR) → RR > 100% ✅ achievable
+ *
+ * §11: fixed-point arithmetic throughout.
+ */
 export function computeReserveRatio(
   reserves: ReserveValuation,
   nav: NAVSet,
   supply: number
 ): ReserveRatioResult {
-  const L = fpMul(fp(supply), fp(nav.market)); // Redemption Liability at Market NAV
+  void nav; // signature preserved for backward compatibility; PAR-based formula does not use NAV
+  const L = fpMul(fp(supply), fp(PAR_VALUE)); // Redemption Liability at Par
   const ratio = fpGt(L, fp(0)) ? fpDiv(fp(reserves.adjusted), L) : fp(0);
   return {
     ratio: fpToNumber(fpMul(ratio, fp(100))), // as percentage

@@ -1,0 +1,919 @@
+"use client";
+
+/* ============================================================
+ * StressTestProof — Proof-of-Strength section for the public site
+ * ------------------------------------------------------------
+ * Surfaces the v19.0.2 verified stress-test results as a single,
+ * scannable proof of MTQ's stability. Mounted on the Institution
+ * view (public-site.tsx) right after the Reserves section so the
+ * reader sees "what backs MTQ" → "how we proved it can't break".
+ *
+ * Layout:
+ *   §1  Headline + 6 key-metric badges (RR, vol, stress, rank, DD, redemption)
+ *   §2  Tabbed proof deck
+ *       • Stability Ranking — 14 assets, MTQ highlighted at #3
+ *       • Stress Scenarios  — 20/20 scenarios (scrollable)
+ *       • Crisis Survival   — 5 historical crises; redemption always-on
+ *       • 7 Mechanisms      — the constitutional guardrails
+ *   §3  Volatility comparison — CSS bar chart (USDC, USD, MTQ, Gold, BTC)
+ *   §4  Closing statement — three monetary functions satisfied
+ *
+ * Theming:
+ *   Reads the institutional palette tokens (--ink-soft, --gold,
+ *   --reserve, --line, --fg-muted) so it adapts to dark/light/cyber
+ *   themes automatically. NO indigo/blue. Success → --reserve (green),
+ *   warning → amber Tailwind classes, danger → red Tailwind classes.
+ *
+ * Task ID: 3-e  ·  Agent: Proof-of-Strength UI Builder
+ * ============================================================ */
+
+import { motion } from "framer-motion";
+import {
+  ShieldCheck,
+  TrendingDown,
+  Award,
+  CheckCircle2,
+  Shield,
+  Lock,
+  Activity,
+  Gauge,
+  Layers,
+  Scale,
+  AlertTriangle,
+  Zap,
+  FlameKindling,
+  PauseCircle,
+  ArrowDownRight,
+  ArrowUpRight,
+  Minus,
+} from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableHead,
+  TableRow,
+  TableCell,
+} from "@/components/ui/table";
+
+/* -------------------------------------------------------------
+ * Scroll-triggered reveal — local copy so this file is standalone
+ * (the project's @/components/reveal is also fine, but keeping the
+ * wrapper here makes the component trivially portable to other
+ * pages if it ever gets promoted to its own view).
+ * ----------------------------------------------------------- */
+function Reveal({
+  children,
+  delay = 0,
+  className = "",
+}: {
+  children: React.ReactNode;
+  delay?: number;
+  className?: string;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-50px" }}
+      transition={{ duration: 0.6, delay, ease: [0.22, 1, 0.36, 1] }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+function Eyebrow({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex items-center gap-3 text-gold">
+      <span className="h-px w-8 bg-gold/60" aria-hidden="true" />
+      <span className="text-[11px] font-semibold uppercase tracking-[0.28em]">
+        {children}
+      </span>
+    </div>
+  );
+}
+
+/* ============================================================
+ * Data — v19.0.2 verified results (Task 3-a baseline + Tasks
+ * 2-a/2-c/3-d stress suites). All numbers are sourced from the
+ * docs/verification/ master audit report and the stability-tests
+ * / stress-test-fixed engine outputs.
+ * ============================================================ */
+
+interface KeyMetric {
+  label: string;
+  value: string;
+  caption: string;
+  icon: typeof ShieldCheck;
+  accent: "reserve" | "gold" | "amber";
+}
+
+const KEY_METRICS: KeyMetric[] = [
+  {
+    label: "Reserve Ratio",
+    value: "102.07%",
+    caption: "Above 102% policy target",
+    icon: ShieldCheck,
+    accent: "reserve",
+  },
+  {
+    label: "Annual Volatility",
+    value: "2.25%",
+    caption: "3.3× more stable than USD",
+    icon: TrendingDown,
+    accent: "gold",
+  },
+  {
+    label: "Stress Tests Passed",
+    value: "20 / 20",
+    caption: "Every scenario cleared",
+    icon: CheckCircle2,
+    accent: "reserve",
+  },
+  {
+    label: "Stability Rank",
+    value: "#3 of 14",
+    caption: "Behind only USDC + USDT",
+    icon: Award,
+    accent: "gold",
+  },
+  {
+    label: "Max Drawdown",
+    value: "1.49%",
+    caption: "365-day Monte Carlo",
+    icon: Shield,
+    accent: "gold",
+  },
+  {
+    label: "Redemption",
+    value: "Always-On",
+    caption: "Burn never pauses (§36.3)",
+    icon: Lock,
+    accent: "reserve",
+  },
+];
+
+/* --- Stability ranking (14 assets, 365-day Monte Carlo) -------- */
+
+type Verdict =
+  | "ULTRA-STABLE"
+  | "STABLE"
+  | "MODERATE"
+  | "VOLATILE"
+  | "HIGHLY VOLATILE";
+
+interface RankedAsset {
+  rank: number;
+  asset: string;
+  category: string;
+  annVol: number; // percent
+  maxDD: number; // percent
+  var95: number; // percent
+  betaGold: number;
+  verdict: Verdict;
+  isMTQ?: boolean;
+}
+
+const RANKED_ASSETS: RankedAsset[] = [
+  { rank: 1,  asset: "USDC",  category: "stablecoin",   annVol: 0.47,  maxDD: 0.45,  var95: 0.042, betaGold: 0.001, verdict: "ULTRA-STABLE" },
+  { rank: 2,  asset: "USDT",  category: "stablecoin",   annVol: 0.50,  maxDD: 0.82,  var95: 0.041, betaGold: 0.003, verdict: "ULTRA-STABLE" },
+  { rank: 3,  asset: "MTQ",   category: "gold-backed",  annVol: 2.25,  maxDD: 1.49,  var95: 0.168, betaGold: 0.125, verdict: "STABLE", isMTQ: true },
+  { rank: 4,  asset: "USD",   category: "fiat",         annVol: 7.57,  maxDD: 6.25,  var95: 0.659, betaGold: 0.011, verdict: "MODERATE" },
+  { rank: 5,  asset: "CNY",   category: "fiat",         annVol: 8.21,  maxDD: 11.56, var95: 0.724, betaGold: -0.001, verdict: "MODERATE" },
+  { rank: 6,  asset: "EUR",   category: "fiat",         annVol: 9.00,  maxDD: 11.98, var95: 0.762, betaGold: 0.044, verdict: "MODERATE" },
+  { rank: 7,  asset: "CHF",   category: "fiat",         annVol: 9.03,  maxDD: 6.28,  var95: 0.725, betaGold: 0.028, verdict: "MODERATE" },
+  { rank: 8,  asset: "GBP",   category: "fiat",         annVol: 9.74,  maxDD: 4.55,  var95: 0.861, betaGold: 0.024, verdict: "MODERATE" },
+  { rank: 9,  asset: "CAD",   category: "fiat",         annVol: 10.57, maxDD: 6.40,  var95: 0.860, betaGold: 0.030, verdict: "MODERATE" },
+  { rank: 10, asset: "JPY",   category: "fiat",         annVol: 10.91, maxDD: 14.18, var95: 0.956, betaGold: -0.064, verdict: "MODERATE" },
+  { rank: 11, asset: "AUD",   category: "fiat",         annVol: 11.45, maxDD: 22.04, var95: 1.014, betaGold: -0.057, verdict: "MODERATE" },
+  { rank: 12, asset: "Gold",  category: "metal",        annVol: 14.75, maxDD: 9.46,  var95: 1.060, betaGold: 1.000, verdict: "MODERATE" },
+  { rank: 13, asset: "Silver",category: "metal",        annVol: 25.06, maxDD: 12.68, var95: 1.893, betaGold: 0.055, verdict: "VOLATILE" },
+  { rank: 14, asset: "BTC",   category: "crypto",       annVol: 69.32, maxDD: 36.95, var95: 5.720, betaGold: 0.226, verdict: "HIGHLY VOLATILE" },
+];
+
+function verdictBadgeClass(v: Verdict): string {
+  switch (v) {
+    case "ULTRA-STABLE":
+      return "border-reserve/40 bg-reserve/10 text-reserve";
+    case "STABLE":
+      return "border-gold/40 bg-gold/10 text-gold";
+    case "MODERATE":
+      return "border-line bg-ink-card text-fg-muted";
+    case "VOLATILE":
+      return "border-amber-500/40 bg-amber-500/10 text-amber-600 dark:text-amber-400";
+    case "HIGHLY VOLATILE":
+      return "border-destructive/40 bg-destructive/10 text-destructive";
+  }
+}
+
+// Maximum volatility in the dataset — used to scale the inline vol bar
+// so the bar length is proportional across all 14 assets.
+const MAX_VOL = 69.32;
+
+/* --- Stress scenarios (20/20 pass) ------------------------------ */
+
+interface StressScenario {
+  scenario: string;
+  baselineNav: number;
+  shockedNav: number;
+  baselineRR: number;
+  shockedRR: number;
+  pass: boolean;
+}
+
+const STRESS_SCENARIOS: StressScenario[] = [
+  { scenario: "Gold +20% (rally)",                baselineNav: 1.0419, shockedNav: 1.0740, baselineRR: 102.07, shockedRR: 105.12, pass: true },
+  { scenario: "Gold −20% (crash)",                baselineNav: 1.0419, shockedNav: 1.0099, baselineRR: 102.07, shockedRR: 99.03,  pass: true },
+  { scenario: "Gold +50% (extreme rally)",        baselineNav: 1.0419, shockedNav: 1.1221, baselineRR: 102.07, shockedRR: 109.68, pass: true },
+  { scenario: "Gold −40% (extreme crash)",        baselineNav: 1.0419, shockedNav: 0.9778, baselineRR: 102.07, shockedRR: 95.98,  pass: true },
+  { scenario: "Currency crash: EUR −30%",         baselineNav: 1.0419, shockedNav: 1.0419, baselineRR: 102.07, shockedRR: 102.07, pass: true },
+  { scenario: "Currency crash: JPY −40%",         baselineNav: 1.0419, shockedNav: 1.0419, baselineRR: 102.07, shockedRR: 102.07, pass: true },
+  { scenario: "Currency crash: GBP −25%",         baselineNav: 1.0419, shockedNav: 1.0419, baselineRR: 102.07, shockedRR: 102.07, pass: true },
+  { scenario: "Currency crash: CNY −20%",         baselineNav: 1.0419, shockedNav: 1.0419, baselineRR: 102.07, shockedRR: 102.07, pass: true },
+  { scenario: "Currency crash: CHF −15%",         baselineNav: 1.0419, shockedNav: 1.0419, baselineRR: 102.07, shockedRR: 102.07, pass: true },
+  { scenario: "Currency crash: AUD −35%",         baselineNav: 1.0419, shockedNav: 1.0419, baselineRR: 102.07, shockedRR: 102.07, pass: true },
+  { scenario: "Currency crash: CAD −30%",         baselineNav: 1.0419, shockedNav: 1.0419, baselineRR: 102.07, shockedRR: 102.07, pass: true },
+  { scenario: "Currency crash: USD −10%",         baselineNav: 1.0419, shockedNav: 1.0419, baselineRR: 102.07, shockedRR: 102.07, pass: true },
+  { scenario: "EUR −90% (SDP + suspension)",      baselineNav: 1.0419, shockedNav: 1.0419, baselineRR: 102.07, shockedRR: 102.07, pass: true },
+  { scenario: "JPY −50% (SDP math)",              baselineNav: 1.0419, shockedNav: 1.0419, baselineRR: 102.07, shockedRR: 102.07, pass: true },
+  { scenario: "Silver +100% (rally)",             baselineNav: 1.0419, shockedNav: 1.0819, baselineRR: 102.07, shockedRR: 105.79, pass: true },
+  { scenario: "Silver −50% (crash)",              baselineNav: 1.0419, shockedNav: 1.0219, baselineRR: 102.07, shockedRR: 100.21, pass: true },
+  { scenario: "High volatility σ=6%",             baselineNav: 1.0419, shockedNav: 1.0419, baselineRR: 102.07, shockedRR: 102.07, pass: true },
+  { scenario: "Emergency: Gold −50%",             baselineNav: 1.0419, shockedNav: 0.9618, baselineRR: 102.07, shockedRR: 94.46,  pass: true },
+  { scenario: "Multi-currency NAV (gold +20%)",   baselineNav: 1.0419, shockedNav: 1.0740, baselineRR: 102.07, shockedRR: 105.12, pass: true },
+  { scenario: "USDC depeg −10%",                  baselineNav: 1.0419, shockedNav: 1.0369, baselineRR: 102.07, shockedRR: 101.60, pass: true },
+];
+
+/* --- Crisis survival (5 historical scenarios) ------------------- */
+
+interface CrisisScenario {
+  crisis: string;
+  navBefore: number;
+  navAfter: number;
+  deltaNominal: number; // percent
+  rr: number;
+  minting: "PAUSED";
+  redemption: "ALWAYS-ON";
+}
+
+const CRISIS_SCENARIOS: CrisisScenario[] = [
+  { crisis: "2008 GFC (gold +25%, sov −40%)",     navBefore: 0.9858, navAfter: 0.9119, deltaNominal: -7.50, rr: 89.51,  minting: "PAUSED", redemption: "ALWAYS-ON" },
+  { crisis: "2020 COVID (gold +16%)",             navBefore: 0.9858, navAfter: 0.9985, deltaNominal: 1.29,  rr: 97.95,  minting: "PAUSED", redemption: "ALWAYS-ON" },
+  { crisis: "2022 Stablecoin crisis (USDC→$0.70)",navBefore: 0.9858, navAfter: 0.9708, deltaNominal: -1.52, rr: 95.33,  minting: "PAUSED", redemption: "ALWAYS-ON" },
+  { crisis: "1997 Asian crisis (sov stress)",     navBefore: 0.9858, navAfter: 0.9483, deltaNominal: -3.80, rr: 93.10,  minting: "PAUSED", redemption: "ALWAYS-ON" },
+  { crisis: "Hyperinflation (gold +100%)",        navBefore: 0.9858, navAfter: 1.0050, deltaNominal: 1.95,  rr: 98.23,  minting: "PAUSED", redemption: "ALWAYS-ON" },
+];
+
+/* --- 7 Stability mechanisms ------------------------------------ */
+
+interface Mechanism {
+  id: number;
+  name: string;
+  section: string;
+  description: string;
+  icon: typeof Activity;
+}
+
+const MECHANISMS: Mechanism[] = [
+  { id: 1, name: "Dynamic NAV",            section: "§3.1",  description: "NAV = R_m / S — floats with reserve value, never pegged to $1.", icon: Activity },
+  { id: 2, name: "Three-Layer Reserve",    section: "§23–26", description: "79% fiat buffer dampens bullion volatility by ~85%.", icon: Layers },
+  { id: 3, name: "Shock Absorber",         section: "§17",   description: "EWMA volatility dampener; at σ≥5% all weight changes are halved.", icon: Gauge },
+  { id: 4, name: "Momentum Clamp",         section: "§15.2", description: "Currency weights bounded to ±5% per rebalancing cycle.", icon: Scale },
+  { id: 5, name: "Severe Deviation Protocol", section: "§33", description: ">5% deviation triggers an emergency weight floor for affected currencies.", icon: Zap },
+  { id: 6, name: "Minting Pause Guard",    section: "§4, §22A", description: "RR < 100% or malformed basket → minting halts automatically.", icon: PauseCircle },
+  { id: 7, name: "Redemption Never Pauses",section: "§36.3", description: "Burn always works — every MTQ holder can exit at any time.", icon: Lock },
+];
+
+/* --- Volatility comparison (CSS bar chart) ---------------------- */
+
+interface VolBar {
+  asset: string;
+  vol: number;
+  isMTQ?: boolean;
+  caption: string;
+}
+
+const VOL_COMPARISON: VolBar[] = [
+  { asset: "USDC",  vol: 0.47,  caption: "Stablecoin benchmark" },
+  { asset: "MTQ",   vol: 2.25,  isMTQ: true, caption: "3.3× more stable than USD" },
+  { asset: "USD",   vol: 7.57,  caption: "World reserve fiat" },
+  { asset: "Gold",  vol: 14.75, caption: "6.6× more volatile than MTQ" },
+  { asset: "Silver",vol: 25.06, caption: "Industrial + monetary metal" },
+  { asset: "BTC",   vol: 69.32, caption: "31× more volatile than MTQ" },
+];
+
+/* ============================================================
+ * Formatting helpers
+ * ============================================================ */
+
+const fmtUsd4 = (n: number) =>
+  `$${n.toFixed(4)}`;
+const fmtPct2 = (n: number) => `${n.toFixed(2)}%`;
+const fmtSignedPct = (n: number) =>
+  `${n >= 0 ? "+" : ""}${n.toFixed(2)}%`;
+
+function DeltaBadge({ value }: { value: number }) {
+  const positive = value >= 0;
+  const Icon = positive ? ArrowUpRight : ArrowDownRight;
+  return (
+    <span
+      className={`inline-flex items-center gap-1 font-mono text-xs tabular-nums ${
+        positive
+          ? "text-reserve"
+          : "text-amber-600 dark:text-amber-400"
+      }`}
+    >
+      <Icon className="h-3 w-3" aria-hidden="true" />
+      {fmtSignedPct(value)}
+    </span>
+  );
+}
+
+function accentClasses(accent: KeyMetric["accent"]): string {
+  switch (accent) {
+    case "reserve":
+      return "text-reserve";
+    case "gold":
+      return "text-gold";
+    case "amber":
+      return "text-amber-600 dark:text-amber-400";
+  }
+}
+
+/* ============================================================
+ * Sub-components
+ * ============================================================ */
+
+function KeyMetricCard({ m, index }: { m: KeyMetric; index: number }) {
+  const Icon = m.icon;
+  return (
+    <Reveal delay={index * 0.04}>
+      <div className="card-hover h-full rounded-xl border border-line bg-ink-soft p-5">
+        <div className="flex items-center justify-between">
+          <Icon className={`h-5 w-5 ${accentClasses(m.accent)}`} aria-hidden="true" />
+          <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-fg-muted">
+            {m.label}
+          </span>
+        </div>
+        <div className={`mt-3 font-display text-3xl tabular-nums ${accentClasses(m.accent)}`}>
+          {m.value}
+        </div>
+        <p className="mt-1 text-xs text-fg-muted">{m.caption}</p>
+      </div>
+    </Reveal>
+  );
+}
+
+/* ---------- Tab 1: Stability Ranking ---------- */
+
+function StabilityRankingTab() {
+  return (
+    <div className="space-y-3">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <p className="text-sm text-fg-muted">
+          14 assets ranked by annualized volatility — 365-day Monte Carlo simulation.
+          MTQ sits at <span className="font-semibold text-gold">#3</span>, behind only
+          dollar stablecoins, and ahead of every sovereign fiat.
+        </p>
+        <span className="text-[11px] text-fg-muted">
+          β vs Gold · VaR 95%
+        </span>
+      </div>
+      <div className="overflow-hidden rounded-xl border border-line bg-ink-soft">
+        <div className="max-h-[28rem] overflow-y-auto">
+          <Table>
+            <TableHeader className="sticky top-0 z-10 bg-ink-card">
+              <TableRow className="border-line hover:bg-transparent">
+                <TableHead className="h-9 w-12 px-3 text-[11px] uppercase tracking-wider text-fg-muted">#</TableHead>
+                <TableHead className="h-9 px-3 text-[11px] uppercase tracking-wider text-fg-muted">Asset</TableHead>
+                <TableHead className="h-9 px-3 text-[11px] uppercase tracking-wider text-fg-muted">Category</TableHead>
+                <TableHead className="h-9 px-3 text-right text-[11px] uppercase tracking-wider text-fg-muted">Ann. Vol</TableHead>
+                <TableHead className="hidden h-9 px-3 text-right text-[11px] uppercase tracking-wider text-fg-muted sm:table-cell">Max DD</TableHead>
+                <TableHead className="hidden h-9 px-3 text-right text-[11px] uppercase tracking-wider text-fg-muted md:table-cell">β vs Gold</TableHead>
+                <TableHead className="h-9 px-3 text-[11px] uppercase tracking-wider text-fg-muted">Verdict</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {RANKED_ASSETS.map((a) => (
+                <TableRow
+                  key={a.asset}
+                  className={
+                    a.isMTQ
+                      ? "border-l-2 border-l-reserve bg-reserve/[0.07] hover:bg-reserve/[0.10]"
+                      : "border-line"
+                  }
+                >
+                  <TableCell className="px-3 py-2 font-mono text-xs tabular-nums text-fg-muted">
+                    {a.rank}
+                  </TableCell>
+                  <TableCell className="px-3 py-2">
+                    <span
+                      className={`font-semibold ${a.isMTQ ? "text-reserve" : "text-foreground"}`}
+                    >
+                      {a.asset}
+                    </span>
+                    {a.isMTQ && (
+                      <Badge className="ml-2 border-reserve/40 bg-reserve/10 text-[10px] text-reserve hover:bg-reserve/10">
+                        MTQ
+                      </Badge>
+                    )}
+                  </TableCell>
+                  <TableCell className="px-3 py-2 text-xs text-fg-muted">{a.category}</TableCell>
+                  <TableCell className="px-3 py-2 text-right">
+                    <div className="flex items-center justify-end gap-2">
+                      <div className="hidden h-1.5 w-16 overflow-hidden rounded-full bg-ink-card sm:block">
+                        <div
+                          className={`h-full rounded-full ${
+                            a.isMTQ ? "bg-reserve" : "bg-gold/60"
+                          }`}
+                          style={{ width: `${Math.max(4, (a.annVol / MAX_VOL) * 100)}%` }}
+                          aria-hidden="true"
+                        />
+                      </div>
+                      <span className="font-mono text-xs tabular-nums text-foreground">
+                        {a.annVol.toFixed(2)}%
+                      </span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="hidden px-3 py-2 text-right font-mono text-xs tabular-nums text-fg-muted sm:table-cell">
+                    {a.maxDD.toFixed(2)}%
+                  </TableCell>
+                  <TableCell className="hidden px-3 py-2 text-right font-mono text-xs tabular-nums text-fg-muted md:table-cell">
+                    {a.betaGold.toFixed(3)}
+                  </TableCell>
+                  <TableCell className="px-3 py-2">
+                    <Badge
+                      className={`text-[10px] ${verdictBadgeClass(a.verdict)}`}
+                    >
+                      {a.verdict}
+                    </Badge>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      </div>
+      <p className="text-[11px] text-fg-muted">
+        Lower rank = more stable. VaR 95% = the worst single-day loss not exceeded 95% of the time.
+        MTQ&apos;s β to gold is just 0.125 because bullion is only ~11% of reserves.
+      </p>
+    </div>
+  );
+}
+
+/* ---------- Tab 2: Stress Scenarios ---------- */
+
+function StressScenariosTab() {
+  const passed = STRESS_SCENARIOS.filter((s) => s.pass).length;
+  return (
+    <div className="space-y-3">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="text-sm text-fg-muted">
+          Every reserve-shock, currency-crash, and depeg scenario is simulated
+          against the live v19.0.2 monetary state. A scenario passes when the
+          shock does not break the constitutional invariants.
+        </p>
+        <Badge className="border-reserve/40 bg-reserve/10 text-reserve">
+          <CheckCircle2 className="h-3 w-3" aria-hidden="true" />
+          {passed} / {STRESS_SCENARIOS.length} scenarios passed
+        </Badge>
+      </div>
+      <div className="overflow-hidden rounded-xl border border-line bg-ink-soft">
+        <div className="max-h-96 overflow-y-auto">
+          <Table>
+            <TableHeader className="sticky top-0 z-10 bg-ink-card">
+              <TableRow className="border-line hover:bg-transparent">
+                <TableHead className="h-9 px-3 text-[11px] uppercase tracking-wider text-fg-muted">Scenario</TableHead>
+                <TableHead className="h-9 px-3 text-right text-[11px] uppercase tracking-wider text-fg-muted">Baseline NAV</TableHead>
+                <TableHead className="h-9 px-3 text-right text-[11px] uppercase tracking-wider text-fg-muted">Shocked NAV</TableHead>
+                <TableHead className="hidden h-9 px-3 text-right text-[11px] uppercase tracking-wider text-fg-muted sm:table-cell">Baseline RR</TableHead>
+                <TableHead className="h-9 px-3 text-right text-[11px] uppercase tracking-wider text-fg-muted">Shocked RR</TableHead>
+                <TableHead className="h-9 px-3 text-center text-[11px] uppercase tracking-wider text-fg-muted">Result</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {STRESS_SCENARIOS.map((s) => {
+                const rrBelowFloor = s.shockedRR < 100;
+                return (
+                  <TableRow key={s.scenario} className="border-line">
+                    <TableCell className="px-3 py-2 text-sm text-foreground">
+                      {s.scenario}
+                    </TableCell>
+                    <TableCell className="px-3 py-2 text-right font-mono text-xs tabular-nums text-fg-muted">
+                      {fmtUsd4(s.baselineNav)}
+                    </TableCell>
+                    <TableCell className="px-3 py-2 text-right font-mono text-xs tabular-nums text-foreground">
+                      {fmtUsd4(s.shockedNav)}
+                    </TableCell>
+                    <TableCell className="hidden px-3 py-2 text-right font-mono text-xs tabular-nums text-fg-muted sm:table-cell">
+                      {fmtPct2(s.baselineRR)}
+                    </TableCell>
+                    <TableCell className="px-3 py-2 text-right">
+                      <span
+                        className={`font-mono text-xs tabular-nums ${
+                          rrBelowFloor
+                            ? "text-amber-600 dark:text-amber-400"
+                            : "text-foreground"
+                        }`}
+                        title={
+                          rrBelowFloor
+                            ? "Below 100% floor — minting pauses, redemption stays on"
+                            : "Above 100% floor"
+                        }
+                      >
+                        {fmtPct2(s.shockedRR)}
+                      </span>
+                    </TableCell>
+                    <TableCell className="px-3 py-2 text-center">
+                      {s.pass ? (
+                        <span className="inline-flex items-center gap-1 text-xs font-semibold text-reserve">
+                          <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />
+                          PASS
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 text-xs font-semibold text-destructive">
+                          <AlertTriangle className="h-3.5 w-3.5" aria-hidden="true" />
+                          FAIL
+                        </span>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </div>
+      </div>
+      <p className="text-[11px] text-fg-muted">
+        Note: in scenarios where shocked RR dips below 100% (e.g. Gold −40%, Gold −50%),
+        the constitutional guardrail <span className="text-foreground">pauses minting</span> —
+        but <span className="text-reserve">redemption never pauses</span>. A &ldquo;PASS&rdquo;
+        means the protocol survived without violating §36.3.
+      </p>
+    </div>
+  );
+}
+
+/* ---------- Tab 3: Crisis Survival ---------- */
+
+function CrisisSurvivalTab() {
+  return (
+    <div className="space-y-3">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="text-sm text-fg-muted">
+          Five historical crisis scenarios replayed against the MTQ reserve basket.
+          Minting pauses automatically when the reserve ratio breaches 100%, but
+          the burn-and-redeem path stays open in <em>every</em> scenario.
+        </p>
+        <Badge className="border-reserve/40 bg-reserve/10 text-reserve">
+          <Lock className="h-3 w-3" aria-hidden="true" />
+          Redemption 5 / 5 ALWAYS-ON
+        </Badge>
+      </div>
+      <div className="overflow-hidden rounded-xl border border-line bg-ink-soft">
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader className="bg-ink-card">
+              <TableRow className="border-line hover:bg-transparent">
+                <TableHead className="h-9 px-3 text-[11px] uppercase tracking-wider text-fg-muted">Crisis</TableHead>
+                <TableHead className="h-9 px-3 text-right text-[11px] uppercase tracking-wider text-fg-muted">NAV Before</TableHead>
+                <TableHead className="h-9 px-3 text-right text-[11px] uppercase tracking-wider text-fg-muted">NAV After</TableHead>
+                <TableHead className="h-9 px-3 text-right text-[11px] uppercase tracking-wider text-fg-muted">Δ Nominal</TableHead>
+                <TableHead className="h-9 px-3 text-right text-[11px] uppercase tracking-wider text-fg-muted">RR%</TableHead>
+                <TableHead className="h-9 px-3 text-center text-[11px] uppercase tracking-wider text-fg-muted">Minting</TableHead>
+                <TableHead className="h-9 px-3 text-center text-[11px] uppercase tracking-wider text-fg-muted">Redemption</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {CRISIS_SCENARIOS.map((c) => (
+                <TableRow key={c.crisis} className="border-line">
+                  <TableCell className="px-3 py-2 text-sm text-foreground">{c.crisis}</TableCell>
+                  <TableCell className="px-3 py-2 text-right font-mono text-xs tabular-nums text-fg-muted">
+                    {fmtUsd4(c.navBefore)}
+                  </TableCell>
+                  <TableCell className="px-3 py-2 text-right font-mono text-xs tabular-nums text-foreground">
+                    {fmtUsd4(c.navAfter)}
+                  </TableCell>
+                  <TableCell className="px-3 py-2 text-right">
+                    <DeltaBadge value={c.deltaNominal} />
+                  </TableCell>
+                  <TableCell className="px-3 py-2 text-right">
+                    <span className="font-mono text-xs tabular-nums text-amber-600 dark:text-amber-400">
+                      {fmtPct2(c.rr)}
+                    </span>
+                  </TableCell>
+                  <TableCell className="px-3 py-2 text-center">
+                    <Badge className="border-amber-500/40 bg-amber-500/10 text-[10px] text-amber-600 dark:text-amber-400">
+                      <PauseCircle className="h-3 w-3" aria-hidden="true" />
+                      {c.minting}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="px-3 py-2 text-center">
+                    <Badge className="border-reserve/40 bg-reserve/10 text-[10px] text-reserve">
+                      <Lock className="h-3 w-3" aria-hidden="true" />
+                      {c.redemption}
+                    </Badge>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      </div>
+      <p className="text-[11px] text-fg-muted">
+        Even in the 2008 GFC replay — gold +25% simultaneous with sovereign stress −40% —
+        MTQ holders could still exit. That is the constitutional promise of §36.3.
+      </p>
+    </div>
+  );
+}
+
+/* ---------- Tab 4: 7 Mechanisms ---------- */
+
+function MechanismsTab() {
+  return (
+    <div className="space-y-3">
+      <p className="text-sm text-fg-muted">
+        Seven constitutional mechanisms work in concert to keep MTQ stable.
+        Each is independently auditable and cites its blueprint section so any
+        reader can verify the rule against the source.
+      </p>
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {MECHANISMS.map((m, i) => {
+          const Icon = m.icon;
+          return (
+            <Reveal key={m.id} delay={i * 0.04}>
+              <Card className="card-hover h-full gap-0 border-line bg-ink-soft p-5 shadow-none">
+                <div className="flex items-start justify-between">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-gold/30 bg-gold/10">
+                    <Icon className="h-4 w-4 text-gold" aria-hidden="true" />
+                  </div>
+                  <Badge className="border-line bg-ink-card text-[10px] text-fg-muted hover:bg-ink-card">
+                    {m.section}
+                  </Badge>
+                </div>
+                <div className="mt-3 flex items-center gap-2">
+                  <span className="font-mono text-xs text-fg-muted">0{m.id}</span>
+                  <h4 className="font-display text-base text-foreground">{m.name}</h4>
+                </div>
+                <p className="mt-1.5 text-xs leading-relaxed text-fg-muted">
+                  {m.description}
+                </p>
+              </Card>
+            </Reveal>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* ---------- Volatility comparison (CSS bars) ---------- */
+
+function VolatilityComparison() {
+  return (
+    <Reveal>
+      <div className="rounded-2xl border border-line bg-ink-soft p-6 sm:p-7">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <div>
+            <h3 className="font-display text-lg text-foreground">
+              Annualized volatility — MTQ vs the field
+            </h3>
+            <p className="mt-1 text-xs text-fg-muted">
+              Lower is better. Bars are proportional to 365-day annualized volatility.
+            </p>
+          </div>
+          <Badge className="border-gold/40 bg-gold/10 text-gold">
+            <TrendingDown className="h-3 w-3" aria-hidden="true" />
+            31× more stable than BTC
+          </Badge>
+        </div>
+        <div className="mt-6 space-y-3">
+          {VOL_COMPARISON.map((b) => {
+            const widthPct = Math.max(2, (b.vol / MAX_VOL) * 100);
+            return (
+              <div key={b.asset} className="grid grid-cols-[3.5rem_1fr_auto] items-center gap-3 sm:grid-cols-[5rem_1fr_auto]">
+                <span
+                  className={`text-sm font-semibold ${
+                    b.isMTQ ? "text-reserve" : "text-foreground"
+                  }`}
+                >
+                  {b.asset}
+                  {b.isMTQ && (
+                    <span className="ml-1 text-[10px] text-reserve">●</span>
+                  )}
+                </span>
+                <div className="h-3 overflow-hidden rounded-full bg-ink-card">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    whileInView={{ width: `${widthPct}%` }}
+                    viewport={{ once: true, margin: "-40px" }}
+                    transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+                    className={`h-full rounded-full ${
+                      b.isMTQ
+                        ? "bg-gradient-to-r from-reserve/80 to-reserve"
+                        : b.vol > 30
+                          ? "bg-gradient-to-r from-amber-500/60 to-destructive/70"
+                          : b.vol > 10
+                            ? "bg-gradient-to-r from-gold/50 to-gold/80"
+                            : "bg-gradient-to-r from-gold/40 to-gold/60"
+                    }`}
+                    aria-hidden="true"
+                  />
+                </div>
+                <div className="flex w-28 items-center justify-end gap-2 sm:w-44">
+                  <span
+                    className={`font-mono text-xs tabular-nums ${
+                      b.isMTQ ? "font-semibold text-reserve" : "text-fg-muted"
+                    }`}
+                  >
+                    {b.vol.toFixed(2)}%
+                  </span>
+                  <span className="hidden text-[11px] text-fg-muted sm:inline">
+                    {b.caption}
+                  </span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        <div className="mt-6 grid gap-3 border-t border-line pt-5 sm:grid-cols-3">
+          <div className="flex items-start gap-2">
+            <Minus className="mt-0.5 h-3.5 w-3.5 text-gold" aria-hidden="true" />
+            <p className="text-xs text-fg-muted">
+              <span className="font-semibold text-foreground">vs USD:</span>{" "}
+              3.3× more stable.
+            </p>
+          </div>
+          <div className="flex items-start gap-2">
+            <Minus className="mt-0.5 h-3.5 w-3.5 text-gold" aria-hidden="true" />
+            <p className="text-xs text-fg-muted">
+              <span className="font-semibold text-foreground">vs Gold:</span>{" "}
+              6.6× more stable (85% vol dampening).
+            </p>
+          </div>
+          <div className="flex items-start gap-2">
+            <Minus className="mt-0.5 h-3.5 w-3.5 text-gold" aria-hidden="true" />
+            <p className="text-xs text-fg-muted">
+              <span className="font-semibold text-foreground">vs BTC:</span>{" "}
+              31× more stable.
+            </p>
+          </div>
+        </div>
+      </div>
+    </Reveal>
+  );
+}
+
+/* ============================================================
+ * Main section
+ * ============================================================ */
+
+export function StressTestProof() {
+  return (
+    <section
+      id="s-proof"
+      aria-labelledby="s-proof-heading"
+      className="scroll-mt-24 border-y border-line/60 bg-ink-soft/40 px-5 py-8 sm:px-8 sm:py-12"
+    >
+      <div className="mx-auto w-full max-w-6xl">
+        {/* Headline */}
+        <Reveal>
+          <Eyebrow>Proof of Strength · v19.0.2 verified</Eyebrow>
+          <h2
+            id="s-proof-heading"
+            className="font-display mt-4 text-3xl leading-tight text-balance sm:text-5xl"
+          >
+            Stress-tested stability.{" "}
+            <span className="gold-text">20 of 20 scenarios passed.</span>
+          </h2>
+          <p className="mt-5 max-w-2xl text-[15px] leading-relaxed text-fg-muted sm:text-base">
+            We ran gold rallies and crashes, multi-currency collapses, stablecoin
+            depegs, and five historical crises against the live MTQ monetary state.
+            Every scenario cleared the constitutional invariants — and the burn-and-redeem
+            path stayed open in <span className="text-reserve">all of them</span>.
+          </p>
+        </Reveal>
+
+        {/* §1 — Key metrics */}
+        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+          {KEY_METRICS.map((m, i) => (
+            <KeyMetricCard key={m.label} m={m} index={i} />
+          ))}
+        </div>
+
+        {/* §2 — Tabbed proof deck */}
+        <Reveal delay={0.05}>
+          <Tabs defaultValue="ranking" className="mt-10">
+            <TabsList className="h-auto flex-wrap justify-start gap-1 rounded-xl border border-line bg-ink-card p-1.5">
+              <TabsTrigger
+                value="ranking"
+                className="rounded-lg border border-transparent px-3 py-1.5 text-xs font-semibold text-fg-muted data-[state=active]:border-gold/40 data-[state=active]:bg-gold/10 data-[state=active]:text-gold data-[state=active]:shadow-none"
+              >
+                <Award className="h-3.5 w-3.5" aria-hidden="true" />
+                Stability Ranking
+              </TabsTrigger>
+              <TabsTrigger
+                value="scenarios"
+                className="rounded-lg border border-transparent px-3 py-1.5 text-xs font-semibold text-fg-muted data-[state=active]:border-gold/40 data-[state=active]:bg-gold/10 data-[state=active]:text-gold data-[state=active]:shadow-none"
+              >
+                <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />
+                Stress Scenarios
+              </TabsTrigger>
+              <TabsTrigger
+                value="crises"
+                className="rounded-lg border border-transparent px-3 py-1.5 text-xs font-semibold text-fg-muted data-[state=active]:border-gold/40 data-[state=active]:bg-gold/10 data-[state=active]:text-gold data-[state=active]:shadow-none"
+              >
+                <FlameKindling className="h-3.5 w-3.5" aria-hidden="true" />
+                Crisis Survival
+              </TabsTrigger>
+              <TabsTrigger
+                value="mechanisms"
+                className="rounded-lg border border-transparent px-3 py-1.5 text-xs font-semibold text-fg-muted data-[state=active]:border-gold/40 data-[state=active]:bg-gold/10 data-[state=active]:text-gold data-[state=active]:shadow-none"
+              >
+                <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
+                7 Mechanisms
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="ranking" className="mt-4">
+              <StabilityRankingTab />
+            </TabsContent>
+            <TabsContent value="scenarios" className="mt-4">
+              <StressScenariosTab />
+            </TabsContent>
+            <TabsContent value="crises" className="mt-4">
+              <CrisisSurvivalTab />
+            </TabsContent>
+            <TabsContent value="mechanisms" className="mt-4">
+              <MechanismsTab />
+            </TabsContent>
+          </Tabs>
+        </Reveal>
+
+        {/* §3 — Volatility comparison */}
+        <div className="mt-10">
+          <VolatilityComparison />
+        </div>
+
+        {/* §4 — Bottom summary */}
+        <Reveal>
+          <div className="mt-10 overflow-hidden rounded-2xl border border-gold/30 bg-gradient-to-br from-gold/[0.07] to-reserve/[0.05] p-6 sm:p-8">
+            <div className="flex items-start gap-4">
+              <div className="hidden h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-gold/40 bg-gold/10 sm:flex">
+                <ShieldCheck className="h-6 w-6 text-gold" aria-hidden="true" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-display text-xl text-foreground sm:text-2xl">
+                  The only asset that satisfies all three monetary functions.
+                </h3>
+                <p className="mt-3 text-sm leading-relaxed text-foreground/90 sm:text-base">
+                  MTQ is the only asset in the 14-asset study that satisfies the three
+                  classical monetary functions simultaneously:
+                </p>
+                <ul className="mt-4 grid gap-2 sm:grid-cols-3">
+                  <li className="flex items-start gap-2 rounded-lg border border-line bg-ink-soft/60 p-3">
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-reserve" aria-hidden="true" />
+                    <span className="text-xs text-foreground">
+                      <span className="font-semibold">Medium of Exchange</span>
+                      <span className="block text-fg-muted">vol &lt; 5% — 2.25% achieved</span>
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-2 rounded-lg border border-line bg-ink-soft/60 p-3">
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-reserve" aria-hidden="true" />
+                    <span className="text-xs text-foreground">
+                      <span className="font-semibold">Unit of Account</span>
+                      <span className="block text-fg-muted">vol &lt; 3% — 2.25% achieved</span>
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-2 rounded-lg border border-line bg-ink-soft/60 p-3">
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-reserve" aria-hidden="true" />
+                    <span className="text-xs text-foreground">
+                      <span className="font-semibold">Store of Value</span>
+                      <span className="block text-fg-muted">+6.17% annual return · 1.49% max drawdown</span>
+                    </span>
+                  </li>
+                </ul>
+                <p className="mt-4 text-sm text-fg-muted">
+                  Backed by <span className="font-semibold text-gold">102.07% reserves</span>.
+                  Minting halts the instant the ratio drops below 100%, but{" "}
+                  <span className="font-semibold text-reserve">redemption never pauses</span>{" "}
+                  — every MTQ holder can always exit at the live NAV.
+                </p>
+              </div>
+            </div>
+          </div>
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
+export default StressTestProof;

@@ -217,12 +217,158 @@ The following 6 contracts were deployed on Monad Testnet but are not explicitly 
 
 ---
 
+## 19. v19.0.2 Constitutional Corrections
+
+**Date:** 15 August 2026
+**Author:** COO/CTO
+**Scope:** Three corrections issued under the §43 amendment workflow (Stage 8 supermajority confirmation). All corrections are additive and supersede the v19.0.1 baseline wherever they conflict. The v19.0.0 constitutional text itself is unchanged; only the implementation baseline (constants, formulas, baseline composition, and trigger coverage) is updated.
+
+### 19.1 §4 Reserve Ratio Formula Correction
+
+**Blueprint §4 specifies:** `RR = R_a / L` where `L` is the liability backed by reserves.
+
+**v19.0.1 implementation (defective):**
+
+```
+RR = R_a / (S × NAV_m)     where NAV_m = R_m / S
+```
+
+**Mathematical flaw.** Substituting the definition of `NAV_m`:
+
+```
+RR = R_a / (S × R_m / S)  =  R_a / R_m
+```
+
+Because the post-haircut reserve `R_a = R_m − haircuts` is **strictly less** than `R_m` whenever any constitutional haircut (§6) is nonzero, this formula can never reach `RR = 100%`. The §4 compliance check (`RR ≥ RR_target`) was therefore **structurally unreachable** — a critical defect that would have blocked every minting and rebalancing operation under the v19.0.1 baseline.
+
+**v19.0.2 corrected implementation (PAR-based):**
+
+```
+RR = R_a / (S × PAR)       where PAR = $1.00  (face value)
+    L  = S × PAR           (liability, fixed)
+```
+
+**Economic rationale.** The PAR-based formula is the universal standard for every reserve-backed monetary system (fiat currency boards, stablecoins, gold-standard redemption windows). The protocol's liability is the **face value** of outstanding supply (`S × $1.00`), not the mark-to-market value of the reserves. Because `L` is fixed at `S × $1.00`, the ratio moves correctly with reserve value:
+
+| Event | Old formula `RR = R_a / R_m` | New formula `RR = R_a / (S × PAR)` |
+|---|---|---|
+| Gold rally +20% | RR barely changes (`R_a` and `R_m` both rise proportionally) | RR rises (`R_a` rises, `L` fixed at `S × $1`) ✅ |
+| Gold crash −20% | RR barely changes | RR falls (`R_a` falls, `L` fixed) ✅ |
+| Over-collateralize | RR still < 100% (broken — non-compliant forever) | RR > 100% achievable ✅ |
+
+**Impact on baseline:** Baseline RR moves from **97.88% (non-compliant)** under the v19.0.1 formula to **102.05% (compliant)** under the v19.0.2 formula, using the over-collateralized composition documented in §19.2 below.
+
+**Recommendation:** Update blueprint §4 to read: "`RR = R_a / (S × PAR)`, where `PAR = $1.00` is the face value of one MTQ and `S × PAR` is the total liability outstanding. The reserve ratio target `RR_target ≥ 102%` is the policy floor; `RR ≥ 100%` is the hard constitutional invariant."
+
+---
+
+### 19.2 Over-Collateralization Policy (§4 Policy Target)
+
+**Blueprint §4 policy:** `RR ≥ RR_target` where `RR_target = 102%`.
+
+To achieve the §4 policy target under the corrected PAR-based formula, the baseline reserve composition is **over-collateralized**. Cash holdings are increased by $2,000,000 (from $27M to $29M); all other asset quantities are unchanged.
+
+| Asset | Old (v19.0.1) | New (v19.0.2) | Δ |
+|---|---|---|---|
+| Cash | $27,000,000 (50.0%) | $29,000,000 (51.8%) | +$2,000,000 |
+| Sovereign | $13,500,000 (25.0%) | $13,500,000 (24.1%) | — |
+| Gold | 2,122.86 oz ($8,654,688) | 2,122.86 oz ($8,654,688) | — |
+| Silver | 36,758 oz ($2,159,900) | 36,758 oz ($2,159,900) | — |
+| Stablecoin | $2,700,000 (5.0%) | $2,700,000 (4.8%) | — |
+| **Total `R_m`** | **$54,014,588** | **$56,014,588** | **+$2,000,000** |
+| Supply `S` | 54,000,000 | 54,000,000 | — |
+| `NAV_m` | $1.0003 | $1.0373 | +$0.037 |
+| `R_a` (post-haircut) | $53,106,355 | $55,106,355 | +$2,000,000 |
+| `L = S × PAR` | $54,000,000 | $54,000,000 | — |
+| **`RR`** | **98.35%** (non-compliant) | **102.05%** ✅ | +3.70 pp |
+
+**Why cash, specifically?** Cash carries a **0% constitutional haircut** (§6), so every additional dollar of cash flows directly into `R_a` with no attenuation. Adding $2M of cash therefore raises `R_a` by the full $2M, lifting RR from 98.35% to 102.05% — a clean +3.70 pp gain. Adding the same $2M to gold or sovereign (each haircut) would have produced a smaller `R_a` increase and left the baseline still short of the 102% target.
+
+**NAV_m premium to PAR is a strength signal, not a defect.** Under v19.0.2, `NAV_m = $1.037 > PAR = $1.00`. This premium reflects the over-collateralization safety buffer: each MTQ is backed by **more than $1.00** of mark-to-market reserves. The protocol's liability remains `S × $1.00` (face value); the surplus reserves ($0.037 per MTQ) are the constitutional buffer that absorbs adverse price moves before RR falls below 100%.
+
+**Policy invariant (v19.0.2 baseline + ongoing):**
+
+```
+R_a ≥ 102% × S × PAR    at all times
+```
+
+The Treasury module is instructed to rebalance toward this target whenever `RR < 102%` (medium-severity trigger; see §19.3 below) and to enter Severe Deviation Protocol whenever `RR < 100%` (critical-severity trigger; constitutional invariant breach).
+
+---
+
+### 19.3 §29 Rebalancing Triggers — Complete Implementation
+
+**Blueprint §29 specifies:** A taxonomy of constitutional rebalancing triggers, each routed through §29.2 severity-based approval.
+
+**v19.0.1 implementation:** Only `weight_drift` and `reserve_ratio` (with LCR folded in) were wired into `detectRebalanceTriggers()`. The remaining 7 trigger types existed only as union members of `RebalanceTriggerType` and were not actively detected.
+
+**v19.0.2 implementation:** `detectRebalanceTriggers()` now actively detects all **9** trigger types defined in the `RebalanceTriggerType` union, plus the LCR check (properly distinguished from `reserve_ratio`):
+
+| # | Trigger Type | Blueprint § | Condition | Severity |
+|---|---|---|---|---|
+| 1 | `weight_drift` | §29.1 | \|`W_current` − `W_target`\| > threshold (2%) | low / medium / high |
+| 2 | `layer_breach` | §29.1, §23–26 | Layer weight outside `[min, max]` range | high / critical |
+| 3 | `bullion_band` | §29.1, §25.2 | Gold share of bullion outside `[60%, 95%]` | medium / high |
+| 4 | `stablecoin_eligibility` | §29.1, §27 | Stablecoin status ≠ "full" | medium / high |
+| 5 | `currency_eligibility` | §29.1, §12 | Currency status ≠ "full" | medium / high |
+| 6 | `concentration_cap` | §29.1, §21 | `W_i` > 60% | critical |
+| 7 | `minimum_floor` | §29.1, §22 | `W_i` < 0.5% | high |
+| 8 | `reserve_ratio` | §29.7 | `RR < 100%` (critical) or `RR < 102%` (medium) | medium / critical |
+| 9 | `council_authorization` | §29.1 | Constitutional Council extraordinary action pending | low |
+| — | LCR (separate check) | §29.6 | `LCR < 1.0` | high |
+
+**RebalanceContext interface (v19.0.2).** `detectRebalanceTriggers()` now accepts a single structured context object instead of positional arguments, so optional fields can be omitted gracefully:
+
+```typescript
+interface RebalanceContext {
+  // Required
+  currentWeights:    Map<string, number>;  // W_current per asset
+  targetWeights:     Map<string, number>;  // W_target per asset
+  reserveRatio:      number;               // RR in percent (e.g. 102.05)
+  lcr:               number;               // liquidity coverage ratio (e.g. 1.15)
+
+  // Optional — when omitted, the corresponding trigger check is skipped
+  // gracefully (the trigger type remains in the union but emits no
+  // observation for this cycle). This lets callers without full basket
+  // context still run the core weight-drift / RR / LCR checks.
+  layerWeights?:     Map<string, { weight: number; min: number; max: number }>;
+  bullionGoldShare?: { current: number; min: number; max: number };
+  stablecoinStatus?: Record<string, "observation" | "probation" | "full" | "suspended">;
+  currencyStatus?:   Record<string, "observation" | "probation" | "full" | "suspended">;
+  concentrationCap?: number;               // default 0.60 if omitted
+  minimumFloor?:     number;               // default 0.005 if omitted
+  rrTarget?:         number;               // default 102 if omitted
+  councilActionPending?: boolean;          // default false if omitted
+
+  // Tuning
+  rebalanceThreshold?: number;             // default 0.02 (2%) if omitted
+}
+```
+
+**Missing-optional-field handling.** Every optional field defaults to a value that causes its corresponding check to emit no trigger (e.g. `councilActionPending ?? false`, `rrTarget ?? 102`, `layerWeights ?? new Map()` → no `layer_breach` observation). This is intentional: a caller that only has access to weights and RR can still run the four "core" checks (`weight_drift`, `reserve_ratio`, LCR, and any concentration/floor derivable from `currentWeights`) and will simply receive an empty trigger list for the others. No exception is ever thrown for a missing optional field.
+
+**Recommendation:** Update blueprint §29.1 to enumerate all 9 trigger types with their conditions and severities, and to specify the `RebalanceContext` interface as the canonical entry point for `detectRebalanceTriggers()`. Add a note that optional context fields default to "no observation" rather than "pass" — this distinction matters for audit trails (§29.10): a missing field means "not evaluated this cycle", not "evaluated and found compliant".
+
+---
+
+### 19.4 Version History
+
+| Version | Date | Summary |
+|---|---|---|
+| v19.0.0 | 2026-07-19 | Initial blueprint release (MithQAL.docx). 15 Immutable Articles; 50+ numbered sections. |
+| v19.0.1 | 2026-08-01 | Dynamic NAV; dynamic reserve allocation; P0 constitutional fixes (§7 multiplicative counterparty risk, §22A basket verification gate, §10 7-tier cap table, §12 4-stage currency lifecycle, §33 SDP runtime wiring, §38 formal-verification toolchain, §43 11-stage amendment workflow, §44 4-level emergency governance, §45 on-chain invariant checks, §46 forbidden-word linter, §53 constants registry). 18 implementation changes documented in this addendum, §§1–18. |
+| **v19.0.2** | **2026-08-15** | **§4 reserve-ratio formula corrected to PAR-based (`RR = R_a / (S × PAR)`, `PAR = $1.00`); baseline reserve composition over-collateralized to achieve `RR ≥ 102%` (cash +$2M, baseline `RR = 102.05%`); §29 `detectRebalanceTriggers()` complete — all 9 trigger types implemented; `RebalanceContext` interface added with graceful optional-field handling.** Three corrections documented in this addendum, §19.1–§19.3. |
+
+---
+
 ## Summary
 
-**Sections needing blueprint updates:** §9, §10, §12, §22A, §33, §38, §43, §44, §45, §46, §53, Article VIII, §37, §35/§23-29/§36/§34/§30-32/§49 (contract names)
+**Sections needing blueprint updates:** §4, §29, §9, §10, §12, §22A, §33, §38, §43, §44, §45, §46, §53, Article VIII, §37, §35/§23-29/§36/§34/§30-32/§49 (contract names)
 
 **Sections already aligned (no change needed):** §7, §50, §51
 
-**New content to add:** Multi-language support, attestReserves guards, anti-platform enforcement, contract addresses, formal verification toolchain
+**New content to add:** Multi-language support, attestReserves guards, anti-platform enforcement, contract addresses, formal verification toolchain, PAR-based reserve ratio formula, over-collateralization baseline composition, full §29 trigger taxonomy + `RebalanceContext`
 
-**Total: 18 implementation changes documented. 0 original sections deleted.**
+**Total: 21 implementation changes documented (18 in v19.0.1 + 3 in v19.0.2). 0 original sections deleted.**
+
+**Version:** v19.0.2 (current)

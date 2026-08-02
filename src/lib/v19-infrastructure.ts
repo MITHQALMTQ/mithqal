@@ -2403,6 +2403,7 @@ export type RebalanceTriggerType =
   | "concentration_cap" // §29.1 §21 concentration cap breached
   | "minimum_floor" // §29.1 §22 minimum floor breached
   | "reserve_ratio" // §29.7 reserve ratio below RR_target
+  | "lcr" // §29.6 liquidity coverage ratio below 1.0
   | "council_authorization"; // §29.1 Constitutional Council extraordinary authorization
 
 /** §29.1 Trigger severity, drives §29.2 independent-approval routing. */
@@ -2428,23 +2429,85 @@ export interface RebalanceTrigger {
 }
 
 /**
+ * §29.1 Input context for `detectRebalanceTriggers`. All fields beyond
+ * the core five (currentWeights, targetWeights, reserveRatio, lcr,
+ * rebalanceThreshold) are optional — when omitted, the corresponding
+ * trigger check is skipped (§29.4 — no partial / speculative triggers).
+ *
+ * §29.12 Deterministic Requirement: the function MUST be a pure function
+ * of this context; given identical inputs every validator computes an
+ * identical trigger list.
+ */
+export interface RebalanceContext {
+  // ---- Core inputs (already used by the legacy signature) ----
+  /** §29.1 Current per-currency reserve weights (fractions 0..1). */
+  currentWeights: Map<string, number>;
+  /** §29.1 Constitutional target per-currency weights (fractions 0..1). */
+  targetWeights: Map<string, number>;
+  /** §29.7 Reserve ratio in percent, e.g. 102.05 (RR_target = 100). */
+  reserveRatio: number;
+  /** §29.6 Liquidity Coverage Ratio as a pure ratio, e.g. 6.0 (min 1.0). */
+  lcr: number;
+  /** §29.1 Rebalance threshold (fraction), default 0.02 (2%). */
+  rebalanceThreshold: number;
+
+  // ---- NEW — for layer_breach (§29.1) ----
+  /** §29.1 Reserve-layer weights, e.g. {"fiat":0.75,"bullion":0.20,"stablecoin":0.05}. */
+  layerWeights?: Map<string, number>;
+  /** §29.1 Constitutional per-layer ranges, e.g. {"fiat":{min:0.70,max:0.80},...}. */
+  layerRanges?: Map<string, { min: number; max: number }>;
+
+  // ---- NEW — for bullion_band (§29.1, §25.2) ----
+  /** §25.2 Gold's share of the bullion layer (φ_t), expected in [0.60, 0.95]. */
+  bullionGoldShare?: number;
+  /** §25.2 Constitutional band for gold's share of bullion, default {min:0.60,max:0.95}. */
+  bullionGoldRange?: { min: number; max: number };
+
+  // ---- NEW — for stablecoin_eligibility (§27) & currency_eligibility (§12) ----
+  /**
+   * §12 / §27 Lifecycle status per currency code, e.g.
+   * {"EUR":"full","JPY":"suspended","USDC":"probation"}.
+   * Anything other than "full" is a candidate for rebalancing.
+   */
+  currencyStatuses?: Map<string, string>;
+  /**
+   * Set of currency codes that are stablecoins (e.g. "USDC","USDT","DAI").
+   * Used to split the `currencyStatuses` map between fiat (§12) and
+   * stablecoin (§27) eligibility triggers. If omitted, every entry is
+   * treated as a fiat currency (only `currency_eligibility` may fire).
+   */
+  stablecoinCodes?: Set<string>;
+
+  // ---- NEW — for concentration_cap (§21) & minimum_floor (§22) ----
+  /** §21 Single-currency concentration cap, default 0.60 (60%). */
+  concentrationCap?: number;
+  /** §22 Minimum currency weight floor, default 0.005 (0.5%). */
+  minimumFloor?: number;
+
+  // ---- NEW — for council_authorization (§29.1) ----
+  /** §29.1 Count of pending Constitutional Council extraordinary actions. */
+  councilAuthorizedActions?: number;
+}
+
+/**
  * §29.1 Detect all constitutional rebalancing triggers given the
  * current reserve state. Returns a deterministic, sorted list of
  * triggers; an empty list means no rebalancing is constitutionally
  * required (§29.4 — no trades executed).
  */
 export function detectRebalanceTriggers(
-  currentWeights: Map<string, number>,
-  targetWeights: Map<string, number>,
-  reserveRatio: number,
-  lcr: number,
-  rebalanceThreshold: number = 0.02
+  ctx: RebalanceContext
 ): RebalanceTrigger[] {
   const triggers: RebalanceTrigger[] = [];
 
-  // §29.1 Weight drift check
-  for (const [currency, current] of currentWeights) {
-    const target = targetWeights.get(currency) ?? 0;
+  const rebalanceThreshold = ctx.rebalanceThreshold ?? 0.02;
+
+  // ============================================================
+  // (1) §29.1 weight_drift — |Current_Weight_i − Target_Weight_i|
+  //                          > Rebalance_threshold
+  // ============================================================
+  for (const [currency, current] of ctx.currentWeights) {
+    const target = ctx.targetWeights.get(currency) ?? 0;
     const drift = Math.abs(current - target);
     if (drift > rebalanceThreshold) {
       triggers.push({
@@ -2459,32 +2522,217 @@ export function detectRebalanceTriggers(
     }
   }
 
-  // §29.7 Reserve Ratio Protection — RR must remain ≥ RR_target (100%)
-  if (reserveRatio < 100) {
+  // ============================================================
+  // (2) §29.1 layer_breach — reserve allocation layer outside its
+  //     constitutional [min, max] range. Severity escalates to
+  //     "critical" when the breach exceeds 5 percentage points.
+  // ============================================================
+  if (ctx.layerWeights && ctx.layerRanges) {
+    for (const [layer, range] of ctx.layerRanges) {
+      const weight = ctx.layerWeights.get(layer);
+      if (weight === undefined) continue;
+      if (weight < range.min || weight > range.max) {
+        const breach = weight < range.min
+          ? range.min - weight
+          : weight - range.max;
+        triggers.push({
+          type: "layer_breach",
+          description: `${layer} layer ${(weight * 100).toFixed(2)}% outside constitutional range [${(range.min * 100).toFixed(2)}%, ${(range.max * 100).toFixed(2)}%]`,
+          severity: breach > 0.05 ? "critical" : "high",
+          currentValue: weight,
+          targetValue: weight < range.min ? range.min : range.max,
+          threshold: range.min,
+          asset: layer,
+        });
+      }
+    }
+  }
+
+  // ============================================================
+  // (3) §29.1 / §25.2 bullion_band — gold's share of the bullion
+  //     layer (φ_t) must remain within [0.60, 0.95]. Approaching
+  //     the band edge (within 2 pp) is a "medium" warning; an
+  //     actual breach is "high".
+  // ============================================================
+  if (ctx.bullionGoldShare !== undefined) {
+    const band = ctx.bullionGoldRange ?? { min: 0.60, max: 0.95 };
+    const g = ctx.bullionGoldShare;
+    if (g < band.min || g > band.max) {
+      triggers.push({
+        type: "bullion_band",
+        description: `Bullion gold share φ_t=${(g * 100).toFixed(2)}% outside band [${(band.min * 100).toFixed(2)}%, ${(band.max * 100).toFixed(2)}%]`,
+        severity: "high",
+        currentValue: g,
+        targetValue: g < band.min ? band.min : band.max,
+        threshold: band.min,
+        asset: "XAU",
+      });
+    } else if (g < band.min + 0.02 || g > band.max - 0.02) {
+      triggers.push({
+        type: "bullion_band",
+        description: `Bullion gold share φ_t=${(g * 100).toFixed(2)}% approaching band edge [${(band.min * 100).toFixed(2)}%, ${(band.max * 100).toFixed(2)}%]`,
+        severity: "medium",
+        currentValue: g,
+        targetValue: (band.min + band.max) / 2,
+        threshold: band.min,
+        asset: "XAU",
+      });
+    }
+  }
+
+  // ============================================================
+  // (4) §29.1 / §27 stablecoin_eligibility & (5) §12 currency_eligibility
+  //     — any currency whose lifecycle status is not "full" must
+  //     trigger a rebalance. Stablecoins route through §27, fiat
+  //     currencies through §12.
+  // ============================================================
+  if (ctx.currencyStatuses) {
+    const stablecoinCodes = ctx.stablecoinCodes ?? new Set<string>();
+    for (const [code, status] of ctx.currencyStatuses) {
+      if (status === "full") continue;
+      const isStablecoin = stablecoinCodes.has(code);
+      const severity: RebalanceTriggerSeverity =
+        status === "suspended" ? "high" :
+        status === "probation" ? "medium" :
+        status === "removed" ? "critical" :
+        "medium";
+      if (isStablecoin) {
+        triggers.push({
+          type: "stablecoin_eligibility",
+          description: `Stablecoin ${code} eligibility: ${status} (§27)`,
+          severity,
+          currentValue: 0,
+          targetValue: 1,
+          threshold: 1,
+          asset: code,
+        });
+      } else {
+        triggers.push({
+          type: "currency_eligibility",
+          description: `Currency ${code} eligibility: ${status} (§12)`,
+          severity,
+          currentValue: 0,
+          targetValue: 1,
+          threshold: 1,
+          asset: code,
+        });
+      }
+    }
+  }
+
+  // ============================================================
+  // (6) §29.1 / §21 concentration_cap — no single currency may
+  //     exceed 60% of reserves. A breach is "critical" because it
+  //     threatens basket diversification (§22A).
+  // ============================================================
+  const concentrationCap = ctx.concentrationCap ?? 0.60;
+  for (const [currency, weight] of ctx.currentWeights) {
+    if (weight > concentrationCap) {
+      triggers.push({
+        type: "concentration_cap",
+        description: `${currency} weight ${(weight * 100).toFixed(2)}% exceeds §21 concentration cap ${(concentrationCap * 100).toFixed(2)}%`,
+        severity: "critical",
+        currentValue: weight,
+        targetValue: concentrationCap,
+        threshold: concentrationCap,
+        asset: currency,
+      });
+    }
+  }
+
+  // ============================================================
+  // (7) §29.1 / §22 minimum_floor — every admitted currency must
+  //     retain at least 0.5% weight; falling below is a pre-suspension
+  //     warning and triggers top-up rebalancing.
+  // ============================================================
+  const minimumFloor = ctx.minimumFloor ?? 0.005;
+  for (const [currency, weight] of ctx.currentWeights) {
+    if (weight < minimumFloor) {
+      triggers.push({
+        type: "minimum_floor",
+        description: `${currency} weight ${(weight * 100).toFixed(4)}% below §22 minimum floor ${(minimumFloor * 100).toFixed(2)}%`,
+        severity: "high",
+        currentValue: weight,
+        targetValue: minimumFloor,
+        threshold: minimumFloor,
+        asset: currency,
+      });
+    }
+  }
+
+  // ============================================================
+  // (8) §29.7 reserve_ratio — RR must remain ≥ RR_target (100%).
+  //     Below 100% is "critical" (constitutional breach). Between
+  //     100% and the 102% policy target is a "medium" warning.
+  // ============================================================
+  if (ctx.reserveRatio < 100) {
     triggers.push({
       type: "reserve_ratio",
-      description: `Reserve ratio below 100%: ${reserveRatio.toFixed(2)}%`,
+      description: `§29.7 Reserve ratio below 100%: ${ctx.reserveRatio.toFixed(2)}%`,
       severity: "critical",
-      currentValue: reserveRatio,
+      currentValue: ctx.reserveRatio,
       targetValue: 100,
       threshold: 100,
     });
-  }
-
-  // §29.6 Liquidity Protection — LCR must remain ≥ 1.0
-  if (lcr < 1.0) {
+  } else if (ctx.reserveRatio < 102) {
     triggers.push({
       type: "reserve_ratio",
-      description: `LCR below 100%: ${(lcr * 100).toFixed(2)}%`,
-      severity: "high",
-      currentValue: lcr,
-      targetValue: 1.0,
-      threshold: 1.0,
+      description: `§29.7 Reserve ratio below 102% policy target: ${ctx.reserveRatio.toFixed(2)}%`,
+      severity: "medium",
+      currentValue: ctx.reserveRatio,
+      targetValue: 102,
+      threshold: 102,
     });
   }
 
-  // §29.1 Sort deterministically: critical → high → medium → low,
-  // then by description for stable ordering across validators (§29.12).
+  // ============================================================
+  // (LCR) §29.6 liquidity_coverage — LCR must remain ≥ 1.0.
+  //     Below 1.0 is "critical" (liquidity breach). Between 1.0
+  //     and the 1.2 "strong" threshold is a "medium" warning.
+  //     Previously mislabeled as `reserve_ratio`; now its own
+  //     distinct `lcr` trigger type for clean audit semantics.
+  // ============================================================
+  if (ctx.lcr < 1.0) {
+    triggers.push({
+      type: "lcr",
+      description: `§29.6 LCR below 100%: ${(ctx.lcr * 100).toFixed(2)}%`,
+      severity: "critical",
+      currentValue: ctx.lcr,
+      targetValue: 1.0,
+      threshold: 1.0,
+    });
+  } else if (ctx.lcr < 1.2) {
+    triggers.push({
+      type: "lcr",
+      description: `§29.6 LCR below 1.2 strong threshold: ${(ctx.lcr * 100).toFixed(2)}%`,
+      severity: "medium",
+      currentValue: ctx.lcr,
+      targetValue: 1.2,
+      threshold: 1.2,
+    });
+  }
+
+  // ============================================================
+  // (9) §29.1 council_authorization — informational trigger when
+  //     the Constitutional Council has pending extraordinary
+  //     rebalancing actions. Always "low" severity; routing logic
+  //     in §29.2 treats this as an audit annotation, not a breach.
+  // ============================================================
+  if ((ctx.councilAuthorizedActions ?? 0) > 0) {
+    triggers.push({
+      type: "council_authorization",
+      description: `§29.1 Constitutional Council has ${ctx.councilAuthorizedActions} pending extraordinary rebalancing action(s)`,
+      severity: "low",
+      currentValue: ctx.councilAuthorizedActions ?? 0,
+      targetValue: 0,
+      threshold: 0,
+    });
+  }
+
+  // ============================================================
+  // §29.1 / §29.12 Deterministic sort: critical → high → medium →
+  // low, then by description for stable ordering across validators.
+  // ============================================================
   const sevRank: Record<RebalanceTriggerSeverity, number> = {
     critical: 0,
     high: 1,

@@ -15,12 +15,18 @@ import { computeSDPEmergency } from "@/lib/v19-infrastructure";
  * Mithqal reserve composition and live valuation per §23 of the v19.0
  * Constitutional Monetary Infrastructure Specification.
  *
- * Reserve composition (§23):
- *   Fiat 75%   → 50% central-bank cash + 25% sovereign T-bills (≤1yr)
- *   Bullion 20% → 15% allocated gold + 5% allocated silver
- *   Stablecoins 5% → regulated stablecoins (USDC/USDT/DAI)
+ * Reserve composition (v19.0.2 baseline, over-collateralized to clear the
+ * §4 PAR-based reserve ratio at the 102% policy target):
+ *   Cash         $29,250,000  (Tier 1, 0% haircut)
+ *   Sovereign    $13,500,000  (Tier 2, ≤1yr T-bills, 2% haircut)
+ *   Gold          2,122.86 oz (Tier 3, 5% haircut — FIXED PHYSICAL QUANTITY)
+ *   Silver       36,758 oz    (Tier 3, 7% haircut — FIXED PHYSICAL QUANTITY)
+ *   Stablecoin    $2,700,000  (Tier 4, regulated, 2% haircut)
+ *   ≈ $56.0M total at $4,076.9/oz gold and $58.76/oz silver.
  *
- * totalReserve baseline: $54,000,000 (testnet baseline).
+ * Supply baseline: 54,000,000 MTQ → NAV_m ≈ $1.0373, RR ≈ 102.05%.
+ * Gold/silver quantities are FIXED (Task 2-a fix); only `priceUsd` moves with
+ * the live oracle, so NAV_m actually responds to bullion price shocks.
  *
  * Returns:
  *   {
@@ -37,9 +43,6 @@ export async function GET() {
   try {
     await ensureSchema();
 
-    // §23 Reserve composition baseline (testnet)
-    const totalReserve = 54_000_000;
-
     // Live oracle data — try on-chain first, fall back to free APIs.
     const [oracle, liveData, latestReserves, contractInfo] = await Promise.all([
       getOracleSnapshot(),
@@ -52,12 +55,22 @@ export async function GET() {
     const goldPrice = oracle.goldUsd;
     const silverPrice = oracle.silverUsd;
 
-    // Build the §23 reserve composition with proper haircuts.
-    const cashValue = totalReserve * 0.50;
-    const sovereignValue = totalReserve * 0.25;
-    const goldValue = totalReserve * 0.15;
-    const silverValue = totalReserve * 0.05;
-    const stablecoinValue = totalReserve * 0.05;
+    // §23 Reserve composition baseline (v19.0.2): over-collateralized so the
+    // §4 PAR-based reserve ratio RR = R_a / (S × PAR) clears the 102% policy
+    // target at baseline. Cash is $29M; gold/silver use FIXED PHYSICAL
+    // QUANTITIES (Task 2-a fix — quantity does NOT derive from price). Other
+    // tiers unchanged from §23 policy targets.
+    const cashValue = 29_250_000;
+    const sovereignValue = 13_500_000;
+    const goldQtyOz = 2_122.86;       // ≈ $8.654M at $4,076.9/oz
+    const silverQtyOz = 36_758;       // ≈ $2.160M at $58.76/oz
+    const stablecoinValue = 2_700_000;
+    const goldValue = goldQtyOz * goldPrice;
+    const silverValue = silverQtyOz * silverPrice;
+    // totalReserve is now DERIVED from the actual asset values (not a hardcoded
+    // $54M) so the reported total stays consistent as gold/silver prices move.
+    const totalReserve =
+      cashValue + sovereignValue + goldValue + silverValue + stablecoinValue;
 
     const reserveAssets: ReserveAsset[] = [
       {
@@ -86,7 +99,7 @@ export async function GET() {
         id: "gold-1",
         name: "Allocated gold",
         assetClass: "gold",
-        quantity: goldValue / goldPrice,
+        quantity: goldQtyOz,
         priceUsd: goldPrice,
         haircut: HAIRCUTS.gold,
         counterpartyScore: 1.0,
@@ -97,7 +110,7 @@ export async function GET() {
         id: "silver-1",
         name: "Allocated silver",
         assetClass: "silver",
-        quantity: silverValue / silverPrice,
+        quantity: silverQtyOz,
         priceUsd: silverPrice,
         haircut: HAIRCUTS.silver,
         counterpartyScore: 1.0,

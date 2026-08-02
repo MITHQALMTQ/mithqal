@@ -38,7 +38,7 @@ It is a constitutional, 100%+ reserved, gold-disciplined, Sharia-compliant settl
 
 ### The 4 Absolute Invariants
 
-1. **100% Reserve Ratio:** Reserve_Value ≥ Supply_Value × NAV at all times
+1. **100% Reserve Ratio:** `R_a ≥ S × PAR` at all times (where `R_a` is the post-haircut reserve value, `S` is outstanding supply, and `PAR = $1.00` is the face value of one MTQ). Policy target: `R_a ≥ 102% × S × PAR` (over-collateralized safety buffer; see v19.0.2 addendum §19.1–§19.2).
 2. **No Discretionary Minting:** Minting only upon verified deposit of equivalent value
 3. **No Lending of Reserves:** No leverage, no fractional reserve, no rehypothecation
 4. **No Commingling:** Yield Program assets never mix with settlement reserves

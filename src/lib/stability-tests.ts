@@ -5,14 +5,17 @@ import { getLiveOracleData, toOracleSnapshot } from "./live-oracle";
 async function runTests() {
   const liveData = await getLiveOracleData();
   const oracle = toOracleSnapshot(liveData);
-  const totalReserve = 54_000_000;
   const goldPrice = liveData.goldUsd;
+  // Baseline reserve composition (v19.0.2): over-collateralized to clear the
+  // §4 PAR-based reserve ratio RR = R_a / (S × PAR) at the 102% policy target.
+  // Cash is $29M (was $27M); gold/silver use FIXED physical quantities (the
+  // Task 2-a fix — do NOT derive quantity from price). Other tiers unchanged.
   const reserveAssets = [
-    { id: "cash", name: "cash", assetClass: "cash" as const, quantity: totalReserve * 0.50, priceUsd: 1, haircut: 0, counterpartyScore: 1.00, stressCoefficient: 0.95, modifiedDuration: 0 },
-    { id: "sov", name: "sov", assetClass: "sovereign" as const, quantity: totalReserve * 0.25, priceUsd: 1, haircut: 0.02, counterpartyScore: 0.99, stressCoefficient: 0.90, modifiedDuration: 0.5 },
-    { id: "gold", name: "gold", assetClass: "gold" as const, quantity: (totalReserve * 0.15) / goldPrice, priceUsd: goldPrice, haircut: 0.05, counterpartyScore: 1.00, stressCoefficient: 0.85, modifiedDuration: 0 },
-    { id: "silver", name: "silver", assetClass: "silver" as const, quantity: (totalReserve * 0.05) / 25, priceUsd: 25, haircut: 0.07, counterpartyScore: 1.00, stressCoefficient: 0.80, modifiedDuration: 0 },
-    { id: "stab", name: "stab", assetClass: "stablecoin" as const, quantity: totalReserve * 0.05, priceUsd: 1, haircut: 0.02, counterpartyScore: 0.96, stressCoefficient: 0.80, modifiedDuration: 0 },
+    { id: "cash", name: "cash", assetClass: "cash" as const, quantity: 29_250_000, priceUsd: 1, haircut: 0, counterpartyScore: 1.00, stressCoefficient: 0.95, modifiedDuration: 0 },
+    { id: "sov", name: "sov", assetClass: "sovereign" as const, quantity: 13_500_000, priceUsd: 1, haircut: 0.02, counterpartyScore: 0.99, stressCoefficient: 0.90, modifiedDuration: 0.5 },
+    { id: "gold", name: "gold", assetClass: "gold" as const, quantity: 2_122.86, priceUsd: goldPrice, haircut: 0.05, counterpartyScore: 1.00, stressCoefficient: 0.85, modifiedDuration: 0 },
+    { id: "silver", name: "silver", assetClass: "silver" as const, quantity: 36_758, priceUsd: 58.76, haircut: 0.07, counterpartyScore: 1.00, stressCoefficient: 0.80, modifiedDuration: 0 },
+    { id: "stab", name: "stab", assetClass: "stablecoin" as const, quantity: 2_700_000, priceUsd: 1, haircut: 0.02, counterpartyScore: 0.96, stressCoefficient: 0.80, modifiedDuration: 0 },
   ];
   const lcr = { hqla: 32_400_000, expectedRedemptions: 5_400_000, committedInflows: 0, operationalAdjustments: 0 };
   const cri = { liquidity: 20, fx: 30, custody: 25, counterparty: 40, operational: 15 };

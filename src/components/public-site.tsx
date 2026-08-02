@@ -60,6 +60,7 @@ import { VerifyOnChain } from "@/components/verify-on-chain";
 import { AnimatedNumber } from "@/components/animated-number";
 import { LiveTimestamp } from "@/components/live-timestamp";
 import { useLanguage } from "@/components/language-provider";
+import { StressTestProof } from "@/components/stress-test-proof";
 
 const Reveal = ({
   children,
@@ -1807,6 +1808,12 @@ export default function PublicSite() {
           reserves overview and governance, so the reader sees the basket
           mechanism right after the reserve structure that backs it. */}
       <MonetaryEngineCompact />
+      {/* Task 3-e — Proof-of-Strength section: surfaces the v19.0.2 verified
+          stress-test results (20/20 scenarios, stability rank #3 of 14, 5
+          historical crises survived, 7 constitutional mechanisms) right
+          after the engine explainer so the reader's mental flow is
+          "what backs MTQ" → "how the basket works" → "proof it can't break". */}
+      <StressTestProof />
       <Governance />
       <Lifecycle />
       <Eligibility />

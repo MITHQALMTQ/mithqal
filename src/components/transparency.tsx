@@ -2269,11 +2269,11 @@ function ReserveRatioBreakdown({ state }: { state: TransparencyState }) {
       />
       <ModalRow label="Adjusted reserves (R_a)" value={fmtUsd(m.reserveRatio.adjustedReserve)} hint="After haircuts" />
       <ModalRow label="Market reserves (R_m)" value={fmtUsd(m.reserveRatio.marketReserve)} hint="Mark-to-market" />
-      <ModalRow label="Redemption liability" value={fmtUsd(m.reserveRatio.redemptionLiability)} hint="S × NAV_m" />
+      <ModalRow label="Redemption liability" value={fmtUsd(m.reserveRatio.redemptionLiability)} hint="S × PAR (face value)" />
 
       <ModalSectionLabel>Formula · §4</ModalSectionLabel>
       <div className="rounded-lg border border-gold/30 bg-gold/[0.05] p-3">
-        <code className="block font-mono text-xs text-gold">RR = R_a / (S × NAV_m)</code>
+        <code className="block font-mono text-xs text-gold">RR = R_a / (S × PAR)</code>
         <p className="mt-2 text-[10px] leading-relaxed text-fg-muted">
           The constitutional floor is <span className="text-gold">100%</span>.
           Minting auto-pauses if RR drops below; the Safe Multi-Sig refuses any

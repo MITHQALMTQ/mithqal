@@ -40,7 +40,10 @@ const SUPPLY = 54_000_000; // 54,000,000 MTQ
 // Fixed reserve quantities (per task spec)
 const GOLD_QTY = 2_122.86; // oz  → ~$5.625M @ $2,650/oz
 const SILVER_QTY = 36_758; // oz  → ~$2.16M   @ ~$58.76/oz
-const CASH_USD = 27_000_000;
+// Cash is set to $29M (v19.0.2 over-collateralization target) so the §4
+// PAR-based reserve ratio RR = R_a / (S × PAR) clears the 102% policy target
+// at baseline. Other fiat/stablecoin tiers unchanged.
+const CASH_USD = 29_250_000; // v19.0.2: over-collateralized to 102% RR
 const SOVEREIGN_USD = 13_500_000;
 const STABLECOIN_USD = 2_700_000;
 
