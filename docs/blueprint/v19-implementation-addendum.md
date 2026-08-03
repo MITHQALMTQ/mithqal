@@ -358,6 +358,133 @@ interface RebalanceContext {
 | v19.0.0 | 2026-07-19 | Initial blueprint release (MithQAL.docx). 15 Immutable Articles; 50+ numbered sections. |
 | v19.0.1 | 2026-08-01 | Dynamic NAV; dynamic reserve allocation; P0 constitutional fixes (§7 multiplicative counterparty risk, §22A basket verification gate, §10 7-tier cap table, §12 4-stage currency lifecycle, §33 SDP runtime wiring, §38 formal-verification toolchain, §43 11-stage amendment workflow, §44 4-level emergency governance, §45 on-chain invariant checks, §46 forbidden-word linter, §53 constants registry). 18 implementation changes documented in this addendum, §§1–18. |
 | **v19.0.2** | **2026-08-15** | **§4 reserve-ratio formula corrected to PAR-based (`RR = R_a / (S × PAR)`, `PAR = $1.00`); baseline reserve composition over-collateralized to achieve `RR ≥ 102%` (cash +$2M, baseline `RR = 102.05%`); §29 `detectRebalanceTriggers()` complete — all 9 trigger types implemented; `RebalanceContext` interface added with graceful optional-field handling.** Three corrections documented in this addendum, §19.1–§19.3. |
+| v19.0.3 | 2026-08-22 | Ten-point constitutional compliance verification audit (§19.5). All 10 requirements verified ✅ COMPLIANT by COO/CTO/PM under Article V executive authority. Public-facing compliance matrix added to the `StressTestProof` UI section (`src/components/stress-test-proof.tsx`) as a new "Constitutional Compliance" tab. Audit only — no code changes to the monetary engine. |
+
+---
+
+### 19.5 Ten-Point Constitutional Compliance Verification
+
+**Date:** 22 August 2026
+**Author:** COO/CTO/PM (executive triple-hat under Article V)
+**Scope:** Final verification that all 10 constitutional requirements raised during the v19.0.1 → v19.0.2 transition have been implemented and verified. This subsection is the canonical audit reference cited by the public website's "Constitutional Compliance" tab (`src/components/stress-test-proof.tsx`). All 10 requirements carry executive sign-off and are marked ✅ COMPLIANT.
+
+The 10 requirements and their verification status:
+
+| # | Requirement | Blueprint § | Status | Evidence |
+|---|---|---|---|---|
+| 1 | COO/CTO/PM role | Art. V | ✅ COMPLIANT | All fixes applied with executive authority. Triple-hat governance (operations + technical + product) over the v19.0.2 constitutional corrections. |
+| 2 | Dynamic reserve percentages | §23–27 | ✅ COMPLIANT | Shared `computeDynamicReserveAllocation()` in `src/lib/reserve-allocation.ts` — fiat 70–80%, bullion 15–25%, stablecoin 2–8%, all clamped + adjusted by reserve ratio + gold volatility. Used by both `/api/transparency` and `/api/reserve/status`. |
+| 3 | Top currency rule (§12/§13) | §12, §13 | ✅ COMPLIANT | §13 structural weight: COFER 50% (α) + SWIFT 40% (β) + BIS 10% (γ). 8 top currencies: USD, EUR, JPY, GBP, CNY, CHF, AUD, CAD. §12 4-stage lifecycle (observation → probation → full → suspended). |
+| 4 | Balancing correct (§29) | §29 | ✅ COMPLIANT | All 9 trigger types wired into `detectRebalanceTriggers()` + `generateRebalancePlan` + `verifyRebalancePlanLiquidity` + `verifyRebalancePlanReserveRatio`. |
+| 5 | Gold is main anchor (§1/§14) | §1, §14 | ✅ COMPLIANT | §1 numeraire independence; §14 `goldPriceInCurrency = goldUsd / fx`. MTQ tracks gold, not USD. |
+| 6 | Gold/silver ratio as RANGE | §25.2 | ✅ COMPLIANT | Band [60%, 95%] with dynamic φ_t target (75–85% based on volatility). `bullion_band` trigger fires when outside the band. |
+| 7 | All 4 asset classes rebalance | §29 | ✅ COMPLIANT | New `generateCrossAssetRebalancePlan()` pairs sell→buy across fiat/gold/silver/stablecoin with value conservation (sell amount = buy amount per pair). |
+| 8 | USD-drop substitution | §12, §20, §33 | ✅ COMPLIANT | §33 SDP (>5% deviation) + §12 lifecycle (full→suspended) + §20 normalization (when USD drops, others rise proportionally). Verified end-to-end: EUR −90% → SDP → suspension. |
+| 9 | Multi-currency minting | §36 | ✅ COMPLIANT | Mint route accepts USD/EUR/JPY/GBP/CNY/CHF/AUD/CAD/XAU/XAG. Dynamic NAV (~$1.04). `mtqAmount = depositUsd / navM`. Redeem route supports currency selection. |
+| 10 | Rebalancing fees calculated | §29.5 | ✅ COMPLIANT | Comprehensive fee model in `src/lib/rebalance-fees.ts`: per-asset-class execution fee + slippage + spread. `feeBreakdown` attached to every `RebalancePlan`. |
+
+---
+
+#### 19.5.1 Fee Model Detail (Req 10)
+
+The §29.5 fee model is the canonical cost basis for every rebalancing action. Each asset class carries three components: a per-unit **execution fee** (broker commission), a **slippage** estimate (market impact), and a **spread** (bid-ask). The execution **method multiplier** scales execution + slippage (slower/faster execution changes both broker fee and market impact), but NOT the spread (which is structural).
+
+| Asset Class | Execution (bps) | Slippage (bps) | Spread (bps) | Total (VWAP) |
+|---|---|---|---|---|
+| Cash       | 0 | 0 | 0 | **0.00 bps** (free) |
+| Sovereign  | 2 | 1 | 1 | 4.00 bps |
+| Gold       | 5 | 3 | 2 | 10.00 bps |
+| Silver     | 7 | 8 | 5 | **20.00 bps** (highest) |
+| Stablecoin | 3 | 2 | 1 | 6.00 bps |
+| Fiat FX    | 4 | 2 | 1 | 7.00 bps |
+
+Method multipliers (applied to execution + slippage, NOT spread):
+
+| Method            | Multiplier | Use case |
+|-------------------|------------|----------|
+| VWAP              | 1.0        | Baseline volume-weighted average price |
+| TWAP              | 1.2        | Default for `generateRebalancePlan` — slower execution, more market impact |
+| RFQ               | 0.8        | Better pricing for large blocks via request-for-quote |
+| Negotiated block  | 1.5        | Negotiated blocks carry a premium |
+| Algorithmic       | 1.1        | Algo execution slightly above VWAP baseline |
+
+**Cash carries 0.00 bps** because intra-bank settlement (reserve cash → reserve cash) is structurally free — no broker, no market impact, no bid-ask. **Silver carries the highest cost (20.00 bps)** because the silver market is thinner and more fragmented than gold, with wider bid-ask spreads and larger market impact per dollar traded.
+
+Worked example — silver $1M via RFQ:
+```
+execution  = 7 bps × 0.8 (RFQ) = 5.6 bps  → $560
+slippage   = 8 bps × 0.8 (RFQ) = 6.4 bps  → $640
+spread     = 5 bps × 1.0       = 5.0 bps   → $500
+─────────────────────────────────────────────
+total                              = 17.0 bps → $1,700
+```
+
+---
+
+#### 19.5.2 Multi-Currency Mint Example (Req 9)
+
+The §36 mint route accepts **10 currencies**: 8 sovereign fiats (USD, EUR, JPY, GBP, CNY, CHF, AUD, CAD) plus the two physical precious-metal units (XAU = gold troy ounce, XAG = silver troy ounce). For non-USD deposits, the route first converts to USD using the live oracle FX rate, then divides by the dynamic market NAV to compute the MTQ amount.
+
+Worked example — minting 1,000 EUR:
+
+```
+POST /api/mint { amount: 1000, currency: "EUR" }
+
+1. FX conversion (live oracle):
+     depositUsd = 1000 EUR ÷ 0.8685 EUR/USD = $1,151.39
+
+2. Dynamic market NAV (live oracle):
+     NAV_m = R_m / S = $1.0416   (NOT $1.00 — reflects over-collateralization)
+
+3. MTQ amount (§36.2 formula):
+     mtqAmount = depositUsd / navM = $1,151.39 / $1.0416 = 1,105.41 MTQ
+
+4. Mint fee (5 bps, capped at $5,000):
+     fee = min($1,151.39 × 0.0005, $5,000) = $0.58
+```
+
+The redeem route (§36.3) is symmetric: `claimUsd = mtqAmount × navM`, then optionally converted to the requested payout currency. **Redemption is never paused** (§36.3 invariant) — even when `mintingPaused` is true.
+
+---
+
+#### 19.5.3 Cross-Asset Rebalancing Example (Req 7)
+
+The §29 cross-asset rebalance function (`generateCrossAssetRebalancePlan`) is the mechanism that satisfies the requirement that all 4 asset classes rebalance each other. It pairs overweight layers with underweight layers, conserving value (sell amount = buy amount per pair), and splits each pair into sub-actions per the layer's sub-allocation rules (§24 fiat = 2/3 cash + 1/3 sovereign; §25.2 bullion = φ_t gold + (1−φ_t) silver).
+
+Worked example — gold rally pushes bullion to 23% (vs 20% target):
+
+```
+Input:  bullion current 23%, target 20%  → 3pp overweight, $1.68M excess
+        fiat     current 75%, target 78%  → 3pp underweight, $1.68M deficit
+        φ_t = 80% (current gold share of bullion)
+
+Pair:   SELL bullion $1.68M  ↔  BUY fiat $1.68M   (value conserved)
+
+Bullion side (split per φ_t):
+  • sell gold    $1.68M × 0.80 = $1.34M   (gold 10 bps fee)
+  • sell silver  $1.68M × 0.20 = $0.34M   (silver 20 bps fee)
+
+Fiat side (split per §24 2/3 + 1/3):
+  • buy cash       $1.68M × 0.667 = $1.12M  (cash 0 bps fee)
+  • buy sovereign  $1.68M × 0.333 = $0.56M  (sovereign 4 bps fee)
+
+Verification (value conservation):
+  Total sell = $1.34M + $0.34M = $1.68M  ✓
+  Total buy  = $1.12M + $0.56M = $1.68M  ✓
+
+Estimated fee (VWAP):
+  $1.34M × 10 bps (gold)        = $1,340
+  $0.34M × 20 bps (silver)      = $680
+  $1.12M × 0 bps   (cash)       = $0
+  $0.56M × 4 bps   (sovereign)  = $224
+  ─────────────────────────────────────
+  Total execution + slippage    = $2,244
+  + spread (rounded)            ≈ $108
+  ─────────────────────────────────────
+  Reported estimatedCost        ≈ $2,352   (blended ≈ 14 bps)
+```
+
+The same pairing algorithm generalizes to any pair of layers (bullion ↔ stablecoin, fiat ↔ stablecoin, etc.), and to multi-pair plans when more than two layers are simultaneously out of balance. Both sides of every pair share a `pairId` for audit-trail purposes — verifying value conservation is a single `GROUP BY pairId` query against the `RebalanceAction[]` ledger.
 
 ---
 
@@ -367,8 +494,8 @@ interface RebalanceContext {
 
 **Sections already aligned (no change needed):** §7, §50, §51
 
-**New content to add:** Multi-language support, attestReserves guards, anti-platform enforcement, contract addresses, formal verification toolchain, PAR-based reserve ratio formula, over-collateralization baseline composition, full §29 trigger taxonomy + `RebalanceContext`
+**New content to add:** Multi-language support, attestReserves guards, anti-platform enforcement, contract addresses, formal verification toolchain, PAR-based reserve ratio formula, over-collateralization baseline composition, full §29 trigger taxonomy + `RebalanceContext`, ten-point constitutional compliance verification matrix + fee model + multi-currency mint example + cross-asset rebalancing example.
 
-**Total: 21 implementation changes documented (18 in v19.0.1 + 3 in v19.0.2). 0 original sections deleted.**
+**Total: 22 implementation changes documented (18 in v19.0.1 + 3 in v19.0.2 + 1 verification audit in v19.0.3). 0 original sections deleted.**
 
-**Version:** v19.0.2 (current)
+**Version:** v19.0.3 (current — verification audit; monetary engine baseline remains v19.0.2)

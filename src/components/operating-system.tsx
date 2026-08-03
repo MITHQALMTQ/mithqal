@@ -18,6 +18,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { Logo } from "@/components/logo";
 import { buildTransferCalldata } from "@/lib/contract-reader";
@@ -332,7 +339,10 @@ export function OperatingSystem() {
   };
 
   // Mint — wallet signing flow + /api/mint record.
-  const handleMint = async (amountUsd: number) => {
+  // §36.2 multi-currency: `currency` is one of USD/EUR/JPY/GBP/CNY/CHF/AUD/CAD/XAU/XAG.
+  // The deposit is converted to USD-equivalent server-side using the live FX rate,
+  // then divided by the dynamic NAV (≈ $1.04 at baseline) to determine MTQ minted.
+  const handleMint = async (amount: number, currency: string) => {
     if (!walletAddress) {
       toast({ title: "Connect wallet first", description: "Click Connect Wallet to begin.", variant: "destructive" });
       return;
@@ -349,13 +359,17 @@ export function OperatingSystem() {
       // — but if the gateway has been granted the role, the mint lands for real
       // and we use that txHash. On any revert / estimation failure we fall back
       // to the symbolic deposit-approval flow so the audit-trail POST still runs.
+      //
+      // Note: the on-chain `amount` argument is a placeholder for the testnet
+      // mock — the authoritative MTQ amount is computed server-side against the
+      // dynamic NAV (§36.2) and recorded by /api/mint.
       let txHash: string;
       let usedRealMint = false;
       try {
         const MINT_SELECTOR = "0x40c10f19";
         const toParam = walletAddress.slice(2).toLowerCase().padStart(64, "0");
-        const amountWei = BigInt(Math.round(amountUsd * 1e18)).toString(16).padStart(64, "0");
-        const reserveUsdWei = BigInt(Math.round(amountUsd * 1e6)).toString(16).padStart(64, "0");
+        const amountWei = BigInt(Math.round(amount * 1e18)).toString(16).padStart(64, "0");
+        const reserveUsdWei = BigInt(Math.round(amount * 1e6)).toString(16).padStart(64, "0");
         // Mock merkle proof (zero bytes32) — the contract reverts on the role
         // check BEFORE inspecting the proof, so this value is irrelevant when
         // the wallet lacks MINTER_ROLE.
@@ -373,7 +387,7 @@ export function OperatingSystem() {
         console.warn("[handleMint] Real MTQ.mint() failed, falling back to mock approve:", realMintErr?.message);
         const APPROVE_SELECTOR = "0x095ea7b3";
         const spender = walletAddress.slice(2).toLowerCase().padStart(64, "0");
-        const amountWeiFallback = BigInt(Math.round(amountUsd * 1e6)).toString(16).padStart(64, "0");
+        const amountWeiFallback = BigInt(Math.round(amount * 1e6)).toString(16).padStart(64, "0");
         const data = APPROVE_SELECTOR + spender + amountWeiFallback;
         txHash = await sendTransaction({ to: MTQ_ADDRESS, data, value: "0x0" });
       }
@@ -386,12 +400,18 @@ export function OperatingSystem() {
       const res = await fetch("/api/mint", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amountUsd, toAddress: walletAddress, txHash }),
+        body: JSON.stringify({ amount, currency, toAddress: walletAddress, txHash }),
       });
       if (res.ok) {
+        const data = await res.json();
+        const depositUsdStr =
+          typeof data.depositUsd === "number" ? `$${data.depositUsd.toFixed(2)}` : "?";
+        const mtqStr =
+          typeof data.mtqAmount === "number" ? data.mtqAmount.toLocaleString(undefined, { maximumFractionDigits: 4 }) : "?";
+        const navStr = typeof data.nav === "number" ? `$${data.nav.toFixed(4)}` : "?";
         toast({
           title: "Mint recorded",
-          description: `${amountUsd} USD → MTQ (fee: 0.05%) · ${txHash.slice(0, 10)}…`,
+          description: `${amount.toLocaleString()} ${currency} → ${depositUsdStr} (NAV ${navStr}) → ${mtqStr} MTQ · ${txHash.slice(0, 10)}…`,
         });
         await fetchTransactions();
         await fetchBalance(walletAddress);
@@ -409,7 +429,10 @@ export function OperatingSystem() {
   };
 
   // Redeem — wire to POST /api/redeem with a mock burn tx hash.
-  const handleRedeem = async (mtqAmount: number) => {
+  // §36.3 multi-currency: redeemer may request any of USD/EUR/JPY/GBP/CNY/CHF/AUD/CAD/XAU/XAG.
+  // The dynamic NAV (≈ $1.04 at baseline) is fetched server-side; the claim in the
+  // requested currency is computed using the live FX rate.
+  const handleRedeem = async (mtqAmount: number, currency: string) => {
     if (!walletAddress) {
       toast({ title: "Connect wallet first", variant: "destructive" });
       return;
@@ -429,12 +452,20 @@ export function OperatingSystem() {
       const res = await fetch("/api/redeem", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mtqAmount, fromAddress: walletAddress, txHash }),
+        body: JSON.stringify({ mtqAmount, currency, fromAddress: walletAddress, txHash }),
       });
       if (res.ok) {
+        const data = await res.json();
+        const navStr = typeof data.nav === "number" ? `$${data.nav.toFixed(4)}` : "?";
+        const claimStr =
+          typeof data.claimAmount === "number"
+            ? `${data.claimAmount.toLocaleString(undefined, { maximumFractionDigits: 4 })} ${currency}`
+            : "?";
+        const claimUsdStr =
+          typeof data.claimUsd === "number" ? `$${data.claimUsd.toFixed(2)}` : "?";
         toast({
           title: "Redeem recorded",
-          description: `${mtqAmount} MTQ → USD (fee: 0.05%) · ${txHash.slice(0, 10)}…`,
+          description: `${mtqAmount.toLocaleString()} MTQ → ${claimStr} (${claimUsdStr} @ NAV ${navStr}) · ${txHash.slice(0, 10)}…`,
         });
         await fetchTransactions();
         await fetchBalance(walletAddress);
@@ -970,11 +1001,12 @@ function MintCard({
   disabled,
   hasMinterRole,
 }: {
-  onMint: (usd: number) => Promise<void>;
+  onMint: (amount: number, currency: string) => Promise<void>;
   disabled: boolean;
   hasMinterRole: boolean | null;
 }) {
   const [amount, setAmount] = useState("");
+  const [currency, setCurrency] = useState("USD");
   const [busy, setBusy] = useState(false);
   const metamaskAvailable = typeof window !== "undefined" && !!window.ethereum;
   return (
@@ -1004,7 +1036,8 @@ function MintCard({
         )}
       </div>
       <p className="mt-1 text-xs text-fg-muted">
-        Deposit USD → receive MTQ at current NAV. Fee: 0.05% (cap $5,000).{" "}
+        Deposit any of 8 basket currencies (or gold/silver oz) → receive MTQ at the
+        live dynamic NAV (§36.2). Fee: 0.05% (cap $5,000).{" "}
         {hasMinterRole === true
           ? "Wallet holds MINTER_ROLE — real MTQ.mint() will execute."
           : hasMinterRole === false
@@ -1012,20 +1045,42 @@ function MintCard({
             : "MetaMask will prompt to sign."}
       </p>
       <div className="mt-4 space-y-2">
-        <input
-          type="number"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-          placeholder="USD amount"
-          className="w-full rounded-lg border border-line bg-ink-card px-3 py-2 text-sm text-foreground placeholder:text-fg-muted focus:border-gold focus:outline-none"
-        />
+        <div className="flex gap-2">
+          <input
+            type="number"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            placeholder={currency === "XAU" ? "Gold ounces" : currency === "XAG" ? "Silver ounces" : `${currency} amount`}
+            className="min-w-0 flex-1 rounded-lg border border-line bg-ink-card px-3 py-2 text-sm text-foreground placeholder:text-fg-muted focus:border-gold focus:outline-none"
+          />
+          <Select value={currency} onValueChange={setCurrency}>
+            <SelectTrigger
+              className="h-auto w-[6.5rem] shrink-0 rounded-lg border border-line bg-ink-card px-3 py-2 text-sm text-foreground focus:border-gold focus:outline-none"
+              aria-label="Deposit currency"
+            >
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="USD">USD</SelectItem>
+              <SelectItem value="EUR">EUR</SelectItem>
+              <SelectItem value="JPY">JPY</SelectItem>
+              <SelectItem value="GBP">GBP</SelectItem>
+              <SelectItem value="CNY">CNY</SelectItem>
+              <SelectItem value="CHF">CHF</SelectItem>
+              <SelectItem value="AUD">AUD</SelectItem>
+              <SelectItem value="CAD">CAD</SelectItem>
+              <SelectItem value="XAU">XAU (oz)</SelectItem>
+              <SelectItem value="XAG">XAG (oz)</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
         <Button
           onClick={async () => {
-            const usd = Number(amount);
-            if (usd > 0) {
+            const amt = Number(amount);
+            if (amt > 0) {
               setBusy(true);
               try {
-                await onMint(usd);
+                await onMint(amt, currency);
               } finally {
                 setBusy(false);
               }
@@ -1051,8 +1106,9 @@ function MintCard({
   );
 }
 
-function RedeemCard({ onRedeem, disabled }: { onRedeem: (mtq: number) => Promise<void>; disabled: boolean }) {
+function RedeemCard({ onRedeem, disabled }: { onRedeem: (mtq: number, currency: string) => Promise<void>; disabled: boolean }) {
   const [amount, setAmount] = useState("");
+  const [currency, setCurrency] = useState("USD");
   const [busy, setBusy] = useState(false);
   const metamaskAvailable = typeof window !== "undefined" && !!window.ethereum;
   return (
@@ -1061,7 +1117,7 @@ function RedeemCard({ onRedeem, disabled }: { onRedeem: (mtq: number) => Promise
         <ArrowUpFromLine className="h-5 w-5 text-gold" />
         <h3 className="font-display text-lg text-foreground">Redeem MTQ</h3>
       </div>
-      <p className="mt-1 text-xs text-fg-muted">Burn MTQ → receive USD from reserves. Fee: 0.05% (cap $5,000). MetaMask will prompt to sign.</p>
+      <p className="mt-1 text-xs text-fg-muted">Burn MTQ → receive any of 8 basket currencies (or gold/silver oz) at the live dynamic NAV (§36.3). Fee: 0.05% (cap $5,000). MetaMask will prompt to sign.</p>
       {/* RF-11 disclaimer */}
       <div className="mt-3 flex items-start gap-2 rounded-lg border border-gold/30 bg-gold/[0.05] p-2.5 text-[10px] leading-relaxed text-fg-muted">
         <AlertCircle className="mt-0.5 h-3 w-3 shrink-0 text-gold" />
@@ -1078,16 +1134,37 @@ function RedeemCard({ onRedeem, disabled }: { onRedeem: (mtq: number) => Promise
           type="number"
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
-          placeholder="MTQ amount"
+          placeholder="MTQ amount to burn"
           className="w-full rounded-lg border border-line bg-ink-card px-3 py-2 text-sm text-foreground placeholder:text-fg-muted focus:border-gold focus:outline-none"
         />
+        <Select value={currency} onValueChange={setCurrency}>
+          <SelectTrigger
+            className="h-auto w-full rounded-lg border border-line bg-ink-card px-3 py-2 text-sm text-foreground focus:border-gold focus:outline-none"
+            aria-label="Payout currency"
+          >
+            <span className="text-fg-muted">Receive in:</span>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="USD">USD</SelectItem>
+            <SelectItem value="EUR">EUR</SelectItem>
+            <SelectItem value="JPY">JPY</SelectItem>
+            <SelectItem value="GBP">GBP</SelectItem>
+            <SelectItem value="CNY">CNY</SelectItem>
+            <SelectItem value="CHF">CHF</SelectItem>
+            <SelectItem value="AUD">AUD</SelectItem>
+            <SelectItem value="CAD">CAD</SelectItem>
+            <SelectItem value="XAU">XAU (oz)</SelectItem>
+            <SelectItem value="XAG">XAG (oz)</SelectItem>
+          </SelectContent>
+        </Select>
         <Button
           onClick={async () => {
             const mtq = Number(amount);
             if (mtq > 0) {
               setBusy(true);
               try {
-                await onRedeem(mtq);
+                await onRedeem(mtq, currency);
               } finally {
                 setBusy(false);
               }

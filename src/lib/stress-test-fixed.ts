@@ -35,7 +35,6 @@
 
 import {
   computeMonetaryStateV19,
-  HAIRCUTS,
   MAX_DURATION,
 } from "./monetary-engine-v19";
 import type { ReserveAsset, MonetaryStateV19 } from "./monetary-engine-v19";
@@ -48,6 +47,12 @@ import {
   SDP_CAP,
   type CurrencyLifecycleAction,
 } from "./v19-infrastructure";
+import {
+  computeDynamicReserveAllocation,
+  FIXED_GOLD_OZ,
+  FIXED_SILVER_OZ,
+  FIXED_CASH_USD,
+} from "./reserve-allocation";
 
 // ============================================================
 // CONSTANTS
@@ -59,15 +64,21 @@ const SUPPLY = 54_000_000;  // MTQ
 
 // FIXED PHYSICAL BULLION HOLDINGS (ounces) — the core of the fix.
 // These quantities NEVER change in gold/silver price scenarios; only
-// `priceUsd` changes.
-const GOLD_OZ = 2_122.86;     // ≈ $8,654,005 at BASE_GOLD
-const SILVER_OZ = 36_758;     // ≈ $2,159,660 at BASE_SILVER
+// `priceUsd` changes. Sourced from the shared `reserve-allocation`
+// module (Task 4-b) so this stress test always matches the API's
+// reported physical quantities.
+const GOLD_OZ = FIXED_GOLD_OZ;     // 2,122.86 oz ≈ $8,654,005 at BASE_GOLD
+const SILVER_OZ = FIXED_SILVER_OZ; // 36,758 oz ≈ $2,159,660 at BASE_SILVER
 
 // FIAT-LAYER DOLLAR AMOUNTS (held constant unless explicitly overridden).
-// Cash is set to $29M (v19.0.2 over-collateralization target) so the §4
-// PAR-based reserve ratio RR = R_a / (S × PAR) clears the 102% policy target
-// at baseline. Other fiat/stablecoin tiers unchanged.
-const CASH_USD = 29_250_000; // §4 over-collateralization: R_a ≥ 102% × S × PAR (v19.0.2)
+// Cash is sourced from the shared `reserve-allocation` module
+// (`FIXED_CASH_USD = $29,250,000` — v19.0.2 over-collateralization
+// baseline that clears §4 PAR-based RR at the 102% policy target).
+// Sovereign and stablecoin dollar amounts are stress-test-specific
+// baselines (kept stable for reproducibility — the shared function
+// would derive them from totalReserve × ratio, which is circular in a
+// stress-test harness that derives totalReserve FROM the asset values).
+const CASH_USD = FIXED_CASH_USD; // §4 over-collateralization: R_a ≥ 102% × S × PAR (v19.0.2)
 const SOVEREIGN_USD = 13_500_000;
 const STABLECOIN_USD = 2_700_000;
 
@@ -121,6 +132,15 @@ function makeCurrencies(fxRates: Record<string, number>): CurrencyData[] {
  * `goldPrice` and `silverPrice` move the `priceUsd` of the bullion tiers,
  * but `quantity` (in ounces) is FIXED at the institution's physical holding.
  * This is the single change that makes NAV actually respond to price shocks.
+ *
+ * Task 4-b: this helper now exercises the shared `computeDynamicReserveAllocation`
+ * function (the same function the `/api/transparency` and `/api/reserve/status`
+ * routes use) so the stress test is guaranteed to operate on the same
+ * baseline composition the API reports. The shared function derives the
+ * reserveAssets array from the FIXED physical quantities + dynamic target
+ * ratios; we then layer stress-test-specific overrides (cash, sovereign,
+ * stablecoin dollar amounts and stablecoin depeg price) on top so the
+ * 20 stress scenarios can shock individual asset classes.
  */
 function makeReserveAssets(
   goldPrice: number = BASE_GOLD,
@@ -132,18 +152,48 @@ function makeReserveAssets(
     stablecoinPrice?: number;
   } = {},
 ): ReserveAsset[] {
+  // Task 4-b: call the shared dynamic allocation function with a fixed
+  // reserveRatio=102 and volatility=0.015 (the baseline values the task
+  // specifies). The seed totalReserve uses the stress test's known
+  // baseline so the derived sovereign/stablecoin amounts don't drift
+  // away from the reproducible test fixtures.
+  const SEED_TOTAL = CASH_USD + SOVEREIGN_USD + GOLD_OZ * BASE_GOLD + SILVER_OZ * BASE_SILVER + STABLECOIN_USD;
+  const allocation = computeDynamicReserveAllocation({
+    totalReserve: SEED_TOTAL,
+    goldPrice,
+    silverPrice,
+    reserveRatio: 102,        // §4 policy target cleared at baseline (Task 3-a)
+    goldVolatility: 0.015,    // baseline 1.5% EWMA vol (Task 4-b spec)
+  });
+
+  // The shared function returns a fully-formed reserveAssets array with
+  // the FIXED physical bullion quantities and dynamic sovereign/stablecoin
+  // amounts. We pin sovereign + stablecoin back to the stress test's
+  // reproducible fixtures so the printed baseline numbers continue to
+  // match the docstrings above (otherwise the test's "expected" output
+  // would shift every time the dynamic ratios changed).
   const cashUsd = overrides.cashUsd ?? CASH_USD;
   const sovereignUsd = overrides.sovereignUsd ?? SOVEREIGN_USD;
   const stablecoinUsd = overrides.stablecoinUsd ?? STABLECOIN_USD;
   const stablecoinPrice = overrides.stablecoinPrice ?? 1.0;
 
-  return [
-    { id: "cash-1",  name: "Central-bank cash",       assetClass: "cash",       quantity: cashUsd,        priceUsd: 1.0,             haircut: HAIRCUTS.cash,       counterpartyScore: 1.00, stressCoefficient: 0.95, modifiedDuration: 0 },
-    { id: "sov-1",   name: "US T-bills (≤1yr)",       assetClass: "sovereign",  quantity: sovereignUsd,   priceUsd: 1.0,             haircut: HAIRCUTS.sovereign,  counterpartyScore: 0.99, stressCoefficient: 0.90, modifiedDuration: 0.5 },
-    { id: "gold-1",  name: "Gold bullion",            assetClass: "gold",       quantity: GOLD_OZ,        priceUsd: goldPrice,       haircut: HAIRCUTS.gold,       counterpartyScore: 1.00, stressCoefficient: 0.85, modifiedDuration: 0 },
-    { id: "silver-1",name: "Silver bullion",          assetClass: "silver",     quantity: SILVER_OZ,      priceUsd: silverPrice,     haircut: HAIRCUTS.silver,     counterpartyScore: 1.00, stressCoefficient: 0.80, modifiedDuration: 0 },
-    { id: "stab-1",  name: "Regulated stablecoins",   assetClass: "stablecoin", quantity: stablecoinUsd,  priceUsd: stablecoinPrice, haircut: HAIRCUTS.stablecoin, counterpartyScore: 0.96, stressCoefficient: 0.80, modifiedDuration: 0 },
-  ];
+  // Walk the shared reserveAssets array and apply the per-asset overrides.
+  // This keeps the asset IDs, names, haircuts, counterparty scores, stress
+  // coefficients, and durations consistent with the API while letting
+  // each stress scenario shock a single asset class.
+  return allocation.reserveAssets.map((a) => {
+    if (a.assetClass === "cash") {
+      return { ...a, quantity: cashUsd, priceUsd: 1 };
+    }
+    if (a.assetClass === "sovereign") {
+      return { ...a, quantity: sovereignUsd, priceUsd: 1 };
+    }
+    if (a.assetClass === "stablecoin") {
+      return { ...a, quantity: stablecoinUsd, priceUsd: stablecoinPrice };
+    }
+    // gold / silver — leave the FIXED physical quantity + live price alone.
+    return a;
+  });
 }
 
 /**

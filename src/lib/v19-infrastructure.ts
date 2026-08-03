@@ -16,6 +16,12 @@ import {
   type OracleSnapshot,
 } from "./oracle-data";
 import type { ReserveAsset } from "./monetary-engine-v19";
+import {
+  computeRebalanceFee,
+  aggregateRebalanceFees,
+  type FeeBreakdown,
+  type AggregatedFeeBreakdown,
+} from "./rebalance-fees";
 // §39 cryptographic primitives — HMAC for simulated signing.
 // In production, this import is replaced by the HSM vendor SDK.
 import { createHmac } from "crypto";
@@ -2749,6 +2755,8 @@ export function detectRebalanceTriggers(
 /** §29.2 Rebalancing action item. */
 export interface RebalanceAction {
   asset: string;
+  /** §29.5 Asset class key (used by the fee engine). Defaults to "cash". */
+  assetClass?: "cash" | "sovereign" | "sukuk" | "gold" | "silver" | "stablecoin" | "fiat_fx";
   action: "buy" | "sell" | "rebalance";
   /** Notional amount to trade (USD). */
   amount: number;
@@ -2756,7 +2764,21 @@ export interface RebalanceAction {
   executionMethod: "VWAP" | "TWAP" | "RFQ" | "negotiated_block" | "algorithmic";
   /** Constitutional reason (linked to originating trigger). */
   reason: string;
+  /**
+   * §29.5 Optional cross-asset pairing tag. When non-null, this action is
+   * the buy/sell counterpart of another action with the same pairId (e.g.
+   * a "sell gold" + "buy fiat" pair produced by cross-asset rebalancing).
+   * Used by the audit ledger to demonstrate value conservation.
+   */
+  pairId?: string;
 }
+
+/**
+ * §29.2 Per-action fee breakdown (computed by `computeRebalanceFee`).
+ * Re-exported from `rebalance-fees.ts` so callers can import everything
+ * from this module without a second import.
+ */
+export type { FeeBreakdown, AggregatedFeeBreakdown };
 
 /** §29.2 Rebalancing plan produced from a set of triggers. */
 export interface RebalancePlan {
@@ -2764,8 +2786,15 @@ export interface RebalancePlan {
   triggers: RebalanceTrigger[];
   /** §29.4 Minimum-necessary transactions to restore compliance. */
   actions: RebalanceAction[];
-  /** Estimated execution cost (USD). */
+  /** Estimated execution cost (USD). Sum of all action `totalCost`. */
   estimatedCost: number;
+  /**
+   * §29.5 Comprehensive fee breakdown (Task 4-b / Req 10). Per-action
+   * execution / slippage / spread costs in USD and bps, plus an
+   * aggregated plan-level view. Older callers that only read
+   * `estimatedCost` continue to work unchanged.
+   */
+  feeBreakdown?: AggregatedFeeBreakdown;
   /** §29.6 Liquidity impact classification. */
   liquidityImpact: "none" | "minimal" | "moderate" | "significant";
   /** §29.7 Estimated reserve-ratio delta from plan execution. */
@@ -2779,9 +2808,21 @@ export interface RebalancePlan {
 /**
  * §29.2 Generate a constitutional rebalancing plan from a set of
  * triggers. Implements §29.4 Partial Rebalancing Principle — only
- * the minimum transactions necessary to restore compliance are
- * proposed. Estimated execution cost assumes a 0.1% institutional
- * execution-fee rate (configurable downstream).
+ * the minimum transactions necessary to restore constitutional compliance
+ * are proposed.
+ *
+ * Per-action cost is computed via the comprehensive §29.5 fee model
+ * (`computeRebalanceFee` in `rebalance-fees.ts`): each action's
+ * `assetClass` (defaulting to "cash" if not present on the trigger)
+ * determines its execution / slippage / spread bps, and the action's
+ * `executionMethod` (default "TWAP") scales execution+slippage via the
+ * method multiplier. The plan's `estimatedCost` is the sum of all
+ * per-action `totalCost`; the full `feeBreakdown` is attached for
+ * audit / UI consumers.
+ *
+ * NOTE: This function produces ONE action per trigger (legacy behaviour).
+ * For coordinated buy/sell pairs across asset classes (e.g. sell gold
+ * AND buy fiat), use `generateCrossAssetRebalancePlan`.
  */
 export function generateRebalancePlan(triggers: RebalanceTrigger[]): RebalancePlan {
   const actions: RebalanceAction[] = triggers.map((t) => {
@@ -2789,6 +2830,7 @@ export function generateRebalancePlan(triggers: RebalanceTrigger[]): RebalancePl
     const isSell = t.currentValue > t.targetValue;
     return {
       asset,
+      assetClass: inferAssetClassFromAsset(asset),
       action: isSell ? "sell" : "buy",
       amount: Math.abs(t.currentValue - t.targetValue),
       // §29.5 default methodology; caller may override per-asset.
@@ -2808,10 +2850,350 @@ export function generateRebalancePlan(triggers: RebalanceTrigger[]): RebalancePl
     liquidityImpact === "significant" ||
     actions.some((a) => a.amount > 0.05);
 
+  // §29.5 — comprehensive per-action fee breakdown (Task 4-b / Req 10).
+  const perActionFees: FeeBreakdown[] = actions.map((a) =>
+    computeRebalanceFee(a.assetClass ?? "cash", a.amount, a.executionMethod)
+  );
+  const aggregatedFees = aggregateRebalanceFees(perActionFees);
+
   return {
     triggers,
     actions,
-    estimatedCost: actions.reduce((sum, a) => sum + a.amount * 0.001, 0), // 0.1% execution cost
+    estimatedCost: aggregatedFees.totalCost,
+    feeBreakdown: aggregatedFees,
+    liquidityImpact,
+    reserveRatioImpact: 0, // computed at execution time using live reserves
+    approvalRequired,
+    phased,
+  };
+}
+
+/**
+ * §29.5 Infer the asset class (used by the fee engine) from a free-form
+ * asset identifier string. Trigger `asset` fields are often currency codes
+ * (USD, EUR, XAU) or layer names (fiat, bullion, stablecoin); this helper
+ * maps the common cases to the fee model's asset-class keys.
+ *
+ * Unknown identifiers default to "cash" (zero fee) so a typo never
+ * silently inflates the cost estimate.
+ */
+function inferAssetClassFromAsset(
+  asset: string
+): "cash" | "sovereign" | "sukuk" | "gold" | "silver" | "stablecoin" | "fiat_fx" {
+  const a = asset.toUpperCase();
+  if (a === "XAU" || a === "GOLD" || a.includes("GOLD")) return "gold";
+  if (a === "XAG" || a === "SILVER" || a.includes("SILVER")) return "silver";
+  if (a === "SOV" || a === "SOVEREIGN" || a.includes("T-BILL") || a.includes("TBILL")) return "sovereign";
+  if (a === "SUKUK") return "sukuk";
+  if (a === "USDC" || a === "USDT" || a === "DAI" || a === "STAB" || a.includes("STABLE") || a.includes("STABLECOIN")) return "stablecoin";
+  if (a === "FIAT_FX" || a === "FX") return "fiat_fx";
+  if (a === "FIAT" || a === "CASH") return "cash";
+  // Currency codes (USD, EUR, JPY, ...) are fiat FX conversions when
+  // traded against the basket numéraire.
+  if (a.length === 3 && a !== "USD") return "fiat_fx";
+  return "cash";
+}
+
+// ============================================================
+// §29.2 CROSS-ASSET REBALANCING (Task 4-b / Gap 2 / Req 7)
+// ============================================================
+//
+// The legacy `generateRebalancePlan` produces ONE action per trigger — it
+// does not coordinate the buy side of a sell (or vice versa). For example,
+// if bullion is above target it generates "sell gold" but never generates
+// the corresponding "buy fiat" that uses the proceeds. That understates
+// the trade count, mis-estimates the cost, and obscures the value-
+// conservation invariant §29.12 requires.
+//
+// `generateCrossAssetRebalancePlan` wraps trigger detection with a layer-
+// level pairing algorithm:
+//
+//   1. Run `detectRebalanceTriggers(ctx)` to pick up currency-level,
+//      layer_breach, and bullion_band triggers.
+//   2. For each LAYER (fiat / bullion / stablecoin), compute the dollar
+//      delta = (target − current) × totalReserveValue.
+//   3. Split layers into overweight (need to SELL, delta < 0) and
+//      underweight (need to BUY, delta > 0).
+//   4. Greedily pair the most-overweight layer with the most-underweight
+//      layer, conserving value (sell amount = buy amount per pair).
+//   5. For each pair, generate sub-actions per the layer's sub-allocation:
+//        • Bullion  → split into gold (φ_t) + silver (1 − φ_t)
+//        • Fiat     → split into cash (2/3 §24) + sovereign (1/3 §24)
+//        • Stablecoin → single stablecoin action
+//      Both sides of the pair share a `pairId` so the audit ledger can
+//      demonstrate value conservation (§29.12).
+//   6. For bullion_band (φ_t off) generate intra-bullion swaps
+//      (sell gold ↔ buy silver).
+//   7. For currency-level triggers (weight_drift, concentration_cap,
+//      minimum_floor, eligibility), keep the legacy single-action approach
+//      — these are currency-level, not layer-level.
+//   8. Compute comprehensive per-action fees via `computeRebalanceFee`.
+
+/**
+ * §29.4 Dust threshold (USD) — layer deltas below this are ignored
+ * (treated as already-in-tolerance) per the Partial Rebalancing Principle.
+ */
+export const LAYER_REBALANCE_DUST_USD = 1_000;
+
+/**
+ * §29.4 Greedy layer-pair matching helper. Given the per-layer dollar
+ * deltas, returns a list of (sellLayer, buyLayer, amountUsd) triples
+ * where each triple conserves value (amountUsd is the same on both
+ * sides). The algorithm pairs the most-overweight layer with the most-
+ * underweight layer, working inward until one side is exhausted.
+ */
+function pairLayerDeltas(
+  layerDeltas: { layer: string; deltaUsd: number }[]
+): { sellLayer: string; buyLayer: string; amountUsd: number }[] {
+  // Split into sells (negative delta) and buys (positive delta).
+  const sells = layerDeltas
+    .filter((d) => d.deltaUsd < -LAYER_REBALANCE_DUST_USD)
+    .map((d) => ({ layer: d.layer, remaining: -d.deltaUsd }))
+    .sort((a, b) => b.remaining - a.remaining); // most overweight first
+  const buys = layerDeltas
+    .filter((d) => d.deltaUsd > LAYER_REBALANCE_DUST_USD)
+    .map((d) => ({ layer: d.layer, remaining: d.deltaUsd }))
+    .sort((a, b) => b.remaining - a.remaining); // most underweight first
+
+  const pairs: { sellLayer: string; buyLayer: string; amountUsd: number }[] = [];
+  let si = 0, bi = 0;
+  while (si < sells.length && bi < buys.length) {
+    const sell = sells[si];
+    const buy = buys[bi];
+    const amt = Math.min(sell.remaining, buy.remaining);
+    if (amt > LAYER_REBALANCE_DUST_USD) {
+      pairs.push({ sellLayer: sell.layer, buyLayer: buy.layer, amountUsd: amt });
+    }
+    sell.remaining -= amt;
+    buy.remaining -= amt;
+    if (sell.remaining <= LAYER_REBALANCE_DUST_USD) si++;
+    if (buy.remaining <= LAYER_REBALANCE_DUST_USD) bi++;
+  }
+  return pairs;
+}
+
+/**
+ * §24 / §25.2 Sub-asset splitter for a single layer-side trade.
+ *
+ *   • Bullion layer  → split into gold (φ_t) + silver (1 − φ_t).
+ *   • Fiat layer     → split into cash (2/3 §24) + sovereign (1/3 §24).
+ *   • Stablecoin     → single stablecoin action.
+ *
+ * Each generated action carries the supplied `pairId` and `side` ("buy"
+ * or "sell") so the audit ledger can reconstruct the pairing.
+ */
+function generateLayerSideActions(
+  layer: string,
+  side: "buy" | "sell",
+  amountUsd: number,
+  pairId: string,
+  reasonPrefix: string,
+  bullionGoldShare: number = 0.80
+): RebalanceAction[] {
+  if (layer === "bullion") {
+    const goldAmt = amountUsd * bullionGoldShare;
+    const silverAmt = amountUsd - goldAmt;
+    return [
+      {
+        asset: "gold",
+        assetClass: "gold",
+        action: side,
+        amount: goldAmt,
+        executionMethod: "TWAP",
+        reason: `${reasonPrefix} — ${side} gold (φ_t=${bullionGoldShare.toFixed(2)})`,
+        pairId,
+      },
+      {
+        asset: "silver",
+        assetClass: "silver",
+        action: side,
+        amount: silverAmt,
+        executionMethod: "TWAP",
+        reason: `${reasonPrefix} — ${side} silver (1−φ_t=${(1 - bullionGoldShare).toFixed(2)})`,
+        pairId,
+      },
+    ];
+  }
+  if (layer === "fiat") {
+    const cashAmt = amountUsd * 0.667;
+    const sovAmt = amountUsd - cashAmt;
+    return [
+      {
+        asset: "cash",
+        assetClass: "cash",
+        action: side,
+        amount: cashAmt,
+        executionMethod: "TWAP",
+        reason: `${reasonPrefix} — ${side} cash (§24 2/3 of fiat)`,
+        pairId,
+      },
+      {
+        asset: "sovereign",
+        assetClass: "sovereign",
+        action: side,
+        amount: sovAmt,
+        executionMethod: "TWAP",
+        reason: `${reasonPrefix} — ${side} sovereign (§24 1/3 of fiat)`,
+        pairId,
+      },
+    ];
+  }
+  // Stablecoin (or any other layer identifier) — single action.
+  return [
+    {
+      asset: "stablecoin",
+      assetClass: "stablecoin",
+      action: side,
+      amount: amountUsd,
+      executionMethod: "TWAP",
+      reason: `${reasonPrefix} — ${side} stablecoin`,
+      pairId,
+    },
+  ];
+}
+
+/**
+ * §29.2 Generate a CROSS-ASSET rebalancing plan that pairs every sell
+ * with a corresponding buy of equal notional value (value conservation,
+ * §29.12). See module-level comment above for the full algorithm.
+ *
+ * @param ctx                  Rebalance context (used for trigger detection).
+ * @param currentLayerWeights  Current layer weights, e.g. {"fiat":0.78,
+ *                             "bullion":0.17, "stablecoin":0.05}.
+ * @param targetLayerWeights   Target layer weights (typically from
+ *                             `computeDynamicReserveAllocation`).
+ * @param totalReserveValue    Total reserve value in USD (R_m) — used to
+ *                             convert weight deltas to USD trade sizes.
+ * @returns                    A complete `RebalancePlan` with paired
+ *                             actions and a comprehensive `feeBreakdown`.
+ */
+export function generateCrossAssetRebalancePlan(
+  ctx: RebalanceContext,
+  currentLayerWeights: Map<string, number>,
+  targetLayerWeights: Map<string, number>,
+  totalReserveValue: number
+): RebalancePlan {
+  // ---- 1. Detect all triggers (currency-level + layer + bullion) ----
+  const triggers = detectRebalanceTriggers(ctx);
+
+  // ---- 2. Compute per-layer dollar deltas ----
+  const layerDeltas: { layer: string; deltaUsd: number }[] = [];
+  for (const [layer, currentW] of currentLayerWeights) {
+    const targetW = targetLayerWeights.get(layer) ?? 0;
+    const deltaUsd = (targetW - currentW) * totalReserveValue;
+    layerDeltas.push({ layer, deltaUsd });
+  }
+
+  // ---- 3. Greedy pair matching (overweight ↔ underweight) ----
+  const pairs = pairLayerDeltas(layerDeltas);
+
+  // ---- 4. Generate paired actions ----
+  const actions: RebalanceAction[] = [];
+  const phi = ctx.bullionGoldShare ?? 0.80;
+  pairs.forEach((p, idx) => {
+    const pairId = `cross-${idx + 1}`;
+    const reasonPrefix = `§29 cross-asset pair ${pairId}: ${p.sellLayer}→${p.buyLayer} $${p.amountUsd.toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
+    actions.push(
+      ...generateLayerSideActions(p.sellLayer, "sell", p.amountUsd, pairId, reasonPrefix, phi)
+    );
+    actions.push(
+      ...generateLayerSideActions(p.buyLayer, "buy", p.amountUsd, pairId, reasonPrefix, phi)
+    );
+  });
+
+  // ---- 5. Bullion-band (φ_t) intra-bullion swap, if any ----
+  // If φ_t_current is outside the band, the trigger fires and we pair a
+  // gold sell with a silver buy (or vice versa) WITHIN the bullion layer.
+  // This is value-conserving inside bullion (no cross-layer flow).
+  const bullionTriggers = triggers.filter((t) => t.type === "bullion_band");
+  for (let i = 0; i < bullionTriggers.length; i++) {
+    const t = bullionTriggers[i];
+    // Determine current bullion market value (fiat-USD) from layerWeights.
+    const bullionLayerW = currentLayerWeights.get("bullion") ?? 0;
+    const bullionUsd = bullionLayerW * totalReserveValue;
+    // The |currentValue - targetValue| is a gold-share delta (e.g. 0.04
+    // means gold is 4pp off target). The dollar amount to swap is that
+    // delta × bullionUsd.
+    const swapUsd = Math.abs(t.currentValue - t.targetValue) * bullionUsd;
+    if (swapUsd <= LAYER_REBALANCE_DUST_USD) continue;
+    const goldOverweight = t.currentValue > t.targetValue;
+    const pairId = `bullion-${i + 1}`;
+    actions.push(
+      {
+        asset: "gold",
+        assetClass: "gold",
+        action: goldOverweight ? "sell" : "buy",
+        amount: swapUsd,
+        executionMethod: "TWAP",
+        reason: `§25.2 intra-bullion swap ${pairId}: ${goldOverweight ? "sell gold / buy silver" : "sell silver / buy gold"} (φ_t=${(t.currentValue * 100).toFixed(2)}% → ${(t.targetValue * 100).toFixed(2)}%)`,
+        pairId,
+      },
+      {
+        asset: "silver",
+        assetClass: "silver",
+        action: goldOverweight ? "buy" : "sell",
+        amount: swapUsd,
+        executionMethod: "TWAP",
+        reason: `§25.2 intra-bullion swap ${pairId}: ${goldOverweight ? "buy silver (sell gold proceeds)" : "sell silver (buy gold proceeds)"}`,
+        pairId,
+      }
+    );
+  }
+
+  // ---- 6. Currency-level triggers (single-action, legacy semantics) ----
+  // weight_drift / concentration_cap / minimum_floor / currency_eligibility
+  // / stablecoin_eligibility all operate at the currency level — they
+  // don't pair across layers, so we keep one action per trigger here.
+  for (const t of triggers) {
+    if (
+      t.type === "weight_drift" ||
+      t.type === "concentration_cap" ||
+      t.type === "minimum_floor" ||
+      t.type === "currency_eligibility" ||
+      t.type === "stablecoin_eligibility"
+    ) {
+      const asset = t.asset ?? t.description.split(" ")[0];
+      const isSell = t.currentValue > t.targetValue;
+      // Convert weight delta to USD (legacy `generateRebalancePlan` left
+      // this as a raw weight delta — here we scale by totalReserveValue
+      // so the `amount` field is a real notional as the type doc states).
+      const weightDelta = Math.abs(t.currentValue - t.targetValue);
+      const amountUsd = weightDelta * totalReserveValue;
+      if (amountUsd <= LAYER_REBALANCE_DUST_USD) continue;
+      actions.push({
+        asset,
+        assetClass: inferAssetClassFromAsset(asset),
+        action: isSell ? "sell" : "buy",
+        amount: amountUsd,
+        executionMethod: "TWAP",
+        reason: t.description,
+      });
+    }
+  }
+
+  // ---- 7. Compute approval / liquidity / phasing ----
+  const approvalRequired = triggers.some(
+    (t) => t.severity === "critical" || t.severity === "high"
+  );
+  const liquidityImpact: RebalancePlan["liquidityImpact"] =
+    actions.length > 6 ? "significant" : actions.length > 2 ? "moderate" : actions.length > 0 ? "minimal" : "none";
+  // §29.6 — phased execution required when liquidity impact is significant
+  // or any single action exceeds 5% of total reserve value.
+  const phased =
+    liquidityImpact === "significant" ||
+    actions.some((a) => a.amount > 0.05 * totalReserveValue);
+
+  // ---- 8. Comprehensive fee breakdown (§29.5) ----
+  const perActionFees: FeeBreakdown[] = actions.map((a) =>
+    computeRebalanceFee(a.assetClass ?? "cash", a.amount, a.executionMethod)
+  );
+  const aggregatedFees = aggregateRebalanceFees(perActionFees);
+
+  return {
+    triggers,
+    actions,
+    estimatedCost: aggregatedFees.totalCost,
+    feeBreakdown: aggregatedFees,
     liquidityImpact,
     reserveRatioImpact: 0, // computed at execution time using live reserves
     approvalRequired,

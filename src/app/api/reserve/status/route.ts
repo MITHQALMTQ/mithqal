@@ -4,29 +4,38 @@ import { getOracleSnapshot } from "@/lib/oracle-client";
 import {
   computeMonetaryStateV19,
   type ReserveAsset,
-  HAIRCUTS,
 } from "@/lib/monetary-engine-v19";
 import { getLiveOracleData, toOracleSnapshot } from "@/lib/live-oracle";
 import { getContractInfo } from "@/lib/contract-reader";
 import { computeSDPEmergency } from "@/lib/v19-infrastructure";
+import { computeDynamicReserveAllocation } from "@/lib/reserve-allocation";
 
 /**
  * GET /api/reserve/status — public, unauthenticated snapshot of the
  * Mithqal reserve composition and live valuation per §23 of the v19.0
  * Constitutional Monetary Infrastructure Specification.
  *
- * Reserve composition (v19.0.2 baseline, over-collateralized to clear the
- * §4 PAR-based reserve ratio at the 102% policy target):
- *   Cash         $29,250,000  (Tier 1, 0% haircut)
- *   Sovereign    $13,500,000  (Tier 2, ≤1yr T-bills, 2% haircut)
- *   Gold          2,122.86 oz (Tier 3, 5% haircut — FIXED PHYSICAL QUANTITY)
- *   Silver       36,758 oz    (Tier 3, 7% haircut — FIXED PHYSICAL QUANTITY)
- *   Stablecoin    $2,700,000  (Tier 4, regulated, 2% haircut)
- *   ≈ $56.0M total at $4,076.9/oz gold and $58.76/oz silver.
+ * Task 4-b: the reserve composition is now derived from the shared
+ * `computeDynamicReserveAllocation` function (the same function the
+ * `/api/transparency` route uses). The dynamic function:
+ *   • Adjusts fiat/bullion/stablecoin ratios based on reserve ratio
+ *     and gold volatility (clamped to §23.3 constitutional ranges).
+ *   • Adjusts the gold/silver split (φ_t) within the bullion layer
+ *     based on gold EWMA volatility (clamped to §25.2 band).
+ *   • Keeps gold/silver PHYSICAL QUANTITIES FIXED at 2,122.86 oz and
+ *     36,758 oz (Task 2-a invariant — quantity does NOT derive from price).
+ *   • Keeps cash FIXED at $29,250,000 (v19.0.2 §4 over-collateralization
+ *     baseline; clears the 102% policy target with the engine's actual
+ *     R_a formula per Task 3-a).
+ *   • Derives sovereign and stablecoin dollar values from the dynamic
+ *     ratios × totalReserve so the reported TARGET allocation stays
+ *     consistent with the live reserve total.
+ *
+ * The total reserve value is DERIVED from the actual asset values (sum),
+ * not hardcoded, so the reported total stays consistent as gold/silver
+ * prices move.
  *
  * Supply baseline: 54,000,000 MTQ → NAV_m ≈ $1.0373, RR ≈ 102.05%.
- * Gold/silver quantities are FIXED (Task 2-a fix); only `priceUsd` moves with
- * the live oracle, so NAV_m actually responds to bullion price shocks.
  *
  * Returns:
  *   {
@@ -35,6 +44,8 @@ import { computeSDPEmergency } from "@/lib/v19-infrastructure";
  *     threeLayer:  { market, adjusted, liquidation },
  *     nav:         { market, prudential, stress },
  *     reserveRatio:{ ratio, compliant },
+ *     allocation:  { fiatRatio, bullionRatio, stablecoinRatio, goldShare,
+ *                    silverShare, adjustments, isDynamic },
  *     goldPrice, silverPrice,
  *     oracleSource, lastUpdated
  *   }
@@ -57,81 +68,26 @@ export async function GET() {
 
     // §23 Reserve composition baseline (v19.0.2): over-collateralized so the
     // §4 PAR-based reserve ratio RR = R_a / (S × PAR) clears the 102% policy
-    // target at baseline. Cash is $29M; gold/silver use FIXED PHYSICAL
-    // QUANTITIES (Task 2-a fix — quantity does NOT derive from price). Other
-    // tiers unchanged from §23 policy targets.
-    const cashValue = 29_250_000;
-    const sovereignValue = 13_500_000;
-    const goldQtyOz = 2_122.86;       // ≈ $8.654M at $4,076.9/oz
-    const silverQtyOz = 36_758;       // ≈ $2.160M at $58.76/oz
-    const stablecoinValue = 2_700_000;
-    const goldValue = goldQtyOz * goldPrice;
-    const silverValue = silverQtyOz * silverPrice;
-    // totalReserve is now DERIVED from the actual asset values (not a hardcoded
-    // $54M) so the reported total stays consistent as gold/silver prices move.
-    const totalReserve =
-      cashValue + sovereignValue + goldValue + silverValue + stablecoinValue;
+    // target at baseline. Cash is $29.25M; gold/silver use FIXED PHYSICAL
+    // QUANTITIES (Task 2-a fix — quantity does NOT derive from price).
+    //
+    // Task 4-b: we use the shared `computeDynamicReserveAllocation` module
+    // to derive the target layer ratios + the reserveAssets array in one
+    // place. We pass a provisional totalReserve (the seed baseline) so the
+    // ratios can be computed; the actual reserveAssets' dollar values are
+    // then summed to get the live totalReserve, which we re-feed into the
+    // allocation function for the final report.
+    const SEED_TOTAL_RESERVE = 56_000_000;
+    const seedReserveRatio = 102.07; // baseline policy target cleared (Task 3-a)
 
-    const reserveAssets: ReserveAsset[] = [
-      {
-        id: "cash-1",
-        name: "Central-bank cash",
-        assetClass: "cash",
-        quantity: cashValue,
-        priceUsd: 1,
-        haircut: HAIRCUTS.cash,
-        counterpartyScore: 1.0,
-        stressCoefficient: 0.95,
-        modifiedDuration: 0,
-      },
-      {
-        id: "sov-1",
-        name: "US T-bills ≤1yr",
-        assetClass: "sovereign",
-        quantity: sovereignValue,
-        priceUsd: 1,
-        haircut: HAIRCUTS.sovereign,
-        counterpartyScore: 0.99,
-        stressCoefficient: 0.9,
-        modifiedDuration: 0.5,
-      },
-      {
-        id: "gold-1",
-        name: "Allocated gold",
-        assetClass: "gold",
-        quantity: goldQtyOz,
-        priceUsd: goldPrice,
-        haircut: HAIRCUTS.gold,
-        counterpartyScore: 1.0,
-        stressCoefficient: 0.85,
-        modifiedDuration: 0,
-      },
-      {
-        id: "silver-1",
-        name: "Allocated silver",
-        assetClass: "silver",
-        quantity: silverQtyOz,
-        priceUsd: silverPrice,
-        haircut: HAIRCUTS.silver,
-        counterpartyScore: 1.0,
-        stressCoefficient: 0.8,
-        modifiedDuration: 0,
-      },
-      {
-        id: "stab-1",
-        name: "Regulated stablecoins",
-        assetClass: "stablecoin",
-        quantity: stablecoinValue,
-        priceUsd: 1,
-        haircut: HAIRCUTS.stablecoin,
-        counterpartyScore: 0.96,
-        stressCoefficient: 0.8,
-        modifiedDuration: 0,
-      },
-    ];
-
-    // Live MTQ supply from the on-chain contract (fallback to testnet baseline).
-    const supply = contractInfo?.totalSupplyDisplay ?? 50_000_000;
+    // First pass: derive reserveAssets with the seed total.
+    const firstPass = computeDynamicReserveAllocation({
+      totalReserve: SEED_TOTAL_RESERVE,
+      goldPrice,
+      silverPrice,
+      reserveRatio: seedReserveRatio,
+      goldVolatility: 0.015, // baseline fallback when no EWMA series
+    });
 
     // Compute EWMA return series from the live 30-day gold price series (§17).
     // This activates the shock absorber — previously it was dead code (always 1.0).
@@ -146,6 +102,31 @@ export async function GET() {
         }
       }
     }
+    const ewmaVol = ewmaReturns.length >= 2
+      ? Math.sqrt(ewmaReturns.reduce((s, r) => s + r * r, 0) / ewmaReturns.length)
+      : 0.015;
+
+    // Second pass: now we know the live totalReserve (sum of firstPass asset
+    // values), recompute the dynamic ratios so the reported "target"
+    // allocation matches the live reserve total. Cash and bullion physical
+    // quantities are fixed; only the sovereign and stablecoin dollar values
+    // (and the reported target ratios) change between passes.
+    const liveTotalReserve = firstPass.reserveAssets.reduce(
+      (s, a) => s + a.quantity * a.priceUsd,
+      0
+    );
+    const allocation = computeDynamicReserveAllocation({
+      totalReserve: liveTotalReserve,
+      goldPrice,
+      silverPrice,
+      reserveRatio: seedReserveRatio,
+      goldVolatility: ewmaVol || 0.015,
+    });
+    const reserveAssets: ReserveAsset[] = allocation.reserveAssets;
+    const totalReserve = liveTotalReserve;
+
+    // Live MTQ supply from the on-chain contract (fallback to testnet baseline).
+    const supply = contractInfo?.totalSupplyDisplay ?? 50_000_000;
 
     // Compute the full v19.0 monetary state (3-layer reserves, 3 NAVs, RR).
     const monetary = computeMonetaryStateV19(
@@ -241,6 +222,30 @@ export async function GET() {
         ratio: monetary.reserveRatio.ratio,
         compliant: monetary.reserveRatio.compliant,
         policyTarget: monetary.reserveRatio.policyTarget,
+      },
+      // §23-29 Dynamic allocation metadata (Task 4-b). Exposes the same
+      // shape the transparency API returns so clients can consume either
+      // endpoint uniformly.
+      allocation: {
+        fiatRatio: parseFloat((allocation.fiatRatio * 100).toFixed(2)),
+        bullionRatio: parseFloat((allocation.bullionRatio * 100).toFixed(2)),
+        stablecoinRatio: parseFloat((allocation.stablecoinRatio * 100).toFixed(2)),
+        goldShare: parseFloat((allocation.goldShare * 100).toFixed(2)),
+        silverShare: parseFloat((allocation.silverShare * 100).toFixed(2)),
+        volatility: parseFloat((ewmaVol * 100).toFixed(4)),
+        constitutionalRanges: {
+          fiat: `${(allocation.ranges.fiat.min * 100).toFixed(0)}-${(allocation.ranges.fiat.max * 100).toFixed(0)}%`,
+          bullion: `${(allocation.ranges.bullion.min * 100).toFixed(0)}-${(allocation.ranges.bullion.max * 100).toFixed(0)}%`,
+          stablecoin: `${(allocation.ranges.stablecoin.min * 100).toFixed(0)}-${(allocation.ranges.stablecoin.max * 100).toFixed(0)}%`,
+          goldOfBullion: `${(allocation.bullionBand.min * 100).toFixed(0)}-${(allocation.bullionBand.max * 100).toFixed(0)}%`,
+        },
+        isDynamic: allocation.isDynamic,
+        adjustments: allocation.adjustments,
+        fixedPhysicalQuantities: {
+          goldOz: allocation.goldQtyOz,
+          silverOz: allocation.silverQtyOz,
+          cashUsd: allocation.cashValue,
+        },
       },
       goldPrice,
       silverPrice,

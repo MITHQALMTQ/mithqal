@@ -25,9 +25,14 @@ import {
   valueReserves,
   computeNAV,
   computeReserveRatio,
-  HAIRCUTS,
   type ReserveAsset,
 } from "./monetary-engine-v19";
+import {
+  computeDynamicReserveAllocation,
+  FIXED_GOLD_OZ,
+  FIXED_SILVER_OZ,
+  FIXED_CASH_USD,
+} from "./reserve-allocation";
 
 // ============================================================
 // 1. Configuration & Constants
@@ -37,13 +42,15 @@ const SEED = 42;
 const DAYS = 365;
 const SUPPLY = 54_000_000; // 54,000,000 MTQ
 
-// Fixed reserve quantities (per task spec)
-const GOLD_QTY = 2_122.86; // oz  → ~$5.625M @ $2,650/oz
-const SILVER_QTY = 36_758; // oz  → ~$2.16M   @ ~$58.76/oz
-// Cash is set to $29M (v19.0.2 over-collateralization target) so the §4
-// PAR-based reserve ratio RR = R_a / (S × PAR) clears the 102% policy target
-// at baseline. Other fiat/stablecoin tiers unchanged.
-const CASH_USD = 29_250_000; // v19.0.2: over-collateralized to 102% RR
+// Fixed reserve quantities — sourced from the shared `reserve-allocation`
+// module (Task 4-b) so this stability comparison always matches the API's
+// reported physical quantities and cash baseline.
+const GOLD_QTY = FIXED_GOLD_OZ;   // 2,122.86 oz → ~$5.625M @ $2,650/oz
+const SILVER_QTY = FIXED_SILVER_OZ; // 36,758 oz → ~$2.16M @ ~$58.76/oz
+// Cash is sourced from `FIXED_CASH_USD` ($29,250,000 — v19.0.2 over-
+// collateralization target) so §4 PAR-based RR clears the 102% policy
+// target at baseline. Other fiat/stablecoin tiers unchanged.
+const CASH_USD = FIXED_CASH_USD; // v19.0.2: over-collateralized to 102% RR
 const SOVEREIGN_USD = 13_500_000;
 const STABLECOIN_USD = 2_700_000;
 
@@ -206,6 +213,21 @@ function buildAllSeries(): AssetSeries[] {
 // ============================================================
 // 5. Build MTQ NAV Series via the Monetary Engine (§2, §3, §6)
 // ============================================================
+//
+// Task 4-b: `buildReserveAssets` now exercises the shared
+// `computeDynamicReserveAllocation` function (the same function the
+// `/api/transparency` and `/api/reserve/status` routes use) so the
+// stability simulation operates on the same baseline composition the
+// API reports. The shared function returns the reserveAssets array
+// with FIXED physical bullion quantities + dynamic sovereign/stablecoin
+// amounts; we then pin sovereign + stablecoin back to the stress-test
+// fixtures so the simulated NAV series stays reproducible across runs.
+
+// Seed totalReserve used to bootstrap the dynamic allocation. Computed
+// from the stress-test's known baseline so the derived sovereign and
+// stablecoin amounts don't drift away from the reproducible fixtures.
+const SEED_TOTAL_RESERVE =
+  CASH_USD + SOVEREIGN_USD + GOLD_QTY * GOLD_BASE + SILVER_QTY * SILVER_BASE + STABLECOIN_USD;
 
 function buildReserveAssets(
   goldPrice: number,
@@ -214,63 +236,33 @@ function buildReserveAssets(
   sovPrice = 1,
   stabPrice = 1
 ): ReserveAsset[] {
-  return [
-    {
-      id: "cash",
-      name: "Cash",
-      assetClass: "cash",
-      quantity: CASH_USD,
-      priceUsd: cashPrice,
-      haircut: HAIRCUTS.cash, // 0%
-      counterpartyScore: 1.0,
-      stressCoefficient: 0.95,
-      modifiedDuration: 0,
-    },
-    {
-      id: "sov",
-      name: "Sovereign",
-      assetClass: "sovereign",
-      quantity: SOVEREIGN_USD,
-      priceUsd: sovPrice,
-      haircut: HAIRCUTS.sovereign, // 2%
-      counterpartyScore: 0.99,
-      stressCoefficient: 0.9,
-      modifiedDuration: 0.5,
-    },
-    {
-      id: "gold",
-      name: "Gold",
-      assetClass: "gold",
-      quantity: GOLD_QTY,
-      priceUsd: goldPrice,
-      haircut: HAIRCUTS.gold, // 5%
-      counterpartyScore: 1.0,
-      stressCoefficient: 0.85,
-      modifiedDuration: 0,
-    },
-    {
-      id: "silver",
-      name: "Silver",
-      assetClass: "silver",
-      quantity: SILVER_QTY,
-      priceUsd: silverPrice,
-      haircut: HAIRCUTS.silver, // 7%
-      counterpartyScore: 1.0,
-      stressCoefficient: 0.8,
-      modifiedDuration: 0,
-    },
-    {
-      id: "stab",
-      name: "Stablecoin",
-      assetClass: "stablecoin",
-      quantity: STABLECOIN_USD,
-      priceUsd: stabPrice,
-      haircut: HAIRCUTS.stablecoin, // 2%
-      counterpartyScore: 0.96,
-      stressCoefficient: 0.8,
-      modifiedDuration: 0,
-    },
-  ];
+  // Call the shared dynamic allocation function with a fixed reserveRatio=102
+  // and volatility=0.015 (the baseline values the Task 4-b spec specifies).
+  const allocation = computeDynamicReserveAllocation({
+    totalReserve: SEED_TOTAL_RESERVE,
+    goldPrice,
+    silverPrice,
+    reserveRatio: 102,        // §4 policy target cleared at baseline (Task 3-a)
+    goldVolatility: 0.015,    // baseline 1.5% EWMA vol (Task 4-b spec)
+  });
+
+  // Pin sovereign + stablecoin back to the stress-test fixtures so the
+  // 365-day simulated NAV series stays reproducible. Cash uses the shared
+  // FIXED_CASH_USD (already in the allocation output). Gold and silver
+  // use the FIXED physical quantities (also already in the output).
+  return allocation.reserveAssets.map((a) => {
+    if (a.assetClass === "cash") {
+      return { ...a, quantity: CASH_USD, priceUsd: cashPrice };
+    }
+    if (a.assetClass === "sovereign") {
+      return { ...a, quantity: SOVEREIGN_USD, priceUsd: sovPrice };
+    }
+    if (a.assetClass === "stablecoin") {
+      return { ...a, quantity: STABLECOIN_USD, priceUsd: stabPrice };
+    }
+    // gold / silver — keep the FIXED physical quantity + simulated price.
+    return a;
+  });
 }
 
 function buildMtqNavSeries(goldPrices: number[], silverPrices: number[]) {

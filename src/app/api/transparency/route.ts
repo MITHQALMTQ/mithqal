@@ -4,7 +4,19 @@ import { deriveState } from "@/lib/testnet-engine";
 import { computeMonetaryStateV19, mintFee, redemptionFee, HAIRCUTS, MAX_DURATION, type ReserveAsset } from "@/lib/monetary-engine-v19";
 import { getLiveOracleData, toOracleSnapshot } from "@/lib/live-oracle";
 import { getOracleSnapshot } from "@/lib/oracle-client";
-import { computeSDPEmergency } from "@/lib/v19-infrastructure";
+import {
+  computeSDPEmergency,
+  generateCrossAssetRebalancePlan,
+  type RebalanceContext,
+} from "@/lib/v19-infrastructure";
+import {
+  computeDynamicReserveAllocation,
+  deriveCurrentLayerWeights,
+  deriveCurrentBullionGoldShare,
+  deriveTargetLayerWeights,
+  LAYER_RANGES,
+  BULLION_GOLD_BAND,
+} from "@/lib/reserve-allocation";
 
 // GET /api/transparency — public, unauthenticated snapshot of the
 // Institution's live state per the v19.0 Constitutional Monetary Infrastructure
@@ -59,86 +71,17 @@ export async function GET() {
     //
     // For Phase 0 (testnet), we use the POLICY TARGETS as defaults but
     // compute them dynamically based on:
-    //   - Current reserve ratio (if >105%, shift toward bullion)
+    //   - Current reserve ratio (if >110%, shift toward bullion)
     //   - Current CRI (if elevated, shift toward cash)
     //   - Current gold volatility (if high, reduce bullion slightly)
     //
     // The allocation is computed each time from live conditions, NOT hardcoded.
+    // Task 4-b: the dynamic logic now lives in the shared
+    // `computeDynamicReserveAllocation` module so this route and
+    // `/api/reserve/status` agree on the target composition.
     const totalReserve = state.reserveValue || 50_000_000;
     const goldPrice = liveData.goldUsd;
     // silverPrice already set above from oracleSnapshotData
-
-    // ---- DYNAMIC ALLOCATION COMPUTATION (§23-29) ----
-    // Start with policy targets (§23.1)
-    let fiatRatio = 0.75;   // 75% policy target
-    let bullionRatio = 0.20; // 20% policy target
-    let stablecoinRatio = 0.05; // 5% policy target
-
-    // Dynamic adjustment based on reserve ratio (§4, §29.1)
-    // If ratio is very high (>110%), institution can afford more bullion (non-sovereign anchor)
-    const currentRatio = state.reserveRatio || 100;
-    if (currentRatio > 110) {
-      fiatRatio -= 0.02;     // shift 2% from fiat to bullion
-      bullionRatio += 0.02;
-    } else if (currentRatio < 102) {
-      fiatRatio += 0.02;     // shift 2% from bullion to fiat (conservative)
-      bullionRatio -= 0.02;
-    }
-
-    // Dynamic gold/silver split within bullion (§25.2: φ_t variable)
-    // Default: 80% gold, 20% silver. Adjust based on gold volatility.
-    const volatility = (oracle as any).goldPriceSeries?.length >= 2
-      ? Math.abs(Math.log(
-          (oracle as any).goldPriceSeries[(oracle as any).goldPriceSeries.length - 1] /
-          (oracle as any).goldPriceSeries[(oracle as any).goldPriceSeries.length - 2]
-        ))
-      : 0.015;
-    let goldShare = 0.80;  // φ_t default (§25.2)
-    let silverShare = 0.20;
-    if (volatility > 0.03) {  // high gold volatility → reduce gold slightly
-      goldShare = 0.75;
-      silverShare = 0.25;
-    } else if (volatility < 0.005) {  // low volatility → increase gold
-      goldShare = 0.85;
-      silverShare = 0.15;
-    }
-
-    // Clamp to constitutional ranges (§23.3, §25.2)
-    fiatRatio = Math.max(0.70, Math.min(0.80, fiatRatio));
-    bullionRatio = Math.max(0.15, Math.min(0.25, bullionRatio));
-    stablecoinRatio = Math.max(0.02, Math.min(0.08, stablecoinRatio));
-    goldShare = Math.max(0.60, Math.min(0.95, goldShare));
-    silverShare = Math.max(0.05, Math.min(0.40, silverShare));
-
-    // Ensure total = 100% (§23.3: Fiat + Bullion + Stablecoins = 100%)
-    const total = fiatRatio + bullionRatio + stablecoinRatio;
-    fiatRatio /= total;
-    bullionRatio /= total;
-    stablecoinRatio /= total;
-
-    // Compute layer values
-    const fiatValue = totalReserve * fiatRatio;
-    const bullionValue = totalReserve * bullionRatio;
-    const stablecoinValue = totalReserve * stablecoinRatio;
-    const goldValue = bullionValue * goldShare;
-    const silverValue = bullionValue * silverShare;
-
-    // Fiat sub-allocation: cash (2/3 of fiat) + sovereign (1/3 of fiat) per §24
-    const cashValue = fiatValue * 0.667;
-    const sovereignValue = fiatValue * 0.333;
-
-    const reserveAssets: ReserveAsset[] = [
-      // Fiat Layer (§24): cash + sovereign
-      { id: "cash-1", name: "Central-bank cash", assetClass: "cash", quantity: cashValue, priceUsd: 1, haircut: HAIRCUTS.cash, counterpartyScore: 1.00, stressCoefficient: 0.95, modifiedDuration: 0 },
-      { id: "sov-1", name: "US T-bills ≤1yr", assetClass: "sovereign", quantity: sovereignValue, priceUsd: 1, haircut: HAIRCUTS.sovereign, counterpartyScore: 0.99, stressCoefficient: 0.90, modifiedDuration: 0.5 },
-      // Bullion Layer (§25): gold + silver (dynamic split via φ_t)
-      { id: "gold-1", name: "Allocated gold", assetClass: "gold", quantity: goldValue / goldPrice, priceUsd: goldPrice, haircut: HAIRCUTS.gold, counterpartyScore: 1.00, stressCoefficient: 0.85, modifiedDuration: 0 },
-      { id: "silver-1", name: "Allocated silver", assetClass: "silver", quantity: silverValue / silverPrice, priceUsd: silverPrice, haircut: HAIRCUTS.silver, counterpartyScore: 1.00, stressCoefficient: 0.80, modifiedDuration: 0 },
-      // Stablecoin Layer (§26)
-      { id: "stab-1", name: "Regulated stablecoins", assetClass: "stablecoin", quantity: stablecoinValue, priceUsd: 1, haircut: HAIRCUTS.stablecoin, counterpartyScore: 0.96, stressCoefficient: 0.80, modifiedDuration: 0 },
-    ];
-
-    const opIndex = ops.length;
 
     // Compute EWMA return series from the live 30-day gold price series (§17).
     // This is the critical wiring that was missing — previously every caller
@@ -155,6 +98,41 @@ export async function GET() {
         }
       }
     }
+
+    // Current EWMA gold volatility — used both by the monetary engine's
+    // shock absorber (§17) and by the dynamic allocation's gold/silver
+    // split (§25.2). Falls back to 0.015 (1.5%) when the series is empty.
+    const goldVolatility = ewmaReturns.length >= 2
+      ? ewmaReturns.reduce((s, r) => s + r * r, 0) / ewmaReturns.length
+      : 0.015;
+    const ewmaVol = Math.sqrt(goldVolatility);
+
+    // ---- DYNAMIC ALLOCATION COMPUTATION (§23-29, shared module) ----
+    const allocation = computeDynamicReserveAllocation({
+      totalReserve,
+      goldPrice,
+      silverPrice,
+      reserveRatio: state.reserveRatio || 100,
+      goldVolatility: ewmaVol || 0.015,
+    });
+
+    const {
+      fiatRatio,
+      bullionRatio,
+      stablecoinRatio,
+      goldShare,
+      silverShare,
+    } = allocation;
+
+    // The reserve assets array is built by the shared module — gold/silver
+    // use FIXED physical quantities (Task 2-a), cash is fixed at $29.25M
+    // (v19.0.2 §4 over-collateralization baseline), sovereign and
+    // stablecoin dollar values are derived from the dynamic ratios ×
+    // totalReserve so the reported "target" allocation stays consistent
+    // with the live reserve total.
+    const reserveAssets: ReserveAsset[] = allocation.reserveAssets;
+
+    const opIndex = ops.length;
 
     const monetary = computeMonetaryStateV19(
       oracle,
@@ -241,7 +219,7 @@ export async function GET() {
         stablecoinRatio: parseFloat((stablecoinRatio * 100).toFixed(2)),
         goldShare: parseFloat((goldShare * 100).toFixed(2)),
         silverShare: parseFloat((silverShare * 100).toFixed(2)),
-        volatility: parseFloat((volatility * 100).toFixed(4)),
+        volatility: parseFloat((ewmaVol * 100).toFixed(4)),
         constitutionalRanges: {
           fiat: "70-80%",
           bullion: "15-25%",
@@ -257,6 +235,18 @@ export async function GET() {
           silverOfBullion: 20,
         },
         isDynamic: true, // §25.4: "The bullion allocation is dynamic (not constitutionally fixed)"
+        // Task 4-b: expose the human-readable list of dynamic adjustments
+        // applied by the shared `computeDynamicReserveAllocation` function
+        // so auditors / UI can see WHY the ratios are what they are.
+        adjustments: allocation.adjustments,
+        // Fixed physical bullion holdings (Task 2-a invariant) — exposed
+        // for transparency so clients can verify gold/silver quantities
+        // are NOT derived from price.
+        fixedPhysicalQuantities: {
+          goldOz: allocation.goldQtyOz,
+          silverOz: allocation.silverQtyOz,
+          cashUsd: allocation.cashValue,
+        },
       },
       testnet: {
         supply: state.supply,
@@ -349,6 +339,81 @@ export async function GET() {
         // §33 Sovereign Default Protection — runtime detection result
         sdp,
       },
+      // §29 Rebalancing plan — cross-asset coordinated (Task 4-b / Req 7).
+      // The plan compares the CURRENT layer weights (derived from the live
+      // reserveAssets) against the TARGET layer weights (from the shared
+      // `computeDynamicReserveAllocation` function). When a layer drifts
+      // outside its constitutional range or the bullion φ_t band, the plan
+      // proposes paired buy/sell actions that conserve value (every sell
+      // has a matching buy of equal notional). Per-action fees are computed
+      // via the comprehensive §29.5 fee model (execution + slippage +
+      // spread, scaled by the execution-method multiplier).
+      rebalancePlan: (() => {
+        try {
+          const currentLayerWeights = deriveCurrentLayerWeights(reserveAssets);
+          const targetLayerWeights = deriveTargetLayerWeights(allocation);
+          const currentBullionGoldShare = deriveCurrentBullionGoldShare(reserveAssets);
+          // Build the RebalanceContext: currency weights come from the
+          // computed monetary state; layer weights + bullion φ_t come
+          // from the live reserveAssets vs the dynamic target.
+          const currentWeights = new Map<string, number>();
+          const targetWeights = new Map<string, number>();
+          for (const w of monetary.weights) {
+            currentWeights.set(w.code, w.normalizedWeight);
+            targetWeights.set(w.code, w.structuralWeight);
+          }
+          const layerRanges = new Map<string, { min: number; max: number }>();
+          layerRanges.set("fiat", LAYER_RANGES.fiat);
+          layerRanges.set("bullion", LAYER_RANGES.bullion);
+          layerRanges.set("stablecoin", LAYER_RANGES.stablecoin);
+          const ctx: RebalanceContext = {
+            currentWeights,
+            targetWeights,
+            reserveRatio: monetary.reserveRatio.ratio,
+            lcr: monetary.lcr.ratio,
+            rebalanceThreshold: 0.02,
+            layerWeights: currentLayerWeights,
+            layerRanges,
+            bullionGoldShare: currentBullionGoldShare,
+            bullionGoldRange: BULLION_GOLD_BAND,
+          };
+          const plan = generateCrossAssetRebalancePlan(
+            ctx,
+            currentLayerWeights,
+            targetLayerWeights,
+            monetary.reserves.market
+          );
+          return {
+            triggers: plan.triggers,
+            actions: plan.actions.map((a) => ({
+              asset: a.asset,
+              assetClass: a.assetClass,
+              action: a.action,
+              amount: a.amount,
+              executionMethod: a.executionMethod,
+              pairId: a.pairId,
+              reason: a.reason,
+            })),
+            estimatedCost: plan.estimatedCost,
+            feeBreakdown: plan.feeBreakdown,
+            liquidityImpact: plan.liquidityImpact,
+            reserveRatioImpact: plan.reserveRatioImpact,
+            approvalRequired: plan.approvalRequired,
+            phased: plan.phased,
+            // Summary helpers for the UI:
+            currentLayerWeights: Object.fromEntries(currentLayerWeights),
+            targetLayerWeights: Object.fromEntries(targetLayerWeights),
+            currentBullionGoldShare,
+            targetBullionGoldShare: allocation.goldShare,
+          };
+        } catch (rbErr) {
+          // Fail closed — never break the public transparency API over
+          // rebalance-plan evaluation.
+          return {
+            error: `Rebalance plan evaluation failed: ${rbErr instanceof Error ? rbErr.message : "unknown"}`,
+          };
+        }
+      })(),
       formation: {
         submissionCount,
         milestones: FORMATION_MILESTONES,
