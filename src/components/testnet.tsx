@@ -234,6 +234,16 @@ export default function TestnetDashboard() {
   // amount, participant, and NAV-at-time. Null when the modal is closed.
   const [selectedOp, setSelectedOp] = useState<Operation | null>(null);
 
+  // Task 5-a — Live unified NAV from /api/nav. Displayed alongside the
+  // testnet simulator NAV so users understand the difference:
+  //   • Live NAV = the real institutional price (~$1.04) — what /api/mint,
+  //     /api/redeem, /api/contract/info, the public-site hero and every
+  //     other "1 MTQ = $X" surface in the app report.
+  //   • Testnet simulator NAV = how the testnet mints/redeems affect the
+  //     simulator state (starts at $1.00 from the $50M genesis deposit).
+  const [liveNav, setLiveNav] = useState<number | null>(null);
+  const [liveRR, setLiveRR] = useState<number | null>(null);
+
   const fetchState = useCallback(async () => {
     try {
       const res = await fetch("/api/testnet", { cache: "no-store" });
@@ -244,11 +254,36 @@ export default function TestnetDashboard() {
     finally { setLoading(false); }
   }, []);
 
+  // Task 5-a — fetch the unified live NAV on mount (and refresh every 30s
+  // alongside the simulator state). Does NOT replace the simulator NAV —
+  // both are surfaced so the user sees the real institutional price vs
+  // the testnet simulator's mechanical state.
+  const fetchLiveNav = useCallback(async () => {
+    try {
+      const res = await fetch("/api/nav", { cache: "no-store" });
+      if (!res.ok) return;
+      const data = (await res.json()) as { navM?: number; reserveRatio?: number };
+      if (typeof data.navM === "number" && Number.isFinite(data.navM) && data.navM > 0) {
+        setLiveNav(data.navM);
+      }
+      if (typeof data.reserveRatio === "number" && Number.isFinite(data.reserveRatio) && data.reserveRatio > 0) {
+        setLiveRR(data.reserveRatio);
+      }
+    } catch {
+      /* keep last — the simulator NAV is still valid */
+    }
+  }, []);
+
   useEffect(() => {
     fetchState();
+    fetchLiveNav();
     const id = setInterval(fetchState, 15_000); // auto-refresh 15s
-    return () => clearInterval(id);
-  }, [fetchState]);
+    const navId = setInterval(fetchLiveNav, 30_000); // live NAV refresh 30s
+    return () => {
+      clearInterval(id);
+      clearInterval(navId);
+    };
+  }, [fetchState, fetchLiveNav]);
 
   const seed = async () => {
     try {
@@ -358,6 +393,67 @@ export default function TestnetDashboard() {
       </section>
 
       <div className="mx-auto w-full max-w-7xl px-5 pb-20 sm:px-8">
+        {/* Task 5-a — Live unified NAV banner. Surfaces the REAL
+            institutional price (from /api/nav) alongside the testnet
+            simulator NAV so users understand the difference:
+              • Live NAV — what /api/mint, /api/redeem, the public-site
+                hero, the operating-system dashboard and every other
+                "1 MTQ = $X" surface report (single source of truth).
+              • Testnet simulator NAV — how the simulator's mints/redeems
+                move the mechanical state (starts at $1.00 from the $50M
+                genesis deposit; this page's KPI strip below). */}
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="mb-4 grid gap-3 sm:grid-cols-2"
+        >
+          <div className="glass flex items-center gap-3 rounded-xl border-gold/40 p-4">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-gold/40 bg-gold/10">
+              <TrendingUp className="h-5 w-5 text-gold" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-fg-muted">
+                  Live MTQ NAV
+                </span>
+                <Badge className="border-reserve/40 bg-reserve/10 text-[10px] text-reserve hover:bg-reserve/10">
+                  unified · /api/nav
+                </Badge>
+              </div>
+              <div className="mt-1 font-display text-2xl text-gold tabular-nums">
+                {liveNav !== null ? fmtUsd2(liveNav) : "—"}
+                <span className="ml-2 text-xs font-normal text-fg-muted">/ MTQ</span>
+              </div>
+              <div className="text-[11px] text-fg-muted">
+                Real institutional price · RR {liveRR !== null ? liveRR.toFixed(2) + "%" : "—"}
+              </div>
+            </div>
+          </div>
+          <div className="glass flex items-center gap-3 rounded-xl border-line p-4">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-line bg-ink-card">
+              <Activity className="h-5 w-5 text-fg-muted" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-fg-muted">
+                  Testnet Simulator NAV
+                </span>
+                <Badge className="border-gold/40 bg-gold/10 text-[10px] text-gold hover:bg-gold/10">
+                  simulator
+                </Badge>
+              </div>
+              <div className="mt-1 font-display text-2xl text-foreground tabular-nums">
+                {state ? fmtUsd2(state.nav) : "—"}
+                <span className="ml-2 text-xs font-normal text-fg-muted">/ MTQ</span>
+              </div>
+              <div className="text-[11px] text-fg-muted">
+                How mints/redeems affect the simulator state · starts at $1.00
+              </div>
+            </div>
+          </div>
+        </motion.div>
+
         {/* KPI strip with gauge */}
         <div className="grid gap-4 lg:grid-cols-[1fr_1fr_1fr_auto]">
           {loading || !state ? (
@@ -369,9 +465,9 @@ export default function TestnetDashboard() {
             </>
           ) : (
             <>
-              <Kpi icon={Boxes} label="Supply" value={<AnimatedNumber value={state.supply} format={(n) => fmtMtq(n) + " MTQ"} />} sub="MTQ in circulation" />
-              <Kpi icon={Banknote} label="Reserve Value" value={<AnimatedNumber value={state.reserveValue} format={fmtUsd} />} sub="Across 4 tiers" />
-              <Kpi icon={TrendingUp} label="NAV" value={<AnimatedNumber value={state.nav} format={fmtUsd2} />} sub="Per MTQ (USD)" />
+              <Kpi icon={Boxes} label="Supply" value={<AnimatedNumber value={state.supply} format={(n) => fmtMtq(n) + " MTQ"} />} sub="Simulator · MTQ in circulation" />
+              <Kpi icon={Banknote} label="Reserve Value" value={<AnimatedNumber value={state.reserveValue} format={fmtUsd} />} sub="Simulator · across 4 tiers" />
+              <Kpi icon={TrendingUp} label="NAV (simulator)" value={<AnimatedNumber value={state.nav} format={fmtUsd2} />} sub="Per MTQ (USD) · see live NAV above" />
               <div className="glass flex items-center justify-center rounded-xl p-3">
                 <RatioGauge ratio={state.reserveRatio} />
               </div>

@@ -19,6 +19,16 @@
  *   §3  Volatility comparison — CSS bar chart (USDC, USD, MTQ, Gold, BTC)
  *   §4  Closing statement — three monetary functions satisfied
  *
+ * Task 5-a — Price Unification:
+ *   The KEY_METRICS "Reserve Ratio" badge and the headline NAV hint
+ *   previously hardcoded `102.07%` and `$1.0419` (the stress-test
+ *   baseline). Now both values are fetched LIVE from `/api/nav` (the
+ *   unified source of truth) so this section always agrees with the
+ *   hero, the testnet banner, the operating-system dashboard and
+ *   every other "1 MTQ = $X" surface in the app. The stress-test
+ *   RESULTS themselves (scenario shocked NAVs) stay hardcoded — they
+ *   are historical test outputs, not live data.
+ *
  * Theming:
  *   Reads the institutional palette tokens (--ink-soft, --gold,
  *   --reserve, --line, --fg-muted) so it adapts to dark/light/cyber
@@ -28,6 +38,7 @@
  * Task ID: 3-e  ·  Agent: Proof-of-Strength UI Builder
  * ============================================================ */
 
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import {
   ShieldCheck,
@@ -1145,7 +1156,57 @@ function VolatilityComparison() {
  * Main section
  * ============================================================ */
 
+// Task 5-a — Stress-test baseline NAV (used as the fallback BEFORE the
+// live `/api/nav` fetch resolves, and for the stress-scenario table
+// itself which documents the historical test run). The headline and the
+// "Reserve Ratio" badge prefer the live value when available.
+const STRESS_BASELINE_NAV = 1.0419;
+const STRESS_BASELINE_RR = 102.07;
+
 export function StressTestProof() {
+  // Task 5-a — Live unified NAV. Null until /api/nav responds; the
+  // KEY_METRICS "Reserve Ratio" badge and the headline NAV hint fall
+  // back to the stress-test baseline (102.07% / $1.0419) while loading
+  // or if the fetch fails. The stress-scenario TABLE itself stays
+  // hardcoded — those are historical test outputs, not live data.
+  const [liveNav, setLiveNav] = useState<number | null>(null);
+  const [liveRR, setLiveRR] = useState<number | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/nav", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (cancelled || !data) return;
+        if (typeof data.navM === "number" && Number.isFinite(data.navM) && data.navM > 0) {
+          setLiveNav(data.navM);
+        }
+        if (typeof data.reserveRatio === "number" && Number.isFinite(data.reserveRatio) && data.reserveRatio > 0) {
+          setLiveRR(data.reserveRatio);
+        }
+      })
+      .catch(() => {
+        /* keep fallback — the stress-test baseline is still valid */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Resolve the display values: prefer live, fall back to baseline.
+  const displayRR = liveRR ?? STRESS_BASELINE_RR;
+  const displayNav = liveNav ?? STRESS_BASELINE_NAV;
+
+  // Rebuild the KEY_METRICS array with the resolved Reserve Ratio badge
+  // value (kept here rather than mutating the module-level constant so
+  // the live fetch can update the displayed number without a re-render
+  // of every metric card).
+  const keyMetrics: KeyMetric[] = KEY_METRICS.map((m) =>
+    m.label === "Reserve Ratio"
+      ? { ...m, value: `${displayRR.toFixed(2)}%`, caption: liveRR ? "Live · above 102% target" : m.caption }
+      : m
+  );
+
   return (
     <section
       id="s-proof"
@@ -1167,13 +1228,27 @@ export function StressTestProof() {
             We ran gold rallies and crashes, multi-currency collapses, stablecoin
             depegs, and five historical crises against the live MTQ monetary state.
             Every scenario cleared the constitutional invariants — and the burn-and-redeem
-            path stayed open in <span className="text-reserve">all of them</span>.
+            path stayed open in <span className="text-reserve">all of them</span>.{" "}
+            {/* Task 5-a — surface the live unified NAV so this section agrees
+                with the hero / testnet banner / dashboard. */}
+            <span className="text-foreground">
+              Live MTQ NAV:{" "}
+              <span className="font-semibold text-gold">${displayNav.toFixed(4)}</span>
+              {" "}·{" "}
+              Reserve Ratio:{" "}
+              <span className={displayRR >= 100 ? "font-semibold text-reserve" : "font-semibold text-amber-600 dark:text-amber-400"}>
+                {displayRR.toFixed(2)}%
+              </span>
+              {liveNav ? (
+                <span className="text-fg-muted"> (live · /api/nav)</span>
+              ) : null}
+            </span>
           </p>
         </Reveal>
 
         {/* §1 — Key metrics */}
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
-          {KEY_METRICS.map((m, i) => (
+          {keyMetrics.map((m, i) => (
             <KeyMetricCard key={m.label} m={m} index={i} />
           ))}
         </div>
@@ -1281,7 +1356,7 @@ export function StressTestProof() {
                   </li>
                 </ul>
                 <p className="mt-4 text-sm text-fg-muted">
-                  Backed by <span className="font-semibold text-gold">102.07% reserves</span>.
+                  Backed by <span className="font-semibold text-gold">{displayRR.toFixed(2)}% reserves</span>.
                   Minting halts the instant the ratio drops below 100%, but{" "}
                   <span className="font-semibold text-reserve">redemption never pauses</span>{" "}
                   — every MTQ holder can always exit at the live NAV.

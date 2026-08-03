@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { db, ensureSchema } from "@/lib/db";
 import { enforceRateLimit } from "@/lib/rate-limit";
 import { TRANSFER_FEE_CAP } from "@/lib/monetary-engine-v19";
+import { computeLiveNav } from "@/lib/nav-compute";
 
 /**
  * POST /api/transfer — Record a transfer (peer-to-peer MTQ movement).
@@ -22,11 +23,22 @@ import { TRANSFER_FEE_CAP } from "@/lib/monetary-engine-v19";
  *     to confirm the tx is mined and the from/to/amount match before
  *     persisting. For now, the operator can spot-check via the explorer.
  *
+ * Task 5-a — Price Unification:
+ *   Previously this route pinned `navUsd = 1.0` ("testnet NAV is pinned
+ *   at 1.0 (1 MTQ = 1 USD)"), which broke §36.2/§36.3 conversion formulas
+ *   and made the transfer fee calculation inconsistent with the displayed
+ *   NAV on every other page. Now we read the UNIFIED dynamic NAV from
+ *   `computeLiveNav()` (the same source /api/mint, /api/redeem,
+ *   /api/contract/info, /api/transparency, /api/nav, and the public-site
+ *   hero all use), so the fee is computed against the actual market NAV
+ *   (~$1.04) and the response echoes that NAV so the frontend can display
+ *   it alongside the recorded transfer.
+ *
  * Request body:
  *   { fromAddress: string, toAddress: string, amount: string (wei), txHash: string, blockNumber?: number }
  *
  * Returns:
- *   { ok: true, txHash, type: "transfer", amount, fee, recorded: true }
+ *   { ok: true, txHash, type: "transfer", amount, mtqAmount, nav, fee, feeUsd8Dec, feeWei, recorded: true }
  */
 export async function POST(req: Request) {
   // Public endpoint, but rate-limited (20 transfers/min/IP).
@@ -102,8 +114,24 @@ export async function POST(req: Request) {
   try {
     await ensureSchema();
 
-    // Testnet NAV is pinned at 1.0 (1 MTQ = 1 USD).
-    const navUsd = 1.0;
+    // Task 5-a — Dynamic unified NAV (replaces the previous `navUsd = 1.0`
+    // pin). Reads from `computeLiveNav()` so the transfer fee is computed
+    // against the SAME market NAV that /api/mint, /api/redeem,
+    // /api/contract/info, /api/transparency, /api/nav and the public-site
+    // hero all report. Falls back to 1.0 ONLY if the oracle/engine fail
+    // (so a transient oracle outage does not block transfers — the fee
+    // is informational only anyway).
+    let navUsd = 1.0;
+    let navReserveRatio = 0;
+    try {
+      const navResult = await computeLiveNav();
+      if (Number.isFinite(navResult.navM) && navResult.navM > 0) {
+        navUsd = navResult.navM;
+        navReserveRatio = navResult.reserveRatio;
+      }
+    } catch (navErr) {
+      console.warn("[transfer] computeLiveNav failed, using fallback navUsd=1.0:", navErr);
+    }
 
     // Convert wei amount to MTQ (18 decimals), then to USD.
     const amountBigInt = BigInt(amount);
@@ -115,7 +143,7 @@ export async function POST(req: Request) {
     // transparency dashboard can show the projected fee revenue.
     const feeUsd = Math.min(mtqAmount * navUsd * 0.0001, TRANSFER_FEE_CAP);
 
-    // Convert USD fee to wei (treating 1 MTQ = 1 USD on testnet).
+    // Convert USD fee to MTQ wei (using the dynamic NAV — 1 MTQ = navUsd USD).
     const feeWei = feeUsd > 0 ? toWei(feeUsd / navUsd, 18) : "0";
     const feeUsd8Dec = toFixedDecimals(feeUsd, 8);
 
@@ -148,6 +176,7 @@ export async function POST(req: Request) {
       amount,
       mtqAmount,
       nav: navUsd,
+      reserveRatio: navReserveRatio,
       fee: feeUsd,
       feeUsd8Dec,
       feeWei,

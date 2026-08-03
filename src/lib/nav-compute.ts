@@ -35,6 +35,7 @@ import {
   computeMonetaryStateV19,
   HAIRCUTS,
   type ReserveAsset,
+  type MonetaryStateV19,
 } from "./monetary-engine-v19";
 import { getLiveOracleData, toOracleSnapshot } from "./live-oracle";
 import { getOracleSnapshot } from "./oracle-client";
@@ -82,6 +83,23 @@ export interface NavResult {
   reserveAdjustedUsd: number;
   /** Sources used by the live oracle (for transparency/debug) */
   sources: string[];
+  /**
+   * The v19.0.2 baseline reserveAssets array (cash $29.25M / sov $13.5M /
+   * gold 2,122.86oz / silver 36,758oz / stablecoin $2.7M) revalued at the
+   * live gold + silver spot price. Exposed so that `/api/contract/info`
+   * and `/api/nav` can publish the exact same composition that produced
+   * the NAV (Task 5-a unification — single source of truth).
+   */
+  reserveAssets: ReserveAsset[];
+  /**
+   * The full v19.0 MonetaryStateV19 object computed against the baseline
+   * composition + live oracle. Exposed so that `/api/contract/info` can
+   * surface reserves / lcr / cri / weights / basketVerification /
+   * portfolioDuration / shockAbsorber without having to recompute them
+   * against a divergent supply (Task 5-a — every "1 MTQ = $X" surface
+   * reads from the SAME monetary state).
+   */
+  state: MonetaryStateV19;
 }
 
 /**
@@ -233,6 +251,8 @@ export async function computeLiveNav(): Promise<NavResult> {
     reserveMarketUsd: monetary.reserves.market,
     reserveAdjustedUsd: monetary.reserves.adjusted,
     sources: liveData.sources,
+    reserveAssets,
+    state: monetary,
   };
 }
 

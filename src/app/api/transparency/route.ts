@@ -4,6 +4,7 @@ import { deriveState } from "@/lib/testnet-engine";
 import { computeMonetaryStateV19, mintFee, redemptionFee, HAIRCUTS, MAX_DURATION, type ReserveAsset } from "@/lib/monetary-engine-v19";
 import { getLiveOracleData, toOracleSnapshot } from "@/lib/live-oracle";
 import { getOracleSnapshot } from "@/lib/oracle-client";
+import { computeLiveNav } from "@/lib/nav-compute";
 import {
   computeSDPEmergency,
   generateCrossAssetRebalancePlan,
@@ -23,6 +24,19 @@ import {
 // Specification. Returns: 3-layer reserves, 3 NAVs, Reserve Ratio (§4), LCR (§5),
 // duration (§8), CRI (§9), 8-currency basket with momentum/reversion/liquidity,
 // shock absorber (EWMA), basket verification (§22A), and fee schedule.
+//
+// Task 5-a — Price Unification:
+//   Previously the `monetary.nav.market` field was computed against the
+//   testnet simulator's supply (state.supply = 50M from the genesis
+//   deposit), which produced a NAV different from /api/mint (~$1.04
+//   against the 54M v19.0.2 baseline supply). Now `monetary.nav.*`
+//   and `monetary.reserveRatio.ratio` are OVERRIDDEN with the unified
+//   live NAV from `computeLiveNav()` (the same source /api/mint,
+//   /api/redeem, /api/contract/info, /api/nav and the public-site hero
+//   all consume). The `testnet.nav` field from `deriveState()` is kept
+//   untouched so the simulator's mechanical state (how mints/redeems
+//   move the testnet ledger) is still surfaced — but it is no longer
+//   reported as the canonical "1 MTQ = $X" price.
 export async function GET() {
   try {
     await ensureSchema();
@@ -151,6 +165,41 @@ export async function GET() {
       ewmaReturns // ← real 30-day return series (was `[]` before this fix)
     );
 
+    // ---- Task 5-a — UNIFIED NAV OVERRIDE ----
+    // The `monetary` object above is computed against the testnet
+    // simulator's supply (state.supply = 50M from the genesis deposit)
+    // so its `nav.market` ≠ /api/mint's NAV (which uses the 54M v19.0.2
+    // baseline supply). To make every "1 MTQ = $X" surface in the app
+    // agree, we override the NAV-related fields with the unified live
+    // NAV from `computeLiveNav()`. The other monetary fields (LCR, CRI,
+    // currency weights, basket verification, etc.) stay from the
+    // testnet-derived monetary state since they don't directly impact
+    // the displayed NAV price.
+    //
+    // `testnet.nav` (below) still reports the simulator's mechanical
+    // NAV so the dashboard can show "how mints/redeems move the
+    // simulator state" — but `monetary.nav.market` is now the
+    // canonical price.
+    let unifiedNavM = monetary.nav.market;
+    let unifiedNavL = monetary.nav.prudential;
+    let unifiedNavStress = monetary.nav.stress;
+    let unifiedRR = monetary.reserveRatio.ratio;
+    let unifiedReserveMarketUsd = monetary.reserves.market;
+    let unifiedReserveAdjustedUsd = monetary.reserves.adjusted;
+    try {
+      const liveNav = await computeLiveNav();
+      unifiedNavM = liveNav.navM;
+      unifiedNavL = liveNav.navL;
+      unifiedNavStress = liveNav.navStress;
+      unifiedRR = liveNav.reserveRatio;
+      unifiedReserveMarketUsd = liveNav.reserveMarketUsd;
+      unifiedReserveAdjustedUsd = liveNav.reserveAdjustedUsd;
+    } catch (navErr) {
+      // Fail closed — keep the testnet-derived monetary.nav values so
+      // the transparency API still returns a usable response.
+      console.warn("[transparency] computeLiveNav failed, falling back to testnet-derived NAV:", navErr);
+    }
+
     // §33 Sovereign Default Protection (SDP) — runtime detection wiring.
     // `detectSDP` and `computeSDPEmergency` exist in v19-infrastructure.ts
     // but were never invoked at runtime (Gap 4). We now iterate over the
@@ -200,15 +249,19 @@ export async function GET() {
     return NextResponse.json({
       // §1 Numeraire Independence — Multi-currency NAV
       // 1 MTQ expressed in all 8 basket currencies (§1: NAV_m(m) = FX_{n→m} × NAV_m(n))
+      // Task 5-a: USD base uses the UNIFIED live NAV (from computeLiveNav)
+      // so the multi-currency display agrees with /api/mint, /api/contract/info,
+      // /api/nav and the public-site hero. The previous version used
+      // `state.nav` (the testnet simulator NAV), which gave a different price.
       navMultiCurrency: {
-        USD: parseFloat(state.nav.toFixed(6)),
-        EUR: parseFloat((state.nav * (liveData.fxRates.EUR || 0.87)).toFixed(6)),
-        JPY: parseFloat((state.nav * (1 / (liveData.fxRates.JPY || 0.0063))).toFixed(2)),
-        GBP: parseFloat((state.nav * (liveData.fxRates.GBP || 0.74)).toFixed(6)),
-        CNY: parseFloat((state.nav * (1 / (liveData.fxRates.CNY || 0.14))).toFixed(4)),
-        CHF: parseFloat((state.nav * (liveData.fxRates.CHF || 0.81)).toFixed(6)),
-        AUD: parseFloat((state.nav * (1 / (liveData.fxRates.AUD || 0.67))).toFixed(6)),
-        CAD: parseFloat((state.nav * (1 / (liveData.fxRates.CAD || 0.71))).toFixed(6)),
+        USD: parseFloat(unifiedNavM.toFixed(6)),
+        EUR: parseFloat((unifiedNavM * (liveData.fxRates.EUR || 0.87)).toFixed(6)),
+        JPY: parseFloat((unifiedNavM * (1 / (liveData.fxRates.JPY || 0.0063))).toFixed(2)),
+        GBP: parseFloat((unifiedNavM * (liveData.fxRates.GBP || 0.74)).toFixed(6)),
+        CNY: parseFloat((unifiedNavM * (1 / (liveData.fxRates.CNY || 0.14))).toFixed(4)),
+        CHF: parseFloat((unifiedNavM * (liveData.fxRates.CHF || 0.81)).toFixed(6)),
+        AUD: parseFloat((unifiedNavM * (1 / (liveData.fxRates.AUD || 0.67))).toFixed(6)),
+        CAD: parseFloat((unifiedNavM * (1 / (liveData.fxRates.CAD || 0.71))).toFixed(6)),
         goldPerOz: liveData.goldUsd,
         silverPerOz: silverPrice,
       },
@@ -261,30 +314,37 @@ export async function GET() {
         recentOperations: recent,
       },
       // v19.0 Monetary Engine
+      // Task 5-a — NAV / reserve-ratio fields overridden with the UNIFIED
+      // live NAV from `computeLiveNav()` (the same source /api/mint,
+      // /api/redeem, /api/contract/info, /api/nav and the public-site hero
+      // all consume). The other monetary fields (LCR, CRI, currency weights,
+      // basket verification, etc.) stay from the testnet-derived monetary
+      // state — they describe the simulator's mechanical state and do
+      // not affect the displayed NAV price.
       monetary: {
         specVersion: "v19.0",
         goldUsd: monetary.goldUsd,
-        // §2 Three-layer reserve valuation
+        // §2 Three-layer reserve valuation — overridden with unified totals
         reserves: {
-          market: monetary.reserves.market,
-          adjusted: monetary.reserves.adjusted,
+          market: unifiedReserveMarketUsd,
+          adjusted: unifiedReserveAdjustedUsd,
           liquidation: monetary.reserves.liquidation,
           hierarchyValid: monetary.reserves.hierarchyValid,
         },
-        // §3 Three NAVs
+        // §3 Three NAVs — UNIFIED (Task 5-a)
         nav: {
-          market: monetary.nav.market,
-          prudential: monetary.nav.prudential,
-          stress: monetary.nav.stress,
+          market: unifiedNavM,
+          prudential: unifiedNavL,
+          stress: unifiedNavStress,
           hierarchyValid: monetary.nav.hierarchyValid,
         },
-        // §4 Reserve Ratio
+        // §4 Reserve Ratio — UNIFIED (Task 5-a)
         reserveRatio: {
-          ratio: monetary.reserveRatio.ratio,
+          ratio: unifiedRR,
           redemptionLiability: monetary.reserveRatio.redemptionLiability,
-          adjustedReserve: monetary.reserveRatio.adjustedReserve,
-          marketReserve: monetary.reserveRatio.marketReserve,
-          compliant: monetary.reserveRatio.compliant,
+          adjustedReserve: unifiedReserveAdjustedUsd,
+          marketReserve: unifiedReserveMarketUsd,
+          compliant: unifiedRR >= 100,
           policyTarget: monetary.reserveRatio.policyTarget,
         },
         // §5 LCR

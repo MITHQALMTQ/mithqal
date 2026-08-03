@@ -9,6 +9,7 @@ import { getLiveOracleData, toOracleSnapshot } from "@/lib/live-oracle";
 import { getContractInfo } from "@/lib/contract-reader";
 import { computeSDPEmergency } from "@/lib/v19-infrastructure";
 import { computeDynamicReserveAllocation } from "@/lib/reserve-allocation";
+import { computeLiveNav } from "@/lib/nav-compute";
 
 /**
  * GET /api/reserve/status — public, unauthenticated snapshot of the
@@ -125,8 +126,18 @@ export async function GET() {
     const reserveAssets: ReserveAsset[] = allocation.reserveAssets;
     const totalReserve = liveTotalReserve;
 
-    // Live MTQ supply from the on-chain contract (fallback to testnet baseline).
-    const supply = contractInfo?.totalSupplyDisplay ?? 50_000_000;
+    // Live MTQ supply — the v19.0.2 baseline (54M MTQ) is the
+    // institutional supply used for NAV = R / S. The on-chain ERC-20
+    // totalSupply (≈110 MTQ, exposed below as `contract.totalSupply`)
+    // is only the deployer's initial mint, NOT the circulating supply
+    // — using it for NAV would give $54M / 110 = $490,909 per MTQ.
+    // (Task 5-a — previously this route used `contractInfo?.totalSupplyDisplay`
+    // as the supply, which produced a wildly broken NAV when the on-chain
+    // totalSupply was small. Now we use the unified 54M baseline supply
+    // — the same supply `computeLiveNav()` uses — so this endpoint
+    // agrees with /api/mint, /api/redeem, /api/contract/info, /api/nav,
+    // /api/transparency and the public-site hero.)
+    const supply = 54_000_000;
 
     // Compute the full v19.0 monetary state (3-layer reserves, 3 NAVs, RR).
     const monetary = computeMonetaryStateV19(
@@ -203,26 +214,66 @@ export async function GET() {
       };
     });
 
+    // ---- Task 5-a — UNIFIED NAV OVERRIDE ----
+    // The monetary object above is computed via `computeMonetaryStateV19`
+    // against the dynamic reserve allocation (sovereign + stablecoin
+    // dollar values derived from totalReserve × policy ratios), which
+    // produces a NAV slightly different from `computeLiveNav()` (which
+    // uses the FIXED v19.0.2 baseline composition: $13.5M sovereign +
+    // $2.7M stablecoin). To make every "1 MTQ = $X" surface in the app
+    // agree with /api/mint, /api/redeem, /api/contract/info, /api/nav,
+    // /api/transparency and the public-site hero, we override the NAV
+    // + reserve-ratio fields with the unified values. The `reserves`
+    // array (per-asset composition) stays from the dynamic allocation
+    // since it describes the TARGET allocation, not the price.
+    let unifiedNavM = monetary.nav.market;
+    let unifiedNavL = monetary.nav.prudential;
+    let unifiedNavStress = monetary.nav.stress;
+    let unifiedRR = monetary.reserveRatio.ratio;
+    let unifiedReserveMarketUsd = monetary.reserves.market;
+    let unifiedReserveAdjustedUsd = monetary.reserves.adjusted;
+    let unifiedSupply = supply;
+    try {
+      const liveNav = await computeLiveNav();
+      unifiedNavM = liveNav.navM;
+      unifiedNavL = liveNav.navL;
+      unifiedNavStress = liveNav.navStress;
+      unifiedRR = liveNav.reserveRatio;
+      unifiedReserveMarketUsd = liveNav.reserveMarketUsd;
+      unifiedReserveAdjustedUsd = liveNav.reserveAdjustedUsd;
+      unifiedSupply = liveNav.supply;
+    } catch (navErr) {
+      // Fail closed — keep the locally-computed values so the API still
+      // returns a usable response even if the unified oracle is down.
+      console.warn("[reserve/status] computeLiveNav failed, using locally-computed NAV:", navErr);
+    }
+
     return NextResponse.json({
-      totalReserveUsd: totalReserve,
+      totalReserveUsd: unifiedReserveMarketUsd,
       reserves,
       threeLayer: {
-        market: monetary.reserves.market,
-        adjusted: monetary.reserves.adjusted,
+        market: unifiedReserveMarketUsd,
+        adjusted: unifiedReserveAdjustedUsd,
         liquidation: monetary.reserves.liquidation,
         hierarchyValid: monetary.reserves.hierarchyValid,
       },
+      // Task 5-a — UNIFIED NAV (same as /api/mint, /api/contract/info,
+      // /api/nav, /api/transparency). The locally-computed NAV is
+      // available as a fallback if computeLiveNav fails.
       nav: {
-        market: monetary.nav.market,
-        prudential: monetary.nav.prudential,
-        stress: monetary.nav.stress,
+        market: unifiedNavM,
+        prudential: unifiedNavL,
+        stress: unifiedNavStress,
         hierarchyValid: monetary.nav.hierarchyValid,
       },
       reserveRatio: {
-        ratio: monetary.reserveRatio.ratio,
-        compliant: monetary.reserveRatio.compliant,
+        ratio: unifiedRR,
+        compliant: unifiedRR >= 100,
         policyTarget: monetary.reserveRatio.policyTarget,
       },
+      // Task 5-a — surface the unified supply (54M) so the displayed
+      // NAV = R / S math is verifiable from the response.
+      supply: unifiedSupply,
       // §23-29 Dynamic allocation metadata (Task 4-b). Exposes the same
       // shape the transparency API returns so clients can consume either
       // endpoint uniformly.
@@ -259,7 +310,10 @@ export async function GET() {
       },
       // Latest persisted reserve snapshots from the DB (may be empty initially)
       dbSnapshots: latestReserves,
-      // MTQ on-chain contract info (for cross-reference with the supply used)
+      // MTQ on-chain contract info (for cross-reference with the supply used).
+      // NOTE: `contract.totalSupply` is the ON-CHAIN ERC-20 totalSupply
+      // (≈110 MTQ = deployer's initial mint). It is NOT used for NAV —
+      // the institutional supply (54M) is reported above as `supply`.
       contract: contractInfo
         ? {
             address: contractInfo.address,
@@ -271,6 +325,9 @@ export async function GET() {
             network: contractInfo.network,
           }
         : null,
+      // Task 5-a — surface the unified-source identifier so auditors can
+      // verify the displayed NAV comes from the same path as /api/mint.
+      source: "live-oracle-v19.0.2",
       lastUpdated: new Date().toISOString(),
     });
   } catch (err) {

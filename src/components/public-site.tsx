@@ -61,6 +61,7 @@ import { AnimatedNumber } from "@/components/animated-number";
 import { LiveTimestamp } from "@/components/live-timestamp";
 import { useLanguage } from "@/components/language-provider";
 import { StressTestProof } from "@/components/stress-test-proof";
+import { E2EScenarios } from "@/components/e2e-scenarios";
 
 const Reveal = ({
   children,
@@ -202,10 +203,19 @@ function SiteHero() {
  * Institution's live monetary state right under the hero: total supply,
  * market NAV, reserve ratio, and the live gold spot price.
  *
- * Pulls from the public /api/transparency endpoint (the same one the
- * Transparency dashboard uses), so every number on this page is sourced from
- * a single on-chain-derived, audit-grade API. Falls back to a graceful
- * "live data unavailable" card on fetch failure rather than blocking the page.
+ * Task 5-a — Price Unification:
+ *   The hero NAV previously read `json.monetary?.nav?.market` from
+ *   /api/transparency, which is computed against the testnet simulator's
+ *   supply (state.supply = 50M from the genesis deposit) — giving a NAV
+ *   different from /api/mint (~$1.04 against the 54M baseline supply).
+ *   Now the hero prefers the UNIFIED live NAV from /api/nav (the same
+ *   source /api/mint, /api/redeem, /api/contract/info, the testnet
+ *   banner and the stress-test-proof section all consume). The
+ *   transparency response remains the fallback for the supply / goldUsd
+ *   fields (which do not depend on which supply is used for NAV).
+ *
+ * Falls back to a graceful "live data unavailable" state on fetch
+ * failure rather than blocking the page.
  */
 interface LiveStateData {
   supply: number;
@@ -220,9 +230,9 @@ interface LiveStateData {
 // NOTE: lastUpdate is a static string to prevent hydration mismatch —
 // it's replaced with live data after mount via useEffect.
 const LIVE_FALLBACK: LiveStateData = {
-  supply: 50_000_000,
-  navMarket: 1.0,
-  reserveRatio: 102.34,
+  supply: 54_000_000,
+  navMarket: 1.04,
+  reserveRatio: 102.07,
   goldUsd: 4053.7,
   lastUpdate: "",
 };
@@ -235,17 +245,52 @@ function LiveStateDashboard() {
 
   const fetchData = async () => {
     try {
-      const res = await fetch("/api/transparency", { cache: "no-store" });
+      // Task 5-a — fetch BOTH the unified NAV endpoint AND the
+      // transparency endpoint in parallel. The unified /api/nav is the
+      // single source of truth for "1 MTQ = $X"; transparency is still
+      // used for the supply + goldUsd display fields (which do not
+      // depend on which supply is used for NAV).
+      const [navRes, res] = await Promise.all([
+        fetch("/api/nav", { cache: "no-store" }),
+        fetch("/api/transparency", { cache: "no-store" }),
+      ]);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
       const json = (await res.json()) as {
         testnet?: { supply?: number; nav?: number; reserveRatio?: number; lastUpdate?: string };
         monetary?: { goldUsd?: number; nav?: { market?: number }; reserveRatio?: { ratio?: number } };
         generatedAt?: string;
       };
+
+      // Prefer the UNIFIED live NAV from /api/nav (single source of truth).
+      // Fall back to transparency's monetary.nav.market, then to the
+      // testnet simulator NAV (state.nav) — in that order — so the hero
+      // always shows a number even if one endpoint fails.
+      let liveNav: number | undefined;
+      let liveRR: number | undefined;
+      if (navRes.ok) {
+        try {
+          const navData = (await navRes.json()) as { navM?: number; reserveRatio?: number };
+          if (typeof navData.navM === "number" && Number.isFinite(navData.navM) && navData.navM > 0) {
+            liveNav = navData.navM;
+          }
+          if (typeof navData.reserveRatio === "number" && Number.isFinite(navData.reserveRatio) && navData.reserveRatio > 0) {
+            liveRR = navData.reserveRatio;
+          }
+        } catch {
+          /* fall through to transparency values */
+        }
+      }
+
       const next: LiveStateData = {
         supply: json.testnet?.supply ?? LIVE_FALLBACK.supply,
-        navMarket: json.monetary?.nav?.market ?? json.testnet?.nav ?? LIVE_FALLBACK.navMarket,
+        navMarket:
+          liveNav ??
+          json.monetary?.nav?.market ??
+          json.testnet?.nav ??
+          LIVE_FALLBACK.navMarket,
         reserveRatio:
+          liveRR ??
           json.monetary?.reserveRatio?.ratio ??
           json.testnet?.reserveRatio ??
           LIVE_FALLBACK.reserveRatio,
@@ -1814,6 +1859,14 @@ export default function PublicSite() {
           after the engine explainer so the reader's mental flow is
           "what backs MTQ" → "how the basket works" → "proof it can't break". */}
       <StressTestProof />
+      {/* Task 5-c — End-to-end workflow proof: surfaces the 5 verified E2E
+          trade scenarios (mint → transfer → redeem → verify, with live NAV,
+          FX rates, fees, and constitutional invariants at every checkpoint)
+          right after the stress-test proof so the reader's mental flow is
+          "proof it can't break" → "here's what real users actually do with
+          it". 5/5 scenarios passed · 48/48 invariants hold · 96-99% savings
+          vs traditional banking. */}
+      <E2EScenarios />
       <Governance />
       <Lifecycle />
       <Eligibility />
