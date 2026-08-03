@@ -140,6 +140,30 @@ interface TransparencyState {
     submissionCount: number;
     milestones: Milestone[];
   };
+  // Task 6-b: surface the LIVE v19.0.2 baseline reserve quantities
+  // (fixed physical gold/silver ounces + cash USD) so the Reserve
+  // Breakdown modal can show the unified baseline alongside the
+  // testnet simulator tiers.
+  allocation?: {
+    fiatRatio: number;
+    bullionRatio: number;
+    stablecoinRatio: number;
+    goldShare: number;
+    silverShare: number;
+    volatility: number;
+    fixedPhysicalQuantities?: {
+      goldOz: number;
+      silverOz: number;
+      cashUsd: number;
+    };
+    policyTargets?: {
+      fiat: number;
+      bullion: number;
+      stablecoin: number;
+      goldOfBullion: number;
+      silverOfBullion: number;
+    };
+  };
   monetary?: {
     specVersion?: string;
     goldUsd: number;
@@ -974,9 +998,15 @@ export default function TransparencyDashboard() {
   // to make the feed look "lived-in" — that falsified live data. The
   // /api/transparency values are testnet simulator values; we surface them
   // as-is and label the feed accordingly below.
-  const realisticSupply = state ? state.testnet.supply : 0;
-  const realisticNav = state ? state.testnet.nav : 0;
-  const realisticRatio = state ? state.testnet.reserveRatio : 0;
+  //
+  // AUDIT FIX (Task 6-b): The PRIMARY displayed NAV + RR must come from the
+  // unified live source (state.monetary.nav.market / .reserveRatio.ratio),
+  // NOT the testnet simulator. The simulator values are still used for the
+  // sparkline (historical ops) and are labeled "simulator" in the UI.
+  const realisticSupply = state ? (state.monetary?.reserveRatio ? 54_000_000 : state.testnet.supply) : 0;
+  const realisticNav = state ? (state.monetary?.nav?.market ?? state.testnet.nav) : 0;
+  const realisticRatio = state ? (state.monetary?.reserveRatio?.ratio ?? state.testnet.reserveRatio) : 0;
+  const simulatorNav = state ? state.testnet.nav : 0; // for the "simulator" label
 
   // UI-OVERHAUL-1: sparkline series derived from recentOperations.
   // Walks the operation ledger backwards to reconstruct a cumulative
@@ -2146,6 +2176,31 @@ function SupplyBreakdown({ state }: { state: TransparencyState }) {
 function ReserveValueBreakdown({ state }: { state: TransparencyState }) {
   const tiers = state.testnet.tiers;
   const total = state.testnet.reserveValue;
+  // Task 6-b: LIVE v19.0.2 unified baseline reserves — exposed by
+  // /api/transparency under `allocation.fixedPhysicalQuantities` and
+  // `monetary.reserveRatio.marketReserve`. These are the FIXED physical
+  // quantities (gold/silver ounces) and cash USD that every live NAV
+  // surface (/api/mint, /api/nav, the institution hero, etc.) is
+  // computed against. Showing them here closes the gap where the modal
+  // previously displayed only the testnet simulator's policy-target
+  // split ($25.5M cash / 2,013 oz gold / 35,088 oz silver) which
+  // diverged from the actual unified baseline ($29.25M cash / 2,122.86
+  // oz gold / 36,758 oz silver).
+  const fpq = state.allocation?.fixedPhysicalQuantities;
+  const liveGoldUsd = fpq && state.monetary ? fpq.goldOz * state.monetary.goldUsd : 0;
+  const liveSilverUsd = fpq && state.oracle ? fpq.silverOz * state.oracle.silverUsd : 0;
+  const liveCashUsd = fpq?.cashUsd ?? 0;
+  // Sovereign + stablecoin derived from the dynamic allocation ratios
+  // applied to the live market reserve total (matches what /api/transparency
+  // does in its reserveAssets construction).
+  const liveMarketReserve = state.monetary?.reserves.market ?? 0;
+  const liveStablecoinUsd = state.allocation
+    ? liveMarketReserve * (state.allocation.stablecoinRatio / 100)
+    : 0;
+  const liveSovereignUsd = state.allocation && state.monetary
+    ? (liveMarketReserve - liveCashUsd - liveGoldUsd - liveSilverUsd - liveStablecoinUsd)
+    : 0;
+  const hasLiveBaseline = fpq && liveMarketReserve > 0;
   return (
     <div className="space-y-1.5">
       <ModalRow
@@ -2187,6 +2242,56 @@ function ReserveValueBreakdown({ state }: { state: TransparencyState }) {
           </div>
         ))}
       </div>
+
+      {/* Task 6-b: LIVE v19.0.2 unified baseline reserves */}
+      {hasLiveBaseline ? (
+        <>
+          <ModalSectionLabel>Live v19.0.2 baseline reserves</ModalSectionLabel>
+          <div className="rounded-lg border border-gold/30 bg-gold/[0.04] p-3">
+            <div className="mb-2 text-[10px] leading-relaxed text-fg-muted">
+              The fixed physical quantities every live NAV surface (institution hero,
+              /api/mint, /api/nav) is computed against. Bullion quantities are
+              <span className="text-gold"> constitutionally fixed</span> (Task 2-a
+              invariant); cash USD is the §4 over-collateralization baseline.
+            </div>
+            <div className="space-y-1.5">
+              <ModalRow
+                label="Cash (Tier 1a)"
+                value={fmtUsd(liveCashUsd)}
+                hint="§4 baseline · $29.25M"
+              />
+              <ModalRow
+                label="Sovereign bonds (Tier 1b)"
+                value={fmtUsd(liveSovereignUsd)}
+                hint="Derived · policy target 25% of fiat layer"
+              />
+              <ModalRow
+                label="Gold (Tier 2a)"
+                value={`${fpq!.goldOz.toLocaleString("en-US", { maximumFractionDigits: 2 })} oz`}
+                hint={`≈ ${fmtUsd(liveGoldUsd)} @ $${state.monetary!.goldUsd.toFixed(2)}/oz`}
+              />
+              <ModalRow
+                label="Silver (Tier 2b)"
+                value={`${fpq!.silverOz.toLocaleString("en-US", { maximumFractionDigits: 0 })} oz`}
+                hint={`≈ ${fmtUsd(liveSilverUsd)} @ $${state.oracle!.silverUsd.toFixed(2)}/oz`}
+              />
+              <ModalRow
+                label="Stablecoin (Tier 3)"
+                value={fmtUsd(liveStablecoinUsd)}
+                hint={`Policy target ${state.allocation!.stablecoinRatio}% of total`}
+              />
+              <div className="mt-2 border-t border-line/60 pt-2">
+                <ModalRow
+                  label="Live market reserve (R_m)"
+                  value={fmtUsd(liveMarketReserve)}
+                  hint="Sum of all tiers at live prices"
+                  icon={CheckCircle2}
+                />
+              </div>
+            </div>
+          </div>
+        </>
+      ) : null}
     </div>
   );
 }

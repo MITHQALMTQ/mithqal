@@ -160,17 +160,31 @@ export async function GET() {
           marketValue: a.quantity * a.priceUsd,
           haircut: a.haircut,
         })),
-        // §23 baseline composition summary (v19.0.2 — fixed physical
-        // bullion quantities + $29.25M cash baseline; sovereign and
-        // stablecoin dollar values derived from the policy targets so the
-        // reported "current composition" matches the live reserve total).
-        composition: {
-          cash: 0.50,
-          sovereign: 0.25,
-          gold: 0.15,
-          silver: 0.05,
-          stablecoin: 0.05,
-        },
+        // §23 live composition summary (v19.0.2 — Task 6-a fix).
+        // Previously this field was hardcoded to the §23 policy TARGETS
+        // (cash 50% / sov 25% / gold 15% / silver 5% / stablecoin 5%) and
+        // labeled as the "current composition", which was misleading — the
+        // actual composition (computed from the live reserveAssets revalued
+        // at the live gold + silver price) drifts from the policy targets
+        // as bullion prices move. Now we compute the per-asset-class share
+        // from the SAME reserveAssets array that produced the NAV, so the
+        // displayed composition always matches the displayed price.
+        composition: (() => {
+          const totals: Record<string, number> = {};
+          let grandTotal = 0;
+          for (const a of reserveAssets) {
+            const v = a.quantity * a.priceUsd;
+            totals[a.assetClass] = (totals[a.assetClass] ?? 0) + v;
+            grandTotal += v;
+          }
+          const out: Record<string, number> = {};
+          for (const cls of ["cash", "sovereign", "gold", "silver", "stablecoin"]) {
+            out[cls] = grandTotal > 0
+              ? parseFloat(((totals[cls] ?? 0) / grandTotal).toFixed(6))
+              : 0;
+          }
+          return out;
+        })(),
       },
       // §8 portfolio duration metadata (compliance flag + constitutional max)
       duration: {

@@ -775,10 +775,12 @@ export function OperatingSystem() {
         </div>
 
         {/* Reserve Health Index (composite gauge) + MTQ Price History — between
-            the stats grid and the NAV cards per audit recs #8 and #5. */}
+            the stats grid and the NAV cards per audit recs #8 and #5.
+            Task 6-b: MtqPriceHistory now anchored at the live NAV (was $1.00
+            hardcoded, which misrepresented the actual MTQ price). */}
         <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
           <ReserveHealthGauge monetaryState={monetaryState} />
-          <MtqPriceHistory />
+          <MtqPriceHistory navAnchor={navMarket} />
         </div>
 
         {/* NAV detail */}
@@ -1717,14 +1719,37 @@ function ReserveHealthGauge({ monetaryState }: { monetaryState: {
 } | null }) {
   // Live values from /api/transparency (wired via the monetaryState prop).
   // Falls back to conservative defaults only while the initial fetch is in flight.
-  const rr = monetaryState?.reserveRatio ?? 0;
-  const lcr = (monetaryState?.lcr ?? 0) * 100;        // ratio → %
-  const cri = monetaryState?.cri ?? 0;                 // already 0-100
-  const duration = (monetaryState?.duration ?? 0) * 100; // 0.5 factor → 50
-  const basket = monetaryState?.basket ?? 0;           // already 0-100
+  //
+  // Normalization (matches transparency.tsx ReserveHealthGauge — Task 6-b fix):
+  //   RR (%)       → clamp to [0, 100] (RR > 100 still scores 100, not >100)
+  //   LCR (ratio)  → × 100, capped at 100 (LCR ≥ 1.0 = fully covered → 100)
+  //   CRI (0-100)  → already 0-100 (kept as-is — high CRI lowers score)
+  //   Duration     → (1 - duration / MAX_DURATION) × 100 — INVERSE: a
+  //                  portfolio at the max duration uses all headroom and
+  //                  contributes 0; one at duration 0 contributes 100.
+  //   Basket       → 100 if §22A verification passed, 0 otherwise.
+  // Without these clamps the score blows past 100 (observed: 177/100) because
+  // LCR=6.00 was being multiplied by 100 → 600, and duration=0.12 was being
+  // multiplied by 100 → 12 instead of normalized against MAX_DURATION.
+  const MAX_DURATION = 0.75; // §8 — years (matches monetary-engine-v19.ts)
+  const clamp = (n: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, n));
+
+  // Raw values (for display — what /api/transparency actually returned)
+  const rrRaw = monetaryState?.reserveRatio ?? 0;
+  const lcrRaw = monetaryState?.lcr ?? 0;
+  const criRaw = monetaryState?.cri ?? 0;
+  const durationRaw = monetaryState?.duration ?? 0;
+  const basket = monetaryState?.basket ?? 0;
+
+  // Normalized values (for score calculation)
+  const rr = clamp(rrRaw, 0, 100);
+  const lcr = Math.min(100, lcrRaw * 100);
+  const cri = clamp(criRaw, 0, 100);
+  const durationFrac = MAX_DURATION > 0 ? Math.min(1, durationRaw / MAX_DURATION) : 0;
+  const duration = (1 - durationFrac) * 100;
 
   const score = Math.round(
-    rr * 0.4 + lcr * 0.2 + cri * 0.2 + duration * 0.1 + basket * 0.1
+    rr * 0.4 + lcr * 0.2 + cri * 0.2 + duration * 0.1 + basket * 0.1,
   );
 
   const color = score >= 80 ? "#10b981" : score >= 60 ? "#d4af37" : "#ef4444";
@@ -1807,10 +1832,10 @@ function ReserveHealthGauge({ monetaryState }: { monetaryState: {
 
       <div className="mt-2 grid grid-cols-5 gap-1 text-center">
         {[
-          { k: "RR", v: `${rr.toFixed(2)}%`, w: 0.4 },
-          { k: "LCR", v: `${(lcr / 100).toFixed(2)}`, w: 0.2 },
-          { k: "CRI", v: `${cri}`, w: 0.2 },
-          { k: "Dur", v: `${(duration / 100).toFixed(2)}`, w: 0.1 },
+          { k: "RR", v: `${rrRaw.toFixed(2)}%`, w: 0.4 },
+          { k: "LCR", v: `${lcrRaw.toFixed(2)}`, w: 0.2 },
+          { k: "CRI", v: `${criRaw.toFixed(0)}`, w: 0.2 },
+          { k: "Dur", v: `${durationRaw.toFixed(2)}y`, w: 0.1 },
           { k: "Bskt", v: `${basket}%`, w: 0.1 },
         ].map((m) => (
           <div key={m.k} className="rounded border border-line bg-ink-card px-1 py-1.5">
@@ -1824,7 +1849,7 @@ function ReserveHealthGauge({ monetaryState }: { monetaryState: {
       <div className="mt-2 rounded border border-line bg-ink-card p-2 text-[10px] leading-relaxed text-fg-muted">
         <span className="font-semibold text-gold">Formula:</span> Score = RR×0.4 + LCR×0.2 + CRI×0.2 + Duration×0.1 + Basket×0.1
         <br />
-        Live inputs from <code className="font-mono">/api/transparency</code>: RR={rr.toFixed(2)}% · LCR={(lcr/100).toFixed(2)} · CRI={cri} · Duration={(duration/100).toFixed(2)} · Basket={basket}% → {score}/100 ({label}).
+        Live inputs from <code className="font-mono">/api/transparency</code>: RR={rrRaw.toFixed(2)}% · LCR={lcrRaw.toFixed(2)} · CRI={criRaw.toFixed(0)} · Duration={durationRaw.toFixed(2)}y (cap {MAX_DURATION.toFixed(2)}y) · Basket={basket}% → {score}/100 ({label}).
       </div>
       <p className="mt-2 text-[10px] italic text-fg-muted">
         Live data from <code className="font-mono">/api/transparency</code>{" "}
@@ -1836,30 +1861,44 @@ function ReserveHealthGauge({ monetaryState }: { monetaryState: {
 
 /* ---- MTQ / USD Price History (audit rec #5) ----
  *
- * A 24-hour synthetic series anchored at $1.00 with ±0.003 variance. In
- * production, this would be backed by a price oracle publishing the rolling
- * MTQ/USD rate from on-chain swap data — for the dashboard mock, we use a
- * deterministic sin/cos wiggle (SSR-safe, no runtime random).
+ * A 24-hour synthetic series anchored at the LIVE NAV (Task 6-b fix)
+ * with ±0.3% variance. In production, this would be backed by a price
+ * oracle publishing the rolling MTQ/USD rate from on-chain swap data —
+ * for the dashboard mock, we use a deterministic sin/cos wiggle
+ * (SSR-safe, no runtime random).
+ *
+ * Task 6-b: previously anchored at $1.00, which was misleading because
+ * the dashboard's headline NAV (MARKET) is ~$1.04. The chart now anchors
+ * at the live NAV from /api/transparency's `monetary.nav.market` field
+ * (passed in as `navAnchor`). When the anchor is unavailable (initial
+ * load), it falls back to 1.0 and surfaces a "loading" hint.
  */
-function MtqPriceHistory() {
+function MtqPriceHistory({ navAnchor }: { navAnchor: number }) {
+  const anchor = navAnchor > 0 ? navAnchor : 1.0;
   const data = useMemo(() => {
     const pts: { t: string; price: number }[] = [];
+    // Variance scales with the anchor (±0.3% of anchor) so the wiggle is
+    // visually proportional at any NAV level, not a fixed $0.003 band.
+    const variance = anchor * 0.003;
     for (let i = 23; i >= 0; i--) {
       const phase = i * 0.55;
-      const wiggle = (Math.sin(phase) + Math.cos(phase * 0.37)) * 0.0015;
-      pts.push({ t: `T-${i}h`, price: Number((1.0 + wiggle).toFixed(6)) });
+      const wiggle = (Math.sin(phase) + Math.cos(phase * 0.37)) * (variance / 2);
+      pts.push({ t: `T-${i}h`, price: Number((anchor + wiggle).toFixed(6)) });
     }
-    // Pin the final point to the current "live" price.
-    const lastWiggle = (Math.sin(0) + Math.cos(0)) * 0.0015;
-    pts[pts.length - 1].price = Number((1.0 + lastWiggle).toFixed(6));
+    // Pin the final point to the current "live" price (anchor + tiny wiggle).
+    const lastWiggle = (Math.sin(0) + Math.cos(0)) * (variance / 2);
+    pts[pts.length - 1].price = Number((anchor + lastWiggle).toFixed(6));
     return pts;
-  }, []);
+  }, [anchor]);
 
   const currentPrice = data[data.length - 1].price;
   const firstPrice = data[0].price;
   const changePct = ((currentPrice - firstPrice) / firstPrice) * 100;
-  const isUp = currentPrice >= 1.0;
+  const isUp = currentPrice >= anchor;
   const lineColor = isUp ? "#10b981" : "#ef4444";
+  // Y-axis domain: anchor ± 0.5% (matches the ±0.3% wiggle with a small margin).
+  const yLow = Number((anchor * 0.995).toFixed(4));
+  const yHigh = Number((anchor * 1.005).toFixed(4));
 
   return (
     <div className="rounded-xl border border-line bg-ink-soft p-5">
@@ -1899,7 +1938,7 @@ function MtqPriceHistory() {
               fontSize={9}
               tickLine={false}
               width={48}
-              domain={[0.995, 1.005]}
+              domain={[yLow, yHigh]}
               tickFormatter={(v: number) => `$${v.toFixed(3)}`}
             />
             <Tooltip
@@ -1918,7 +1957,7 @@ function MtqPriceHistory() {
       </div>
 
       <div className="mt-2 text-[10px] text-fg-muted">
-        Synthetic 24-hour series anchored at $1.00 (±0.003 variance). Peg status:{" "}
+        Synthetic 24-hour series anchored at the live NAV (${anchor.toFixed(4)}, ±0.3% variance). Peg status:{" "}
         <span className={isUp ? "text-reserve" : "text-destructive"}>{isUp ? "at/above peg" : "below peg"}</span>.
       </div>
       <p className="mt-1 text-[10px] italic text-fg-muted">

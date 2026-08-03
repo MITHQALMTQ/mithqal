@@ -1,12 +1,10 @@
 import { NextResponse } from "next/server";
 import { createHash } from "crypto";
 import { db, ensureSchema } from "@/lib/db";
-import { deriveState } from "@/lib/testnet-engine";
 import {
-  computeMonetaryStateV19,
   HAIRCUTS,
-  type ReserveAsset,
 } from "@/lib/monetary-engine-v19";
+import { computeLiveNav } from "@/lib/nav-compute";
 import { getLiveOracleData, toOracleSnapshot } from "@/lib/live-oracle";
 import { getOracleSnapshot } from "@/lib/oracle-client";
 import { getConstantsVersion } from "@/lib/v19-infrastructure";
@@ -62,48 +60,31 @@ export async function POST(req: Request): Promise<Response> {
   try {
     await ensureSchema();
 
-    /* ---- Compute the live monetary state (same wiring as /api/transparency) ---- */
-    const [ops] = await Promise.all([db.testnetOperation.findMany({ orderBy: { createdAt: "asc" } })]);
-    const state = deriveState(ops);
-
-    const liveData = await getLiveOracleData();
+    /* ---- Compute the live monetary state via the UNIFIED computeLiveNav()
+     * ---- Task 6-a fix — previously this route built its own reserveAssets
+     * array (50/25/15/5/5 dollar split with price-derived gold/silver
+     * quantities, the Task 2-a anti-pattern) and used `state.supply` (50M
+     * testnet simulator supply) for NAV = R/S. That caused the published
+     * proof attestation's `nav` and `reserveRatio` values to disagree with
+     * every "1 MTQ = $X" surface on the site (which all read from
+     * computeLiveNav() against the 54M v19.0.2 baseline). Now we use the
+     * SAME source as /api/mint, /api/redeem, /api/contract/info,
+     * /api/transparency, /api/reserve/status and /api/nav — closing the
+     * audit-trail gap so the daily cryptographic PoR matches the displayed
+     * price byte-for-byte.
+     *
+     * The live oracle snapshot is fetched alongside so the §42.2 metadata
+     * (oracle config hash, block height, etc.) references the SAME live
+     * prices that produced the NAV. The metadata hash is informational; the
+     * canonical proof values come exclusively from `computeLiveNav()`. */
+    const [navResult, liveData, oracleSnapshotData] = await Promise.all([
+      computeLiveNav(),
+      getLiveOracleData(),
+      getOracleSnapshot(),
+    ]);
     const oracle = toOracleSnapshot(liveData);
-    const oracleSnapshotData = await getOracleSnapshot();
-
-    const totalReserve = state.reserveValue || 50_000_000;
-    const goldPrice = liveData.goldUsd;
-    const silverPrice = oracleSnapshotData.silverUsd > 0 ? oracleSnapshotData.silverUsd : 58.76;
-
-    const reserveAssets: ReserveAsset[] = [
-      { id: "cash-1", name: "Central-bank cash", assetClass: "cash", quantity: totalReserve * 0.50, priceUsd: 1, haircut: HAIRCUTS.cash, counterpartyScore: 1.00, stressCoefficient: 0.95, modifiedDuration: 0 },
-      { id: "sov-1", name: "US T-bills ≤1yr", assetClass: "sovereign", quantity: totalReserve * 0.25, priceUsd: 1, haircut: HAIRCUTS.sovereign, counterpartyScore: 0.99, stressCoefficient: 0.90, modifiedDuration: 0.5 },
-      { id: "gold-1", name: "Allocated gold", assetClass: "gold", quantity: (totalReserve * 0.15) / goldPrice, priceUsd: goldPrice, haircut: HAIRCUTS.gold, counterpartyScore: 1.00, stressCoefficient: 0.85, modifiedDuration: 0 },
-      { id: "silver-1", name: "Allocated silver", assetClass: "silver", quantity: (totalReserve * 0.05) / silverPrice, priceUsd: silverPrice, haircut: HAIRCUTS.silver, counterpartyScore: 1.00, stressCoefficient: 0.80, modifiedDuration: 0 },
-      { id: "stab-1", name: "Regulated stablecoins", assetClass: "stablecoin", quantity: totalReserve * 0.05, priceUsd: 1, haircut: HAIRCUTS.stablecoin, counterpartyScore: 0.96, stressCoefficient: 0.80, modifiedDuration: 0 },
-    ];
-
-    const goldSeries = (oracle as { goldPriceSeries?: number[] }).goldPriceSeries ?? [];
-    const ewmaReturns: number[] = [];
-    for (let i = 1; i < goldSeries.length; i++) {
-      const prev = goldSeries[i - 1];
-      const curr = goldSeries[i];
-      if (prev > 0 && curr > 0) ewmaReturns.push(Math.log(curr / prev));
-    }
-
-    const monetary = computeMonetaryStateV19(
-      oracle,
-      reserveAssets,
-      state.supply || 50_000_000,
-      {
-        hqla: totalReserve * 0.60,
-        expectedRedemptions: (state.supply || 50_000_000) * 0.10,
-        committedInflows: 0,
-        operationalAdjustments: 0,
-      },
-      { liquidity: 20, fx: 30, custody: 25, counterparty: 40, operational: 15 },
-      0.015,
-      ewmaReturns,
-    );
+    const monetary = navResult.state;
+    const reserveAssets = navResult.reserveAssets;
 
     /* ---- Derive the 7 proof values ---- */
     const reserveRatio = monetary.reserveRatio.ratio;

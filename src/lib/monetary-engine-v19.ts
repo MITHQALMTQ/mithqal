@@ -414,10 +414,32 @@ export function shockAbsorberFactor(volatility: number): number {
   const v = fp(volatility);
   if (fpLte(v, fp(V_NORMAL))) return 1.0;
   if (fpGte(v, fp(V_HIGH))) return 0.5;
-  // A_t = 1.0 - (v - V_NORMAL) / (V_HIGH - V_NORMAL)
+  // §17.4 LINEAR interpolation from (V_NORMAL, 1.0) to (V_HIGH, 0.5).
+  //
+  //   A_t = 1.0 - (v - V_NORMAL) / (V_HIGH - V_NORMAL) × (1.0 - 0.5)
+  //       = 1.0 - 0.5 × (v - V_NORMAL) / (V_HIGH - V_NORMAL)
+  //
+  // MATH AUDIT FIX (Task 6-c, 2026-08-25): The previous implementation was
+  //   A_t = 1.0 - (v - V_NORMAL) / (V_HIGH - V_NORMAL)
+  // which maps [0.02, 0.05] → [1.0, 0.0] (NOT [1.0, 0.5]). The boundary
+  // value at v=0.05 only happened to be correct because of the early-return
+  // guard `if (fpGte(v, fp(V_HIGH))) return 0.5;`; the INTERIOR values were
+  // wrong (e.g. A_t(0.035) returned 0.5 instead of 0.75; A_t(0.03) returned
+  // 0.6667 instead of 0.8333). The corrected formula multiplies the
+  // proportional position by the actual attenuation range (1.0 - 0.5 = 0.5),
+  // so the linear interpolation correctly maps [0.02, 0.05] → [1.0, 0.5].
+  //
+  // Verification:
+  //   v=0.020: A_t = 1.0 - 0 × 0.5     = 1.0   ✓ (low vol, no attenuation)
+  //   v=0.030: A_t = 1.0 - (1/3)×0.5   = 0.8333 ✓
+  //   v=0.035: A_t = 1.0 - 0.5 × 0.5   = 0.75  ✓ (midpoint)
+  //   v=0.050: A_t = 1.0 - 1.0 × 0.5   = 0.5   ✓ (high vol, max attenuation)
   const numerator = fpSub(v, fp(V_NORMAL));
   const denominator = fpSub(fp(V_HIGH), fp(V_NORMAL));
-  return fpToNumber(fpSub(fp(1.0), fpDiv(numerator, denominator)));
+  const proportionalPosition = fpDiv(numerator, denominator); // ∈ (0, 1)
+  const attenuationRange = fpSub(fp(1.0), fp(0.5)); // 0.5
+  const attenuation = fpMul(proportionalPosition, attenuationRange);
+  return fpToNumber(fpSub(fp(1.0), attenuation));
 }
 
 /**
