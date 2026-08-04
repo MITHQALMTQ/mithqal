@@ -767,9 +767,14 @@ export const TRANSFER_FEE_CAP = 1000;
 export const CUSTODY_FEE_BPS_ANNUAL = 10;
 
 export function mintFee(amountUsd: number): number {
+  // §9.1 — Guard against negative/NaN/zero amounts (Task 7-c fix).
+  // Negative amounts previously returned negative fees (a vulnerability).
+  if (!Number.isFinite(amountUsd) || amountUsd <= 0) return 0;
   return Math.min(amountUsd * (MINT_FEE_BPS / 10000), MINT_FEE_CAP);
 }
 export function redemptionFee(claimUsd: number): number {
+  // §9.2 — Guard against negative/NaN/zero amounts (Task 7-c fix).
+  if (!Number.isFinite(claimUsd) || claimUsd <= 0) return 0;
   return Math.min(claimUsd * (REDEEM_FEE_BPS / 10000), REDEEM_FEE_CAP);
 }
 

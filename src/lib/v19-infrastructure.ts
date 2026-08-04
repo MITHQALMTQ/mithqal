@@ -560,11 +560,48 @@ export const CONSTITUTIONAL_INVARIANTS: ConstitutionalInvariant[] = [
 export function checkInvariantConflict(proposedAction: string): { violates: boolean; invariant?: string } {
   const invariantNames = CONSTITUTIONAL_INVARIANTS.map((i) => i.name.toLowerCase());
   const action = proposedAction.toLowerCase();
+
+  // Check full invariant name matches (existing logic).
   for (const inv of invariantNames) {
     if (action.includes(inv) || (action.includes("suspend") && action.includes("reserve"))) {
       return { violates: true, invariant: inv };
     }
   }
+
+  // Task 7-c fix: Check symbol-based references to non-amendable constants.
+  // Attackers can bypass the name-based check by using symbols (RR_min, LCR_min,
+  // etc.) instead of full names. The §53 Constants Registry marks certain
+  // constants as non-modifiable (amendable: false) — any proposal to change
+  // these symbols MUST be blocked regardless of phrasing.
+  const nonModifiableSymbols = CONSTITUTIONAL_CONSTANTS
+    .filter((c) => !c.modifiable)
+    .map((c) => c.symbol.toLowerCase());
+  for (const sym of nonModifiableSymbols) {
+    if (action.includes(sym) || action.includes(sym.replace("_", " "))) {
+      const constant = CONSTITUTIONAL_CONSTANTS.find((c) => c.symbol.toLowerCase() === sym);
+      return {
+        violates: true,
+        invariant: `${constant?.name} (${constant?.section}) — non-amendable constant`,
+      };
+    }
+  }
+
+  // Also catch "amend" + any non-amendable constant name.
+  if (action.includes("amend") || action.includes("change") || action.includes("modify") || action.includes("lower") || action.includes("raise") || action.includes("remove")) {
+    for (const c of CONSTITUTIONAL_CONSTANTS) {
+      if (!c.modifiable) {
+        const symLower = c.symbol.toLowerCase();
+        const nameLower = c.name.toLowerCase();
+        if (action.includes(symLower) || action.includes(nameLower)) {
+          return {
+            violates: true,
+            invariant: `${c.name} (${c.section}) — non-amendable constant`,
+          };
+        }
+      }
+    }
+  }
+
   return { violates: false };
 }
 
@@ -1580,6 +1617,29 @@ export const FORBIDDEN_WORDS = [
   "no risk",
   "instant wealth",
   "magic",
+
+  // ---- §46.2 Cat. 11 — Sharia-Critical (Riba / Gharar Prohibition, §49) ----
+  // These terms are ABSOLUTELY FORBIDDEN in any proposal, marketing, or
+  // governance text. Their presence violates the §49 Sharia Governance
+  // framework (riba = interest/usury, gharar = excessive uncertainty).
+  // Found as HIGH-severity vulnerability by Task 7-c adversarial audit.
+  "interest",
+  "lending",
+  "leverage",
+  "usury",
+  "borrow",
+  "loan",
+  "margin",
+  "debt",
+  "credit",
+  "speculation",
+  "gamble",
+  "gambling",
+  "short sell",
+  "short-selling",
+  "derivative",
+  "options contract",
+  "futures contract",
 ] as const;
 
 /**

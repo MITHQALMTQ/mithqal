@@ -62,6 +62,7 @@ import { LiveTimestamp } from "@/components/live-timestamp";
 import { useLanguage } from "@/components/language-provider";
 import { StressTestProof } from "@/components/stress-test-proof";
 import { E2EScenarios } from "@/components/e2e-scenarios";
+import { LiveReadinessDashboard } from "@/components/live-readiness-dashboard";
 
 const Reveal = ({
   children,
@@ -1867,6 +1868,12 @@ export default function PublicSite() {
           it". 5/5 scenarios passed · 48/48 invariants hold · 96-99% savings
           vs traditional banking. */}
       <E2EScenarios />
+      {/* Task 7-d — Live Readiness Dashboard: synthesizes the outputs of
+          the three Task-7 test suites (crypto-economic 7-a, financial
+          soundness 7-b, adversarial 7-c) plus the 5-b stress and E2E
+          suites into a single board the COO/CTO can present externally.
+          165 tests · 154 passed · 0 critical · conditionally ready. */}
+      <LiveReadinessDashboard />
       <Governance />
       <Lifecycle />
       <Eligibility />
