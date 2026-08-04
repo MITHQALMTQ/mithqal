@@ -30,7 +30,7 @@
  *  10. Operational Resilience Tests (RTO, RPO, BCP, DR, cyber)
  *
  * Institutional framing of Mithqal's structure:
- *   • "Capital"   = over-collateralization buffer = R_a − (S × PAR) ≈ $1.62M (3%)
+ *   • "Capital"   = over-collateralization buffer = R_a − (S × PAR) ≈ $2.71M (5%)
  *   • "RWA"       = Σ (asset_market_value × risk_weight)
  *                  cash 0%, sov 20%, gold 50%, silver 50%, stablecoin 20%
  *   • "Total exposure" (leverage ratio denominator) = total reserve value (no netting)
@@ -102,7 +102,7 @@ const BASE_GOLD_USD   = 4076.9;   // USD/oz — live baseline
 const BASE_SILVER_USD = 58.76;    // USD/oz — live baseline
 const SUPPLY          = 54_000_000; // MTQ outstanding
 const PAR             = PAR_VALUE;  // $1.00 / MTQ
-const CASH_USD        = 29_750_000; // v19.0.7: 3% buffer
+const CASH_USD        = 30_850_000; // v19.0.8: 5% buffer (federal CCAR compliance)
 const SOVEREIGN_USD   = 13_500_000;
 const GOLD_OZ         = 2_122.86;
 const SILVER_OZ       = 36_758;
@@ -127,7 +127,7 @@ const RISK_WEIGHTS = {
 } as const;
 
 // Basel III capital stack (CET1 = capital buffer for MTQ)
-const CET1_BUFFER_PCT  = 0.030;   // 3% over-collateralization (v19.0.7)
+const CET1_BUFFER_PCT  = 0.050;   // 5% over-collateralization (v19.0.8 — federal CCAR)
 const CET1_BUFFER_USD  = SUPPLY * PAR * CET1_BUFFER_PCT; // $1.62M
 const CCB_PCT          = 0.025;   // Capital Conservation Buffer
 const CCYB_FLOOR_PCT   = 0.000;   // Countercyclical buffer minimum

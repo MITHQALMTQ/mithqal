@@ -43,7 +43,7 @@ import { getOracleSnapshot } from "./oracle-client";
 // ---- v19.0.2 baseline reserve composition (Task 3-a) ----
 // Fixed physical quantities for gold/silver (NOT derived from price).
 // Cash/sov/stab are USD-denominated (priceUsd = 1, quantity = USD value).
-const CASH_USD = 29_750_000; // v19.0.7: raised to 3% buffer (was $29.25M / 2%)
+const CASH_USD = 30_850_000; // v19.0.8: raised to 5% buffer (federal CCAR compliance)
 const SOVEREIGN_USD = 13_500_000;
 const GOLD_OZ = 2_122.86; // fixed physical ounces
 const SILVER_OZ = 36_758; // fixed physical ounces

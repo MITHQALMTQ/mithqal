@@ -104,7 +104,7 @@ export const FIXED_SILVER_OZ = 36_758;     // ≈ $2.160M at $58.76/oz
  * The dynamic fiat ratio instead governs the TARGET allocation reported
  * to clients and used by the rebalance engine.
  */
-export const FIXED_CASH_USD = 29_750_000; // v19.0.7: raised from $29.25M to $29.75M (buffer 2%→3%)
+export const FIXED_CASH_USD = 30_850_000; // v19.0.8: raised to 5% buffer (federal CCAR compliance)
 
 // ============================================================
 // Types
