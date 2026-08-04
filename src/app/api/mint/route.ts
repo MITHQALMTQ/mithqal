@@ -181,6 +181,14 @@ export async function POST(req: Request) {
         { status: 400 }
       );
     }
+    // v19.0.7: Minimum mint amount ($1 USD-equivalent) to prevent dust attacks
+    // (millions of tiny mints that bloat the ledger without generating meaningful fees).
+    if (depositUsd < 1.0) {
+      return NextResponse.json(
+        { error: "Minimum mint amount is $1 USD-equivalent.", depositUsd },
+        { status: 400 }
+      );
+    }
     if (depositUsd > 1_000_000_000) {
       return NextResponse.json(
         { error: "Deposit USD-equivalent exceeds the 1B sanity cap." },
@@ -189,7 +197,11 @@ export async function POST(req: Request) {
     }
 
     // ---- §36.2 Mint formula: Minted MTQ = Deposit Value / Current NAV ----
-    const navUsd = navResult.navM; // dynamic market NAV (≈ $1.04 at baseline)
+    // v19.0.7: First-mint bootstrap guard — if NAV is 0/NaN (impossible at
+    // baseline since supply=54M, but defensive), fall back to PAR ($1.00).
+    const navUsd = navResult.navM > 0 && Number.isFinite(navResult.navM)
+      ? navResult.navM
+      : 1.0; // bootstrap fallback (§4 PAR)
     const mtqAmount = depositUsd / navUsd;
 
     // §9.1 — Mint fee: 0.05% (5 bps), capped at $5,000.

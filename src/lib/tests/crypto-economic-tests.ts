@@ -1075,7 +1075,9 @@ function testMarketMicrostructure(r: TestRunner): void {
     // The protocol's reserves are unaffected (mint adds $1.04, redeem releases $1.04).
     const s0 = baselineState();
     const nav0 = computeState(s0).nav.market;
-    const marketPrice = 1.05; // Secondary market 1% premium
+    // v19.0.7: Market price must be ABOVE NAV for arbitrage to be profitable.
+    // Use a dynamic 2% premium over the live NAV (not a hardcoded $1.05).
+    const marketPrice = nav0 * 1.02; // Secondary market 2% premium over NAV
     const arbitrageSize = 10_000_000; // $10M
     // Mint at NAV, sell at market
     const mint = applyMint(s0, arbitrageSize);
