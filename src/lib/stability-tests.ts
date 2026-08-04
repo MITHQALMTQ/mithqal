@@ -11,7 +11,7 @@ async function runTests() {
   // Cash is $29M (was $27M); gold/silver use FIXED physical quantities (the
   // Task 2-a fix — do NOT derive quantity from price). Other tiers unchanged.
   const reserveAssets = [
-    { id: "cash", name: "cash", assetClass: "cash" as const, quantity: 30_850_000, priceUsd: 1, haircut: 0, counterpartyScore: 1.00, stressCoefficient: 0.95, modifiedDuration: 0 },
+    { id: "cash", name: "cash", assetClass: "cash" as const, quantity: 32_450_000, priceUsd: 1, haircut: 0, counterpartyScore: 1.00, stressCoefficient: 0.95, modifiedDuration: 0 },
     { id: "sov", name: "sov", assetClass: "sovereign" as const, quantity: 13_500_000, priceUsd: 1, haircut: 0.02, counterpartyScore: 0.99, stressCoefficient: 0.90, modifiedDuration: 0.5 },
     { id: "gold", name: "gold", assetClass: "gold" as const, quantity: 2_122.86, priceUsd: goldPrice, haircut: 0.05, counterpartyScore: 1.00, stressCoefficient: 0.85, modifiedDuration: 0 },
     { id: "silver", name: "silver", assetClass: "silver" as const, quantity: 36_758, priceUsd: 58.76, haircut: 0.07, counterpartyScore: 1.00, stressCoefficient: 0.80, modifiedDuration: 0 },

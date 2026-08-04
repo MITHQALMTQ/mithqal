@@ -116,7 +116,7 @@ function makeReserveAssets(
   // USD-denominated tiers sum to ~$45.45M at baseline (cash + sov + stab).
   // Scale them proportionally if a different totalReserve is requested.
   const usdScale = totalReserve / 56_264_127;
-  const CASH_USD = 30_850_000 * usdScale;
+  const CASH_USD = 32_450_000 * usdScale;
   const SOVEREIGN_USD = 13_500_000 * usdScale;
   const STABLECOIN_USD = 2_700_000 * usdScale;
   // FIXED physical quantities (Task 2-a fix)
