@@ -10,10 +10,15 @@ pragma solidity ^0.8.23;
  *   - No discretionary minting: mint requires a deposit event (Invariant 2)
  *   - No lending of reserves: reserves are held, never lent (Invariant 3)
  *   - No commingling: reserves are segregated (Invariant 4)
- *   - No redemption suspension: burn always works, redemption never pauses (Invariant 5)
+ *   - Bullion Preservation: Gold liquidated only after all superior tiers
+ *     exhausted (Invariant 5 — Article X Bullion Protection Rule).
  *
- * The contract is PAUSABLE for emergencies (governance attack, oracle failure)
- * but redemption (burn) is NEVER pausable — per the Constitution.
+ * The non-suspendable burn() guarantee is enforced separately under the
+ * §45.2 Redemption Rights permanent invariant (no redemption suspension),
+ * which lives alongside Invariants 1–5 in the §45 non-amendable provisions.
+ *
+ * The contract is PAUSABLE for emergencies (governance attack, oracle
+ * failure) but redemption (burn) is NEVER pausable — per the Constitution.
  *
  * Architecture:
  *   - MTQ is an ERC-20 with Permit + Burnable (gas-optimized)
@@ -158,9 +163,12 @@ contract MTQ is IERC20 {
      *
      * @param amount MTQ to burn (redeem for proportional reserves)
      */
-    /// @notice Burn MTQ — NEVER pausable per Constitution § Invariant 5.
+    /// @notice Burn MTQ — NEVER pausable per Constitution §45.2 Redemption
+    ///         Rights (the non-suspendable-burn permanent invariant).
     /// @dev Redemption is a non-suspendable constitutional right. The emergency
     ///      pause applies ONLY to minting and transfers, never to burning.
+    ///      Invariant 5 (Bullion Preservation) is enforced separately by the
+    ///      Reserve contract's liquidation-order check.
     function burn(uint256 amount) external { // removed notEmergencyPaused
         require(amount > 0, "MTQ: zero burn");
         uint256 balance = _balances[msg.sender];

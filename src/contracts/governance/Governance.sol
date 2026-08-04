@@ -175,7 +175,8 @@ contract Governance {
     bytes4 private constant _SEL_MINT_UINT                = bytes4(keccak256(bytes("mint(uint256)")));            // discretionary minting (no deposit proof — Invariant 2)
     bytes4 private constant _SEL_SET_FEE_UINT             = bytes4(keccak256(bytes("setFee(uint256)")));         // fee changes outside governance
     bytes4 private constant _SEL_SET_RESERVE_RATIO        = bytes4(keccak256(bytes("setReserveRatio(uint256)")));// would lower the 100% reserve (Invariant 1)
-    bytes4 private constant _SEL_SUSPEND_REDEMPTION       = bytes4(keccak256(bytes("suspendRedemption()")));     // violates non-suspendable burn (Invariant 5)
+    bytes4 private constant _SEL_SUSPEND_REDEMPTION       = bytes4(keccak256(bytes("suspendRedemption()")));     // violates non-suspendable burn (§45.2 Redemption Rights)
+    bytes4 private constant _SEL_LIQUIDATE_GOLD           = bytes4(keccak256(bytes("liquidateGold()")));         // Gold liquidation (Invariant 5: Bullion Preservation — Article X §34)
     bytes4 private constant _SEL_PAUSE                    = bytes4(keccak256(bytes("pause()")));                 // pause outside the emergency custodian role
     bytes4 private constant _SEL_UPGRADE_TO               = bytes4(keccak256(bytes("upgradeTo(address)")));      // unauthorised UUPS upgrade
     bytes4 private constant _SEL_TRANSFER_OWNERSHIP       = bytes4(keccak256(bytes("transferOwnership(address)")));// ownership transfer outside Council
@@ -390,14 +391,18 @@ contract Governance {
 
     /**
      * @dev RF-19 FIX — real selector-based enforcement of the permanently-
-     *      frozen invariants (Article V + Invariants 1..5).
+     *      frozen invariants (Article V + Invariants 1..5 + §45.2 Redemption Rights).
      *
      *      Returns true if the call's first 4 bytes (the function selector)
      *      match any selector that would violate a constitutional invariant:
      *        - mint(uint256)            — discretionary minting bypasses the
      *                                     deposit-proof requirement (Invariant 2)
      *        - setReserveRatio(uint256) — would lower the 100% reserve (Invariant 1)
-     *        - suspendRedemption()      — violates non-suspendable burn (Invariant 5)
+     *        - suspendRedemption()      — violates non-suspendable burn
+     *                                     (§45.2 Redemption Rights permanent invariant)
+     *        - liquidateGold()          — Gold liquidation without Exhaustion
+     *                                     Certificate (Invariant 5: Bullion
+     *                                     Preservation, Article X §34)
      *        - setFee(uint256)          — fee changes outside governance
      *        - pause()                  — pause outside the emergency role
      *        - upgradeTo(address)       — unauthorised UUPS upgrade
@@ -432,6 +437,7 @@ contract Governance {
         if (sel == _SEL_MINT_UINT)              return true;
         if (sel == _SEL_SET_RESERVE_RATIO)      return true;
         if (sel == _SEL_SUSPEND_REDEMPTION)     return true;
+        if (sel == _SEL_LIQUIDATE_GOLD)         return true; // Invariant 5: Bullion Preservation
         if (sel == _SEL_SET_FEE_UINT)           return true;
         if (sel == _SEL_PAUSE)                  return true;
         if (sel == _SEL_UPGRADE_TO)             return true;

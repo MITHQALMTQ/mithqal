@@ -140,6 +140,56 @@ export interface ProofAttestation {
   timestamp: number       // unixepoch seconds
 }
 
+/**
+ * Article XVI — Constitutional Assumptions Register entry.
+ *
+ * Every simulation, stress test, validation, and certification produced by
+ * the Institution MUST be recorded here. The Register is immutable,
+ * auditable, and binding — no simulation, stress test, validation, or
+ * certification may be cited in governance without a corresponding Register
+ * entry (per blueprint Article XVI §Constitutional Interpretation).
+ *
+ * The 14 mandatory fields are:
+ *   1. Random Seed              (randomSeed: number)
+ *   2. Input Assumptions        (inputAssumptions: JSON string)
+ *   3. Economic Assumptions     (economicAssumptions: JSON string)
+ *   4. Liquidity Assumptions    (liquidityAssumptions: JSON string)
+ *   5. Correlation Assumptions  (correlationAssumptions: JSON string)
+ *   6. Market Conditions        (marketConditions: JSON string)
+ *   7. Time Horizon             (timeHorizon: string, e.g. "1000 trading days")
+ *   8. Confidence Level         (confidenceLevel: number, e.g. 99)
+ *   9. Simulation Version       (simulationVersion: string, e.g. "v3.1")
+ *  10. Software Version         (softwareVersion: string, e.g. "v19.0.9")
+ *  11. Date                     (date: ISO 8601 string)
+ *  12. Author                   (author: string)
+ *  13. Approval                 (approval: JSON string with body + date)
+ *  14. Audit Signature          (auditSignature: string)
+ *
+ * All 14 fields are stored as TEXT/JSON columns. The entry's `entryId` is a
+ * deterministic CAR-YYYY-MM-DD-NNN identifier (Article XVI example).
+ */
+export interface AssumptionsRegisterEntry {
+  id: number
+  entryId: string                  // CAR-YYYY-MM-DD-NNN
+  simulationType: string           // 'monte_carlo' | 'stress_lab' | 'reverse_stress' | 'lrr' | 'model_validation' | etc.
+  randomSeed: number
+  inputAssumptions: string         // JSON
+  economicAssumptions: string      // JSON
+  liquidityAssumptions: string     // JSON
+  correlationAssumptions: string   // JSON
+  marketConditions: string         // JSON
+  timeHorizon: string
+  confidenceLevel: number
+  simulationVersion: string
+  softwareVersion: string
+  date: string                     // ISO 8601
+  author: string
+  approval: string                 // JSON { body, date, reference }
+  auditSignature: string
+  summary: string                  // human-readable one-line summary of the simulation result
+  createdAt: number                // unixepoch
+}
+
 /* ---- Schema initialization ---- */
 
 export async function ensureSchema(): Promise<void> {
@@ -194,6 +244,21 @@ export async function ensureSchema(): Promise<void> {
     // manual re-publish) overwrites the existing row instead of creating
     // duplicates. The proofAttestation.upsert() helper relies on this.
     `CREATE UNIQUE INDEX IF NOT EXISTS "ProofAttestation_date_proofType_idx" ON "ProofAttestation"("date","proofType")`,
+
+    // Article XVI — Constitutional Assumptions Register (Task 12-c P0-2).
+    // Immutable, auditable, binding record of every simulation/stress test/
+    // validation/certification produced by the Institution. Each entry has
+    // the 14 mandatory fields (randomSeed, input/economic/liquidity/
+    // correlation/market assumptions, timeHorizon, confidenceLevel,
+    // simulationVersion, softwareVersion, date, author, approval,
+    // auditSignature) plus an entryId of the form CAR-YYYY-MM-DD-NNN.
+    // Insert-only: no UPDATE or DELETE path is exposed. Re-publishing a
+    // simulation creates a new row with a new NNN suffix.
+    `CREATE TABLE IF NOT EXISTS "AssumptionsRegister" ("id" INTEGER PRIMARY KEY AUTOINCREMENT, "entryId" TEXT UNIQUE NOT NULL, "simulationType" TEXT NOT NULL, "randomSeed" INTEGER NOT NULL, "inputAssumptions" TEXT NOT NULL, "economicAssumptions" TEXT NOT NULL, "liquidityAssumptions" TEXT NOT NULL, "correlationAssumptions" TEXT NOT NULL, "marketConditions" TEXT NOT NULL, "timeHorizon" TEXT NOT NULL, "confidenceLevel" REAL NOT NULL, "simulationVersion" TEXT NOT NULL, "softwareVersion" TEXT NOT NULL, "date" TEXT NOT NULL, "author" TEXT NOT NULL, "approval" TEXT NOT NULL, "auditSignature" TEXT NOT NULL, "summary" TEXT NOT NULL, "createdAt" INTEGER DEFAULT (unixepoch()))`,
+    `CREATE INDEX IF NOT EXISTS "AssumptionsRegister_entryId_idx" ON "AssumptionsRegister"("entryId")`,
+    `CREATE INDEX IF NOT EXISTS "AssumptionsRegister_simulationType_idx" ON "AssumptionsRegister"("simulationType")`,
+    `CREATE INDEX IF NOT EXISTS "AssumptionsRegister_date_idx" ON "AssumptionsRegister"("date")`,
+    `CREATE INDEX IF NOT EXISTS "AssumptionsRegister_createdAt_idx" ON "AssumptionsRegister"("createdAt")`,
   ]
 
   try {
@@ -626,6 +691,139 @@ export const proofAttestation = {
   },
 }
 
+/* ---- AssumptionsRegister queries (Article XVI — Task 12-c P0-2) ---- */
+
+export const assumptionsRegister = {
+  /**
+   * Insert an immutable Register entry. Generates a deterministic entryId
+   * of the form `CAR-YYYY-MM-DD-NNN` where NNN is the next zero-padded
+   * sequence number for that date (001, 002, …).
+   *
+   * Insert-only by design — Article XVI mandates that the Register is
+   * immutable; entries may not be modified, deleted, or destroyed.
+   */
+  async create(args: {
+    data: Omit<AssumptionsRegisterEntry, "id" | "entryId" | "createdAt">
+  }): Promise<AssumptionsRegisterEntry> {
+    await ensureSchema()
+    const date = args.data.date
+    const dateOnly = date.slice(0, 10) // YYYY-MM-DD
+
+    // Find the next sequence number for this date.
+    //
+    // The `date` column stores the full ISO 8601 datetime (e.g.
+    // "2026-08-04T19:10:13.723Z"), but the entryId uses date-only
+    // ("CAR-2026-08-04-NNN"). Match by prefix so all entries logged
+    // on the same UTC date share the same NNN sequence.
+    const seqResult = await _rawClient.execute({
+      sql: `SELECT COUNT(*) as c FROM "AssumptionsRegister" WHERE "date" LIKE ?`,
+      args: [`${dateOnly}%`],
+    })
+    const seq = (Number(seqResult.rows[0]?.c ?? 0)) + 1
+    let entryId = `CAR-${dateOnly}-${String(seq).padStart(3, "0")}`
+
+    // Retry-on-conflict: if two concurrent inserts race for the same NNN,
+    // bump the sequence and retry. Article XVI mandates immutability, so
+    // we never overwrite — we always create a new row with a higher NNN.
+    let attempt = 0
+    while (attempt < 5) {
+      try {
+        const result = await _rawClient.execute({
+          sql: `INSERT INTO "AssumptionsRegister"
+                ("entryId","simulationType","randomSeed","inputAssumptions",
+                 "economicAssumptions","liquidityAssumptions","correlationAssumptions",
+                 "marketConditions","timeHorizon","confidenceLevel","simulationVersion",
+                 "softwareVersion","date","author","approval","auditSignature","summary")
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) RETURNING *`,
+          args: [
+            entryId,
+            args.data.simulationType,
+            args.data.randomSeed,
+            args.data.inputAssumptions,
+            args.data.economicAssumptions,
+            args.data.liquidityAssumptions,
+            args.data.correlationAssumptions,
+            args.data.marketConditions,
+            args.data.timeHorizon,
+            args.data.confidenceLevel,
+            args.data.simulationVersion,
+            args.data.softwareVersion,
+            args.data.date,
+            args.data.author,
+            args.data.approval,
+            args.data.auditSignature,
+            args.data.summary,
+          ],
+        })
+        return rowToAssumptionsRegisterEntry(result.rows[0])
+      } catch (err) {
+        // SQLITE_CONSTRAINT_UNIQUE — another concurrent insert grabbed
+        // this entryId. Bump the NNN and retry.
+        attempt++
+        if (attempt >= 5) throw err
+        entryId = `CAR-${dateOnly}-${String(seq + attempt).padStart(3, "0")}`
+      }
+    }
+    // Unreachable — the loop either returns or throws.
+    throw new Error("[assumptionsRegister.create] unreachable")
+  },
+
+  /** Return the most recent Register entry (across all simulation types). */
+  async latest(): Promise<AssumptionsRegisterEntry | null> {
+    await ensureSchema()
+    const result = await _rawClient.execute({
+      sql: `SELECT * FROM "AssumptionsRegister" ORDER BY "createdAt" DESC LIMIT 1`,
+      args: [],
+    })
+    if (result.rows.length === 0) return null
+    return rowToAssumptionsRegisterEntry(result.rows[0])
+  },
+
+  /** Return the most recent entry for a given simulationType. */
+  async latestByType(simulationType: string): Promise<AssumptionsRegisterEntry | null> {
+    await ensureSchema()
+    const result = await _rawClient.execute({
+      sql: `SELECT * FROM "AssumptionsRegister"
+            WHERE "simulationType" = ?
+            ORDER BY "createdAt" DESC LIMIT 1`,
+      args: [simulationType],
+    })
+    if (result.rows.length === 0) return null
+    return rowToAssumptionsRegisterEntry(result.rows[0])
+  },
+
+  /** Return the most recent N entries (newest first). */
+  async recent(limit = 20): Promise<AssumptionsRegisterEntry[]> {
+    await ensureSchema()
+    const result = await _rawClient.execute({
+      sql: `SELECT * FROM "AssumptionsRegister" ORDER BY "createdAt" DESC LIMIT ?`,
+      args: [limit],
+    })
+    return result.rows.map(rowToAssumptionsRegisterEntry)
+  },
+
+  /** Look up a single entry by entryId (CAR-YYYY-MM-DD-NNN). */
+  async findByEntryId(entryId: string): Promise<AssumptionsRegisterEntry | null> {
+    await ensureSchema()
+    const result = await _rawClient.execute({
+      sql: `SELECT * FROM "AssumptionsRegister" WHERE "entryId" = ?`,
+      args: [entryId],
+    })
+    if (result.rows.length === 0) return null
+    return rowToAssumptionsRegisterEntry(result.rows[0])
+  },
+
+  /** Total entry count (for dashboard / audit reporting). */
+  async count(): Promise<number> {
+    await ensureSchema()
+    const result = await _rawClient.execute({
+      sql: `SELECT COUNT(*) as c FROM "AssumptionsRegister"`,
+      args: [],
+    })
+    return Number(result.rows[0]?.c ?? 0)
+  },
+}
+
 export const proposals = {
   async upsert(args: {
     data: {
@@ -765,6 +963,30 @@ function rowToProofAttestation(row: Record<string, unknown>): ProofAttestation {
   }
 }
 
+function rowToAssumptionsRegisterEntry(row: Record<string, unknown>): AssumptionsRegisterEntry {
+  return {
+    id: Number(row.id),
+    entryId: row.entryId as string,
+    simulationType: row.simulationType as string,
+    randomSeed: Number(row.randomSeed),
+    inputAssumptions: row.inputAssumptions as string,
+    economicAssumptions: row.economicAssumptions as string,
+    liquidityAssumptions: row.liquidityAssumptions as string,
+    correlationAssumptions: row.correlationAssumptions as string,
+    marketConditions: row.marketConditions as string,
+    timeHorizon: row.timeHorizon as string,
+    confidenceLevel: Number(row.confidenceLevel),
+    simulationVersion: row.simulationVersion as string,
+    softwareVersion: row.softwareVersion as string,
+    date: row.date as string,
+    author: row.author as string,
+    approval: row.approval as string,
+    auditSignature: row.auditSignature as string,
+    summary: row.summary as string,
+    createdAt: row.createdAt != null ? Number(row.createdAt) : 0,
+  }
+}
+
 /* ---- Transaction support (for atomic operations) ---- */
 
 export async function transaction<T>(
@@ -796,6 +1018,7 @@ export const db = {
   fees,
   proposals,
   proofAttestation,
+  assumptionsRegister,
   $executeRawUnsafe: async (sql: string) => {
     await ensureSchema()
     return _rawClient.execute(sql)

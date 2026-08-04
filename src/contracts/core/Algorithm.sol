@@ -22,7 +22,9 @@ pragma solidity ^0.8.23;
  *   - Every settlement references a depositProof hash; no proof = no
  *     settlement (Invariant 1: 100%+ reserve mandate).
  *   - Settlement cannot be paused by any role — the constitutional pause
- *     lives in MTQ.mintingPaused (Invariant 5: redemption never pauses).
+ *     lives in MTQ.mintingPaused (§45.2 Redemption Rights: redemption never
+ *     pauses). Invariant 5 (Bullion Preservation) is enforced at the Reserve
+ *     contract level via the §34 Reserve Liquidation Order.
  *
  * Deployed at: 0x8839ce50e8D414005518769999c0A5b961D00CB2
  * Network:     Monad Testnet, Chain ID 10143

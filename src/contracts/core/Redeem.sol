@@ -11,16 +11,23 @@ pragma solidity ^0.8.23;
  *   - User calls redeemForBurn(amount, burnProof).
  *   - This contract pulls MTQ from the user via MTQ.transferFrom().
  *   - This contract burns the gross MTQ via MTQ.burn() (which is itself
- *     NEVER pausable — Constitution Invariant 5).
+ *     NEVER pausable — §45.2 Redemption Rights permanent invariant).
  *   - This contract computes the proportional USD value to return.
  *   - This contract calls Reserve.withdrawReserve() to release the
  *     corresponding reserves (off-chain custodian settles within T+2).
  *   - Redemption fee (0.05% default, capped at 0.50%) is routed to Takaful.
  *
- * CONSTITUTIONAL INVARIANT (Article II, Invariant 5):
+ * CONSTITUTIONAL INVARIANT (§45.2 Redemption Rights):
  *   - Redemption is NEVER pausable. No role, no Council vote, no emergency
  *     custodian can suspend redemption. This contract has NO pause
  *     functionality by design. The user's right to redeem is absolute.
+ *
+ * NOTE on Invariant 5 (Bullion Preservation — Article I Layer 2):
+ *   - The Reserve contract enforces the Article X §34 Reserve Liquidation
+ *     Order so that Gold is liquidated ONLY after all constitutionally
+ *     superior liquidity tiers (stablecoins → cash → sovereign → silver)
+ *     have been exhausted. This contract does NOT directly enforce that
+ *     order — it relies on Reserve.withdrawReserve() to honour it.
  *
  * Deployed at: 0x963201C0Fa258033CCDdFcDceb8B5E3bc2b435a4
  * Network:     Monad Testnet, Chain ID 10143
@@ -82,7 +89,7 @@ contract Redeem {
     }
 
     // NOTE: There is NO `notPaused` modifier in this contract. Redemption
-    // is NEVER pausable per Constitution § Invariant 5.
+    // is NEVER pausable per §45.2 Redemption Rights (permanent invariant).
 
     constructor(address _mtq, address _reserve, address _takaful) {
         require(_mtq != address(0), "Redeem: MTQ zero address");
@@ -103,7 +110,7 @@ contract Redeem {
      *   2. User calls redeemForBurn(amount, burnProof).
      *   3. This contract pulls MTQ from the user via MTQ.transferFrom().
      *   4. This contract burns the gross amount via MTQ.burn() — burn is
-     *      NEVER pausable (Constitution Invariant 5).
+     *      NEVER pausable (§45.2 Redemption Rights permanent invariant).
      *   5. Fee is taken from the reserve return (not the burn — burn is gross).
      *   6. Reserve.withdrawReserve() releases the net USD to the user
      *      (off-chain custodian settles within T+2).
@@ -113,7 +120,7 @@ contract Redeem {
      */
     // slither-disable-next-line reentrancy-benign,reentrancy-events,reentrancy-no-eth
     function redeemForBurn(uint256 amount, bytes32 burnProof) external {
-        // Anyone holding MTQ can redeem — Constitution Invariant 5.
+        // Anyone holding MTQ can redeem — §45.2 Redemption Rights.
         // No role check here by design.
         require(amount > 0, "Redeem: zero amount");
         require(burnProof != bytes32(0), "Redeem: missing burn proof");
@@ -129,7 +136,7 @@ contract Redeem {
             "Redeem: transferFrom failed - check MTQ approval"
         );
 
-        // Burn the MTQ. MTQ.burn() is NEVER pausable (Constitution Invariant 5).
+        // Burn the MTQ. MTQ.burn() is NEVER pausable (§45.2 Redemption Rights).
         mtq.burn(amount);
 
         // Mark the burn proof as processed (replay protection).

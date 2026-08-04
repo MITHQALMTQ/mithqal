@@ -531,29 +531,41 @@ export interface ConstitutionalInvariant {
   amendable: false; // always false — these are PERMANENT
 }
 
-/** §45.2 Non-Amendable Provisions — 21 permanent invariants. */
+/** §45.2 Non-Amendable Provisions — 21 permanent invariants.
+ *
+ * NOTE (Task 12-c P0-7 fix): the v19 blueprint's Article I Layer 2 defines
+ * exactly FIVE monetary invariants — (1) 100% Reserve Ratio, (2) No
+ * Discretionary Minting, (3) No Lending of Reserves, (4) No Commingling,
+ * (5) Bullion Preservation. The "no redemption suspension" guarantee that
+ * the previous implementation had mislabelled as "Invariant 5" is in fact
+ * part of the §45.2 Redemption Rights permanent provision (already listed
+ * below as "Redemption Rights"). Bullion Preservation is now explicitly
+ * listed as its own §45.2 entry so the runtime `checkInvariantConflict`
+ * guard refuses any proposal to liquidate Gold without an Exhaustion
+ * Certificate (Article X §34 Reserve Liquidation Order). */
 export const CONSTITUTIONAL_INVARIANTS: ConstitutionalInvariant[] = [
   { name: "Constitutional Identity", reason: "Identity cannot change", amendable: false },
   { name: "Institutional Neutrality", reason: "Institution must remain politically neutral", amendable: false },
   { name: "Non-Sovereign Monetary Status", reason: "Never become sovereign currency", amendable: false },
   { name: "Gold Constitutional Anchor", reason: "Permanent", amendable: false },
   { name: "Reserve Segregation", reason: "Permanent", amendable: false },
-  { name: "100% Reserve Minimum", reason: "Permanent", amendable: false },
+  { name: "100% Reserve Minimum", reason: "Permanent — Reserve Value ≥ Supply × PAR (Article I Invariant 1)", amendable: false },
   { name: "No Fractional Reserve", reason: "Permanent", amendable: false },
-  { name: "No Lending of Reserves", reason: "Permanent", amendable: false },
+  { name: "No Lending of Reserves", reason: "Permanent — Article I Invariant 3", amendable: false },
   { name: "No Encumbrance of Reserves", reason: "Permanent", amendable: false },
-  { name: "No Discretionary Minting", reason: "Permanent", amendable: false },
+  { name: "No Discretionary Minting", reason: "Permanent — Article I Invariant 2", amendable: false },
   { name: "No Discretionary Burning", reason: "Permanent", amendable: false },
   { name: "Mandatory Proof of Reserves", reason: "Permanent", amendable: false },
   { name: "Deterministic Monetary Engine", reason: "Permanent", amendable: false },
-  { name: "Redemption Rights", reason: "Permanent", amendable: false },
+  { name: "Redemption Rights", reason: "Permanent — redemption is NEVER suspended (§45.2); non-suspendable burn enforced on-chain", amendable: false },
+  { name: "Bullion Preservation", reason: "Permanent — Gold reserves may only be liquidated after all constitutionally superior liquidity tiers have been exhausted (Article I Invariant 5, Article X §34 Reserve Liquidation Order)", amendable: false },
   { name: "Constitutional Transparency", reason: "Permanent", amendable: false },
   { name: "Oracle Independence", reason: "Permanent", amendable: false },
   { name: "Mathematical Auditability", reason: "Permanent", amendable: false },
   { name: "Constitutional Language Standards", reason: "Permanent", amendable: false },
   { name: "Constitutional Governance Process", reason: "Permanent", amendable: false },
   { name: "Constitutional Constants Registry", reason: "Permanent", amendable: false },
-  { name: "No Commingling of Reserves with Operational Funds", reason: "Permanent — reserves must never be mixed with the Institution's operational, payroll, or overhead funds", amendable: false },
+  { name: "No Commingling of Reserves with Operational Funds", reason: "Permanent — reserves must never be mixed with the Institution's operational, payroll, or overhead funds (Article I Invariant 4)", amendable: false },
 ];
 
 /** §45.3 Emergency Override Protection — invariants can never be suspended. */
@@ -598,6 +610,44 @@ export function checkInvariantConflict(proposedAction: string): { violates: bool
             invariant: `${c.name} (${c.section}) — non-amendable constant`,
           };
         }
+      }
+    }
+  }
+
+  // Task 12-c P0-7 fix: Invariant 5 (Bullion Preservation) — also block
+  // direct proposals to liquidate / sell / dispose of Gold (and Silver,
+  // which is Strategic Liquidity under Article X) without naming the
+  // invariant explicitly. This catches "Proposal: liquidate Gold reserves"
+  // phrasings that would otherwise slip past the name-based check.
+  //
+  // Per Article X §34 Reserve Liquidation Order, Gold may ONLY be
+  // liquidated after ALL superior liquidity tiers (stablecoin → cash →
+  // sovereign → silver) have been exhausted AND an Exhaustion Certificate
+  // has been signed by the Reserve Manager and ratified by the Risk
+  // Committee. Any proposal to liquidate Gold that does not explicitly
+  // reference the Exhaustion Certificate is a constitutional breach.
+  const bullionPreservationTriggerPhrases = [
+    "liquidate gold",
+    "liquidate bullion",
+    "sell gold",
+    "sell bullion",
+    "dispose of gold",
+    "dispose of bullion",
+    "gold liquidation",
+    "bullion liquidation",
+    "release gold",
+    "release bullion",
+    "draw down gold",
+    "drawdown gold",
+    "monetize gold",
+  ];
+  if (!action.includes("exhaustion certificate")) {
+    for (const phrase of bullionPreservationTriggerPhrases) {
+      if (action.includes(phrase)) {
+        return {
+          violates: true,
+          invariant: `Bullion Preservation (Article I Invariant 5, Article X §34) — Gold liquidation requires an Exhaustion Certificate signed by the Reserve Manager and ratified by the Risk Committee`,
+        };
       }
     }
   }

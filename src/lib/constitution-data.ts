@@ -104,7 +104,7 @@ const LAYER_1: Layer = {
       purpose:
         "When objectives conflict, seven priorities govern. No lower-priority objective may override a higher one.",
       sections: [
-        { h: "Priority 1 · Constitutional Invariants", p: "Never violated, never compromised, never amended without supermajority. The 100% reserve mandate, no discretionary minting, no lending of reserves, no commingling. Not subject to override by any vote or emergency." },
+        { h: "Priority 1 · Constitutional Invariants", p: "Never violated, never compromised, never amended without supermajority. The 100% reserve mandate, no discretionary minting, no lending of reserves, no commingling, bullion preservation (gold only liquidated after all superior tiers exhausted). Not subject to override by any vote or emergency." },
         { h: "Priority 2 · Solvency & Reserve Integrity", p: "Reserves must always equal or exceed supply. Never sacrificed for efficiency, innovation or any other objective." },
         { h: "Priority 3 · Redemption Certainty", p: "Every unit redeemable at all times. Redemption never suspended or subject to discretionary approval." },
         { h: "Priority 4 · Legal Compliance", p: "Operate within applicable law, achieved through operational adaptation — never requiring violation of higher priorities." },
@@ -266,7 +266,7 @@ const LAYER_2: Layer = {
   blurb:
     "The invariants, monetary objectives, reserve principles, monetary metals, currency framework, monetary engine and proof of reserves that govern the settlement unit.",
   articles: [
-    { id: "l2-art1", number: "Article I", title: "Invariants", purpose: "100% reserve mandate; no discretionary minting; no lending of reserves; no commingling; no redemption suspension. Absolute and permanent.", frozen: true },
+    { id: "l2-art1", number: "Article I", title: "Invariants", purpose: "100% reserve mandate; no discretionary minting; no lending of reserves; no commingling; bullion preservation (gold liquidated only after all superior tiers exhausted). Absolute and permanent.", frozen: true },
     { id: "l2-art2", number: "Article II", title: "Monetary Objectives", purpose: "The Institution optimizes for stable purchasing power, full redeemability, reserve solvency and neutral value transfer." },
     { id: "l2-art3", number: "Article III", title: "Reserve Principles", purpose: "How reserves are structured, managed and protected: segregated custody, four-tier diversification, no lending, no rehypothecation, eligibility criteria." },
     { id: "l2-art4", number: "Article IV", title: "Monetary Metals", purpose: "The role of physical bullion in the Institution's reserves: allocated, audited, segregated — never paper gold or unallocated claims." },
