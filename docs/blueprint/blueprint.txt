@@ -9135,6 +9135,7 @@ The Institutional Assurance Framework does not create, modify, or extend any mon
 
 [END OF ARTICLE XVII — INSTITUTIONAL ASSURANCE FRAMEWORK]
 
+<<<<<<< HEAD
 Article XVIII: Constitutional Commercial Governance & Institutional Stewardship
 The Constitutional Commercial Governance framework establishes the legal entity architecture, reserve procurement engine, best execution obligations, performance participation, commercial revenue accounting, and compliance verification that govern all commercial operations of the Institution. This Article ensures that every commercial action is constitutionally governed, transparently audited, and structurally separated from reserve custody.
 What This Means in Practice:
@@ -9375,6 +9376,8 @@ Why This Matters:
 
 [END OF ARTICLE XVIII — CONSTITUTIONAL COMMERCIAL GOVERNANCE & INSTITUTIONAL STEWARDSHIP]
 
+=======
+>>>>>>> f1e4feebb91f6cdaebe52d5fa487c3eb1855e2d1
 [END OF PART 2 — LAYER 2: MONETARY CONSTITUTION]
 Part 3: Layer 3 — Policy Framework
 Introduction — The Policy Framework
