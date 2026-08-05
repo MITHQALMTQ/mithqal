@@ -9135,6 +9135,246 @@ The Institutional Assurance Framework does not create, modify, or extend any mon
 
 [END OF ARTICLE XVII — INSTITUTIONAL ASSURANCE FRAMEWORK]
 
+Article XVIII: Constitutional Commercial Governance & Institutional Stewardship
+The Constitutional Commercial Governance framework establishes the legal entity architecture, reserve procurement engine, best execution obligations, performance participation, commercial revenue accounting, and compliance verification that govern all commercial operations of the Institution. This Article ensures that every commercial action is constitutionally governed, transparently audited, and structurally separated from reserve custody.
+What This Means in Practice:
+        •       The Institution operates through four constitutionally defined legal entities, each with distinct responsibilities and governance authority
+        •       Reserve procurement follows a mandatory 12-stage constitutional workflow with immutable audit trail
+        •       Every transaction is scored against 12 best-execution criteria before approval
+        •       Performance savings are split constitutionally: 60% reserve growth, 25% Markets entity, 15% commercial revenue
+        •       Commercial revenue is separated by entity and category, with full transparency
+        •       Reserve ownership is protected: no reserve asset may appear as an operational, holding, employee, or director asset
+        •       Every commercial action produces an immutable audit entry with digital signature
+Example:
+When the Institution procures gold to back new MTQ issuance, MITHQAL Markets Ltd. requests dealer quotes, computes the Constitutional Benchmark Price from multiple sources, scores each dealer against 12 best-execution criteria, selects the best execution, settles the trade, verifies custody, updates the Proof of Reserves, and creates an immutable audit entry — all within the 12-stage constitutional workflow. The savings from beating the benchmark are split 60/25/15 across reserve growth, Markets, and commercial revenue.
+Why This Matters:
+        •       Without constitutional commercial governance, procurement decisions could favor specific dealers, conceal hidden spreads, or divert reserve assets to operational use
+        •       Without best execution obligations, the Institution might overpay for reserve assets, reducing the reserve ratio
+        •       Without performance participation, savings from good execution would not benefit the reserve or the Institution
+        •       Without reserve ownership protection, reserves could be commingled with operational funds, violating §45.2
+
+§XX.1 — Constitutional Legal Entities
+The Institution operates through four constitutionally defined legal entities. Each entity has distinct responsibilities, governance authority, and reserve ownership permissions. No entity may exceed its constitutional mandate.
+What This Means in Practice:
+        •       The Foundation holds constitutional oversight and public trust
+        •       The Holding Company holds strategic ownership and capital allocation
+        •       Operations Ltd. manages technology and platform infrastructure
+        •       Markets Ltd. manages reserve procurement and commercial execution
+        •       Only Markets Ltd. may interact with reserve assets, and only on behalf of the Institution
+        •       No entity may hold reserves as its own assets
+Example:
+MITHQAL Foundation (a non-profit) oversees the constitution. MITHQAL Holding Company owns the operational subsidiaries. MITHQAL Operations Ltd. runs the technology platform. MITHQAL Markets Ltd. procures gold, silver, and sovereign securities on behalf of the Institution's reserve pool. The Foundation, Holding, and Operations entities have no direct access to reserve assets.
+Why This Matters:
+        •       Without entity separation, reserves could be commingled with operational funds
+        •       Without constitutional mandates, entities could exceed their authority
+        •       Without reserve ownership restrictions, any entity could claim reserve assets
+
+§XX.2 — MITHQAL Foundation
+The Foundation is the non-profit constitutional steward of the Institution.
+Responsibilities:
+        •       Constitutional oversight and interpretation
+        •       Reserve integrity protection
+        •       Public trust stewardship
+        •       Constitutional standards enforcement
+        •       Governance Council oversight
+Governance Authority: Constitutional Council
+Reserve Ownership: None (the Foundation does not hold reserves directly)
+
+§XX.3 — MITHQAL Holding Company
+The Holding Company is the strategic ownership entity.
+Responsibilities:
+        •       Strategic ownership of operational subsidiaries
+        •       Capital allocation
+        •       Corporate governance
+        •       Subsidiary oversight
+Governance Authority: Board of Directors
+Reserve Ownership: None
+
+§XX.4 — MITHQAL Operations Ltd.
+Operations Ltd. is the technology and platform entity.
+Responsibilities:
+        •       Technology infrastructure
+        •       API platform
+        •       Settlement operations
+        •       AI assistant
+        •       Platform maintenance
+Governance Authority: CTO / Operations Committee
+Reserve Ownership: None
+
+§XX.5 — MITHQAL Markets Ltd.
+Markets Ltd. is the commercial reserve procurement entity.
+Responsibilities:
+        •       Gold procurement
+        •       Silver procurement
+        •       Sukuk procurement
+        •       Reserve procurement
+        •       Best execution
+        •       Custody coordination
+        •       Liquidity management
+        •       Reserve rebalancing
+Governance Authority: Markets Committee + Risk Committee
+Reserve Ownership: Yes (on behalf of the Institution — the ONLY entity permitted to interact with reserve assets)
+
+§XX.6 — Constitutional Benchmark Price (CBP)
+Every reserve procurement shall be priced against a Constitutional Benchmark Price (CBP) derived from multiple institutional sources.
+What This Means in Practice:
+        •       Supported benchmark sources: LBMA references, central bank references, institutional dealer quotes, approved institutional pricing providers, historical execution quality
+        •       The CBP is computed as a weighted median of all sources, weighted by confidence score
+        •       The CBP calculation, timestamp, source detail, and confidence score are stored permanently
+        •       No procurement may proceed without a CBP
+Example:
+For a gold procurement, the Institution collects quotes from 5 LBMA-approved dealers, the LBMA PM fix, and 2 central bank reference rates. The CBP is the weighted median of these 8 sources, weighted by each source's confidence score. The benchmark, all sources, the calculation method, and the confidence score are stored in the procurement record.
+Why This Matters:
+        •       Without a benchmark, there is no way to verify best execution
+        •       Without multiple sources, a single source could manipulate the benchmark
+        •       Without stored benchmarks, post-hoc audit is impossible
+
+§XX.7 — Best Execution Engine
+Every reserve procurement shall be scored against 12 weighted criteria to produce a single Best Execution Score.
+What This Means in Practice:
+        •       The 12 criteria are: price (25%), liquidity (12%), counterparty (10%), settlement (8%), insurance (5%), custody (8%), country risk (7%), Sharia status (10%), operational risk (5%), diversification (4%), relationship score (3%), historical performance (3%)
+        •       The Best Execution Score is a weighted sum, producing a 0-100 score
+        •       A score ≥ 75 is required for approval (configurable by the Constitutional Council)
+        •       The full weighted breakdown is stored in the procurement record
+Example:
+A gold dealer offers the best price but has a low counterparty score and is in a high-risk jurisdiction. The Best Execution Engine weights all 12 criteria and produces a score of 72 — below the 75 threshold. The procurement is rejected. A second dealer with a slightly higher price but better counterparty, custody, and Sharia scores receives 84 — approved.
+Why This Matters:
+        •       Without best execution, the Institution might choose dealers based on price alone, ignoring risk
+        •       Without weighted criteria, subjective factors could override objective scoring
+        •       Without an approval threshold, marginal executions could proceed without review
+
+§XX.8 — Procurement Workflow
+Every reserve procurement shall follow a mandatory 12-stage constitutional workflow. Each stage is logged immutably. No stage may be skipped.
+What This Means in Practice:
+        •       The 12 stages are: Reserve Need → Risk Assessment → Benchmark → RFQ → Dealer Responses → Best Execution → Approval → Settlement → Custody Verification → Proof of Reserve → Commercial Audit → Archive
+        •       Each stage transition is timestamped and stored permanently
+        •       No procurement may advance to the next stage without completing the prior stage
+        •       The full stage history is available for audit
+Example:
+A procurement for $5M of gold begins at "Reserve Need." The Risk Committee assesses the need. The CBP is computed. RFQs are sent to 5 dealers. Responses are received. The Best Execution Engine scores each dealer. The Markets Committee approves the winning dealer. Settlement occurs. Custody is verified at the vault. The Proof of Reserves is updated. The Commercial Audit module creates an immutable audit entry. The procurement is archived.
+Why This Matters:
+        •       Without a mandatory workflow, stages could be skipped (e.g., custody verification)
+        •       Without immutable logging, post-hoc audit is impossible
+        •       Without sequential enforcement, procurements could bypass risk assessment or approval
+
+§XX.9 — Performance Participation Engine
+When the Institution achieves savings relative to the Constitutional Benchmark Price, the savings shall be split constitutionally.
+What This Means in Practice:
+        •       Savings = (Benchmark Price − Execution Price) × Quantity
+        •       The split is: 60% reserve growth, 25% Markets entity, 15% commercial revenue
+        •       Performance gain percentage = Savings / (Benchmark × Quantity) × 100
+        •       All splits are recorded in the procurement record and the revenue ledger
+Example:
+The CBP for gold is $4,077/oz. Markets Ltd. executes at $4,060/oz for 1,000 oz. Savings = ($4,077 − $4,060) × 1,000 = $17,000. Reserve growth gets $10,200 (60%). Markets Ltd. gets $4,250 (25%). Commercial revenue gets $2,550 (15%). The performance gain is 0.42%.
+Why This Matters:
+        •       Without performance participation, Markets has no incentive to achieve best execution
+        •       Without the 60% reserve split, savings could be diverted entirely to commercial use
+        •       Without transparent recording, performance gains could be concealed
+
+§XX.10 — Commercial Revenue Module
+All commercial revenue shall be accounted by entity and category, with full transparency.
+What This Means in Practice:
+        •       Revenue is separated by entity: Foundation, Holding, Operations, Markets
+        •       Revenue categories include: mint fees, redeem fees, execution fees, licensing, enterprise, API, training, integration, analytics, performance participation, professional services
+        •       Every revenue entry has: entity, category, amount, timestamp, transaction reference, description
+        •       The revenue ledger is public and auditable
+Example:
+When a user mints $1M of MTQ, the mint fee of $50 (5 bps) is recorded as revenue for Operations Ltd. in the "mint" category. When Markets Ltd. achieves $17K savings on a gold procurement, $2,550 (15%) is recorded as revenue for Markets in the "performance_participation" category. The revenue dashboard shows total revenue by entity and category.
+Why This Matters:
+        •       Without entity separation, revenue could be commingled
+        •       Without category classification, revenue sources would be opaque
+        •       Without transparency, the Institution could conceal revenue sources
+
+§XX.11 — Commercial Compliance Engine
+Every commercial transaction shall be verified against 7 constitutional compliance rules.
+What This Means in Practice:
+        •       The 7 rules are: no hidden spread, no hidden commission, no undisclosed rebate, no front running, no reserve ownership violation, no benchmark manipulation, no conflict of interest
+        •       The Commercial Compliance Score is the percentage of rules that pass
+        •       The Institutional Trust Score combines compliance with transparency
+        •       The Transparency Score measures disclosure completeness
+        •       ALL 7 rules must pass for a transaction to be approved
+Example:
+A gold procurement is checked: the execution price is within 2% of the benchmark (no hidden spread ✅). The declared commission matches the actual commission (no hidden commission ✅). No rebates were received (no undisclosed rebate ✅). The trade was executed before market impact (no front running ✅). The reserve ownership is verified (no ownership violation ✅). The execution is within 5% of benchmark (no manipulation ✅). The dealer is not the Operations entity (no conflict of interest ✅). All 7 rules pass — the transaction is approved.
+Why This Matters:
+        •       Without compliance verification, hidden fees and conflicts could go undetected
+        •       Without the "all must pass" rule, a single violation could be tolerated
+        •       Without transparency scoring, disclosure gaps could persist
+
+§XX.12 — Constitutional Audit Module
+Every commercial action shall produce an immutable audit entry with a digital signature.
+What This Means in Practice:
+        •       Each audit entry has: audit ID, timestamp, entity, approver, transaction reference, revenue amount, benefit distribution, compliance result, compliance score, digital signature (HMAC-SHA256)
+        •       The digital signature is deterministic and verifiable
+        •       Audit entries are insert-only (no UPDATE or DELETE)
+        •       The audit trail is public and auditable
+Example:
+After a gold procurement settles, the Commercial Audit Module creates entry AUD-20250805-001234 with the entity (Markets), approver (Markets Committee), transaction reference, revenue amount ($2,550 performance participation), benefit distribution (60/25/15), compliance result (true), compliance score (100), and an HMAC-SHA256 digital signature. The entry is permanent and verifiable.
+Why This Matters:
+        •       Without immutable audit, commercial actions could be altered after the fact
+        •       Without digital signatures, audit entries could be forged
+        •       Without public auditability, the Institution's commercial claims are unverifiable
+
+§XX.13 — Reserve Ownership Protection
+Reserve assets shall never appear as assets of any entity other than the constitutional reserve pool (managed by Markets on behalf of the Institution).
+What This Means in Practice:
+        •       Reserve assets cannot appear as: Holding Company assets, Operations Ltd. assets, Markets Ltd. proprietary assets, employee assets, director assets, or owner assets
+        •       Only Markets Ltd. may interact with reserves, and only on behalf of the Institution
+        •       Reserve ownership is verified at every procurement and redemption
+        •       Violations block the transaction and trigger a constitutional alert
+Example:
+During a quarterly audit, the Reserve Ownership Protection module verifies that all gold bars in custody are owned by the "MITHQAL Reserve Pool" (managed by Markets Ltd.), not by MITHQAL Holding Company, MITHQAL Operations Ltd., any employee, or any director. The verification passes — reserves are correctly segregated.
+Why This Matters:
+        •       Without ownership protection, reserves could be claimed by any entity
+        •       Without verification at every transaction, ownership could drift over time
+        •       Without blocking violations, commingling could go undetected
+
+§XX.14 — Commercial Transparency
+The Institution shall publish a Commercial Transparency page showing all commercial governance information.
+What This Means in Practice:
+        •       Revenue sources (by entity and category)
+        •       Fee schedule (mint, redeem, transfer, execution)
+        •       Commercial principles (no hidden fees, no front running, no conflict of interest)
+        •       Performance participation policy and history
+        •       Conflict of interest policy
+        •       No hidden fees policy
+        •       Audit history (recent audit entries with digital signatures)
+Example:
+A visitor to the MITHQAL website navigates to the Commercial Transparency page and sees: total revenue YTD ($1.2M), broken down by entity (Operations $800K, Markets $300K, Holding $100K) and category (mint fees $500K, execution $200K, etc.). The fee schedule is displayed. The 7 compliance rules are listed. Recent audit entries are shown with their digital signatures.
+Why This Matters:
+        •       Without transparency, the Institution's commercial operations are opaque
+        •       Without published fee schedules, users cannot verify they are charged correctly
+        •       Without public audit history, the Institution's compliance claims are unverifiable
+
+§XX.15 — Institutional Stewardship
+The Institution shall maintain institutional stewardship over all commercial operations, ensuring alignment with constitutional principles.
+What This Means in Practice:
+        •       The Constitutional Council reviews commercial governance quarterly
+        •       The Risk Committee reviews procurement performance monthly
+        •       The Audit Committee reviews the commercial audit trail monthly
+        •       Any constitutional violation triggers immediate review
+        •       Commercial governance reports are published quarterly
+Example:
+The Constitutional Council reviews Q3 commercial governance: 45 procurements completed, all 12-stage workflows followed, average best execution score 87, total savings $340K (60% to reserve = $204K), compliance score 100%, zero violations. The report is published publicly.
+Why This Matters:
+        •       Without stewardship, commercial governance could drift from constitutional principles
+        •       Without regular review, violations could accumulate
+        •       Without public reporting, the Institution's stewardship is unverifiable
+
+§XX.16 — Interactive Reserve Flow Simulator
+The Institution shall provide a public interactive simulator demonstrating the full reserve flow from customer deposit to redemption.
+What This Means in Practice:
+        •       The simulator shows: customer deposits fiat → MTQ minted → reserve procurement → best execution → gold/silver purchase → custody → proof of reserve → performance participation → revenue allocation → reserve growth → redemption
+        •       Users can adjust transaction size and see the allocation in real-time
+        •       The simulator uses live NAV, fees, and allocation percentages
+Example:
+A visitor adjusts the simulator to $1M deposit. The simulator shows: $1M deposited → 908,264 MTQ minted (at NAV $1.10) → $5K mint fee → reserve procurement begins → gold purchased at best execution → custody verified → proof of reserve updated → performance participation calculated → revenue allocated (60% reserve, 25% markets, 15% commercial) → reserve grows by $X → user can redeem 908,264 MTQ for $1M.
+Why This Matters:
+        •       Without a simulator, the reserve flow is abstract and hard to understand
+        •       Without interactivity, users cannot see how their specific transaction size affects the system
+        •       Without live data, the simulator would be misleading
+
+[END OF ARTICLE XVIII — CONSTITUTIONAL COMMERCIAL GOVERNANCE & INSTITUTIONAL STEWARDSHIP]
+
 [END OF PART 2 — LAYER 2: MONETARY CONSTITUTION]
 Part 3: Layer 3 — Policy Framework
 Introduction — The Policy Framework

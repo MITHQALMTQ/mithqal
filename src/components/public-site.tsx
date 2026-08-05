@@ -63,6 +63,10 @@ import { useLanguage } from "@/components/language-provider";
 import { StressTestProof } from "@/components/stress-test-proof";
 import { E2EScenarios } from "@/components/e2e-scenarios";
 import { LiveReadinessDashboard } from "@/components/live-readiness-dashboard";
+import { CommercialGovernanceDashboard } from "@/components/commercial-governance-dashboard";
+import { CommercialTransparency } from "@/components/commercial-transparency";
+import { InstitutionalEconomics } from "@/components/institutional-economics";
+import { ReserveFlowSimulator } from "@/components/reserve-flow-simulator";
 
 const Reveal = ({
   children,
@@ -1875,6 +1879,29 @@ export default function PublicSite() {
           suites into a single board the COO/CTO can present externally.
           165 tests · 154 passed · 0 critical · conditionally ready. */}
       <LiveReadinessDashboard />
+      {/* Task 14-a — Commercial Governance Dashboard: surfaces the four
+          constitutional entities (Foundation, Holding, Operations, Markets),
+          the 12-stage procurement workflow, weighted-median benchmark pricing,
+          12-criteria best-execution scoring, the 60/25/15 performance
+          participation split, compliance scores, and the immutable
+          HMAC-SHA256 audit trail. Chapter XX — Constitutional Commercial
+          Governance & Institutional Stewardship. */}
+      <CommercialGovernanceDashboard />
+      {/* Task 14-a — Commercial Transparency: public disclosure of every
+          fee, every revenue source, the 6 commercial principles, the
+          conflict-of-interest policy, the no-hidden-fees policy, and the
+          audit history. */}
+      <CommercialTransparency />
+      {/* Task 14-a — Institutional Economics: visual flow diagram showing
+          how funds move from participants → Operations → Markets → Reserve
+          → back to participants, plus entity responsibilities and reserve
+          integrity guardrails. */}
+      <InstitutionalEconomics />
+      {/* Task 14-a — Reserve Flow Simulator: interactive slider ($1K–$10M)
+          showing exactly where every dollar of a transaction goes — mint
+          fee, net to procurement, gold purchased, savings split, reserve
+          growth, and redemption path. */}
+      <ReserveFlowSimulator />
       <Governance />
       <Lifecycle />
       <Eligibility />

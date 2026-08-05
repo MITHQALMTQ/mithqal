@@ -259,6 +259,29 @@ export async function ensureSchema(): Promise<void> {
     `CREATE INDEX IF NOT EXISTS "AssumptionsRegister_simulationType_idx" ON "AssumptionsRegister"("simulationType")`,
     `CREATE INDEX IF NOT EXISTS "AssumptionsRegister_date_idx" ON "AssumptionsRegister"("date")`,
     `CREATE INDEX IF NOT EXISTS "AssumptionsRegister_createdAt_idx" ON "AssumptionsRegister"("createdAt")`,
+
+    // Chapter XX — Constitutional Commercial Governance (v20)
+    // Procurement records: immutable 12-stage workflow for reserve procurement
+    `CREATE TABLE IF NOT EXISTS "ProcurementRecord" ("id" TEXT PRIMARY KEY NOT NULL, "asset" TEXT NOT NULL, "amountUsd" REAL NOT NULL, "quantity" REAL NOT NULL, "currentStage" TEXT NOT NULL, "stageHistory" TEXT NOT NULL, "benchmark" TEXT, "bestExecution" TEXT, "dealer" TEXT, "executionPrice" REAL, "savings" REAL, "complianceResult" TEXT, "auditId" TEXT, "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, "completedAt" DATETIME)`,
+    `CREATE INDEX IF NOT EXISTS "ProcurementRecord_asset_idx" ON "ProcurementRecord"("asset")`,
+    `CREATE INDEX IF NOT EXISTS "ProcurementRecord_currentStage_idx" ON "ProcurementRecord"("currentStage")`,
+    `CREATE INDEX IF NOT EXISTS "ProcurementRecord_createdAt_idx" ON "ProcurementRecord"("createdAt")`,
+
+    // Commercial revenue entries: live revenue accounting by entity + category
+    `CREATE TABLE IF NOT EXISTS "RevenueEntry" ("id" TEXT PRIMARY KEY NOT NULL, "entity" TEXT NOT NULL, "category" TEXT NOT NULL, "amountUsd" REAL NOT NULL, "transactionRef" TEXT, "description" TEXT NOT NULL, "timestamp" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP)`,
+    `CREATE INDEX IF NOT EXISTS "RevenueEntry_entity_idx" ON "RevenueEntry"("entity")`,
+    `CREATE INDEX IF NOT EXISTS "RevenueEntry_category_idx" ON "RevenueEntry"("category")`,
+    `CREATE INDEX IF NOT EXISTS "RevenueEntry_timestamp_idx" ON "RevenueEntry"("timestamp")`,
+
+    // Commercial audit entries: immutable audit trail with digital signatures
+    `CREATE TABLE IF NOT EXISTS "CommercialAuditEntry" ("auditId" TEXT PRIMARY KEY NOT NULL, "timestamp" DATETIME NOT NULL, "entity" TEXT NOT NULL, "approver" TEXT NOT NULL, "transactionRef" TEXT NOT NULL, "revenueAmount" REAL NOT NULL, "benefitDistribution" TEXT NOT NULL, "complianceResult" INTEGER NOT NULL, "complianceScore" REAL NOT NULL, "digitalSignature" TEXT NOT NULL)`,
+    `CREATE INDEX IF NOT EXISTS "CommercialAuditEntry_entity_idx" ON "CommercialAuditEntry"("entity")`,
+    `CREATE INDEX IF NOT EXISTS "CommercialAuditEntry_timestamp_idx" ON "CommercialAuditEntry"("timestamp")`,
+
+    // Reserve ownership records: tracks which entity owns/holds each reserve asset
+    `CREATE TABLE IF NOT EXISTS "ReserveOwnership" ("id" INTEGER PRIMARY KEY AUTOINCREMENT, "assetClass" TEXT NOT NULL, "ownerEntity" TEXT NOT NULL, "custodian" TEXT NOT NULL, "amount" REAL NOT NULL, "valueUsd" REAL NOT NULL, "verified" INTEGER NOT NULL DEFAULT 1, "lastVerifiedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP)`,
+    `CREATE INDEX IF NOT EXISTS "ReserveOwnership_assetClass_idx" ON "ReserveOwnership"("assetClass")`,
+    `CREATE INDEX IF NOT EXISTS "ReserveOwnership_ownerEntity_idx" ON "ReserveOwnership"("ownerEntity")`,
   ]
 
   try {
@@ -1001,6 +1024,65 @@ export async function transaction<T>(
   } catch (err) {
     await tx.rollback()
     throw err
+  }
+}
+
+/* ---- Generic parameterised SQL helper ----
+ * Exposed so Chapter XX (Commercial Governance) routes can run ad-hoc
+ * parameterised SQL against the new tables (ProcurementRecord,
+ * RevenueEntry, CommercialAuditEntry, ReserveOwnership) without each
+ * route having to re-import the raw client. Returns the underlying
+ * libsql ResultSet so callers can map rows themselves.
+ *
+ * Usage:
+ *   const rs = await rawQuery(
+ *     `SELECT * FROM "ProcurementRecord" WHERE "id" = ? ORDER BY "createdAt" DESC LIMIT ?`,
+ *     [id, 20],
+ *   )
+ *   return rs.rows.map(rowToProcurementRecord)
+ *
+ * NOTE: ensures the Chapter XX tables exist on every call (idempotent —
+ * CREATE TABLE IF NOT EXISTS). This is necessary because the
+ * `globalForDb.__schemaInitialized` flag may have been set true before
+ * these tables were added (dev-server hot reload preserves globalThis).
+ */
+const CHAPTER_XX_SCHEMA_STATEMENTS: string[] = [
+  `CREATE TABLE IF NOT EXISTS "ProcurementRecord" ("id" TEXT PRIMARY KEY NOT NULL, "asset" TEXT NOT NULL, "amountUsd" REAL NOT NULL, "quantity" REAL NOT NULL, "currentStage" TEXT NOT NULL, "stageHistory" TEXT NOT NULL, "benchmark" TEXT, "bestExecution" TEXT, "dealer" TEXT, "executionPrice" REAL, "savings" REAL, "complianceResult" TEXT, "auditId" TEXT, "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, "completedAt" DATETIME)`,
+  `CREATE INDEX IF NOT EXISTS "ProcurementRecord_asset_idx" ON "ProcurementRecord"("asset")`,
+  `CREATE INDEX IF NOT EXISTS "ProcurementRecord_currentStage_idx" ON "ProcurementRecord"("currentStage")`,
+  `CREATE INDEX IF NOT EXISTS "ProcurementRecord_createdAt_idx" ON "ProcurementRecord"("createdAt")`,
+  `CREATE TABLE IF NOT EXISTS "RevenueEntry" ("id" TEXT PRIMARY KEY NOT NULL, "entity" TEXT NOT NULL, "category" TEXT NOT NULL, "amountUsd" REAL NOT NULL, "transactionRef" TEXT, "description" TEXT NOT NULL, "timestamp" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP)`,
+  `CREATE INDEX IF NOT EXISTS "RevenueEntry_entity_idx" ON "RevenueEntry"("entity")`,
+  `CREATE INDEX IF NOT EXISTS "RevenueEntry_category_idx" ON "RevenueEntry"("category")`,
+  `CREATE INDEX IF NOT EXISTS "RevenueEntry_timestamp_idx" ON "RevenueEntry"("timestamp")`,
+  `CREATE TABLE IF NOT EXISTS "CommercialAuditEntry" ("auditId" TEXT PRIMARY KEY NOT NULL, "timestamp" DATETIME NOT NULL, "entity" TEXT NOT NULL, "approver" TEXT NOT NULL, "transactionRef" TEXT NOT NULL, "revenueAmount" REAL NOT NULL, "benefitDistribution" TEXT NOT NULL, "complianceResult" INTEGER NOT NULL, "complianceScore" REAL NOT NULL, "digitalSignature" TEXT NOT NULL)`,
+  `CREATE INDEX IF NOT EXISTS "CommercialAuditEntry_entity_idx" ON "CommercialAuditEntry"("entity")`,
+  `CREATE INDEX IF NOT EXISTS "CommercialAuditEntry_timestamp_idx" ON "CommercialAuditEntry"("timestamp")`,
+  `CREATE TABLE IF NOT EXISTS "ReserveOwnership" ("id" INTEGER PRIMARY KEY AUTOINCREMENT, "assetClass" TEXT NOT NULL, "ownerEntity" TEXT NOT NULL, "custodian" TEXT NOT NULL, "amount" REAL NOT NULL, "valueUsd" REAL NOT NULL, "verified" INTEGER NOT NULL DEFAULT 1, "lastVerifiedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP)`,
+  `CREATE INDEX IF NOT EXISTS "ReserveOwnership_assetClass_idx" ON "ReserveOwnership"("assetClass")`,
+  `CREATE INDEX IF NOT EXISTS "ReserveOwnership_ownerEntity_idx" ON "ReserveOwnership"("ownerEntity")`,
+]
+
+let __chapterXxSchemaEnsured = false
+async function ensureChapterXxSchema(): Promise<void> {
+  if (__chapterXxSchemaEnsured) return
+  for (const sql of CHAPTER_XX_SCHEMA_STATEMENTS) {
+    await _rawClient.execute(sql)
+  }
+  __chapterXxSchemaEnsured = true
+}
+
+export async function rawQuery<T extends Record<string, unknown> = Record<string, unknown>>(
+  sql: string,
+  args: ReadonlyArray<string | number | null> = [],
+): Promise<{ rows: T[]; rowsAffected?: number; lastInsertRowid?: number | bigint }> {
+  await ensureSchema()
+  await ensureChapterXxSchema()
+  const result = await _rawClient.execute({ sql, args: args as never })
+  return {
+    rows: (result.rows ?? []) as T[],
+    rowsAffected: result.rowsAffected,
+    lastInsertRowid: result.lastInsertRowid,
   }
 }
 
