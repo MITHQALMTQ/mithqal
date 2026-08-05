@@ -5,6 +5,7 @@ import { ArrowLeft, Film, Play, Pause, ExternalLink, Download } from "lucide-rea
 import Link from "next/link";
 
 const SCENE_DURATION = 5000; // 5 seconds per scene
+const AUDIO_BASE = "https://raw.githubusercontent.com/MITHQALMTQ/mithqal/main/public/video";
 
 const scenes = [
   { num: 1, title: "The Problem", time: "0:00–0:15", type: "Motion Graphic", desc: "Cross-border settlement pain points", audio: "vo-01-problem.wav" },
@@ -33,7 +34,7 @@ export default function VideoPage() {
 
     // Play audio for current scene
     if (audioRef.current) {
-      audioRef.current.src = `/video/${scene.audio}`;
+      audioRef.current.src = `${AUDIO_BASE}/${scene.audio}`;
       audioRef.current.play().catch(() => {});
     }
 
