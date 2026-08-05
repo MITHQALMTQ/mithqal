@@ -818,7 +818,7 @@ function testVelocityAndCirculation(r: TestRunner): void {
     // BUT Thiers' law: when floating, "good money drives out bad" — people prefer to hold appreciating MTQ.
     // Evidence of hoarding: low redemption velocity vs mint velocity.
     const mintVelocity = 100_000_000 / (s.supply * state.nav.market);
-    const redeemVelocity = 50_000_000 / (s.supply * state.nav.market);
+    const redeemVelocity = 54_000_000 / (s.supply * state.nav.market);
     const hoarding = redeemVelocity < mintVelocity;
     r.test(
       "Gresham's law check (NAV > $1 → MTQ hoarded, not spent)",
