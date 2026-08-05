@@ -64,7 +64,7 @@ export default function VideoPage() {
 
         {/* Thumbnail */}
         <div className="mb-12 overflow-hidden rounded-2xl border border-[#C9A961]/20">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
+          {/* @next/next/no-img-element — using img for simplicity */}
           <img
             src="/video/thumbnail.png"
             alt="MITHQAL Demo Video Thumbnail"
