@@ -1435,8 +1435,9 @@ function LegalStatus() {
                 Verify on MonadScan
               </div>
               <div className="text-xs text-fg-muted">
-                All 10 smart contracts (MTQ, Governance, Safe, Algorithm, Reserve,
-                Mint, Redeem, Oracle, Takaful) are deployed on Monad Testnet.
+                All 9 protocol smart contracts (MTQ, Governance, Algorithm, Reserve,
+                Mint, Redeem, Oracle, Takaful, MockOracle) plus the Safe Multi-Sig
+                Treasury and the Deployment Wallet are deployed on Monad Testnet.
                 Every claim made on this page can be independently verified
                 against the public ledger.
               </div>

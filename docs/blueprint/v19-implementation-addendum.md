@@ -83,10 +83,10 @@ This addendum documents all modifications made during implementation that differ
 **Blueprint specifies:** Formal verification of smart contract invariants
 
 **Implementation:** The following tools were used (all free, open-source):
-- **Foundry 1.7.1:** 241/241 tests pass (10,000 fuzz runs each, 50-depth invariant testing)
-- **Slither 0.11.6:** 0 findings (102 detectors)
-- **Halmos 0.3.3:** Symbolic execution via Z3 SMT solver
-- **Certora Prover 8.18.0:** CVL spec written (ghost-state tracking); 8+ jobs submitted; cloud outage pending
+- **Foundry 1.7.1:** Test suite exists (10 test files); execution requires forge installation — not re-verified in audit environment (previous internal runs reported 241/241 tests pass with 10,000 fuzz runs each, 50-depth invariant testing)
+- **Slither 0.11.6:** Not run in audit environment; previous internal runs reported 0 findings (102 detectors) — pending re-verification
+- **Halmos 0.3.3:** Not run in audit environment — symbolic execution via Z3 SMT solver pending
+- **Certora Prover 8.18.0:** CVL specification completed (ghost-state tracking); verification execution pending (cloud prover unavailable in audit environment)
 
 **Recommendation:** Update blueprint §38 to list the specific tools used and their results. Add: "The Institution shall use Foundry for property-based fuzz testing, Slither for static analysis, Halmos for symbolic execution, and Certora Prover for mathematical formal verification. All four tools shall be run in CI before mainnet deployment."
 

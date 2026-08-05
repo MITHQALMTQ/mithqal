@@ -133,7 +133,7 @@ Legend:
 |---|---|
 | §29 | `detectRebalanceTriggers` defines 9 trigger types but only **implements 3** (weight_drift, reserve_ratio, LCR). Missing: `layer_breach`, `bullion_band`, `stablecoin_eligibility`, `currency_eligibility`, `concentration_cap`, `minimum_floor`. |
 | §37 | 7-proof framework + 20-field contents defined; drift guard + 1-hour rate limit implemented per addendum #17; metadata field count reportedly short of 30. |
-| §38 | Foundry 241/241, Slither 0, Halmos done; Certora cloud outage pending (per addendum #7). |
+| §38 | Foundry suite exists (10 test files, forge execution pending); Slither pending; Halmos pending; Certora CVL spec completed (cloud execution pending) (per addendum #7). |
 | §39 | Key hierarchy + sign/verify/thresholdSign implemented; post-quantum migration is roadmap only. |
 | §42 | PoR metadata reportedly 9 of 30 mandatory fields. |
 | §46 | 104 forbidden words vs ~119 implied; all 10 categories present. |

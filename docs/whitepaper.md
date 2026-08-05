@@ -22,14 +22,14 @@ MITHQAL is a constitutional monetary institution that provides neutral, fully re
 | **Constitutional Governance** | Immutable principles, independent oversight, 4 absolute invariants |
 | **Deterministic Monetary Engine** | Algorithmic weighting based on objective data (COFER, SWIFT, BIS) |
 | **Sharia-Compliant by Design** | AAOIFI review submitted; independent Sharia Committee planned |
-| **Formal Verification** | Certora-verified (same tool as Aave, Compound, US Treasury) |
+| **Formal Verification** | Certora specification completed; formal verification execution pending (same tool as Aave, Compound, US Treasury) |
 | **Neutral** | No political, economic, or jurisdictional alignment |
 
 **Current Status:**
 
 - ✅ Constitution complete (500+ pages, 5 Layers, 65 Sections)
-- ✅ Smart contracts deployed and verified on Monad Testnet (10 contracts)
-- ✅ Formal verification achieved (12/12 invariants proven)
+- ✅ Smart contracts deployed and verified on Monad Testnet (9 Protocol Smart Contracts + 1 Safe Multi-Signature Treasury + 1 Deployment Wallet (EOA))
+- ✅ Certora specification completed (formal verification execution pending)
 - ✅ Sharia review submitted to AAOIFI
 - ✅ Live dashboard and open-source code available
 - ✅ Operating entity established (JOZOUR LLC, NJ, EIN 84-3470275)
@@ -146,30 +146,44 @@ The Monetary Engine determines currency basket weights algorithmically:
 
 ### 5.1 Smart Contracts
 
-All contracts are deployed and verified on **Monad Testnet** (Chain ID 10143).
+All protocol contracts are deployed and verified on **Monad Testnet** (Chain ID 10143). The on-chain footprint comprises **9 Protocol Smart Contracts**, **1 Safe Multi-Signature Treasury** (Gnosis Safe — not an ERC-20), and **1 Deployment Wallet** (EOA — not a contract). See [`docs/contracts/CONTRACT_REGISTRY.md`](contracts/CONTRACT_REGISTRY.md) for the authoritative registry.
 
-| Contract | Address | Purpose |
-|----------|---------|---------|
-| **MTQ.sol** | `0x9e6EdC15DAc420931508d8Ddf9BC817651A253aD` | Settlement unit (ERC-20) |
-| **Governance.sol** | `0xE35a91801bc541fb743BB9EaD26C1FbD81EaBd66` | Council voting, timelocks |
-| **Safe** | `0xE71869C662733642bfBb262B8c6bad8B0fBfA7D0` | Multi-sig safe |
-| **Algorithm.sol** | `0x8839ce50e8D414005518769999c0A5b961D00CB2` | Monetary Engine |
-| **Reserve.sol** | `0x1bbCd78E4DEF79b7a3B77242770cbAefAC816177` | Reserve management |
-| **Mint.sol** | `0x197e9CB28216dfe18a199b4c2930F74C2F460809` | Minting logic |
-| **Redeem.sol** | `0x963201C0Fa258033CCDdFcDceb8B5E3bc2b435a4` | Redemption logic |
-| **Oracle.sol** | `0xDfcA66ac0450C9AB86307af1942E157C5A4DB713` | Data feed aggregation |
-| **Takaful.sol** | `0x3eC27BB283644eF0A98B9961E9FBED0583a02f19` | Risk protection (mutual insurance) |
-| **Deployer** | `0x3C3932F865892EFabE45892f453f81B64f6c8d8c` | Primary wallet |
+**Protocol Smart Contracts (9):**
+
+| # | Contract | Address | Purpose |
+|---|----------|---------|---------|
+| 1 | **MTQ.sol** | `0x9e6EdC15DAc420931508d8Ddf9BC817651A253aD` | Settlement unit (ERC-20) |
+| 2 | **Governance.sol** | `0xE35a91801bc541fb743BB9EaD26C1FbD81EaBd66` | Council voting, timelocks |
+| 3 | **Algorithm.sol** | `0x8839ce50e8D414005518769999c0A5b961D00CB2` | Monetary Engine |
+| 4 | **Reserve.sol** | `0x1bbCd78E4DEF79b7a3B77242770cbAefAC816177` | Reserve management |
+| 5 | **Mint.sol** | `0x197e9CB28216dfe18a199b4c2930F74C2F460809` | Minting logic |
+| 6 | **Redeem.sol** | `0x963201C0Fa258033CCDdFcDceb8B5E3bc2b435a4` | Redemption logic |
+| 7 | **Oracle.sol** | `0xDfcA66ac0450C9AB86307af1942E157C5A4DB713` | Data feed aggregation |
+| 8 | **Takaful.sol** | `0x3eC27BB283644eF0A98B9961E9FBED0583a02f19` | Risk protection (mutual insurance) |
+| 9 | **MockOracle.sol** | (test only) | Test oracle (testnet only) |
+
+**Operational Governance (1):**
+
+| # | Entity | Address | Type |
+|---|--------|---------|------|
+| 1 | Safe Multi-Sig Treasury | `0xE71869C662733642bfBb262B8c6bad8B0fBfA7D0` | Gnosis Safe (not an ERC-20) |
+
+**Deployment (1):**
+
+| # | Entity | Address | Type |
+|---|--------|---------|------|
+| 1 | Deployment Wallet | `0x3C3932F865892EFabE45892f453f81B64f6c8d8c` | EOA (not a contract) |
 
 **Roles Configured:** DEFAULT_ADMIN_ROLE, MINTER_ROLE, PAUSER_ROLE.
 
 ### 5.2 Formal Verification
 
 - **Tool:** Certora Prover (same as Aave, Compound, US Treasury)
-- **12 constitutional invariants** verified
-- **239/240 tests** passing (1 intentional edge case)
-- **Slither static analysis:** 0 HIGH/CRITICAL, 88 LOW (informational)
-- **Halmos symbolic execution:** 0 violations
+- **Status:** Certora specification completed. Formal verification execution pending.
+- **12 constitutional invariants** specified in CVL
+- **Foundry test suite exists (10 test files); test execution requires forge installation**
+- **Slither static analysis:** results pending (tool not run in audit environment)
+- **Halmos symbolic execution:** results pending (tool not run in audit environment)
 
 ### 5.3 Oracle Architecture
 
@@ -244,8 +258,8 @@ Sharia compliance is embedded from the beginning, not an afterthought. MITHQAL h
 ### 8.1 Completed
 
 - ✅ Constitution v19.0 (500+ pages, 5 Layers, 65 Sections)
-- ✅ Smart contracts deployed and verified (10 contracts on Monad Testnet)
-- ✅ Formal verification (Certora — 12 invariants proven)
+- ✅ Smart contracts deployed and verified (9 Protocol Smart Contracts + 1 Safe Multi-Signature Treasury + 1 Deployment Wallet (EOA) on Monad Testnet)
+- ✅ Certora specification completed (formal verification execution pending)
 - ✅ Sharia review submitted to AAOIFI
 - ✅ Live dashboard and open-source code
 - ✅ Operating entity established (JOZOUR LLC, NJ, EIN 84-3470275)

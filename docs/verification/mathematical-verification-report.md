@@ -1,8 +1,8 @@
-# MITHQAL — Mathematical & Stress Certification Report
+# MITHQAL — Mathematical & Stress Verification Report
 
 **Task ID**: 12-b
 **Authority**: Chief Verification Engineer + Chief Mathematical Systems Engineer
-**Scope**: Phase 6 (Mathematical Certification) + Phase 7 (Institutional Stress Testing)
+**Scope**: Phase 6 (Mathematical Verification) + Phase 7 (Institutional Stress Testing)
 **Date**: 2026-07-19
 **Engine Version**: MITHQAL Monetary Engine v19.0.9 (8% constitutional buffer, PAR-based RR per v19.0.2)
 **Blueprint Source**: `/home/z/my-project/docs/blueprint/blueprint.txt` (28,456 lines)
@@ -22,7 +22,7 @@
 | 7 | Federal/Institutional Tests | 56/60 PASS (93.3%) | ❌ 2 BLOCKERs (CCAR capital, not math) |
 | 8 | E2E Workflow Tests | 5/5 scenarios PASS, ALL INVARIANTS HOLD | 100% |
 
-**Overall Mathematical Certification Score: 96 / 100**
+**Overall Mathematical Verification Score: 96 / 100**
 
 Deductions (none are mathematical errors):
 - −2: CCAR Severely Adverse Total Capital = 7.87% (threshold ≥8%) — capital sizing, not math (would require raising buffer from 8%→9% to clear)
@@ -54,7 +54,7 @@ All 13 mathematical elements are mathematically correct. All 14+ stress scenario
 
 ---
 
-## Part 1 — Mathematical Certification (13 Elements)
+## Part 1 — Mathematical Verification (13 Elements)
 
 ### 1. Reserve Engine — R_m, R_a, R_l (3-Layer Valuation with Haircuts)
 
@@ -372,7 +372,7 @@ The decomposition sums exactly to 100% — confirming the sequential attribution
 
 ---
 
-## Part 4 — Overall Mathematical Certification Score
+## Part 4 — Overall Mathematical Verification Score
 
 ### Scoring Breakdown
 
@@ -451,15 +451,15 @@ The decomposition sums exactly to 100% — confirming the sequential attribution
 
 ## Part 7 — Conclusion
 
-### Mathematical Certification: ✅ CERTIFIED
+### Mathematical Verification: ✅ Internally Validated (Pending External Validation)
 
-All 13 mathematical elements are mathematically correct, Decimal128-precise, and deterministic. The §17.4 Shock Absorber formula matches the corrected spec exactly. The §4 PAR-based Reserve Ratio (v19.0.2 fix) is implemented correctly. The §34 Bullion Protection Rule is mathematically proven and empirically verified over 100,000 Monte Carlo simulations (P(violation) = 0.0000%).
+All 13 mathematical elements are mathematically correct, Decimal128-precise, and deterministic. The §17.4 Shock Absorber formula matches the corrected spec exactly. The §4 PAR-based Reserve Ratio (v19.0.2 fix) is implemented correctly. The §34 Bullion Protection Rule is mathematically proven and empirically verified over 100,000 Monte Carlo simulations (P(violation) = 0.0000%). Pending: independent third-party mathematical audit.
 
-### Stress Certification: ✅ CERTIFIED (with documented CCAR capital blocker)
+### Stress Verification: ✅ Internally Validated (with documented CCAR capital blocker)
 
-All 14+ stress scenarios pass constitutional compliance. The single documented breach (CCAR Severely Adverse, RR=94%) is by design — the constitution responds correctly by pausing minting (§22A), preserving redemption (§36.3), protecting bullion (§34.2), and enabling emergency governance (§44). No stress scenario resulted in redemption pause, bullion protection violation, or basket verification failure.
+All 14+ stress scenarios pass constitutional compliance. The single documented breach (CCAR Severely Adverse, RR=94%) is by design — the constitution responds correctly by pausing minting (§22A), preserving redemption (§36.3), protecting bullion (§34.2), and enabling emergency governance (§44). No stress scenario resulted in redemption pause, bullion protection violation, or basket verification failure. Pending: independent stress-test audit.
 
-### Monte Carlo Certification: ✅ CERTIFIED
+### Monte Carlo Verification: ✅ Internally Validated
 
 100,000 Monte Carlo simulations (seed=42, Mulberry32 PRNG, 219ms execution):
 - P(Reserve Breach) = 0.9790% ≤ 1.0% target ✅
@@ -472,12 +472,12 @@ All 14+ stress scenarios pass constitutional compliance. The single documented b
 - 99% CVaR = $4.812M > 99% VaR ✅
 - 99.9% CVaR = $5.953M > 99.9% VaR ✅
 
-### Overall Mathematical Certification Score: **96 / 100**
+### Overall Mathematical Verification Score: **96 / 100**
 
-The MITHQAL Monetary Engine v19.0.9 is mathematically certified and constitutionally compliant under stress. The 4-point deduction is for capital sizing under CCAR Severely Adverse (not a mathematical error) and a first-mint bootstrap edge case (Medium-severity, 1-line fix). The mathematical core — formulas, precision, determinism, and constitutional invariants — is 100% correct.
+The MITHQAL Monetary Engine v19.0.9 is internally mathematically validated and constitutionally compliant under stress. The 4-point deduction is for capital sizing under CCAR Severely Adverse (not a mathematical error) and a first-mint bootstrap edge case (Medium-severity, 1-line fix). The mathematical core — formulas, precision, determinism, and constitutional invariants — is 100% correct. **Pending external mathematical audit before mainnet deployment.**
 
 **Recommendation**: PROCEED to live deployment with monitoring of CCAR capital thresholds. The 2 federal blockers (Total Capital ≥8%, Leverage ≥3% under CCAR Severely Adverse) are addressed by raising the constitutional buffer from 8% to 9% (Constitutional Council decision; survival rises to 99.66%; capital lock $541K; efficiency drops to 184).
 
 ---
 
-*End of Mathematical & Stress Certification Report — Task 12-b*
+*End of Mathematical & Stress Verification Report — Task 12-b*

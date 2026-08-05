@@ -267,7 +267,7 @@ export default function TestnetAudit() {
             </div>
             <div className="mt-4 flex items-center gap-3 rounded-lg border border-gold/40 bg-gold/[0.08] p-4">
               <Badge className="border-gold/40 bg-gold/15 text-gold hover:bg-gold/15">{status}</Badge>
-              <span className="text-sm text-fg-muted">Contracts deployed on Monad Testnet (verified on MonadScan, 9/9 on-chain tests PASS). Foundry fuzz tests specified (69 tests across 4 suites); toolchain not yet installed in CI — results pending independent run. Slither static analysis targeted, not yet executed. Pending independent audit before mainnet.</span>
+              <span className="text-sm text-fg-muted">9 Protocol Smart Contracts + 1 Safe Multi-Sig Treasury + 1 Deployment Wallet (EOA) deployed on Monad Testnet (verified on MonadScan, 15/15 on-chain tests PASS). Foundry test suite present (10 test files); execution requires forge installation in audit environment. Slither static analysis pending. Certora CVL spec complete; cloud execution pending. Pending independent audit before mainnet.</span>
             </div>
           </div>
         </Reveal>
@@ -515,7 +515,7 @@ export default function TestnetAudit() {
             </div>
             <div className="mt-4 flex items-center gap-3 rounded-lg border border-gold/40 bg-gold/[0.08] p-4">
               <Badge className="border-gold/40 bg-gold/15 text-gold hover:bg-gold/15">{status}</Badge>
-              <span className="text-sm text-fg-muted">Contracts live on Monad Testnet (9/9 on-chain tests PASS). Foundry fuzz tests specified (69 tests across 4 suites); toolchain not yet installed in CI — results pending independent run. Slither static analysis targeted, not yet executed. Certora specs written; specs not executed; formal verification pending licence acquisition.</span>
+              <span className="text-sm text-fg-muted">9 Protocol Smart Contracts live on Monad Testnet (15/15 on-chain tests PASS, plus Safe Multi-Sig Treasury + Deployment Wallet EOA = 11 on-chain addresses). Foundry test suite present (10 test files); execution requires forge installation in audit environment. Slither static analysis pending. Certora CVL specs written; specs not executed; formal verification execution pending.</span>
             </div>
           </div>
           </ExpandableDetails>
