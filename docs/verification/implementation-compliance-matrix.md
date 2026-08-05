@@ -420,11 +420,11 @@
 - **Evidence:** Multi-jurisdiction custody model; 3-jurisdiction minimum; 4-custodian minimum; vendor sunset (3-year); emergency override limits
 - **Gap:** None at framework level
 
-### Article VII: Formal Verification — ✅ Implemented
+### Article VII: Formal Verification — ⚠️ Specified (Execution Pending)
 - **Blueprint:** lines 20549–21204
-- **Implementation:** `foundry/certora/MTQ.spec`, `MockOracle.spec` (Certora Prover specs); `foundry/test/MTQInvariant.t.sol`, `MockOracleInvariant.t.sol` (Foundry invariant tests); `src/lib/tests/constitutional-stress-engine.ts` Phase 6 `proveBullionProtection()` (mathematical proof)
-- **Evidence:** Certora verification specs present; Foundry invariant tests present; mathematical proof for Bullion Protection Rule present
-- **Gap:** Certora specs cover MTQ + MockOracle only — Mint, Redeem, Reserve, Algorithm, Governance, Takaful, Oracle specs NOT present
+- **Implementation:** `foundry/certora/MTQ.spec`, `MockOracle.spec` (Certora Prover CVL specs); `foundry/test/MTQInvariant.t.sol`, `MockOracleInvariant.t.sol` (Foundry invariant tests); `src/lib/tests/constitutional-stress-engine.ts` Phase 6 `proveBullionProtection()` (mathematical proof)
+- **Evidence:** Certora CVL specifications present (execution pending — cloud prover unavailable in audit environment); Foundry invariant test files present (execution pending — forge not installed); mathematical proof for Bullion Protection Rule present (internally validated)
+- **Gap:** Certora specs cover MTQ + MockOracle only — Mint, Redeem, Reserve, Algorithm, Governance, Takaful, Oracle specs NOT present. All tool executions (forge, slither, halmos, Certora Prover) pending re-verification in an external audit environment.
 
 ### Article VIII: Disaster Recovery — ❌ MISSING
 - **Blueprint:** lines 21205–22171
