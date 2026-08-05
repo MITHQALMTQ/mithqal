@@ -1,4 +1,3 @@
-// Vercel deployment trigger
 import { ArrowLeft, ExternalLink, Download, Play, Film } from "lucide-react";
 import Link from "next/link";
 
@@ -6,6 +5,8 @@ export const metadata = {
   title: "MITHQAL — Circle Hackathon Demo Video",
   description: "Professional demo video package for Circle Hackathon submission",
 };
+
+const GITHUB_RAW = "https://raw.githubusercontent.com/MITHQALMTQ/mithqal/main/docs/video";
 
 const voiceOvers = [
   { id: "01", title: "The Problem", file: "vo-01-problem.wav", duration: "0:00–0:15" },
@@ -157,7 +158,7 @@ export default function VideoPage() {
                   <span className="text-xs text-white/40 font-mono">{vo.duration}</span>
                 </div>
                 <audio controls className="w-full" preload="none">
-                  <source src={`/video/${vo.file}`} type="audio/wav" />
+                  <source src={`${GITHUB_RAW}/${vo.file}`} type="audio/wav" />
                 </audio>
               </div>
             ))}
