@@ -22,8 +22,19 @@
     color: var(--white);
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
     overflow: hidden;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  /* Scale the 1920x1080 content to fit any viewport */
+  .stage {
     width: 1920px;
     height: 1080px;
+    transform-origin: center center;
+    position: relative;
+    flex-shrink: 0;
   }
   .scene {
     position: absolute;
@@ -437,8 +448,9 @@
 </head>
 <body>
 
-<div class="scene-counter">Scene <span id="sceneNum">1</span> / 10 — Press ← → to navigate</div>
+<div class="scene-counter">Scene <span id="sceneNum">1</span> / 10 — Auto-playing</div>
 
+<div class="stage">
 <!-- SCENE 1: Problem -->
 <div class="scene active" id="scene1">
   <div class="title">Cross-border settlement remains <strong>slow, expensive,</strong> and <strong>fragmented.</strong></div>
@@ -597,16 +609,30 @@
   <div class="url">mithqal.vercel.app</div>
 </div>
 
+</div><!-- /.stage -->
+
 <!-- Navigation -->
 <div class="nav">
   <button onclick="prevScene()">◀ Prev</button>
+  <button onclick="toggleAutoPlay()" id="playBtn">⏸ Pause</button>
   <button onclick="nextScene()">Next ▶</button>
+</div>
+
+<!-- Progress bar -->
+<div style="position:fixed;top:0;left:0;width:100%;height:3px;background:rgba(255,255,255,0.1);z-index:200;">
+  <div id="progressBar" style="width:0%;height:100%;background:var(--gold);transition:width 0.1s linear;"></div>
 </div>
 
 <script>
   let currentScene = 1;
+  let autoPlay = true;
+  const SCENE_DURATION = 4000; // 4 seconds per scene
   const scenes = document.querySelectorAll('.scene');
   const sceneNum = document.getElementById('sceneNum');
+  const progressBar = document.getElementById('progressBar');
+  const playBtn = document.getElementById('playBtn');
+  let progressTimer = null;
+  let sceneTimer = null;
 
   function showScene(n) {
     scenes.forEach(s => s.classList.remove('active'));
@@ -614,6 +640,8 @@
     if (scene) {
       scene.classList.add('active');
       sceneNum.textContent = n;
+      // Reset progress bar
+      if (progressBar) progressBar.style.width = '0%';
     }
   }
 
@@ -621,6 +649,12 @@
     if (currentScene < 10) {
       currentScene++;
       showScene(currentScene);
+      if (autoPlay) startProgress();
+    } else {
+      // Loop back to scene 1
+      currentScene = 1;
+      showScene(currentScene);
+      if (autoPlay) startProgress();
     }
   }
 
@@ -628,13 +662,59 @@
     if (currentScene > 1) {
       currentScene--;
       showScene(currentScene);
+      if (autoPlay) startProgress();
+    }
+  }
+
+  function startProgress() {
+    if (progressTimer) clearInterval(progressTimer);
+    if (sceneTimer) clearTimeout(sceneTimer);
+    
+    let elapsed = 0;
+    const interval = 50;
+    progressTimer = setInterval(() => {
+      elapsed += interval;
+      const pct = (elapsed / SCENE_DURATION) * 100;
+      if (progressBar) progressBar.style.width = pct + '%';
+    }, interval);
+    
+    sceneTimer = setTimeout(() => {
+      if (autoPlay) nextScene();
+    }, SCENE_DURATION);
+  }
+
+  function toggleAutoPlay() {
+    autoPlay = !autoPlay;
+    if (autoPlay) {
+      playBtn.textContent = '⏸ Pause';
+      startProgress();
+    } else {
+      playBtn.textContent = '▶ Play';
+      if (progressTimer) clearInterval(progressTimer);
+      if (sceneTimer) clearTimeout(sceneTimer);
     }
   }
 
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'ArrowRight' || e.key === ' ') nextScene();
-    if (e.key === 'ArrowLeft') prevScene();
+    if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); nextScene(); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); prevScene(); }
+    if (e.key === ' ') { e.preventDefault(); toggleAutoPlay(); }
   });
+
+  // Start auto-play on load
+  startProgress();
+
+  // Auto-scale the 1920x1080 stage to fit any viewport
+  function scaleStage() {
+    const stage = document.querySelector('.stage');
+    if (!stage) return;
+    const scaleX = window.innerWidth / 1920;
+    const scaleY = window.innerHeight / 1080;
+    const scale = Math.min(scaleX, scaleY, 1);
+    stage.style.transform = `scale(${scale})`;
+  }
+  window.addEventListener('resize', scaleStage);
+  scaleStage();
 </script>
 </body>
 </html>
