@@ -1,42 +1,35 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
-import { ArrowLeft, Film, Play, Pause, ExternalLink, Download } from "lucide-react";
+import { useState, useEffect } from "react";
+import { ArrowLeft, Film, Play, Pause, RotateCcw, ExternalLink, Download } from "lucide-react";
 import Link from "next/link";
 
 const SCENE_DURATION = 5000; // 5 seconds per scene
-const AUDIO_BASE = "https://raw.githubusercontent.com/MITHQALMTQ/mithqal/main/public/video";
 
 const scenes = [
-  { num: 1, title: "The Problem", time: "0:00–0:15", type: "Motion Graphic", desc: "Cross-border settlement pain points", audio: "vo-01-problem.wav" },
-  { num: 2, title: "Why Circle", time: "0:15–0:35", type: "Motion Graphic", desc: "USDC as operational liquidity layer", audio: "vo-02-circle.wav" },
-  { num: 3, title: "What is MITHQAL", time: "0:35–0:55", type: "Motion Graphic", desc: "Architecture + constitutional invariants", audio: "vo-03-mithqal.wav" },
-  { num: 4, title: "Live MVP", time: "0:55–1:40", type: "Screen Recording", desc: "Real dashboard at mithqal.vercel.app", audio: "vo-04-dashboard.wav" },
-  { num: 5, title: "Smart Contracts", time: "1:40–2:05", type: "Screen Recording", desc: "9 verified contracts on Monad Explorer", audio: "vo-05-contracts.wav" },
-  { num: 6, title: "GitHub", time: "2:05–2:25", type: "Screen Recording", desc: "Open source repository", audio: "vo-06-github.wav" },
-  { num: 7, title: "Security", time: "2:25–2:45", type: "Motion Graphic", desc: "Certora spec, Foundry, input guards", audio: "vo-07-security.wav" },
-  { num: 8, title: "Circle Integration", time: "2:45–3:05", type: "Motion Graphic", desc: "Implemented vs Planned", audio: "vo-08-circle-integration.wav" },
-  { num: 9, title: "Technology Stack", time: "3:05–3:20", type: "Motion Graphic", desc: "Solidity, Monad, Foundry, Next.js, Circle", audio: "vo-09-techstack.wav" },
-  { num: 10, title: "Closing", time: "3:20–3:35", type: "Motion Graphic", desc: "MITHQAL logo + URL", audio: "vo-10-closing.wav" },
+  { num: 1, title: "The Problem", time: "0:00–0:15", type: "Motion Graphic", desc: "Cross-border settlement pain points" },
+  { num: 2, title: "Why Circle", time: "0:15–0:35", type: "Motion Graphic", desc: "USDC as operational liquidity layer" },
+  { num: 3, title: "What is MITHQAL", time: "0:35–0:55", type: "Motion Graphic", desc: "Architecture + constitutional invariants" },
+  { num: 4, title: "Live MVP", time: "0:55–1:40", type: "Screen Recording", desc: "Real dashboard at mithqal.vercel.app" },
+  { num: 5, title: "Smart Contracts", time: "1:40–2:05", type: "Screen Recording", desc: "9 verified contracts on Monad Explorer" },
+  { num: 6, title: "GitHub", time: "2:05–2:25", type: "Screen Recording", desc: "Open source repository" },
+  { num: 7, title: "Security", time: "2:25–2:45", type: "Motion Graphic", desc: "Certora spec, Foundry, input guards" },
+  { num: 8, title: "Circle Integration", time: "2:45–3:05", type: "Motion Graphic", desc: "Implemented vs Planned" },
+  { num: 9, title: "Technology Stack", time: "3:05–3:20", type: "Motion Graphic", desc: "Solidity, Monad, Foundry, Next.js, Circle" },
+  { num: 10, title: "Closing", time: "3:20–3:35", type: "Motion Graphic", desc: "MITHQAL logo + URL" },
 ];
 
 export default function VideoPage() {
   const [currentScene, setCurrentScene] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isFinished, setIsFinished] = useState(false);
   const [progress, setProgress] = useState(0);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const scene = scenes[currentScene];
 
   // Auto-advance effect: when playing, advance through scenes
   useEffect(() => {
     if (!isPlaying) return;
-
-    // Play audio for current scene
-    if (audioRef.current) {
-      audioRef.current.src = `${AUDIO_BASE}/${scene.audio}`;
-      audioRef.current.play().catch(() => {});
-    }
 
     // Progress bar
     let elapsed = 0;
@@ -45,37 +38,50 @@ export default function VideoPage() {
       setProgress((elapsed / SCENE_DURATION) * 100);
     }, 50);
 
-    // Advance after duration
+    // Advance after duration — STOP at the last scene (no loop)
     const timer = setTimeout(() => {
-      setCurrentScene((prev) => (prev < scenes.length - 1 ? prev + 1 : 0));
-      setProgress(0);
+      if (currentScene < scenes.length - 1) {
+        setCurrentScene((prev) => prev + 1);
+        setProgress(0);
+      } else {
+        // Finished — stop playing, show replay button
+        setIsPlaying(false);
+        setIsFinished(true);
+        setProgress(100);
+      }
     }, SCENE_DURATION);
 
     return () => {
       clearInterval(interval);
       clearTimeout(timer);
     };
-  }, [isPlaying, currentScene, scene.audio]);
+  }, [isPlaying, currentScene]);
 
   const togglePlay = () => {
     if (isPlaying) {
       setIsPlaying(false);
-      if (audioRef.current) audioRef.current.pause();
     } else {
       setIsPlaying(true);
+      setIsFinished(false);
     }
+  };
+
+  const replay = () => {
+    setCurrentScene(0);
+    setProgress(0);
+    setIsFinished(false);
+    setIsPlaying(true);
   };
 
   const goToScene = (idx: number) => {
     setCurrentScene(idx);
     setProgress(0);
+    setIsFinished(false);
     if (!isPlaying) setIsPlaying(true);
   };
 
   return (
     <div className="min-h-screen bg-[#0A0E1A] text-white">
-      <audio ref={audioRef} preload="auto" />
-
       <header className="border-b border-white/10 px-6 py-3">
         <div className="mx-auto flex max-w-6xl items-center justify-between">
           <Link href="/" className="flex items-center gap-2 text-sm text-white/60 hover:text-white transition">
@@ -106,7 +112,7 @@ export default function VideoPage() {
               <SceneContent scene={scene} isActive={isPlaying} />
             </div>
 
-            {!isPlaying && (
+            {!isPlaying && !isFinished && (
               <button
                 onClick={togglePlay}
                 className="absolute inset-0 z-20 flex items-center justify-center bg-black/60 transition hover:bg-black/40"
@@ -115,6 +121,19 @@ export default function VideoPage() {
                 <div className="flex h-20 w-20 items-center justify-center rounded-full border-2 border-[#C9A961] bg-[#0A0E1A]/80 shadow-2xl transition hover:scale-110 hover:border-[#E8C97A]">
                   <Play className="ml-1 h-8 w-8 fill-[#C9A961] text-[#C9A961]" />
                 </div>
+              </button>
+            )}
+
+            {isFinished && (
+              <button
+                onClick={replay}
+                className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-3 bg-black/70 transition hover:bg-black/50"
+                aria-label="Replay video"
+              >
+                <div className="flex h-20 w-20 items-center justify-center rounded-full border-2 border-[#C9A961] bg-[#0A0E1A]/80 shadow-2xl transition hover:scale-110 hover:border-[#E8C97A]">
+                  <RotateCcw className="h-8 w-8 text-[#C9A961]" />
+                </div>
+                <span className="text-sm font-medium text-[#C9A961]">Replay</span>
               </button>
             )}
 
