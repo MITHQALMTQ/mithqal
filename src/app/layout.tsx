@@ -28,7 +28,7 @@ const fraunces = Fraunces({
 export const metadata: Metadata = {
   metadataBase: new URL("https://mithqal.vercel.app"),
   title: {
-    default: "Mithqal — Constitutional Settlement Institution",
+    default: "Mithqal — Constitutional Settlement Institution v20",
     template: "%s · Mithqal",
   },
   description:
