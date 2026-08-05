@@ -1,0 +1,68 @@
+1
+00:00:00,000 --> 00:00:15,000
+Cross-border settlement remains slow, expensive, and fragmented.
+Despite decades of financial innovation, international trade still relies on
+correspondent banking, multiple intermediaries, and systems that were never
+designed for real-time settlement.
+
+2
+00:00:15,000 --> 00:00:35,000
+Circle's USDC provides a programmable, fully reserved digital dollar
+that settles near-instantly. MITHQAL explores how USDC can serve as the
+operational liquidity layer for institutional settlement, combining the
+transparency of blockchain with the stability of dollar reserves.
+
+3
+00:00:35,000 --> 00:00:55,000
+MITHQAL is a constitutional monetary settlement institution.
+Participants deposit eligible reserves, including USDC, and receive MTQ,
+a settlement unit backed by a diversified reserve portfolio. MTQ can be
+transferred globally and redeemed at any time.
+
+4
+00:00:55,000 --> 00:01:40,000
+This is the live MITHQAL platform. The dashboard shows real-time reserve
+data: a reserve ratio of 108%, a dynamic NAV of $1.10, live gold and silver
+prices, and 9 verified smart contracts on Monad Testnet. Every value is
+computed from live oracle data, not hardcoded.
+
+5
+00:01:40,000 --> 00:02:05,000
+The protocol consists of 9 Solidity smart contracts deployed on Monad
+Testnet, Chain ID 10143. Each contract is independently verifiable on the
+block explorer: MTQ token, mint, redeem, reserve, oracle, governance,
+algorithm, and Takaful risk protection.
+
+6
+00:02:05,000 --> 00:02:25,000
+The entire codebase is open source on GitHub. The repository includes the
+constitutional blueprint, smart contract source code, a comprehensive test
+suite, formal verification specifications, and full documentation.
+
+7
+00:02:25,000 --> 00:02:45,000
+Security is layered. Certora formal verification specifications are complete
+for MTQ and Oracle contracts. Foundry invariant tests are in place. Input
+validation guards protect against negative amounts, dust attacks, and oracle
+manipulation.
+
+8
+00:02:45,000 --> 00:03:05,000
+MITHQAL currently uses regulated stablecoins, including USDC, as part of
+its Tier 4 operational liquidity layer — implemented and tested. On the
+roadmap: Circle Programmable Wallets, Payments API, and Gas Station.
+These are planned integrations, not yet implemented.
+
+9
+00:03:05,000 --> 00:03:20,000
+The technology stack: Solidity on Monad, Foundry for testing, Next.js for
+the dashboard, OpenZeppelin for secure standards, Certora for formal
+verification, and Circle USDC as operational liquidity.
+
+10
+00:03:20,000 --> 00:03:35,000
+MITHQAL explores how Circle's USDC can serve as the operational liquidity
+layer for transparent, fully reserved institutional settlement. By combining
+programmable digital dollars with constitutional governance and formally
+verified smart contracts, MITHQAL aims to help modernize cross-border
+trade settlement.
