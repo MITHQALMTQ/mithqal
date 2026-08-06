@@ -265,11 +265,40 @@ export const STATUS_ITEMS = [
  *     • Licensed and supervised by competent securities authorities
  *     • To be formed in Phase 1 (separate jurisdiction, separate license)
  *
+ * ─────────────────────────────────────────────────────────────────────────
+ * INSTITUTIONAL PRINCIPLES — READ BEFORE EDITING
+ * ─────────────────────────────────────────────────────────────────────────
+ * Entity A's "targetStructure" (Foundation) and Entity B are PLANNED — they
+ * do not yet exist. The current operating entity is JOZOUR LLC (NJ).
+ *
+ *   • JOZOUR LLC is the current operating company — NOT the Institution, NOT
+ *     the reserve owner, NOT the reserve custodian, NOT the constitutional
+ *     authority.
+ *   • The Foundation, Holding Company, Operations Ltd., and Markets Ltd.
+ *     (per Chapter XX) do NOT yet exist. They are the TARGET institutional
+ *     architecture.
+ *   • Reserve assets are held in segregated custody under the Constitutional
+ *     Reserve Framework through approved custodian institutions for the
+ *     exclusive benefit of the MITHQAL reserve system. They are never
+ *     operating assets and never corporate assets of JOZOUR LLC or any
+ *     future operating entity.
+ *
+ * See `docs/legal/institutional-principles.md` for the canonical wording.
+ * ─────────────────────────────────────────────────────────────────────────
+ *
  * Source of truth: NJ Certificate of Formation (filed 22 Oct 2019, ID 0600463904)
  * and IRS CP 575 G notice (EIN 84-3470275, dated 24 Oct 2019).
  * Documents archived under /upload/Jozour USA_Part1.pdf (operator custody).
  */
 export const LEGAL_STATUS = {
+  // Canonical disclaimer — surfaced on all institutional surfaces.
+  // Wording is fixed by docs/legal/institutional-principles.md (Principle 4
+  // and the canonical disclaimer paragraph). Do NOT paraphrase.
+  canonicalDisclaimer:
+    "MITHQAL is currently operated by JOZOUR LLC during the institutional development phase. The constitutional architecture described throughout this documentation represents the intended institutional destination of the project. Planned entities do not yet exist and are not currently operating.",
+  // Canonical reserve-independence wording (Principle 4).
+  reserveIndependence:
+    "Reserve assets are held in segregated custody under the Constitutional Reserve Framework through approved custodian institutions for the exclusive benefit of the MITHQAL reserve system. They are never operating assets and never corporate assets of JOZOUR LLC or any future operating entity.",
   // Entity A — The Institution (non-profit settlement)
   entityA: {
     name: "The Mithqal Institution",

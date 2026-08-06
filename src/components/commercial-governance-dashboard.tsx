@@ -251,6 +251,10 @@ const ENTITY_LABEL: Record<EntityId, string> = {
   markets: "Markets",
 };
 
+// All four constitutional entities are PLANNED — see docs/legal/institutional-principles.md.
+// The current operating entity is JOZOUR LLC (NJ). Entity cards render a
+// visible "PLANNED" badge next to each entity name (see EntitiesTab).
+
 /* ---------- 12 procurement stages (mirrors engine) ---------- */
 
 const PROCUREMENT_STAGES = [
@@ -333,6 +337,15 @@ export function CommercialGovernanceDashboard() {
           audit trails, and a 60/25/15 performance-participation split that
           prioritises reserve growth above all else.
         </p>
+
+        {/* TARGET-architecture notice — required by docs/legal/institutional-principles.md */}
+        <div className="mt-4 rounded-md border border-amber-500/30 bg-amber-500/5 p-3 text-xs text-amber-200">
+          <strong className="font-semibold">TARGET architecture.</strong>{" "}
+          The four constitutional entities below (Foundation, Holding,
+          Operations, Markets) are PLANNED. Currently, MITHQAL is operated by{" "}
+          <strong>JOZOUR LLC</strong> (New Jersey). Planned entities do not
+          yet exist and are not currently operating.
+        </div>
       </Reveal>
 
       {/* ---- Headline scores ---- */}
@@ -545,7 +558,12 @@ function EntitiesTab({ entities }: { entities: ConstitutionalEntity[] }) {
                   </Badge>
                 </div>
                 <CardTitle className="mt-3 text-base font-semibold text-foreground">
-                  {e.name}
+                  <span className="flex items-center gap-2 flex-wrap">
+                    <span>{e.name}</span>
+                    <span className="inline-flex items-center rounded border border-amber-500/40 bg-amber-500/10 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-amber-200">
+                      PLANNED
+                    </span>
+                  </span>
                 </CardTitle>
                 <CardDescription className="text-xs uppercase tracking-wider text-fg-muted">
                   {e.type.replace("-", " ")}

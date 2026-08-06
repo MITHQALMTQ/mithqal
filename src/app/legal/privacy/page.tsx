@@ -16,6 +16,14 @@ export default function PrivacyPage() {
       <h1 className="font-display mt-6 text-3xl text-foreground sm:text-4xl">Privacy Policy</h1>
       <p className="mt-2 text-xs text-fg-muted">Last updated: {new Date().toISOString().slice(0, 10)}</p>
 
+      <div className="mt-6 rounded-md border border-amber-500/30 bg-amber-500/5 p-4 text-xs text-amber-200">
+        MITHQAL is currently operated by JOZOUR LLC during the institutional
+        development phase. The constitutional architecture described throughout
+        this documentation represents the intended institutional destination of
+        the project. Planned entities do not yet exist and are not currently
+        operating.
+      </div>
+
       <div className="mt-8 max-w-none space-y-6 text-sm leading-relaxed text-fg-muted">
         <section>
           <h2 className="font-display text-lg text-foreground">1. Controller</h2>

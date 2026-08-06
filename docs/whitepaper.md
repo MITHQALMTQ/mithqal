@@ -5,8 +5,57 @@
 
 **Version:** 1.0  
 **Date:** 3 August 2026  
-**Prepared By:** MITHQAL Foundation  
+**Prepared By:** MITHQAL Foundation (planned) — currently operated by JOZOUR LLC (New Jersey)  
 **Contact:** Mohamed Eltonsy (meltonsy@icloud.com)
+
+---
+
+## Institutional Status Disclaimer
+
+> MITHQAL is currently operated by JOZOUR LLC during the institutional
+> development phase. The constitutional architecture described throughout this
+> documentation represents the intended institutional destination of the
+> project. Planned entities do not yet exist and are not currently operating.
+
+The MITHQAL Foundation, Holding Company, Operations Ltd., and Markets Ltd.
+are **planned** entities. They are part of the TARGET institutional
+architecture and do **not** yet exist. Today the only operating entity is
+**JOZOUR LLC (New Jersey)**, which performs platform development, software
+engineering, APIs, website, infrastructure, AI platform, documentation,
+institutional outreach, compliance operations, mint/redemption operations,
+and day-to-day operations. JOZOUR LLC is **NOT** the Institution, the reserve
+owner, the reserve custodian, or the constitutional authority.
+
+### Reserve Independence (canonical wording)
+
+> "Reserve assets are held in segregated custody under the Constitutional
+> Reserve Framework through approved custodian institutions for the exclusive
+> benefit of the MITHQAL reserve system. They are never operating assets and
+> never corporate assets of JOZOUR LLC or any future operating entity."
+
+### Target Architecture (planned — does not yet exist)
+
+**Commercial side (planned):**
+
+```
+Founder → MITHQAL Holding Company (planned) → [Operations Ltd. (planned) | Markets Ltd. (planned)]
+```
+
+**Constitutional side (planned):**
+
+```
+MITHQAL Constitution → Independent Constitutional Foundation (planned)
+                     → Approved Custodian Institutions
+                     → Gold · Silver · Cash · Sukuk · Other Approved Reserve Assets
+```
+
+Operations Ltd. and Markets Ltd. are **sister companies** (never
+parent/child). The Foundation is **never** connected underneath the Holding
+Company. Reserves are **never** connected underneath Operations or Markets.
+
+See [`docs/legal/institutional-principles.md`](legal/institutional-principles.md)
+and [`docs/roadmap/organizational-roadmap.md`](roadmap/organizational-roadmap.md)
+for the canonical rules and staged roadmap.
 
 ---
 
@@ -296,7 +345,13 @@ Sharia compliance is embedded from the beginning, not an afterthought. MITHQAL h
 | Address | 116 Mallory Ave, Jersey City, NJ 07304 |
 | Status | Active |
 
-**Note:** The MITHQAL Foundation (nonprofit) is planned to be formed as the permanent institutional entity. JOZOUR LLC serves as the interim operating vehicle.
+**Note:** The MITHQAL Foundation (nonprofit) is **planned** to be formed as the
+permanent constitutional entity. JOZOUR LLC is the current operating entity
+and is **NOT** the Institution, the reserve owner, the reserve custodian, or
+the constitutional authority. The future commercial structure (Holding
+Company, Operations Ltd., Markets Ltd.) is also **planned** — none of these
+entities exist today. See
+[`docs/legal/institutional-principles.md`](legal/institutional-principles.md).
 
 ---
 
@@ -317,7 +372,8 @@ Sharia compliance is embedded from the beginning, not an afterthought. MITHQAL h
 
 **Mohamed Eltonsy**
 Founder & CEO
-MITHQAL Foundation
+JOZOUR LLC (current operating entity for MITHQAL)
+MITHQAL Foundation (planned)
 meltonsy@icloud.com
 
 ---

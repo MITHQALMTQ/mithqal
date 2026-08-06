@@ -99,6 +99,8 @@ interface EntityRole {
   article: string;
 }
 
+// All four entities below are PLANNED — see docs/legal/institutional-principles.md.
+// The current operating entity is JOZOUR LLC (NJ). UI surfaces the PLANNED badge.
 const ENTITIES: EntityRole[] = [
   {
     id: "foundation",
@@ -196,6 +198,17 @@ export function InstitutionalEconomics() {
           participants via redemption. Every step is governed, audited, and
           disclosed.
         </p>
+
+        {/* TARGET-architecture notice — required by institutional-principles.md */}
+        <div className="mt-4 rounded-md border border-amber-500/30 bg-amber-500/5 p-3 text-xs text-amber-200">
+          <strong className="font-semibold">TARGET architecture.</strong>{" "}
+          The organizational structure below represents the TARGET
+          architecture. Currently, MITHQAL is operated by{" "}
+          <strong>JOZOUR LLC</strong> (New Jersey). Planned entities do not
+          yet exist and are not currently operating. See{" "}
+          <code className="rounded bg-ink-soft px-1 py-0.5">docs/legal/institutional-principles.md</code>{" "}
+          for the canonical rules.
+        </div>
       </Reveal>
 
       {/* ---- §2 Entity flow diagram ---- */}
@@ -222,6 +235,7 @@ export function InstitutionalEconomics() {
                 article="§XX.3.1"
                 accent="gold"
                 hint="Constitutional oversight"
+                planned
               />
 
               <FlowConnector label="Constitutional authority" />
@@ -234,6 +248,7 @@ export function InstitutionalEconomics() {
                 article="§XX.3.2"
                 accent="reserve"
                 hint="Strategic ownership"
+                planned
               />
 
               <FlowConnector label="Strategic direction" split />
@@ -248,6 +263,7 @@ export function InstitutionalEconomics() {
                   accent="muted"
                   hint="Technology + settlement"
                   compact
+                  planned
                 />
                 <FlowNode
                   icon={Briefcase}
@@ -257,6 +273,7 @@ export function InstitutionalEconomics() {
                   accent="gold-deep"
                   hint="Reserve procurement"
                   compact
+                  planned
                 />
               </div>
 
@@ -283,10 +300,14 @@ export function InstitutionalEconomics() {
                   </Badge>
                 </div>
                 <p className="mt-3 text-xs leading-relaxed text-fg-muted">
-                  The reserve is the only constitutionally protected asset pool.
-                  It is NOT owned by any entity — it is held by Markets on
-                  behalf of the Institution. Every MTQ in circulation is
-                  backed 1:1 (≥102%) by assets in this pool.
+                  Reserve assets are held in segregated custody under the
+                  Constitutional Reserve Framework through approved custodian
+                  institutions for the exclusive benefit of the MITHQAL reserve
+                  system. They are never operating assets and never corporate
+                  assets of JOZOUR LLC or any future operating entity. Every
+                  MTQ in circulation is backed 1:1 (≥102%) by assets in this
+                  pool. (Markets Ltd. is the planned procurement entity; it
+                  does not yet exist.)
                 </p>
               </div>
 
@@ -457,7 +478,12 @@ export function InstitutionalEconomics() {
                         </Badge>
                       </div>
                       <CardTitle className="mt-3 text-sm font-semibold text-foreground">
-                        {e.name}
+                        <span className="flex items-center gap-2">
+                          <span>{e.name}</span>
+                          <Badge className="border-amber-500/40 bg-amber-500/10 text-amber-200">
+                            PLANNED
+                          </Badge>
+                        </span>
                       </CardTitle>
                       <CardDescription className="text-[11px] uppercase tracking-wider text-fg-muted">
                         {e.role}
@@ -514,6 +540,7 @@ function FlowNode({
   accent,
   hint,
   compact = false,
+  planned = false,
 }: {
   icon: typeof Crown;
   label: string;
@@ -522,6 +549,7 @@ function FlowNode({
   accent: "gold" | "reserve" | "gold-deep" | "muted";
   hint: string;
   compact?: boolean;
+  planned?: boolean;
 }) {
   const accentClass =
     accent === "gold"
@@ -539,8 +567,13 @@ function FlowNode({
             <Icon className="h-5 w-5" aria-hidden="true" />
           </div>
           <div className="min-w-0">
-            <div className={`font-semibold text-foreground ${compact ? "text-sm" : "text-base"}`}>
-              {label}
+            <div className={`font-semibold text-foreground ${compact ? "text-sm" : "text-base"} flex items-center gap-2 flex-wrap`}>
+              <span>{label}</span>
+              {planned && (
+                <Badge className="border-amber-500/40 bg-amber-500/10 text-amber-200 text-[9px]">
+                  PLANNED
+                </Badge>
+              )}
             </div>
             <div className="truncate text-xs text-fg-muted">{sub}</div>
           </div>

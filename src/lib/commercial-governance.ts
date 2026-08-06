@@ -14,6 +14,27 @@
  * - Immutable audit trail for all commercial operations
  *
  * All calculations use fixed-point arithmetic (decimal.js) for determinism.
+ *
+ * ─────────────────────────────────────────────────────────────────────────
+ * INSTITUTIONAL PRINCIPLES — READ BEFORE EDITING
+ * ─────────────────────────────────────────────────────────────────────────
+ * These entities are PLANNED. The current operating entity is JOZOUR LLC (NJ).
+ *
+ *   • JOZOUR LLC is the current operating company. It is NOT the Institution,
+ *     the reserve owner, the reserve custodian, or the constitutional
+ *     authority.
+ *   • The Foundation, Holding Company, Operations Ltd., and Markets Ltd. do
+ *     NOT yet exist. They are the TARGET institutional destination.
+ *   • Operations Ltd. and Markets Ltd. are SISTER companies (never
+ *     parent/child).
+ *   • The Foundation is constitutionally independent from the Holding Company
+ *     and never sits underneath it.
+ *   • Reserves are NEVER corporate assets of JOZOUR LLC or any future
+ *     operating entity. See `docs/legal/institutional-principles.md`.
+ *
+ * Every entity below carries `status: "planned"` to make this explicit at the
+ * data layer. UI consumers MUST surface this status visibly.
+ * ─────────────────────────────────────────────────────────────────────────
  */
 
 import { createHmac } from "crypto";
@@ -24,6 +45,17 @@ import { createHmac } from "crypto";
 
 export type EntityId = "foundation" | "holding" | "operations" | "markets";
 
+/**
+ * `status` reflects the current real-world status of the entity.
+ *
+ * - "planned"  → the entity does NOT yet exist; it is part of the TARGET
+ *                institutional architecture. Today the only operating entity
+ *                is JOZOUR LLC (NJ).
+ *
+ * See `docs/legal/institutional-principles.md` for the canonical rules.
+ */
+export type EntityStatus = "planned" | "active";
+
 export interface ConstitutionalEntity {
   id: EntityId;
   name: string;
@@ -33,6 +65,13 @@ export interface ConstitutionalEntity {
   governanceAuthority: string;
   reserveOwnership: boolean; // can this entity hold reserves?
   constitutionalArticle: string;
+  /**
+   * Institutional status of this entity. All four constitutional entities
+   * (Foundation, Holding, Operations, Markets) are PLANNED — the current
+   * operating entity is JOZOUR LLC (NJ). UI consumers MUST surface this
+   * status as a visible "PLANNED" label.
+   */
+  status: EntityStatus;
 }
 
 export const CONSTITUTIONAL_ENTITIES: ConstitutionalEntity[] = [
@@ -51,6 +90,7 @@ export const CONSTITUTIONAL_ENTITIES: ConstitutionalEntity[] = [
     governanceAuthority: "Constitutional Council",
     reserveOwnership: false, // Foundation does NOT hold reserves directly
     constitutionalArticle: "§XX.3.1",
+    status: "planned", // PLANNED — Foundation does not yet exist; JOZOUR LLC (NJ) is the current operating entity
   },
   {
     id: "holding",
@@ -66,6 +106,7 @@ export const CONSTITUTIONAL_ENTITIES: ConstitutionalEntity[] = [
     governanceAuthority: "Board of Directors",
     reserveOwnership: false, // Holding does NOT hold reserves
     constitutionalArticle: "§XX.3.2",
+    status: "planned", // PLANNED — Holding Company does not yet exist; JOZOUR LLC (NJ) is the current operating entity
   },
   {
     id: "operations",
@@ -82,6 +123,7 @@ export const CONSTITUTIONAL_ENTITIES: ConstitutionalEntity[] = [
     governanceAuthority: "CTO / Operations Committee",
     reserveOwnership: false, // Operations does NOT hold reserves
     constitutionalArticle: "§XX.3.3",
+    status: "planned", // PLANNED — Operations Ltd. does not yet exist; JOZOUR LLC (NJ) is the current operating entity
   },
   {
     id: "markets",
@@ -101,6 +143,7 @@ export const CONSTITUTIONAL_ENTITIES: ConstitutionalEntity[] = [
     governanceAuthority: "Markets Committee + Risk Committee",
     reserveOwnership: true, // ONLY Markets interacts with reserves (on behalf of the Institution)
     constitutionalArticle: "§XX.3.4",
+    status: "planned", // PLANNED — Markets Ltd. does not yet exist; JOZOUR LLC (NJ) is the current operating entity
   },
 ];
 

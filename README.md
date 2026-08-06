@@ -87,6 +87,84 @@ The Next.js application exposes seven views — the public-facing institutional 
 4. **No commingling** — settlement reserves are segregated from all operational activity
 5. **No redemption suspension** — the right to redeem is absolute
 
+## Institutional Structure
+
+The MITHQAL project distinguishes — at all times — between the current
+operating entity, the planned commercial structure, and the target
+constitutional architecture. The canonical source of truth is
+[`docs/legal/institutional-principles.md`](docs/legal/institutional-principles.md);
+the staged roadmap is in
+[`docs/roadmap/organizational-roadmap.md`](docs/roadmap/organizational-roadmap.md).
+
+### Current Operator (LIVE)
+
+Today MITHQAL is operated by **JOZOUR LLC** (New Jersey LLC, filed 22 Oct
+2019, ID 0600463904; IRS EIN 84-3470275). JOZOUR LLC currently performs
+platform development, software engineering, APIs, website, infrastructure,
+AI platform, documentation, institutional outreach, compliance operations,
+mint/redemption operations (simulator/testnet only), and day-to-day
+operations.
+
+JOZOUR LLC is **NOT** the Institution, the reserve owner, the reserve
+custodian, or the constitutional authority. It is simply the current
+operating company.
+
+### Future Commercial Structure (planned — does not yet exist)
+
+```
+Founder → MITHQAL Holding Company (planned) → [Operations Ltd. (planned) | Markets Ltd. (planned)]
+```
+
+- **MITHQAL Holding Company** (planned) — strategic ownership, capital
+  allocation, corporate governance.
+- **MITHQAL Operations Ltd.** (planned) — technology infrastructure, API
+  platform, settlement operations.
+- **MITHQAL Markets Ltd.** (planned) — reserve procurement, best execution,
+  custody coordination.
+
+Operations Ltd. and Markets Ltd. are **sister companies** — never
+parent/child. None of these entities exist today; none have been
+incorporated; none hold reserves.
+
+### Future Constitutional Structure (planned — does not yet exist)
+
+Commercial governance is **independent from** constitutional governance.
+
+```
+MITHQAL Constitution
+        ↓
+Independent Constitutional Foundation (planned)
+        ↓
+Approved Custodian Institutions
+        ↓
+Gold · Silver · Cash · Sukuk · Other Approved Reserve Assets
+```
+
+- The Foundation is **planned**. It exists to protect the Constitution. Its
+  responsibilities are constitutional governance, constitutional oversight,
+  standards, certification, and transparency. It **never** operates
+  commercially, owns reserves, custodies reserves, owns companies, or
+  performs operations.
+- The Foundation is **never** connected underneath the Holding Company.
+- Reserves are **never** connected underneath Operations or Markets.
+- The Constitution governs the reserve framework, governance, custody
+  principles, and institutional integrity. The commercial companies execute
+  operations. The Constitution governs the Institution.
+
+### Reserve Independence (canonical wording)
+
+> "Reserve assets are held in segregated custody under the Constitutional
+> Reserve Framework through approved custodian institutions for the exclusive
+> benefit of the MITHQAL reserve system. They are never operating assets and
+> never corporate assets of JOZOUR LLC or any future operating entity."
+
+### Canonical Disclaimer
+
+> "MITHQAL is currently operated by JOZOUR LLC during the institutional
+> development phase. The constitutional architecture described throughout this
+> documentation represents the intended institutional destination of the
+> project. Planned entities do not yet exist and are not currently operating."
+
 ## Evidence & Verification
 
 This repository uses evidence-based language. Every institutional claim is classified using the [Evidence Classification Standard](docs/evidence/EVIDENCE_CLASSIFICATION.md) at one of six levels: **PROVEN**, **SUPPORTED**, **PARTIALLY SUPPORTED**, **PENDING EXTERNAL VALIDATION**, **UNVERIFIED**, or **FALSE**.
