@@ -6,7 +6,7 @@ import { CONSTITUTIONAL_ENTITIES } from "@/lib/commercial-governance";
  *
  * Returns the 4 constitutional legal entities of the Mithqal Institution
  * (Chapter XX §XX.3):
- *   - Foundation (non-profit)  — constitutional oversight
+ *   - Foundation (non-profit)  — monitors constitutional compliance
  *   - Holding (for-profit)     — strategic ownership
  *   - Operations (operational) — technology + settlement
  *   - Markets (commercial)     — reserve procurement (ONLY entity that

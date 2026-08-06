@@ -109,7 +109,7 @@ const ENTITIES: EntityRole[] = [
     icon: Crown,
     accent: "text-gold",
     ring: "border-gold/40 bg-gold/5",
-    role: "Constitutional oversight",
+    role: "Monitors constitutional compliance",
     fundsFlow: "Receives no commercial revenue. Funds training grants from a separate endowment.",
     responsibilities: [
       "Constitutional Council convening",
@@ -234,7 +234,7 @@ export function InstitutionalEconomics() {
                 sub="Non-profit · Constitutional Council"
                 article="§XX.3.1"
                 accent="gold"
-                hint="Constitutional oversight"
+                hint="Monitors constitutional compliance"
                 planned
               />
 

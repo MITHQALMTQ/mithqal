@@ -81,7 +81,7 @@ export const CONSTITUTIONAL_ENTITIES: ConstitutionalEntity[] = [
     shortName: "Foundation",
     type: "non-profit",
     responsibilities: [
-      "Constitutional oversight",
+      "Monitors constitutional compliance",
       "Reserve integrity protection",
       "Public trust stewardship",
       "Constitutional standards enforcement",

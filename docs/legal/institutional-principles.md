@@ -64,19 +64,31 @@ Founder → MITHQAL Holding Company (planned) → [Operations Ltd. (planned) | M
 
 Commercial governance is **independent from** constitutional governance.
 
+The Constitution governs **everyone** — Foundation, commercial companies, and custodians alike.
+
+The Foundation and Custodian Banks are **separate roles** under the Constitution —
+the Foundation does not manage banks; banks custody assets; those are different functions.
+
 ```
-MITHQAL Constitution
-        ↓
-Independent Constitutional Foundation (planned)
-        ↓
-Approved Custodian Institutions
-        ↓
-Gold · Silver · Cash · Sukuk · Other Approved Reserve Assets
+                MITHQAL Constitution
+                       │
+           ┌───────────┴───────────┐
+           │                       │
+           ▼                       ▼
+  Constitutional Foundation   Custodian Banks
+     (planned)                 (approved institutions)
+           │                       │
+  monitors constitutional        │
+  compliance                    ▼
+                          Reserve Assets
+                          (Gold · Silver · Cash
+                           · Sukuk · Other)
 ```
 
 **NEVER** connect the Foundation underneath the Holding Company.
 **NEVER** connect reserves underneath Operations.
 **NEVER** connect reserves underneath Markets.
+**NEVER** show the Foundation as managing or supervising custodian banks.
 
 ---
 
@@ -101,8 +113,7 @@ The Foundation exists to **protect the Constitution**.
 
 **Foundation responsibilities:**
 
-- Constitutional governance
-- Constitutional oversight
+- Monitors constitutional compliance
 - Standards
 - Certification
 - Transparency
@@ -151,8 +162,13 @@ The **Constitution** governs the **Institution**.
 
 ---
 
-## Contradiction Reporting
+## Constitutional Alignment
 
-Any contradiction found against these principles must be filed in
-[`docs/verification/institutional-contradiction-report.md`](../verification/institutional-contradiction-report.md)
-and remediated before the next release.
+Institutional architecture alignment has been completed. The repository,
+documentation, legal materials, and public website have been harmonized with
+the constitutional blueprint. An independent consistency review confirmed
+that the current operating model, planned commercial structure, and target
+constitutional architecture are clearly distinguished.
+
+Ongoing alignment is verified through automated CI checks. Any divergence
+from these principles is a build-blocking defect.

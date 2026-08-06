@@ -109,14 +109,24 @@ Founder → MITHQAL Holding Company (planned) → [Operations Ltd. (planned) | M
 ### Target — Constitutional side
 
 ```
-MITHQAL Constitution
-        ↓
-Independent Constitutional Foundation (planned)
-        ↓
-Approved Custodian Institutions
-        ↓
-Gold · Silver · Cash · Sukuk · Other Approved Reserve Assets
+                MITHQAL Constitution
+                       │
+           ┌───────────┴───────────┐
+           │                       │
+           ▼                       ▼
+  Constitutional Foundation   Custodian Banks
+     (planned)                 (approved institutions)
+           │                       │
+  monitors constitutional        │
+  compliance                    ▼
+                          Reserve Assets
+                          (Gold · Silver · Cash
+                           · Sukuk · Other)
 ```
+
+The Foundation and Custodian Banks are **separate roles** under the Constitution.
+The Foundation monitors constitutional compliance — it does not manage banks.
+Banks custody assets — they do not govern.
 
 ### Independence rules (target state — never violated)
 
@@ -126,8 +136,10 @@ Gold · Silver · Cash · Sukuk · Other Approved Reserve Assets
 - The Foundation exists to **protect the Constitution** — it does **not**:
   operate commercially, own reserves, custody reserves, own companies, or
   perform operations.
-- The Constitution governs: the reserve framework, governance, custody
-  principles, and institutional integrity.
+- Constitutional principles governing organizational architecture are
+  **immutable except through constitutional amendment**. Legal entity names
+  may evolve; jurisdictions may change; corporate structures may adapt.
+  **Constitutional principles may not.**
 
 ### Canonical Reserve Independence Wording
 
