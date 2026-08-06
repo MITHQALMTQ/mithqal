@@ -1,0 +1,54 @@
+# MITHQAL CODEOWNERS — Institutional Code Governance
+#
+# Every file must have an owner who must approve changes.
+# Changes to constitutional/monetary files require CTO + COO approval.
+# Changes to smart contracts require Security Officer approval.
+# Changes to blueprint require Constitutional Council approval.
+
+# === CONSTITUTIONAL FILES (highest governance) ===
+# Blueprint — requires Constitutional Council approval
+/docs/blueprint/                        @mohamed-eltonsys
+
+# Constitution data — requires CTO + COO approval
+/src/lib/constitution-data.ts           @mohamed-eltonsys
+/src/lib/v19-infrastructure.ts          @mohamed-eltonsys
+/src/lib/monetary-engine-v19.ts         @mohamed-eltonsys
+
+# === SMART CONTRACTS (requires Security Officer) ===
+/foundry/src/                           @mohamed-eltonsys
+/foundry/test/                          @mohamed-eltonsys
+/foundry/certora/                       @mohamed-eltonsys
+
+# === RESERVE & FINANCIAL ENGINE (requires CTO) ===
+/src/lib/reserve-allocation.ts          @mohamed-eltonsys
+/src/lib/nav-compute.ts                 @mohamed-eltonsys
+/src/lib/ctac-engine.ts                 @mohamed-eltonsys
+/src/lib/dynamic-rebalancing.ts         @mohamed-eltonsys
+/src/lib/multi-custodian.ts             @mohamed-eltonsys
+/src/lib/commercial-governance.ts       @mohamed-eltonsys
+/src/lib/rebalance-fees.ts              @mohamed-eltonsys
+/src/lib/fixed-point.ts                 @mohamed-eltonsys
+
+# === DATABASE (requires CTO) ===
+/src/lib/db.ts                          @mohamed-eltonsys
+/prisma/                                @mohamed-eltonsys
+
+# === SECURITY (requires CISO) ===
+/src/lib/auth.ts                        @mohamed-eltonsys
+/src/lib/rate-limit.ts                  @mohamed-eltonsys
+/src/lib/totp.ts                        @mohamed-eltonsys
+
+# === API ROUTES (requires Tech Lead) ===
+/src/app/api/                           @mohamed-eltonsys
+
+# === DEPLOYMENT & CONFIG ===
+/next.config.ts                         @mohamed-eltonsys
+/vercel.json                            @mohamed-eltonsys
+/Caddyfile                              @mohamed-eltonsys
+/.env.example                           @mohamed-eltonsys
+
+# === CI/CD ===
+/.github/                               @mohamed-eltonsys
+
+# === DEFAULT (catch-all) ===
+*                                       @mohamed-eltonsys

@@ -1,0 +1,82 @@
+# MITHQAL CI — Constitutional Integrity Check
+# Runs on every push and PR to main
+# Blocks merge if: lint fails, tests fail, or constitutional invariants break
+
+name: Constitutional Integrity CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: read
+  checks: write
+
+jobs:
+  # === STAGE 1: Lint ===
+  lint:
+    name: ESLint Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v1
+      - run: bun install
+      - run: bun run lint
+
+  # === STAGE 2: Constitutional Invariant Tests ===
+  constitutional-tests:
+    name: Constitutional Invariants
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v1
+      - run: bun install
+      - name: Stress Tests (20 scenarios)
+        run: bun run src/lib/stress-test-fixed.ts
+      - name: Crypto-Economic Tests (38 checks)
+        run: bun run src/lib/tests/crypto-economic-tests.ts
+
+  # === STAGE 3: E2E Workflow Tests ===
+  e2e-tests:
+    name: E2E Workflows
+    runs-on: ubuntu-latest
+    needs: constitutional-tests
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v1
+      - run: bun install
+      - name: E2E Trade Scenarios (5 workflows)
+        run: bun run src/lib/e2e-workflow-tests.ts
+
+  # === STAGE 4: Security ===
+  security:
+    name: Security Checks
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v1
+      - run: bun install
+      - name: Adversarial Attack Tests
+        run: bun run src/lib/tests/adversarial-tests.ts
+      - name: Game Theory Audit
+        run: bun run src/lib/tests/game-theory-audit.ts
+
+  # === STAGE 5: Deployment Gate ===
+  deployment-gate:
+    name: Deployment Approval Gate
+    runs-on: ubuntu-latest
+    needs: [constitutional-tests, e2e-tests, security]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - name: All checks passed — deployment authorized
+        run: |
+          echo "✅ Constitutional Integrity CI PASSED"
+          echo "Commit: ${{ github.sha }}"
+          echo "Author: ${{ github.actor }}"
+          echo "Timestamp: $(date -u '+%Y-%m-%dT%H:%M:%SZ')"
+          echo "All constitutional invariants verified. Deployment authorized."

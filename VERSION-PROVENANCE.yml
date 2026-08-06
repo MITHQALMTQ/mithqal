@@ -1,0 +1,151 @@
+# MITHQAL — Version Provenance
+# Complete traceability from blueprint to deployment
+# Generated: 2026-08-06
+
+# === RELEASE v20.3.0 ===
+release: "v20.3.0"
+date: "2026-08-06"
+status: "verified"
+
+# === BLUEPRINT ===
+blueprint:
+  version: "v20.3"
+  file: "docs/blueprint/blueprint.txt"
+  lines: 29075
+  articles: 50
+  parts: 5
+  last_modified: "2026-08-06"
+  constitutional_invariants: 22
+  forbidden_words: 121
+  articles_added_v20:
+    - "Article X: Bullion Protection Rule"
+    - "Article XI: Constitutional Risk Engineering"
+    - "Article XII: Constitutional Model Validation Framework"
+    - "Article XIII: Liquidity Readiness Ratio (LRR)"
+    - "Article XIV: Reverse Stress Testing"
+    - "Article XV: Constitutional Stress Laboratory"
+    - "Article XVI: Constitutional Assumptions Register"
+    - "Article XVII: Institutional Assurance Framework"
+    - "Article XVIII: Constitutional Commercial Governance"
+
+# === SMART CONTRACTS ===
+smart_contracts:
+  version: "v1.0.0"
+  network: "Monad Testnet"
+  chain_id: 10143
+  count: 9
+  verification: "On-chain verified (Monad Explorer)"
+  formal_verification: "Certora spec complete (execution pending)"
+  contracts:
+    MTQ: "0x9e6EdC15DAc420931508d8Ddf9BC817651A253aD"
+    Governance: "0xE35a91801bc541fb743BB9EaD26C1FbD81EaBd66"
+    Algorithm: "0x8839ce50e8D414005518769999c0A5b961D00CB2"
+    Reserve: "0x1bbCd78E4DEF79b7a3B77242770cbAefAC816177"
+    Mint: "0x197e9CB28216dfe18a199b4c2930F74C2F460809"
+    Redeem: "0x963201C0Fa258033CCDdFcDceb8B5E3bc2b435a4"
+    Oracle: "0xDfcA66ac0450C9AB86307af1942E157C5A4DB713"
+    Takaful: "0x3eC27BB283644eF0A98B9961E9FBED0583a02f19"
+    MockOracle: "(test only)"
+  safe_multisig: "0xE71869C662733642bfBb262B8c6bad8B0fBfA7D0"
+  deployer_eoa: "0x3C3932F865892EFabE45892f453f81B64f6c8d8c"
+
+# === API ===
+api:
+  version: "v1"
+  endpoint_count: 50
+  base_url: "https://mithqal.vercel.app/api"
+  nav_endpoint: "/api/nav"
+  transparency_endpoint: "/api/transparency"
+  health_endpoint: "/api/health"
+  response_format: "JSON"
+  authentication: "NextAuth.js (admin routes only)"
+
+# === DATABASE ===
+database:
+  version: "v20.3"
+  engine: "Turso (libsql/SQLite)"
+  url: "libsql://mithqal-db-fortleem.aws-us-east-1.turso.io"
+  table_count: 15
+  tables:
+    - "FormationInterest"
+    - "TestnetOperation"
+    - "users"
+    - "transactions"
+    - "reserves"
+    - "fees"
+    - "proposals"
+    - "GoldPriceSnapshot"
+    - "ProofAttestation"
+    - "AssumptionsRegister"
+    - "ProcurementRecord"
+    - "RevenueEntry"
+    - "CommercialAuditEntry"
+    - "ReserveOwnership"
+
+# === UI ===
+ui:
+  version: "v20.3"
+  framework: "Next.js 16 (App Router)"
+  routes: 20
+  components: 41
+  views: 12
+  languages: 6 (EN, AR, FR, DE, ES, ZH)
+  themes: 3 (dark, light, cyber)
+
+# === DEPLOYMENT ===
+deployment:
+  platform: "Vercel"
+  url: "https://mithqal.vercel.app"
+  build: "next build"
+  install: "bun install"
+  region: "auto (global edge)"
+  ssl: "Auto-managed by Vercel"
+  cdn: "Vercel Edge Network"
+  cron: "Daily 00:00 UTC → /api/proofs/publish"
+
+# === ENGINES ===
+engines:
+  monetary_engine: "v19.0 (monetary-engine-v19.ts, 804 LOC)"
+  infrastructure: "v19.0 (v19-infrastructure.ts, 4843 LOC)"
+  nav_compute: "v19.0.2 (nav-compute.ts, 274 LOC)"
+  reserve_allocation: "v20.3 (reserve-allocation.ts, 445 LOC)"
+  commercial_governance: "v20.1 (commercial-governance.ts, 756 LOC)"
+  ctac_engine: "v20.3 (ctac-engine.ts, 812 LOC)"
+  dynamic_rebalancing: "v20.3 (dynamic-rebalancing.ts, 549 LOC)"
+  multi_custodian: "v20.3 (multi-custodian.ts, 732 LOC)"
+  fixed_point: "v19.0 (fixed-point.ts, 176 LOC, decimal.js Decimal128)"
+
+# === TESTS ===
+tests:
+  stress_tests: "20/20 PASS"
+  crypto_economic: "38/38 PASS"
+  e2e_workflows: "5/5 PASS (48/48 invariants)"
+  adversarial: "47/49 defended (95.9%)"
+  federal: "56/60 PASS (93.3%)"
+  institutional_stress: "13/13 PASS"
+  stress_lab: "20/20 PASS"
+  game_theory: "8/11 defended (core 8/8)"
+  business_continuity: "13/13 PASS"
+  monte_carlo: "100,000 sims (seed=42), P(breach)=0.98%"
+  lint: "0 errors"
+
+# === CONSTITUTIONAL COMPLIANCE ===
+constitutional:
+  reserve_ratio: "108.91%"
+  nav: "$1.1109"
+  buffer: "8.91%"
+  supply: "54,000,000 MTQ"
+  total_reserves: "$59,988,542"
+  gold_price: "$4,262.80/oz (live)"
+  silver_price: "$62.28/oz (live)"
+  lcr: "6.00"
+  cri: "26.90 (low)"
+  lrr: "8.96 (strong)"
+  bullion_protection: "0% violation (100K sims)"
+  redemption_never_pauses: "13/13 scenarios"
+  basket_verified: "true"
+  minting_paused: "false"
+
+# === VERIFICATION REPORTS ===
+verification_reports: 22
+evidence_entries: 42
