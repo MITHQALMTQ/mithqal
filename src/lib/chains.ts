@@ -1,31 +1,34 @@
 /**
  * Multi-chain registry for the Mithqal Operating System.
  *
- * The protocol is deployed on TWO testnets:
+ * The protocol is deployed on THREE chains:
  *
  *   1. Monad Testnet (Chain ID 10143) — primary, all 9 contracts verified
  *   2. Arc Network Testnet (Chain ID 5042002) — secondary, all 9 contracts deployed
+ *   3. Local Anvil (Chain ID 1337) — dev-only, all 9 contracts deployed
  *
- * Both networks share the same deployer wallet and Safe Multi-Sig Treasury
- * address. The 7 remaining contract addresses differ between networks because
- * each deployment produced a fresh address.
+ * The first two are public testnets; the third is a local persistent Anvil
+ * node for development and testing. The local chain is genuinely "free +
+ * no gas" — it uses synthetic ETH pre-funded into 10 Anvil accounts, and
+ * state persists to .anvil/state.json across restarts.
  *
  * Architecture notes:
  *   - Existing endpoints continue to import { CONTRACTS, NETWORK } from
  *     contract-reader.ts, which now re-exports CHAINS.monad — so all legacy
  *     code paths work unchanged.
- *   - New endpoints that want to read from Arc can import CHAINS.arc directly.
- *   - The /api/status endpoint reports BOTH networks so consumers can verify
+ *   - New endpoints that want to read from Arc or local can import the
+ *     corresponding chain from CHAINS directly.
+ *   - The /api/status endpoint reports ALL chains so consumers can verify
  *     either.
  *
- * Last verified deployment: 2026-08-09 (Monad) + 2026-08-09 (Arc).
+ * Last verified deployment: 2026-08-09 (Monad + Arc + Local).
  */
 
-export type ChainId = 10143 | 5042002;
+export type ChainId = 10143 | 5042002 | 1337;
 
 export interface ChainConfig {
   /** Short internal key — never changes once a chain is added. */
-  key: "monad" | "arc";
+  key: "monad" | "arc" | "local";
   /** Human-readable name shown in UI / API responses. */
   name: string;
   /** EIP-155 chain ID. */
@@ -92,6 +95,31 @@ export const CHAINS = {
       DEPLOYER: "0x3C3932F865892EFabE45892f453f81B64f6c8d8c",
     },
   },
+  local: {
+    key: "local",
+    name: "Local Anvil Devnet",
+    chainId: 1337,
+    rpcUrl: "http://localhost:8545",
+    explorer: "", // No public explorer for local Anvil.
+    nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
+    contracts: {
+      // Deployed 2026-08-09 by scripts/deploy-local.sh.
+      // State persisted to .anvil/state.json — restart anvil with
+      // scripts/start-anvil.sh to restore these addresses.
+      MTQ_TOKEN: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+      GOVERNANCE: "0xa513E6E4b8f2a923D98304ec87F64353C4D5C853",
+      // Local dev only: Safe is a 1-of-1 placeholder using the deployer EOA.
+      // In production this is a real Gnosis Safe.
+      SAFE_MULTI_SIG: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+      ALGORITHM: "0x0165878A594ca255338adfa4d48449f69242Eb8F",
+      RESERVE: "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
+      MINT: "0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9",
+      REDEEM: "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707",
+      ORACLE: "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9",
+      TAKAFUL: "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
+      DEPLOYER: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+    },
+  },
 } as const satisfies Record<string, ChainConfig>;
 
 /** Default chain — used by all legacy endpoints that don't pass a chain key. */
@@ -106,6 +134,6 @@ export function chainById(chainId: number): ChainConfig | undefined {
 }
 
 /** Look up a chain by its short key. */
-export function chainByKey(key: "monad" | "arc"): ChainConfig {
+export function chainByKey(key: "monad" | "arc" | "local"): ChainConfig {
   return CHAINS[key];
 }

@@ -15,3 +15,4 @@ dev.log
 foundry/out/
 foundry/cache/
 prisma/*.db-journal
+.anvil/

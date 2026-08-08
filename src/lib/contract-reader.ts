@@ -73,9 +73,9 @@ async function ethCall(to: string, data: string, rpcUrl?: string): Promise<strin
 /**
  * Build a reader bound to a specific chain (defaults to Monad). All read
  * functions on the returned object target that chain's RPC + addresses.
- * Useful for cross-chain queries (e.g. /api/status probing both networks).
+ * Useful for cross-chain queries (e.g. /api/status probing all networks).
  */
-export function getChainReader(chainKey: "monad" | "arc" = "monad") {
+export function getChainReader(chainKey: "monad" | "arc" | "local" = "monad") {
   const chain: ChainConfig = CHAINS[chainKey];
   const c = chain.contracts;
   const rpc = chain.rpcUrl;

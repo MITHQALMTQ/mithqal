@@ -20,59 +20,47 @@ import { Logo } from "@/components/logo";
 import { VerifyOnChain } from "@/components/verify-on-chain";
 import { DetailModal } from "@/components/detail-modal";
 
-/* ---- deployed contracts (verified 2026-07-26 on Monad Testnet, chainId 10143) ---- */
-const TESTNET_CONTRACTS = [
-  {
-    label: "MTQ Token",
-    address: "0x9e6EdC15DAc420931508d8Ddf9BC817651A253aD",
-    role: "ERC-20 · 18 decimals · mint/burn/pause",
-  },
-  {
-    label: "Governance",
-    address: "0xE35a91801bc541fb743BB9EaD26C1FbD81EaBd66",
-    role: "Council proposals · 4-role access control",
-  },
-  {
-    label: "Safe Multi-Sig",
-    address: "0xE71869C662733642bfBb262B8c6bad8B0fBfA7D0",
-    role: "3-of-5 custodian · refuses rule-violating actions",
-  },
-  {
-    label: "Algorithm",
-    address: "0x8839ce50e8D414005518769999c0A5b961D00CB2",
-    role: "Settlement pipeline · COUNCIL_ROLE gated",
-  },
-  {
-    label: "Reserve",
-    address: "0x1bbCd78E4DEF79b7a3B77242770cbAefAC816177",
-    role: "3-tier reserve management · deposit/withdraw",
-  },
-  {
-    label: "Mint",
-    address: "0x197e9CB28216dfe18a199b4c2930F74C2F460809",
-    role: "Mint gateway · verifies deposit via Reserve",
-  },
-  {
-    label: "Redeem",
-    address: "0x963201C0Fa258033CCDdFcDceb8B5E3bc2b435a4",
-    role: "Redemption · burn never pauses (constitutional)",
-  },
-  {
-    label: "Oracle",
-    address: "0xDfcA66ac0450C9AB86307af1942E157C5A4DB713",
-    role: "Live price feeds · freshness enforcement",
-  },
-  {
-    label: "Takaful",
-    address: "0x3eC27BB283644eF0A98B9961E9FBED0583a02f19",
-    role: "Islamic mutual insurance · Sharia-compliant",
-  },
-  {
-    label: "Deployer",
-    address: "0x3C3932F865892EFabE45892f453f81B64f6c8d8c",
-    role: "Genesis deployer · MON for gas",
-  },
-];
+/* ---- multi-chain contract registry ----
+ * Sourced from src/lib/chains.ts — the single source of truth for the
+ * three chains Mithqal is deployed on: Monad Testnet (10143), Arc Network
+ * Testnet (5042002), and Local Anvil Devnet (1337). The UI renders a
+ * chain toggle so users can switch between deployments.
+ */
+import { CHAINS, ALL_CHAINS, type ChainConfig } from "@/lib/chains";
+
+type ChainKey = "monad" | "arc" | "local";
+
+interface ContractRow {
+  label: string;
+  address: string;
+  role: string;
+}
+
+/** Build the per-chain contract list from the central registry. The order
+ * matches the original TESTNET_CONTRACTS layout for visual continuity. */
+function contractsForChain(chain: ChainConfig): ContractRow[] {
+  const c = chain.contracts;
+  const gasSymbol = chain.nativeCurrency.symbol;
+  return [
+    { label: "MTQ Token",     address: c.MTQ_TOKEN,    role: "ERC-20 · 18 decimals · mint/burn/pause" },
+    { label: "Governance",    address: c.GOVERNANCE,   role: "Council proposals · 4-role access control" },
+    { label: "Safe Multi-Sig",address: c.SAFE_MULTI_SIG,role: "3-of-5 custodian · refuses rule-violating actions" },
+    { label: "Algorithm",     address: c.ALGORITHM,    role: "Settlement pipeline · COUNCIL_ROLE gated" },
+    { label: "Reserve",       address: c.RESERVE,      role: "3-tier reserve management · deposit/withdraw" },
+    { label: "Mint",          address: c.MINT,         role: "Mint gateway · verifies deposit via Reserve" },
+    { label: "Redeem",        address: c.REDEEM,       role: "Redemption · burn never pauses (constitutional)" },
+    { label: "Oracle",        address: c.ORACLE,       role: "Live price feeds · freshness enforcement" },
+    { label: "Takaful",       address: c.TAKAFUL,      role: "Islamic mutual insurance · Sharia-compliant" },
+    { label: "Deployer",      address: c.DEPLOYER,     role: `Genesis deployer · ${gasSymbol} for gas` },
+  ];
+}
+
+/** Per-chain metadata for the toggle UI. */
+const CHAIN_META: Record<ChainKey, { verifiedOn: string; tagline: string }> = {
+  monad: { verifiedOn: "Verified 2026-07-26", tagline: "Primary deployment · default read chain" },
+  arc:   { verifiedOn: "Deployed 2026-08-09", tagline: "Secondary deployment · cross-chain verification" },
+  local: { verifiedOn: "Local dev · 2026-08-09", tagline: "Free + no gas · synthetic ETH · for development" },
+};
 
 /* ---- types ---- */
 
@@ -233,6 +221,12 @@ export default function TestnetDashboard() {
   // P1: clickable operation rows → modal with simulator reference, block,
   // amount, participant, and NAV-at-time. Null when the modal is closed.
   const [selectedOp, setSelectedOp] = useState<Operation | null>(null);
+
+  // Multi-chain toggle — which deployment's contracts to display.
+  // Defaults to "monad" (the primary chain the simulator reads from).
+  const [chainKey, setChainKey] = useState<ChainKey>("monad");
+  const activeChain = CHAINS[chainKey];
+  const activeContracts = contractsForChain(activeChain);
 
   // Task 5-a — Live unified NAV from /api/nav. Displayed alongside the
   // testnet simulator NAV so users understand the difference:
@@ -802,26 +796,63 @@ export default function TestnetDashboard() {
           </div>
         </div>
 
-        {/* Deployed contracts — Verify on Chain */}
+        {/* Deployed contracts — Verify on Chain (multi-chain) */}
         <div className="glass mt-6 rounded-2xl p-5">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2 text-gold">
               <Shield className="h-4 w-4" />
               <span className="text-[11px] font-semibold uppercase tracking-[0.22em]">
-                Deployed Contracts · Monad Testnet (Chain ID 10143)
+                Deployed Contracts · {activeChain.name} (Chain ID {activeChain.chainId})
               </span>
             </div>
             <Badge className="border-line bg-ink-card text-[9px] text-fg-muted hover:bg-ink-card">
-              Verified 2026-07-26
+              {CHAIN_META[chainKey].verifiedOn}
             </Badge>
           </div>
           <p className="mt-2 text-xs text-fg-muted">
             Every contract below is deployed on-chain and independently verifiable
-            on the public Monad Testnet block explorer. Click any &quot;Verify on
+            on the public {activeChain.name} block explorer. Click any &quot;Verify on
             Chain&quot; button to open it.
           </p>
+
+          {/* Chain toggle — switch between Monad and Arc deployments */}
+          <div className="mt-3 flex flex-wrap items-center gap-2 rounded-lg border border-line bg-ink-card/60 p-2">
+            <span className="px-2 text-[10px] font-semibold uppercase tracking-wider text-fg-muted">
+              Chain:
+            </span>
+            {ALL_CHAINS.map((c) => {
+              const isActive = c.key === chainKey;
+              return (
+                <button
+                  key={c.key}
+                  type="button"
+                  onClick={() => setChainKey(c.key as ChainKey)}
+                  aria-pressed={isActive}
+                  title={CHAIN_META[c.key as ChainKey].tagline}
+                  className={
+                    "inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[10px] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 " +
+                    (isActive
+                      ? "bg-gold/15 text-gold border border-gold/50"
+                      : "text-fg-muted border border-transparent hover:text-fg hover:bg-ink-card")
+                  }
+                >
+                  <span className="font-mono text-[9px] opacity-70">
+                    {c.chainId}
+                  </span>
+                  <span>{c.name.replace(" Testnet", "")}</span>
+                  {isActive && (
+                    <span className="ml-0.5 h-1.5 w-1.5 rounded-full bg-gold" aria-hidden="true" />
+                  )}
+                </button>
+              );
+            })}
+            <span className="ml-auto hidden text-[10px] text-fg-muted sm:inline">
+              {CHAIN_META[chainKey].tagline}
+            </span>
+          </div>
+
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
-            {TESTNET_CONTRACTS.map((c) => (
+            {activeContracts.map((c) => (
               <div
                 key={c.label}
                 className="flex items-center justify-between gap-3 rounded-lg border border-line bg-ink-card p-3"
@@ -835,9 +866,26 @@ export default function TestnetDashboard() {
                   </code>
                   <div className="mt-1 text-[10px] text-fg-muted">{c.role}</div>
                 </div>
-                <VerifyOnChain address={c.address} label={c.label} size="sm" showAddress={false} />
+                <VerifyOnChain
+                  address={c.address}
+                  label={c.label}
+                  size="sm"
+                  showAddress={false}
+                  chainKey={chainKey}
+                />
               </div>
             ))}
+          </div>
+
+          {/* Chain-specific footer — RPC + explorer + native currency */}
+          <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 rounded-md border border-line/60 bg-ink-card/40 px-3 py-2 text-[10px] text-fg-muted">
+            <span><span className="opacity-60">RPC:</span> <code className="font-mono">{activeChain.rpcUrl}</code></span>
+            {activeChain.explorer ? (
+              <span><span className="opacity-60">Explorer:</span> <code className="font-mono">{activeChain.explorer}</code></span>
+            ) : (
+              <span><span className="opacity-60">Explorer:</span> <em className="not-italic text-fg-muted/60">no public explorer (local devnet)</em></span>
+            )}
+            <span><span className="opacity-60">Native:</span> {activeChain.nativeCurrency.symbol} ({activeChain.nativeCurrency.decimals} dec)</span>
           </div>
         </div>
 

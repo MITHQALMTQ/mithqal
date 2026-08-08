@@ -2,11 +2,14 @@
 
 /**
  * VerifyOnChain — small "Verify on Chain" button that opens the supplied
- * contract address on the Monad Testnet block explorer
- * (https://testnet.monadscan.com/address/{address}).
+ * contract address on the appropriate block explorer.
  *
- * Used anywhere a contract address or on-chain artifact is published and the
- * institution wants readers to be able to independently verify it.
+ * As of 2026-08-09, the protocol is deployed on TWO testnets:
+ *   - Monad Testnet  → https://testnet.monadscan.com/address/{addr}
+ *   - Arc Network    → https://testnet.arcscan.app/address/{addr}
+ *
+ * Pass `chainKey="monad"` or `chainKey="arc"` to pick the explorer. Default
+ * is "monad" for backward compatibility.
  *
  * Accessibility:
  *   • rendered as a real <a> with target="_blank" + rel="noopener noreferrer"
@@ -15,10 +18,11 @@
  */
 
 import { ExternalLink } from "lucide-react";
+import { CHAINS } from "@/lib/chains";
 
 export interface VerifyOnChainProps {
-  /** The 0x-prefixed contract address (or tx hash, technically — anything
-   * that resolves at /address/{x} on MonadScan). */
+  /** The 0x-prefixed contract address (or tx hash — anything that resolves
+   * at /address/{x} on the chain's explorer). */
   address: string;
   /** Human label for the address (e.g. "MTQ Token"). Default "Contract". */
   label?: string;
@@ -28,9 +32,11 @@ export interface VerifyOnChainProps {
   className?: string;
   /** Show the truncated address alongside the label. Default true. */
   showAddress?: boolean;
+  /** Which chain's explorer to open. Default "monad" (backward compat).
+   * For chains with no public explorer (e.g. local Anvil), the button
+   * renders as disabled with a tooltip explaining why. */
+  chainKey?: "monad" | "arc" | "local";
 }
-
-const MONAD_EXPLORER_BASE = "https://testnet.monadscan.com/address/";
 
 function truncateAddress(addr: string): string {
   if (!addr || addr.length < 12) return addr;
@@ -43,14 +49,43 @@ export function VerifyOnChain({
   size = "sm",
   className,
   showAddress = true,
+  chainKey = "monad",
 }: VerifyOnChainProps) {
-  const href = `${MONAD_EXPLORER_BASE}${address}`;
-  const ariaLabel = `Verify ${label} on MonadScan: ${address} (opens in a new tab)`;
-  const title = `${label} · ${address} · Monad Testnet explorer (new tab)`;
+  const chain = CHAINS[chainKey];
+  const hasExplorer = !!chain.explorer;
+  const href = hasExplorer ? `${chain.explorer}/address/${address}` : undefined;
+  const ariaLabel = hasExplorer
+    ? `Verify ${label} on ${chain.name} explorer: ${address} (opens in a new tab)`
+    : `${label} on ${chain.name}: no public explorer (local devnet)`;
+  const title = hasExplorer
+    ? `${label} · ${address} · ${chain.name} explorer (new tab)`
+    : `${label} · ${chain.name} has no public explorer — address: ${address}`;
   const sizeCls =
     size === "md"
       ? "px-3 py-1.5 text-[11px]"
       : "px-2 py-1 text-[10px]";
+
+  // For local chains with no explorer, render as a non-clickable badge
+  // so users still see the address but can't click through.
+  if (!hasExplorer) {
+    return (
+      <span
+        aria-label={ariaLabel}
+        title={title}
+        className={
+          className ??
+          `inline-flex items-center gap-1 rounded-full border border-line bg-ink-card ${sizeCls} font-semibold text-fg-muted`
+        }
+      >
+        <span>{chain.nativeCurrency.symbol} local</span>
+        {showAddress && (
+          <span className="hidden font-mono text-[9px] text-fg-muted sm:inline">
+            ({truncateAddress(address)})
+          </span>
+        )}
+      </span>
+    );
+  }
 
   return (
     <a

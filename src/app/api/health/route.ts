@@ -9,17 +9,17 @@ import { ALL_CHAINS } from "@/lib/chains";
  *   - db       — Turso (libsql) connectivity (runs `SELECT 1`)
  *   - rpc      — Primary chain JSON-RPC (calls eth_blockNumber) — Monad Testnet
  *   - rpcArc   — Secondary chain JSON-RPC (calls eth_blockNumber) — Arc Network
+ *   - rpcLocal — Local Anvil devnet JSON-RPC (informational; only present if
+ *                a local Anvil node is running on localhost:8545)
  *   - oracle   — /api/oracle (returns 200 + a fetchedAt timestamp)
  *   - smtp     — checks SMTP_HOST env var is set (does NOT send email)
  *
- * Returns 200 + { status: "healthy", checks } when every probe passes.
- * Returns 503 + { status: "degraded", checks } when any probe fails —
- * the failing probe's `ok: false` + an `error` string is in the payload.
+ * Returns 200 + { status: "healthy", checks } when every gating probe passes.
+ * Returns 503 + { status: "degraded", checks } when any gating probe fails.
  *
- * As of 2026-08-09, the protocol is deployed on TWO testnets. The primary
- * (Monad) RPC check gates the overall `healthy` status; the Arc check is
- * informational and does NOT cause a 503 if Arc alone is down. This matches
- * the existing app behavior — all read paths still default to Monad.
+ * Gating: only `db`, `rpc` (Monad), `oracle`, and `smtp` gate the overall
+ * status. `rpcArc` and `rpcLocal` are informational — they don't cause a 503
+ * on their own.
  *
  * This endpoint is unauthenticated and not rate-limited so external
  * monitors (UptimeRobot, Vercel cron, etc.) can poll it freely.
@@ -27,10 +27,9 @@ import { ALL_CHAINS } from "@/lib/chains";
 export async function GET() {
   const checks = await runChecks();
 
-  // Arc RPC is informational only — does NOT gate the overall status.
-  // All other checks must pass for `healthy`.
+  // rpcArc + rpcLocal are informational only — they do NOT gate the status.
   const gatingChecks = Object.entries(checks)
-    .filter(([key]) => key !== "rpcArc")
+    .filter(([key]) => key !== "rpcArc" && key !== "rpcLocal")
     .map(([, c]) => c);
   const allOk = gatingChecks.every((c) => c.ok);
   const status = allOk ? "healthy" : "degraded";
@@ -46,16 +45,18 @@ type Checks = {
   db: CheckResult;
   rpc: CheckResult;
   rpcArc: CheckResult;
+  rpcLocal: CheckResult;
   oracle: CheckResult;
   smtp: CheckResult;
 };
 
 async function runChecks(): Promise<Checks> {
   // Run independent probes in parallel — total latency = slowest probe.
-  const [dbCheck, rpcCheck, rpcArcCheck, oracleCheck, smtpCheck] = await Promise.all([
+  const [dbCheck, rpcCheck, rpcArcCheck, rpcLocalCheck, oracleCheck, smtpCheck] = await Promise.all([
     checkDb(),
     checkRpc(),
     checkRpcArc(),
+    checkRpcLocal(),
     checkOracle(),
     checkSmtp(),
   ]);
@@ -64,6 +65,7 @@ async function runChecks(): Promise<Checks> {
     db: dbCheck,
     rpc: rpcCheck,
     rpcArc: rpcArcCheck,
+    rpcLocal: rpcLocalCheck,
     oracle: oracleCheck,
     smtp: smtpCheck,
   };
@@ -96,7 +98,16 @@ async function checkRpc(): Promise<CheckResult> {
 /* ---- RPC: call eth_blockNumber on the secondary chain (Arc Network) ----
  * Informational only — does NOT cause a 503 if it fails. */
 async function checkRpcArc(): Promise<CheckResult> {
-  const chain = ALL_CHAINS[1];
+  const chain = ALL_CHAINS.find((c) => c.key === "arc")!;
+  return probeRpc(chain.rpcUrl, chain.name);
+}
+
+/* ---- RPC: call eth_blockNumber on the local Anvil devnet ----
+ * Informational only — only meaningful in local dev. On Vercel production
+ * there is no Anvil node on localhost:8545, so this will fail; that's fine
+ * because it does NOT gate the overall status. */
+async function checkRpcLocal(): Promise<CheckResult> {
+  const chain = ALL_CHAINS.find((c) => c.key === "local")!;
   return probeRpc(chain.rpcUrl, chain.name);
 }
 
