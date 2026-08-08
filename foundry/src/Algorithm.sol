@@ -25,7 +25,7 @@ pragma solidity ^0.8.23;
  *     lives in MTQ.mintingPaused (Invariant 5: redemption never pauses).
  *
  * Deployed at: 0x8839ce50e8D414005518769999c0A5b961D00CB2
- * Network:     Monad Testnet, Chain ID 10143
+ * Network:     Multi-chain — see src/lib/chains.ts (Monad Testnet 10143, Arc Testnet 5042002, Local Anvil 1337)
  */
 
 interface IMTQ {

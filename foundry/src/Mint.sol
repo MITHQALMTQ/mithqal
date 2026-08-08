@@ -21,7 +21,7 @@ pragma solidity ^0.8.23;
  *   - Mint is pausable (mirrors MTQ.mintingPaused) — but burn is NOT
  *
  * Deployed at: 0x197e9CB28216dfe18a199b4c2930F74C2F460809
- * Network:     Monad Testnet, Chain ID 10143
+ * Network:     Multi-chain — see src/lib/chains.ts (Monad Testnet 10143, Arc Testnet 5042002, Local Anvil 1337)
  */
 
 interface IMTQ {

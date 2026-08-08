@@ -37,14 +37,27 @@ interface ContractRow {
 }
 
 /** Build the per-chain contract list from the central registry. The order
- * matches the original TESTNET_CONTRACTS layout for visual continuity. */
+ * matches the original TESTNET_CONTRACTS layout for visual continuity.
+ *
+ * Safe Multi-Sig role description is chain-aware to reflect the actual
+ * on-chain state (verified 2026-08-09 via cast call):
+ *   - Monad + Arc: Gnosis Safe v1.4.1, threshold=1, sole owner=deployer EOA
+ *     (constitutionally non-compliant; should be 3-of-5 with 5 named
+ *     institutional signers per §Article IV)
+ *   - Local Anvil: no Safe deployed; deployer EOA stands in as placeholder
+ *
+ * See docs/verification/network-contract-inventory.md for full details. */
 function contractsForChain(chain: ChainConfig): ContractRow[] {
   const c = chain.contracts;
   const gasSymbol = chain.nativeCurrency.symbol;
+  const safeRole =
+    chain.key === "local"
+      ? "Placeholder (deployer EOA) · no Safe deployed locally"
+      : "Gnosis Safe v1.4.1 · ⚠️ 1-of-1 deployer-controlled (target: 3-of-5)";
   return [
     { label: "MTQ Token",     address: c.MTQ_TOKEN,    role: "ERC-20 · 18 decimals · mint/burn/pause" },
     { label: "Governance",    address: c.GOVERNANCE,   role: "Council proposals · 4-role access control" },
-    { label: "Safe Multi-Sig",address: c.SAFE_MULTI_SIG,role: "3-of-5 custodian · refuses rule-violating actions" },
+    { label: "Safe Multi-Sig",address: c.SAFE_MULTI_SIG,role: safeRole },
     { label: "Algorithm",     address: c.ALGORITHM,    role: "Settlement pipeline · COUNCIL_ROLE gated" },
     { label: "Reserve",       address: c.RESERVE,      role: "3-tier reserve management · deposit/withdraw" },
     { label: "Mint",          address: c.MINT,         role: "Mint gateway · verifies deposit via Reserve" },

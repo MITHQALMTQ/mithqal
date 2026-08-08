@@ -23,7 +23,7 @@ pragma solidity ^0.8.23;
  *     functionality by design. The user's right to redeem is absolute.
  *
  * Deployed at: 0x963201C0Fa258033CCDdFcDceb8B5E3bc2b435a4
- * Network:     Monad Testnet, Chain ID 10143
+ * Network:     Multi-chain — see src/lib/chains.ts (Monad Testnet 10143, Arc Testnet 5042002, Local Anvil 1337)
  */
 
 interface IMTQ {

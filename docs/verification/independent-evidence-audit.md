@@ -101,7 +101,7 @@ The MITHQAL platform has been independently verified against live runtime eviden
 | # | Claim | Evidence | Evidence Level |
 |---|---|---|---|
 | 19 | 33 API routes | `find src/app/api -name route.ts \| wc -l` = 33 | **PROVEN** |
-| 20 | 9 Protocol Smart Contracts + 1 Safe Multi-Sig + 1 Deployer EOA (11 addresses) | `ls foundry/src/*.sol \| wc -l` = 9 (Protocol Smart Contracts); `/api/onchain-test` returns 11 addresses (9 contracts + 1 Safe + 1 deployer EOA) | **PROVEN** (corrected; see [CONTRACT_REGISTRY.md](../contracts/CONTRACT_REGISTRY.md)) |
+| 20 | 9 Protocol Smart Contracts + 1 Safe Multi-Sig + 1 Deployer EOA (11 addresses) | `ls foundry/src/*.sol \| wc -l` = 9 (Protocol Smart Contracts); `/api/onchain-test` returns 11 addresses (9 contracts + 1 Safe + 1 deployer EOA). **Note (2026-08-09 audit):** the Safe Multi-Sig is verified as a real Gnosis Safe v1.4.1 on Monad + Arc via `cast call VERSION()`, but `getThreshold()` returns `1` and `getOwners()` returns `[deployerEOA]` — the Safe is 1-of-1 deployer-controlled, NOT the constitutionally-mandated 3-of-5. See `network-architecture-audit.md` F-CRITICAL-1 and `CONTRACT_REGISTRY.md` §Operational Governance. | **PARTIALLY PROVEN** (addresses exist; Safe is non-compliant) |
 | 21 | Smart contracts on Monad (Chain ID 10143) | `/api/onchain-test`: chainId=10143, 11 addresses (9 contracts + 1 Safe + 1 deployer EOA) | **PROVEN** |
 | 22 | Blueprint 28,456 lines | `wc -l` = 28,456 | **PROVEN** |
 | 23 | PDF 1,674 pages | pypdf: Pages: 1674 | **PROVEN** |

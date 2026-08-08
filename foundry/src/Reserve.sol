@@ -25,7 +25,7 @@ pragma solidity ^0.8.23;
  *   - Tier composition must always sum to total reserve (conservation)
  *
  * Deployed at: 0x1bbCd78E4DEF79b7a3B77242770cbAefAC816177
- * Network:     Monad Testnet, Chain ID 10143
+ * Network:     Multi-chain — see src/lib/chains.ts (Monad Testnet 10143, Arc Testnet 5042002, Local Anvil 1337)
  */
 
 // slither-disable-next-line missing-inheritance

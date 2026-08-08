@@ -27,7 +27,7 @@ pragma solidity ^0.8.23;
  *     contract level via the §34 Reserve Liquidation Order.
  *
  * Deployed at: 0x8839ce50e8D414005518769999c0A5b961D00CB2
- * Network:     Monad Testnet, Chain ID 10143
+ * Network:     Multi-chain — see src/lib/chains.ts (Monad Testnet 10143, Arc Testnet 5042002, Local Anvil 1337)
  */
 
 interface IMTQ {

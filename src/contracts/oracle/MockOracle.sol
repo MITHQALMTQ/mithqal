@@ -6,7 +6,7 @@ pragma solidity ^0.8.20;
  * @author Mithqal Formation Committee
  * @notice Testnet mock price oracle — admin-controlled price feed for gold,
  *         silver, and stablecoins. Used by the MTQ monetary engine on
- *         Monad Testnet (Chain ID 10143) until real oracles (Chainlink /
+ *         multi-chain (Monad 10143, Arc 5042002, Local Anvil 1337 — see src/lib/chains.ts) until real oracles (Chainlink /
  *         Pyth) are integrated at mainnet.
  *
  * @dev Constitutional context (§30-33 v19.0):

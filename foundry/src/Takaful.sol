@@ -29,7 +29,7 @@ pragma solidity ^0.8.23;
  *   - Redemption fees (Redeem contract routes fee USD to this address)
  *
  * Deployed at: 0x3eC27BB283644eF0A98B9961E9FBED0583a02f19
- * Network:     Monad Testnet, Chain ID 10143
+ * Network:     Multi-chain — see src/lib/chains.ts (Monad Testnet 10143, Arc Testnet 5042002, Local Anvil 1337)
  */
 
 interface IMTQ {

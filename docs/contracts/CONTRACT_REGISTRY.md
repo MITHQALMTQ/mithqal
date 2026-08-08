@@ -65,11 +65,33 @@ src/contracts/oracle/MockOracle.sol
 
 ## Operational Governance (1)
 
-The Safe Multi-Sig Treasury address is identical across both Monad and Arc deployments (same deployer, same Safe creation transaction).
+The Safe Multi-Sig Treasury address is identical across both Monad and Arc deployments (same deployer; the shared address is consistent with a CREATE2 factory deployment, though the specific factory setup is not documented in the repository).
 
 | # | Entity | Address | Network | Purpose | Type |
 |---|---|---|---|---|---|
-| 1 | Safe Multi-Sig Treasury | `0xE71869C662733642bfBb262B8c6bad8B0fBfA7D0` | Monad Testnet (10143) + Arc Testnet (5042002) | Multi-signature treasury (operational governance) | Gnosis Safe (not an ERC-20, not a Protocol Smart Contract) |
+| 1 | Safe Multi-Sig Treasury | `0xE71869C662733642bfBb262B8c6bad8B0fBfA7D0` | Monad Testnet (10143) + Arc Testnet (5042002) | Multi-signature treasury (operational governance) | Gnosis Safe v1.4.1 (verified on-chain 2026-08-09 via `cast call VERSION()`) |
+
+### ⚠️ Current Status: NON-COMPLIANT
+
+On-chain verification (2026-08-09) confirms the Safe Multi-Sig Treasury is a real Gnosis Safe v1.4.1 on both Monad and Arc, but it is configured as **1-of-1 with the deployer EOA as the sole owner**:
+
+| Property | Monad (10143) | Arc (5042002) | Constitutional Target (§Article IV) |
+|---|---|---|---|
+| `VERSION()` | `"1.4.1"` | `"1.4.1"` (same bytecode) | Gnosis Safe (any version) |
+| `getThreshold()` | **`1`** | **`1`** | **`3`** (3-of-5) |
+| `getOwners()` | **`[0x3C39…c8d8c]`** (deployer EOA) | **`[0x3C39…c8d8c]`** (deployer EOA) | 5 named institutional signers (CEO UAE, CFO UAE, Board Member Singapore, Custodian UK, Auditor Third-party — per `blueprint.txt:19759-19765`) |
+
+This is a **direct, present-tense violation of §Article IV** of the Constitution, which mandates:
+1. Safe Multi-Sig configured as 3-of-5 (not 1-of-1)
+2. EOAs shall not retain operational authority after deployment (the deployer EOA currently holds all admin roles)
+
+See `docs/verification/investor-due-diligence-simulation.md` (E047) and `docs/verification/institutional-readiness-program-report.md` (lines 227, 241) for the candid assessment of this non-compliance. The system is currently **founder-controlled** until the Constitutional Council is seated and the Safe is reconfigured to 3-of-5 with the 5 named institutional signers.
+
+**Remediation required before any "mainnet ready" claim:**
+1. Seat the Constitutional Council (fill the remaining 6 of 7 council slots on Governance.sol).
+2. Deploy a real 3-of-5 Gnosis Safe with the 5 named institutional signers (or reconfigure the existing Safe via `addOwnerWithThreshold` calls).
+3. Transfer all admin roles (DEFAULT_ADMIN, MINTER, PAUSER, ORACLE_PROVIDER, COUNCIL) from the deployer EOA to the Safe Multi-Sig on all chains.
+4. Verify the reconfiguration via `cast call getThreshold()` (should return `3`) and `cast call getOwners()` (should return 5 addresses).
 
 The Safe Multi-Sig Treasury is the operational custody surface for protocol-controlled funds. It is **not** a Protocol Smart Contract — it does not implement any of the 21 constitutional invariants. It is a Gnosis Safe instance used for multi-signature authorization of operational transactions.
 
@@ -83,7 +105,7 @@ The Deployment Wallet address is identical across both chains (same EOA).
 |---|---|---|---|---|---|
 | 1 | Deployment Wallet | `0x3C3932F865892EFabE45892f453f81B64f6c8d8c` | Monad Testnet (10143) + Arc Testnet (5042002) | Contract deployer (initial admin, will be rotated post-mainnet) | EOA (Externally Owned Account — not a contract) |
 
-The Deployment Wallet is an EOA, not a smart contract. It is the wallet that submitted the deployment transactions on both networks. Post-mainnet, all roles assigned to this EOA shall be renounced and re-assigned to the Safe Multi-Sig Treasury (per Article IV role-separation requirements).
+The Deployment Wallet is an EOA, not a smart contract. It is the wallet that submitted the deployment transactions on both networks. Per §Article IV of the Constitution, EOAs shall not retain operational authority after deployment; all operational authority shall be transferred to the Safe Multi-Sig. **This transfer has NOT yet occurred** — the deployer EOA currently holds all admin roles (DEFAULT_ADMIN, MINTER, PAUSER, ORACLE_PROVIDER, COUNCIL) on all three chains. This is a constitutional non-compliance (see F-CRITICAL-1 in `docs/verification/network-architecture-audit.md`). The transfer must be completed before any "mainnet ready" claim.
 
 ---
 

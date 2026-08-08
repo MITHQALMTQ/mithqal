@@ -26,7 +26,7 @@ pragma solidity ^0.8.23;
  * 0x27a1a201D6DF8215d0b0da3Be6211bE24ef4c471 for backwards-compat.
  *
  * Deployed at: 0xDfcA66ac0450C9AB86307af1942E157C5A4DB713
- * Network:     Monad Testnet, Chain ID 10143
+ * Network:     Multi-chain — see src/lib/chains.ts (Monad Testnet 10143, Arc Testnet 5042002, Local Anvil 1337)
  */
 
 // slither-disable-next-line missing-inheritance
