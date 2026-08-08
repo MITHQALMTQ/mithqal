@@ -122,3 +122,33 @@ documented in `docs/verification/final-certification.md`.
 
 ✅ **CERTIFIED ALIGNED** — see
 [`docs/verification/final-certification.md`](docs/verification/final-certification.md).
+
+---
+Task ID: arc-network-integration
+Agent: main (Super Z)
+Task: Wire the Arc Network Testnet deployment (Chain ID 5042002) into the Mithqal application alongside the existing Monad Testnet deployment.
+
+Work Log:
+- Verified Arc RPC (https://rpc.testnet.arc.io) is reachable — eth_blockNumber returns 0x3567204 (~56M blocks)
+- Verified all 9 Arc contracts are deployed via eth_getCode (non-empty bytecode on every address)
+- Created src/lib/chains.ts as the single source of truth for multi-chain config:
+    * CHAINS.monad  (chainId 10143, 10 contracts, primary)
+    * CHAINS.arc    (chainId 5042002, 10 contracts, secondary)
+    * ALL_CHAINS, DEFAULT_CHAIN, chainById(), chainByKey() helpers
+- Refactored src/lib/contract-reader.ts to source CONTRACTS/NETWORK from chains.ts:
+    * Exposed new getChainReader("monad" | "arc") factory with getContractInfo/getBalance/getBlockNumber/contractExists
+    * Legacy exports (CONTRACTS, NETWORK, getContractInfo, getBalance, getBlockNumber, getTransactionReceipt) preserved → all existing callers work unchanged
+- Extended src/app/api/status/route.ts to return a `networks` array alongside the legacy single-network fields
+- Extended src/app/api/health/route.ts with a new `rpcArc` check (informational — does NOT gate the overall status)
+- Updated docs/contracts/CONTRACT_REGISTRY.md to v1.1 with Arc section, network config table, and changelog
+- Restarted dev server; smoke-tested 9 endpoints — all return HTTP 200
+- Confirmed /api/onchain-test still reads from Monad (310.95 MTQ totalSupply, deployer balance 1.6070 MON)
+
+Stage Summary:
+- 9/9 Arc contracts verified live (bytecode present)
+- 2 chains wired into the app: Monad (default) + Arc (secondary)
+- All legacy endpoints unchanged; new multi-chain fields added non-breakingly
+- /api/health now reports rpcArc (Arc Network block 0x3567312 at last check)
+- /api/status now returns networks[] with full per-chain contract registry
+- Dev server: PID 6717, http://localhost:3000, healthy
+- Not yet committed to git; not yet deployed to Vercel production

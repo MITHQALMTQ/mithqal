@@ -1,18 +1,25 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { ALL_CHAINS } from "@/lib/chains";
 
 /**
  * GET /api/health — service health check.
  *
- * Probes the four upstream dependencies the public app depends on:
- *   - db     — Turso (libsql) connectivity (runs `SELECT 1`)
- *   - rpc    — Monad Testnet JSON-RPC (calls eth_blockNumber)
- *   - oracle — /api/oracle (returns 200 + a fetchedAt timestamp)
- *   - smtp   — checks SMTP_HOST env var is set (does NOT send email)
+ * Probes the upstream dependencies the public app depends on:
+ *   - db       — Turso (libsql) connectivity (runs `SELECT 1`)
+ *   - rpc      — Primary chain JSON-RPC (calls eth_blockNumber) — Monad Testnet
+ *   - rpcArc   — Secondary chain JSON-RPC (calls eth_blockNumber) — Arc Network
+ *   - oracle   — /api/oracle (returns 200 + a fetchedAt timestamp)
+ *   - smtp     — checks SMTP_HOST env var is set (does NOT send email)
  *
  * Returns 200 + { status: "healthy", checks } when every probe passes.
  * Returns 503 + { status: "degraded", checks } when any probe fails —
  * the failing probe's `ok: false` + an `error` string is in the payload.
+ *
+ * As of 2026-08-09, the protocol is deployed on TWO testnets. The primary
+ * (Monad) RPC check gates the overall `healthy` status; the Arc check is
+ * informational and does NOT cause a 503 if Arc alone is down. This matches
+ * the existing app behavior — all read paths still default to Monad.
  *
  * This endpoint is unauthenticated and not rate-limited so external
  * monitors (UptimeRobot, Vercel cron, etc.) can poll it freely.
@@ -20,7 +27,12 @@ import { db } from "@/lib/db";
 export async function GET() {
   const checks = await runChecks();
 
-  const allOk = Object.values(checks).every((c) => c.ok);
+  // Arc RPC is informational only — does NOT gate the overall status.
+  // All other checks must pass for `healthy`.
+  const gatingChecks = Object.entries(checks)
+    .filter(([key]) => key !== "rpcArc")
+    .map(([, c]) => c);
+  const allOk = gatingChecks.every((c) => c.ok);
   const status = allOk ? "healthy" : "degraded";
 
   return NextResponse.json(
@@ -33,15 +45,17 @@ type CheckResult = { ok: boolean; latencyMs?: number; error?: string; detail?: s
 type Checks = {
   db: CheckResult;
   rpc: CheckResult;
+  rpcArc: CheckResult;
   oracle: CheckResult;
   smtp: CheckResult;
 };
 
 async function runChecks(): Promise<Checks> {
   // Run independent probes in parallel — total latency = slowest probe.
-  const [dbCheck, rpcCheck, oracleCheck, smtpCheck] = await Promise.all([
+  const [dbCheck, rpcCheck, rpcArcCheck, oracleCheck, smtpCheck] = await Promise.all([
     checkDb(),
     checkRpc(),
+    checkRpcArc(),
     checkOracle(),
     checkSmtp(),
   ]);
@@ -49,6 +63,7 @@ async function runChecks(): Promise<Checks> {
   return {
     db: dbCheck,
     rpc: rpcCheck,
+    rpcArc: rpcArcCheck,
     oracle: oracleCheck,
     smtp: smtpCheck,
   };
@@ -71,12 +86,24 @@ async function checkDb(): Promise<CheckResult> {
   }
 }
 
-/* ---- RPC: call eth_blockNumber on Monad Testnet ---- */
+/* ---- RPC: call eth_blockNumber on the primary chain (Monad Testnet) ---- */
 async function checkRpc(): Promise<CheckResult> {
+  // Primary chain = ALL_CHAINS[0] (Monad). This gates the overall status.
+  const chain = ALL_CHAINS[0];
+  return probeRpc(chain.rpcUrl, chain.name);
+}
+
+/* ---- RPC: call eth_blockNumber on the secondary chain (Arc Network) ----
+ * Informational only — does NOT cause a 503 if it fails. */
+async function checkRpcArc(): Promise<CheckResult> {
+  const chain = ALL_CHAINS[1];
+  return probeRpc(chain.rpcUrl, chain.name);
+}
+
+async function probeRpc(rpcUrl: string, label: string): Promise<CheckResult> {
   const start = Date.now();
-  const MONAD_RPC = "https://testnet-rpc.monad.xyz";
   try {
-    const res = await fetch(MONAD_RPC, {
+    const res = await fetch(rpcUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ jsonrpc: "2.0", method: "eth_blockNumber", params: [], id: 1 }),
@@ -86,7 +113,7 @@ async function checkRpc(): Promise<CheckResult> {
       return {
         ok: false,
         latencyMs: Date.now() - start,
-        error: `RPC HTTP ${res.status}`,
+        error: `${label} RPC HTTP ${res.status}`,
       };
     }
     const json = (await res.json()) as { result?: string; error?: { message?: string } };
@@ -94,26 +121,26 @@ async function checkRpc(): Promise<CheckResult> {
       return {
         ok: false,
         latencyMs: Date.now() - start,
-        error: json.error.message ?? "RPC error",
+        error: `${label}: ${json.error.message ?? "RPC error"}`,
       };
     }
     if (!json.result) {
       return {
         ok: false,
         latencyMs: Date.now() - start,
-        error: "RPC returned no result",
+        error: `${label} returned no result`,
       };
     }
     return {
       ok: true,
       latencyMs: Date.now() - start,
-      detail: `block=${json.result}`,
+      detail: `${label} block=${json.result}`,
     };
   } catch (err) {
     return {
       ok: false,
       latencyMs: Date.now() - start,
-      error: err instanceof Error ? err.message : "rpc fetch failed",
+      error: `${label}: ${err instanceof Error ? err.message : "rpc fetch failed"}`,
     };
   }
 }
