@@ -161,3 +161,7 @@ All 9 Protocol Smart Contracts have been **deployed and verified on both Monad T
 - [`docs/evidence/INSTITUTIONAL_READINESS_MATRIX.md`](../evidence/INSTITUTIONAL_READINESS_MATRIX.md) — 10-dimension readiness matrix
 - [`docs/verification/formal-verification-report.md`](../verification/formal-verification-report.md) — Formal verification status
 - [`docs/verification/independent-evidence-audit.md`](../verification/independent-evidence-audit.md) — Independent evidence audit (E036 RESOLVED by this registry)
+- [`docs/blueprint/custody-framework-v2.md`](../blueprint/custody-framework-v2.md) — Constitutional Custody Framework v2.0 (tiered custody hierarchy: Official-Sector / Regulated Bank / Specialized Vault / Contingency)
+- [`docs/architecture/custodian-eligibility-matrix.md`](../architecture/custodian-eligibility-matrix.md) — 12 custodian eligibility criteria
+- [`docs/architecture/geographic-custody-strategy.md`](../architecture/geographic-custody-strategy.md) — 5-region custody diversification strategy
+- [`docs/verification/custody-readiness-report.md`](../verification/custody-readiness-report.md) — Custody operationalization readiness (NOT READY — 10/33 criteria met)

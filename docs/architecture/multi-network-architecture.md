@@ -742,3 +742,7 @@ Do NOT:
 - [`docs/verification/final-network-architecture-certification.md`](../verification/final-network-architecture-certification.md) — final certification
 - [`docs/contracts/CONTRACT_REGISTRY.md`](../contracts/CONTRACT_REGISTRY.md) — authoritative contract registry
 - [`docs/blueprint/blueprint.txt`](../blueprint/blueprint.txt) — the constitutional text (§Article IV)
+- [`docs/blueprint/custody-framework-v2.md`](../blueprint/custody-framework-v2.md) — Constitutional Custody Framework v2.0 (tiered custody hierarchy)
+- [`docs/architecture/custodian-eligibility-matrix.md`](./custodian-eligibility-matrix.md) — 12 custodian eligibility criteria
+- [`docs/architecture/geographic-custody-strategy.md`](./geographic-custody-strategy.md) — 5-region custody diversification strategy
+- [`docs/verification/custody-readiness-report.md`](../verification/custody-readiness-report.md) — custody operationalization readiness assessment

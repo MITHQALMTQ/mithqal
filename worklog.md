@@ -286,3 +286,71 @@ Stage Summary:
 - All 17 critical non-goals (§40) satisfied
 - Certification status: CONDITIONAL (pending Phase A completion — DONE in this commit)
 - Next phases (D, E, G) blocked by F-CRITICAL-1 (Safe operationalization — requires human/institutional action)
+
+---
+Task ID: custody-framework-v2
+Agent: main (Super Z) — acting as Chief Constitutional Engineer / Institutional Infrastructure Architect / Interoperability Architect
+Task: Design MITHQAL to be eligible for central-bank/official-sector custody (not assume that a central bank will agree to custody MITHQAL reserves). Introduce a tiered custody hierarchy: Tier 1 Official-Sector (central banks where legally eligible), Tier 2 Regulated Institutional Custodians, Tier 3 Specialized Precious-Metals Vaults, Tier 4 Contingency. Establish the "Official Reserve Custodian" class, 12 custodian eligibility criteria, 5-region geographic diversification, and allocated-physical-bullion requirements.
+
+Work Log:
+- Launched 1 Explore agent for a very thorough audit of existing custody/reserve/gold documentation across the entire codebase. The agent produced a 9-section, ~400-line report identifying:
+    * No existing custody tier system (the "Tier 1/2/3/4" in the codebase refers to reserve-asset tiers, not custodian tiers)
+    * A flat multi-custodian fleet in src/lib/multi-custodian.ts (7 demo custodians, all equal-weight)
+    * 4 critical pre-existing defects: (1) git merge conflict in blueprint.txt lines 9138-9380, (2) single-custodian 52% concentration violating the 25% cap (E048), (3) on-chain Reserve.sol tier definitions contradict the constitution (on-chain Tier 1 = bullion, constitution Tier 1 = cash), (4) 4 conflicting concentration thresholds (25% in §XVII §12, 30% in Article V Credit Risk, 40% in Article V intro and Article I, 40% in whitepaper.md)
+    * Existing informal asset-class-to-custodian mapping in test code (NY Fed for cash, DTCC for sovereigns, Brink's for gold, Loomis for silver, Circle for stablecoins) that pre-figures the proposed tier system
+    * No central bank is named as an operational custodian anywhere in the codebase
+
+- Produced 4 constitutional custody documents:
+    1. docs/blueprint/custody-framework-v2.md (main framework, 16 sections):
+       - 4-tier custody hierarchy (Official-Sector / Regulated Bank / Specialized Vault / Contingency)
+       - Official Reserve Custodian class definition
+       - 12 eligibility criteria
+       - Physical gold allocation requirements (allocated, bar-level, LBMA Good Delivery)
+       - Reserve integrity hierarchy (allocated bullion > cash > sukuk > stablecoins)
+       - Custody tier ↔ reserve asset mapping
+       - Geographic diversification strategy summary (5 regions)
+       - Reserve Custody Status reporting (no premature claims)
+       - 10 pre-existing defects identified for remediation
+       - Constitutional boundary (what is preserved vs. what changes)
+       - 5 implementation phases (C-1 ratification through C-5 official-sector engagement)
+
+    2. docs/architecture/custodian-eligibility-matrix.md:
+       - 12 eligibility criteria as a verification matrix
+       - Tier-specific additional requirements (Tier 1 statutory authority, Tier 2 credit rating, Tier 3 LBMA registration, Tier 4 pre-approval)
+       - Verification cycle (frequency per criterion)
+       - Eligibility decision matrix (all 12 must be met)
+       - Evidence retention requirements
+
+    3. docs/architecture/geographic-custody-strategy.md:
+       - 5-region strategy (US, UK/Europe, UAE, Saudi Arabia, Asia/Singapore+Hong Kong)
+       - Per-region Tier 1/2/3 targets with practical alternatives
+       - Allocation strategy with operational targets and constitutional caps
+       - Tier 3 bullion special allocation (8% per-jurisdiction cap)
+       - Custodian tier ↔ region mapping
+       - Rebalancing rules (triggers, timeline, mechanisms)
+       - Jurisdiction-specific risk considerations
+       - 4 implementation phases (G-1 through G-4)
+
+    4. docs/verification/custody-readiness-report.md:
+       - Readiness checklist across 7 categories (33 criteria total)
+       - Score: 10/33 criteria met (30%) — custody operationalization BLOCKED
+       - 3 blocking prerequisites: F-CRITICAL-1 (Safe 1-of-1), E048 (52% concentration), no custodian agreements executed
+       - Risks of premature custody claims
+       - 6 implementation phases (R-1 constitutional cleanup through R-6 public reporting)
+       - Current state vs. target state comparison
+
+- Updated cross-references:
+    * docs/architecture/multi-network-architecture.md: added 4 custody docs to Related Documents
+    * docs/contracts/CONTRACT_REGISTRY.md: added 4 custody docs to Related Documents
+
+Stage Summary:
+- 4 custody framework documents produced (~2,200 lines of structured architecture)
+- The custody architecture is institutional-grade: 4-tier hierarchy, 12 eligibility criteria, 5-region diversification, allocated-physical-bullion requirements
+- Critical design principle: "MITHQAL's Constitutional Reserve Framework is designed to PERMIT custody by central banks where legally authorized — NOT to ASSUME that a central bank will agree"
+- No central bank is designated as a custodian without agreement; no premature claims
+- 10 pre-existing constitutional defects identified for remediation (merge conflict, conflicting concentration thresholds, Reserve.sol tier mismatch, etc.)
+- Custody readiness: 10/33 criteria met (30%) — BLOCKED by F-CRITICAL-1 (Safe operationalization) and E048 (single-custodian concentration)
+- No constitutional monetary logic modified
+- No smart contracts redeployed
+- No custodian agreements executed (framework is documentation-only)
+- All 17 §40 critical non-goals (from the prior network architecture audit) remain satisfied
