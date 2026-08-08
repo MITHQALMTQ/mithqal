@@ -354,3 +354,51 @@ Stage Summary:
 - No smart contracts redeployed
 - No custodian agreements executed (framework is documentation-only)
 - All 17 §40 critical non-goals (from the prior network architecture audit) remain satisfied
+
+---
+Task ID: harden-backup-sync
+Agent: main (Super Z) — acting as COO, CTO, and Project Manager
+Task: Verify completeness (nothing deleted/missing), fix all identified defects as expert CTO, harden, backup, then push to GitHub + Vercel + Turso all linked together.
+
+Work Log:
+- Phase 1 (verify completeness): confirmed all files present, dev server + Anvil running, git clean, 59 commits total. No files deleted during the audit/custody framework phases.
+
+- Phase 2 (fix all defects):
+  * Resolved git merge conflict in blueprint.txt lines 9138-9380 (kept HEAD content — full Article XVIII; removed conflict markers)
+  * Reconciled 4 conflicting concentration thresholds to the §Article XVII §12 binding cap (25% per custodian / 30% per jurisdiction / 30% per vault / 25% per banking). Fixed in blueprint.txt (Part 3 Article I, Part 3 Article V, Part 5 reserve management), whitepaper.md, src/app/api/transparency/route.ts
+  * Corrected §XX.16 references in multi-custodian.ts and /api/custodians/route.ts → §XVII.12 (the actual Operational Assurance Framework section; §XX.16 is 'Interactive Reserve Flow Simulator')
+  * Fixed 'four constitutional custody tiers' mislabel in v19-infrastructure.ts → 'four constitutional key-storage tiers' (it's about cryptographic key storage, not asset custody)
+  * Clarified public-site.tsx 'four-tier structure' → 'four-tier reserve-asset structure' (to distinguish from the four-tier custodian hierarchy)
+  * Corrected AUDIT.md Tier 3 split ('allocated gold, strategic gold' → 'Tier 3 allocated physical bullion [gold + silver]')
+  * Documented the on-chain Reserve.sol tier mismatch (3-tier on-chain vs 4-tier constitutional) with a prominent KNOWN DEFECT comment block + reconciliation plan; mirrored to foundry/src/Reserve.sol
+
+- Phase 3 (harden):
+  * Verified no secrets in git history (no GitHub tokens, no Vercel tokens, no Turso JWTs, no real private keys — only the public Anvil account #0 test key which is well-known)
+  * Verified .env, .anvil/, .vercel/ are all properly gitignored
+  * Confirmed .gitignore covers: .next/, *.log, foundry/out/, foundry/cache/, .anvil/, prisma/*.db-journal
+
+- Phase 4 (backup):
+  * Created scripts/backup_turso.py — Turso DB schema + row counts + sample data dump via libsql HTTP pipeline API
+  * Created scripts/backup-and-sync.sh — comprehensive 8-step backup + sync script
+  * Backup artifacts: turso-backup.sql (8.7KB), anvil-state.json (458KB), .env (2.8KB), mithqal-git.bundle (132MB), worklog.md, 3 address JSON files, vercel-project.json, git-head.txt, git-log-recent.txt
+
+- Phase 5 (push + deploy + verify):
+  * Committed: faad870 'fix: resolve 10 pre-existing constitutional defects + add backup tooling'
+  * Pushed to GitHub main (origin/main = faad870)
+  * Deployed to Vercel production (mithqal.vercel.app — Ready in 1m)
+  * Verified 3-way link:
+    - GitHub: faad870 on main ✓
+    - Vercel: HTTP 200, status healthy ✓
+    - Vercel /api/health: db ✓, rpc (Monad) ✓, rpcArc (Arc) ✓, oracle ✓, smtp ✓ (rpcLocal ✗ is expected — Vercel can't reach localhost)
+    - Vercel /api/status: ok=True, database=connected, 3 networks ✓
+    - Turso DB: reachable, tables present ✓
+
+Stage Summary:
+- 10 pre-existing constitutional defects resolved (merge conflict, threshold conflicts, §XX.16 reference, key-custody mislabel, public-site wording, AUDIT.md tier split, Reserve.sol tier mismatch documentation)
+- 2 new backup scripts added (backup_turso.py, backup-and-sync.sh)
+- Full backup captured to /home/z/my-project/backups/mithqal-20260808-221129/
+- GitHub ↔ Vercel ↔ Turso all linked and verified healthy
+- No constitutional monetary logic modified
+- No contracts redeployed
+- No secrets leaked
+- Dev server + Anvil + Vercel production all operational
