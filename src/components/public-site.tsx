@@ -750,7 +750,7 @@ function Reserves() {
             {t("reserves.heading")}
           </h2>
           <p className="mt-5 max-w-2xl text-[15px] leading-relaxed text-fg-muted sm:text-base">
-            Reserves are held in custody across a four-tier structure of central-bank-quality
+            Reserves are held in custody across a four-tier reserve-asset structure (cash, sovereign securities, allocated physical bullion, operational liquidity) of central-bank-quality
             assets. Every claim is verifiable — daily cryptographic proofs, quarterly
             independent audits, and a five-year independent constitutional review.
           </p>

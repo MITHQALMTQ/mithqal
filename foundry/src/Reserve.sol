@@ -10,6 +10,39 @@ pragma solidity ^0.8.23;
  *   - Tier 2: Cash & cash equivalents (USDC, USDT, T-Bills)
  *   - Tier 3: Sovereign Islamic bonds (Sukuk, Sharia-compliant)
  *
+ * ┌────────────────────────────────────────────────────────────────────┐
+ * │ ⚠️  KNOWN DEFECT — ON-CHAIN TIER MISMATCH (F-HIGH-3)              │
+ * │                                                                    │
+ * │ The on-chain tier definitions above DIFFER from the                │
+ * │ constitutional 4-tier model in docs/blueprint/blueprint.txt        │
+ * │ §Article III (Reserve Principles):                                 │
+ * │                                                                    │
+ * │   Constitution Tier 1 = Central-Bank-Quality Cash                  │
+ * │   Constitution Tier 2 = Short-Duration Sovereign Securities        │
+ * │   Constitution Tier 3 = Allocated Physical Bullion (gold+silver)   │
+ * │   Constitution Tier 4 = Operational Liquidity (stablecoins)        │
+ * │                                                                    │
+ * │   On-chain Tier 1    = Physical gold & silver  (≠ constitution)    │
+ * │   On-chain Tier 2    = Cash & cash equivalents (≠ constitution)    │
+ * │   On-chain Tier 3    = Sukuk                    (≠ constitution)    │
+ * │   On-chain Tier 4    = (not present)                                │
+ * │                                                                    │
+ * │ This is a pre-existing defect documented in                        │
+ * │ docs/blueprint/custody-framework-v2.md §11.3.                      │
+ * │                                                                    │
+ * │ RECONCILIATION PLAN:                                               │
+ * │   The deployed bytecode CANNOT be changed without redeployment     │
+ * │   (which would change the contract address and break the           │
+ * │   existing 3-chain deployment). The reconciliation will happen     │
+ * │   in a future contract upgrade (v2.0) after the Safe Multi-Sig     │
+ * │   is operationalized (3-of-5 with 5 named institutional signers).  │
+ * │                                                                    │
+ * │   Until then, the off-chain application (src/lib/audit-data.ts,    │
+ * │   src/lib/v19-infrastructure.ts) uses the constitutional 4-tier    │
+ * │   model as the source of truth; the on-chain 3-tier model is a     │
+ * │   simplified projection.                                           │
+ * └────────────────────────────────────────────────────────────────────┘
+ *
  * This contract is the SINGLE SOURCE OF TRUTH for the reserve balance read
  * by the Algorithm, the Oracle (Proof-of-Reserves feed), and the off-chain
  * dashboard. It does NOT hold the assets themselves — those are held by
@@ -24,7 +57,9 @@ pragma solidity ^0.8.23;
  *   - Reserve balance can NEVER go negative (Solidity 0.8.x checked arithmetic)
  *   - Tier composition must always sum to total reserve (conservation)
  *
- * Deployed at: 0x1bbCd78E4DEF79b7a3B77242770cbAefAC816177
+ * Deployed at: 0x1bbCd78E4DEF79b7a3B77242770cbAefAC816177 (Monad)
+ *              0x27a1a201D6DF8215d0b0da3Be6211bE24ef4c471 (Arc)
+ *              0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512 (Local Anvil)
  * Network:     Multi-chain — see src/lib/chains.ts (Monad Testnet 10143, Arc Testnet 5042002, Local Anvil 1337)
  */
 

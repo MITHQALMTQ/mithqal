@@ -9135,7 +9135,6 @@ The Institutional Assurance Framework does not create, modify, or extend any mon
 
 [END OF ARTICLE XVII — INSTITUTIONAL ASSURANCE FRAMEWORK]
 
-<<<<<<< HEAD
 Article XVIII: Constitutional Commercial Governance & Institutional Stewardship
 The Constitutional Commercial Governance framework establishes the legal entity architecture, reserve procurement engine, best execution obligations, performance participation, commercial revenue accounting, and compliance verification that govern all commercial operations of the Institution. This Article ensures that every commercial action is constitutionally governed, transparently audited, and structurally separated from reserve custody.
 What This Means in Practice:
@@ -9376,8 +9375,6 @@ Why This Matters:
 
 [END OF ARTICLE XVIII — CONSTITUTIONAL COMMERCIAL GOVERNANCE & INSTITUTIONAL STEWARDSHIP]
 
-=======
->>>>>>> f1e4feebb91f6cdaebe52d5fa487c3eb1855e2d1
 [END OF PART 2 — LAYER 2: MONETARY CONSTITUTION]
 Part 3: Layer 3 — Policy Framework
 Introduction — The Policy Framework
@@ -9899,13 +9896,13 @@ Single Currency
 50-60%
 >60%
 Single Custodian
-<40%
-40-50%
->50%
+<25% (§Article XVII §12 binding cap)
+25-30%
+>30% (constitutional violation)
 Single Jurisdiction
-<40%
-40-50%
->50%
+<30% (§Article XVII §12 binding cap)
+30-40%
+>40% (constitutional violation)
 
 Maturity Stages
 Policy defines operational maturity stages:
@@ -10226,11 +10223,11 @@ Diversified
 3-5 eligible currencies
 Quarterly
 Custodian Concentration
-Maximum 40%
+Maximum 25% (§Article XVII §12 binding cap)
 Per custodian
 Quarterly
 Jurisdiction Concentration
-Maximum 40%
+Maximum 30% (§Article XVII §12 binding cap)
 Per jurisdiction
 Quarterly
 What This Means in Practice:
@@ -10273,7 +10270,7 @@ Diversified
 3-5 eligible currencies
 Quarterly
 Custodian Concentration
-Maximum 40%
+Maximum 25% (§Article XVII §12 binding cap)
 Per custodian
 Quarterly
 What This Means in Practice:
@@ -10312,11 +10309,11 @@ Silver Allocation
 15-25%
 Quarterly
 Vault Concentration
-Maximum 40%
-Per jurisdiction
+Maximum 30% (§Article XVII §12 binding cap)
+Per vault
 Quarterly
 Custodian Concentration
-Maximum 40%
+Maximum 25% (§Article XVII §12 binding cap)
 Per custodian
 Quarterly
 What This Means in Practice:
@@ -10351,7 +10348,7 @@ Maximum 20%
 Per issuer
 Monthly
 Jurisdiction Concentration
-Maximum 40%
+Maximum 30% (§Article XVII §12 binding cap)
 Per jurisdiction
 Monthly
 Reserve Type
@@ -12832,24 +12829,24 @@ Single Custodian
 Response
 Responsible
 Acceptable
-<30%
+<25% (§Article XVII §12 binding cap)
 Normal monitoring
 Reserve Management
 Elevated
-30-40%
+25-30%
 Enhanced monitoring, custodian review
 Risk Committee
 Critical
->40%
+>30% (constitutional violation)
 Emergency protocols, immediate action
 Council
 What This Means in Practice:
         •       Custodian concentration is monitored quarterly
-        •       Concentration below 30% is acceptable
-        •       Concentration of 30-40% requires enhanced monitoring
-        •       Concentration above 40% triggers emergency protocols
+        •       Concentration below 25% is acceptable (§Article XVII §12 binding cap)
+        •       Concentration of 25-30% requires enhanced monitoring
+        •       Concentration above 30% triggers emergency protocols (constitutional violation)
 Example:
-The Institution holds 25% of reserves with a single custodian. This is below 30% and is acceptable. If concentration rises to 35%, enhanced monitoring begins and custodian review is conducted. If concentration rises above 40%, emergency protocols are activated.
+The Institution holds 20% of reserves with a single custodian. This is below 25% and is acceptable. If concentration rises to 27%, enhanced monitoring begins and custodian review is conducted. If concentration rises above 30%, emergency protocols are activated (constitutional violation).
 Why This Matters:
         •       Custodian concentration creates risk
         •       Custodian failure threatens reserves
@@ -23382,11 +23379,11 @@ Weekly
 Custodian Concentration
 Monitor custodian concentration
 Weekly
-<40% per custodian
+<25% per custodian (§Article XVII §12 binding cap)
 Geographic Concentration
 Monitor geographic concentration
 Weekly
-<40% per jurisdiction
+<30% per jurisdiction (§Article XVII §12 binding cap)
 Stablecoin Issuer Risk
 Monitor stablecoin issuers
 Monthly

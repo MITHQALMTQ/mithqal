@@ -245,7 +245,7 @@ All protocol contracts are deployed and verified on **Monad Testnet** (Chain ID 
 - **Multi-party computation (MPC):** 3 of 5 key shares
 - **Hardware Security Modules (HSMs)**
 - **Geographic distribution:** UAE, Singapore, UK
-- **Geopolitical silos:** no single jurisdiction >40% of reserves
+- **Geopolitical silos:** no single jurisdiction >30% of reserves (§Article XVII §12 binding cap)
 - **Disaster Recovery:** RTO <=4 hours, RPO <=5 minutes
 - **Bug Bounty:** $2,000,000 total reward pool (planned)
 

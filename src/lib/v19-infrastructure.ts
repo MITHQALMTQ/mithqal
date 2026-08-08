@@ -4331,7 +4331,7 @@ export interface CryptographicAuditEntry {
 }
 
 /**
- * §39.2 Key Hierarchy — the four constitutional custody tiers.
+ * §39.2 Key Hierarchy — the four constitutional key-storage tiers (NOT asset custody — see docs/blueprint/custody-framework-v2.md for the asset custody tier hierarchy).
  *
  *   Level 1  Master Key        Root of trust, generates all other keys
  *   Level 2  Operational Keys  Day-to-day signing (mint/gov/oracle)

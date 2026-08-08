@@ -31,7 +31,7 @@ The Mithqal project is a **constitutional monetary institution** — not a token
 
 - **100%+ reserve mandate** — enforced on-chain in `MTQ.sol` via the `_checkReserveRatio()` guard
 - **No lending/rehypothecation** — reserves are held, never deployed. This is the structural moat vs USDT (which lends reserves to sister companies) and USDC (which holds commercial paper)
-- **Segregated custody** — 4-tier structure (cash/T-bills, sovereign bonds, allocated gold, strategic gold)
+- **Segregated custody** — 4-tier reserve-asset structure (Tier 1 cash/T-bills, Tier 2 sovereign bonds incl. Sukuk, Tier 3 allocated physical bullion [gold + silver], Tier 4 operational liquidity stablecoins)
 - **No yield on the token** — yield is a SEPARATE legal vehicle (constitutionally separated per Article VIII)
 
 ### 1.3 Oracle Architecture

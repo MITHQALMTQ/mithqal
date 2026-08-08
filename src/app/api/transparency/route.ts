@@ -795,7 +795,7 @@ async function buildExpandedTransparency(
     silverUsd: silverPrice,
     custodyComposition: {
       custodians: 4, // simulated testnet baseline
-      maxCustodianShare: 0.30, // within §23 ≤ 40% limit
+      maxCustodianShare: 0.25, // §Article XVII §12 binding cap: ≤25% per custodian (jurisdiction ≤30%, vault ≤30%, banking ≤25%)
     },
     jurisdictionComposition: {
       jurisdictions: 4,

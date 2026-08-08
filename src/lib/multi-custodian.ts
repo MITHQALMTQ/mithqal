@@ -1,7 +1,7 @@
 /**
  * MITHQAL Constitutional Multi-Custodian Architecture
  *
- * Chapter XX §XX.16 — Multi-Custodian Diversification Doctrine
+ * Article XVII §12 — Operational Assurance Framework (binding custodian ≤25%, jurisdiction ≤30%, vault ≤30%, banking ≤25% concentration limits)
  *
  * Replaces the single-custodian model with a diversified multi-custodian
  * architecture. No single custodian may hold more than 25% of total reserves;
@@ -18,7 +18,7 @@
  */
 
 // ============================================================
-// §XX.16.1 — Custodian types & constitutional limits
+// §XVII.12.1 — Custodian types & constitutional limits
 // ============================================================
 
 export interface Custodian {
@@ -52,7 +52,7 @@ export const CUSTODIAN_LIMITS = {
 } as const;
 
 /**
- * §XX.16.1 Mapping from S&P-style rating to a 0-1 numeric strength score.
+ * §XVII.12.1 Mapping from S&P-style rating to a 0-1 numeric strength score.
  * Used by `evaluateCustodianHealth` to weight rating in the composite score.
  */
 export const RATING_STRENGTH: Record<string, number> = {
@@ -76,7 +76,7 @@ export const RATING_STRENGTH: Record<string, number> = {
 };
 
 // ============================================================
-// §XX.16.2 — Health evaluation
+// §XVII.12.2 — Health evaluation
 // ============================================================
 
 export interface CustodianHealthResult {
@@ -104,7 +104,7 @@ export interface CustodianHealthResult {
 }
 
 /**
- * §XX.16.2 Evaluate the health of the entire custodian fleet.
+ * §XVII.12.2 Evaluate the health of the entire custodian fleet.
  *
  * Composite score per custodian:
  *   40% rating strength (S&P-style mapping)
@@ -239,11 +239,11 @@ export function evaluateCustodianHealth(
 }
 
 // ============================================================
-// §XX.16.3 — Target allocation computation
+// §XVII.12.3 — Target allocation computation
 // ============================================================
 
 /**
- * §XX.16.3 Compute the target allocation across custodians.
+ * §XVII.12.3 Compute the target allocation across custodians.
  *
  * Algorithm:
  *   1. Filter to active custodians (backup/emergency excluded from target).
@@ -446,7 +446,7 @@ function enforceJurisdictionCap(
 }
 
 // ============================================================
-// §XX.16.4 — Failure simulation
+// §XVII.12.4 — Failure simulation
 // ============================================================
 
 export interface CustodianFailureSimulation {
@@ -462,7 +462,7 @@ export interface CustodianFailureSimulation {
 }
 
 /**
- * §XX.16.4 Simulate the failure of a single custodian.
+ * §XVII.12.4 Simulate the failure of a single custodian.
  *
  * The failed custodian's exposure is redistributed to surviving active
  * custodians proportionally to their available capacity × health, clamped
@@ -604,11 +604,11 @@ export function simulateCustodianFailure(
 }
 
 // ============================================================
-// §XX.16.5 — Default custodian fleet (institutional baseline)
+// §XVII.12.5 — Default custodian fleet (institutional baseline)
 // ============================================================
 
 /**
- * §XX.16.5 Default institutional multi-custodian fleet.
+ * §XVII.12.5 Default institutional multi-custodian fleet.
  *
  * Reflects a geographically diversified, multi-jurisdictional custody
  * architecture (US, Switzerland, UK, Singapore). Used as the baseline
@@ -709,11 +709,11 @@ export const DEFAULT_CUSTODIAN_FLEET: Custodian[] = [
 ];
 
 // ============================================================
-// §XX.16.6 — Convenience helpers
+// §XVII.12.6 — Convenience helpers
 // ============================================================
 
 /**
- * §XX.16.6 Format the multi-custodian status as an audit-log line.
+ * §XVII.12.6 Format the multi-custodian status as an audit-log line.
  */
 export function formatCustodianSummary(
   health: CustodianHealthResult,

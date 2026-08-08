@@ -12,7 +12,7 @@ import {
 /**
  * GET /api/custodians
  *
- * Returns the multi-custodian architecture status (Chapter XX §XX.16):
+ * Returns the multi-custodian architecture status (Article XVII §12 — Operational Assurance Framework):
  *   - Health evaluation (per-custodian + fleet)
  *   - Target allocation across custodians
  *   - (Optional) Single-custodian failure simulation
