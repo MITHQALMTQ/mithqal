@@ -12,7 +12,7 @@
 // against the canonical v19.0.2 over-collateralized baseline reserve
 // composition established in Task 3-a:
 //
-//   - Cash:        $29,250,000  (over-collateralization to clear 102% RR)
+//   - Cash:        $32,450,000  (over-collateralization to clear 102% RR)
 //   - Sovereign:   $13,500,000  (US T-bills ≤1yr)
 //   - Gold:        2,122.86 oz  (FIXED physical quantity, revalued at live P)
 //   - Silver:      36,758 oz    (FIXED physical quantity, revalued at live P)
@@ -84,7 +84,7 @@ export interface NavResult {
   /** Sources used by the live oracle (for transparency/debug) */
   sources: string[];
   /**
-   * The v19.0.2 baseline reserveAssets array (cash $29.25M / sov $13.5M /
+   * The v19.0.2 baseline reserveAssets array (cash $32.45M / sov $13.5M /
    * gold 2,122.86oz / silver 36,758oz / stablecoin $2.7M) revalued at the
    * live gold + silver spot price. Exposed so that `/api/contract/info`
    * and `/api/nav` can publish the exact same composition that produced

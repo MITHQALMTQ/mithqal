@@ -274,13 +274,18 @@ function simulateThresholds(
   totalReserves: number,
   n: number = 1_000,
 ): { urgencyP95: number; netBenefitP95: number } {
+  // §11 DETERMINISM: seed must be a pure function of the input factors —
+  // NO Date.now() or Math.random(). Two validators with identical factors
+  // must produce identical P95 results. (Fix: removed Date.now() term that
+  // was previously mixed into the seed — it violated §11 determinism.)
   const seed = Math.floor(
     Math.abs(
       factors.reserveDeviation * 1e6 +
         factors.volatility * 1e6 +
         factors.oracleConfidence * 1e6 +
         factors.ctacEstimate +
-        Date.now() / 1_000_000,
+        factors.expectedExecutionCost +
+        factors.reserveConcentration * 1e6,
     ),
   ) >>> 0;
   let s = seed || 0x1a2b_3c4d;

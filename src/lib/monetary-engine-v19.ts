@@ -554,6 +554,14 @@ export function checkMinimumFloor(
 //   - If confirmation count ≥ threshold → apply proposed weight, reset counter
 //
 // This is deliberately lightweight (no complex state machine) and deterministic.
+//
+// WIRED INTO PRODUCTION (2026-08-09): The module-level state below persists
+// across API calls within the same process, providing continuous anti-whipsaw
+// protection for the live currency-weight computation in computeMonetaryStateV19.
+
+// Module-level persistent hysteresis state (survives across API calls)
+let moduleHysteresisState: HysteresisState = { confirmationCounts: new Map() };
+let moduleHysteresisPrevWeights: Map<string, number> = new Map();
 
 const HYSTERESIS_BAND = 0.02; // 2% absolute weight change threshold
 const HYSTERESIS_CONFIRMATION_THRESHOLD = 2; // 2 consecutive observations required
@@ -809,10 +817,21 @@ export function computeMonetaryStateV19(
   // §22 Minimum floor check
   const floorCheck = checkMinimumFloor(finalMap);
 
+  // §22B Hysteresis / Anti-Whipsaw Protection (G6 — wired 2026-08-09)
+  // Apply hysteresis to the final weights AFTER concentration cap + floor check.
+  // This prevents the engine from changing weights due to small short-term
+  // movements. A weight change > 2% must persist for 2 consecutive observations
+  // before it is applied. Uses a module-level persistent state that survives
+  // across API calls within the same process.
+  const hysteresisAdjusted = applyHysteresisToBasket(finalMap, moduleHysteresisPrevWeights, moduleHysteresisState);
+
+  // Update the persistent previous-weights for the next call
+  moduleHysteresisPrevWeights = new Map(hysteresisAdjusted);
+
   for (const w of weightEntries) {
-    w.normalizedWeight = finalMap.get(w.code) ?? 0;
+    w.normalizedWeight = hysteresisAdjusted.get(w.code) ?? 0;
     w.isCapped = capped.has(w.code);
-    w.belowFloor = fpLt(fp(finalMap.get(w.code) ?? 0), fp(W_MIN));
+    w.belowFloor = fpLt(fp(hysteresisAdjusted.get(w.code) ?? 0), fp(W_MIN));
   }
 
   // §22A Basket verification

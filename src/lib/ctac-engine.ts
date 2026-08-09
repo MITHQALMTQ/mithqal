@@ -9,7 +9,7 @@
  * cheaper if its execution fees, custody onboarding, transportation, and
  * expected exit cost exceed the discount.
  *
- * 25 cost components are aggregated, normalised, and benchmarked against the
+ * 26 cost components are aggregated, normalised, and benchmarked against the
  * Constitutional Benchmark Price (CBP) from §XX.5. The engine produces a
  * `recommendation` of "proceed" | "defer" | "reject" using simulation-derived
  * thresholds (Monte Carlo over the dealer-quote distribution, NOT hardcoded
@@ -123,7 +123,7 @@ export const ASSET_CLASS_PROFILES: Record<CTACAsset, AssetClassProfile> = {
 };
 
 // ============================================================
-// §XX.14.2 — CTAC component schema (25 components)
+// §XX.14.2 — CTAC component schema (26 components)
 // ============================================================
 
 export interface CTACComponents {
@@ -474,7 +474,7 @@ function simulatePremiumP95(
 /**
  * §XX.14.6 Compute the Constitutional Total Acquisition Cost.
  *
- * Aggregates 25 cost components for a proposed acquisition and benchmarks
+ * Aggregates 26 cost components for a proposed acquisition and benchmarks
  * the per-unit premium against the Constitutional Benchmark Price (CBP).
  *
  * Recommendation thresholds:
@@ -483,7 +483,7 @@ function simulatePremiumP95(
  *   - reject  : premium > 3.0% OR per-unit cap exceeded OR P95 > tolerance
  *
  * @param params Asset, quantity, benchmark, dealer quotes, and overrides.
- * @returns      CTACResult with all 25 components + recommendation.
+ * @returns      CTACResult with all 26 components + recommendation.
  */
 export function computeCTAC(params: CTACParams): CTACResult {
   // ---- Validate inputs ----
@@ -540,7 +540,7 @@ function computeCTACInternal(
   const administrativeFee = params.administrativeFee ?? 250;
   const transportationFee = params.transportationFee ?? 1_500;
 
-  // ---- Compute each of the 25 components ----
+  // ---- Compute each of the 26 components ----
   const purchasePrice = orderUsd;
   const dealerSpread = computeDealerSpread(quote, benchmarkPrice, quantity);
   const brokerFee = orderUsd * profile.typicalBrokerFeePct;
