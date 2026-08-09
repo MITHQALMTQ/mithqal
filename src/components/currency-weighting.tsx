@@ -64,14 +64,14 @@ const FORMULAS: Record<string, { section: string; formula: string; desc: string 
     desc: "12-month EMA of the currency's price change versus gold. Clamped to [0.95, 1.05] so no single currency can dominate or vanish from the basket.",
   },
   shockFactor: {
-    section: "§17 — Shock Factor (K_i)",
+    section: "§17.7 — Shock-Adjusted Factor (K_i)",
     formula: "K_i = 1 + A_t × (M_i × R_i − 1)",
-    desc: "Momentum dampened by the shock absorber A_t. When volatility is high, A_t rises toward 1.0 and momentum's bite is muted, protecting NAV.",
+    desc: "Momentum × mean-reversion, dampened by the shock absorber A_t. When volatility is high (σ ≥ 5%), A_t decreases toward 0.5, halving momentum's effect on the weight. When volatility is normal (σ ≤ 2%), A_t = 1.0 and momentum passes through fully.",
   },
   structural: {
     section: "§13 — Structural Weight (C_i)",
     formula: "C_i = α·COFER + β·SWIFT + γ·BIS",
-    desc: "Composite of IMF COFER (α=0.40), SWIFT RMBI (β=0.40), and BIS Triennial flows (γ=0.20). Normalized so the 8 currencies sum to 100%.",
+    desc: "Composite of IMF COFER (α=0.50), SWIFT RMBI (β=0.40), and BIS Triennial flows (γ=0.10). Normalized so the 8 currencies sum to 100%.",
   },
   normalized: {
     section: "§20 — Normalized Weight (W_i)",

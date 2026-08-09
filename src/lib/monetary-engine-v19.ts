@@ -538,6 +538,90 @@ export function checkMinimumFloor(
   return { below, allAbove: below.length === 0 };
 }
 
+// ---- §22B: Hysteresis / Anti-Whipsaw Protection (G6, added 2026-08-09) ----
+//
+// Per the reserve-dynamicity-audit.md §12, the existing engine had only weak
+// implicit anti-whipsaw (momentum clamp + shock absorber + minDeferralHours).
+// This adds an EXPLICIT hysteresis band: a weight change must persist for
+// HYSTERESIS_CONFIRMATION_THRESHOLD consecutive observations before it is
+// applied. This prevents the engine from continuously switching between
+// currencies due to small short-term movements.
+//
+// Design:
+//   - If |proposedWeight − currentWeight| ≤ HYSTERESIS_BAND → no change (noise)
+//   - If |proposedWeight − currentWeight| > HYSTERESIS_BAND but confirmation
+//     count < HYSTERESIS_CONFIRMATION_THRESHOLD → hold current weight, increment counter
+//   - If confirmation count ≥ threshold → apply proposed weight, reset counter
+//
+// This is deliberately lightweight (no complex state machine) and deterministic.
+
+const HYSTERESIS_BAND = 0.02; // 2% absolute weight change threshold
+const HYSTERESIS_CONFIRMATION_THRESHOLD = 2; // 2 consecutive observations required
+
+export interface HysteresisState {
+  /** Per-currency confirmation counter. Maps currency code → consecutive observations above band. */
+  confirmationCounts: Map<string, number>;
+}
+
+/**
+ * Apply hysteresis to a proposed weight change. Returns the weight to actually
+ * use (which may be the current weight if the change hasn't been confirmed).
+ *
+ * @param currencyCode - The currency being evaluated
+ * @param proposedWeight - The weight the engine wants to set
+ * @param currentWeight - The weight currently in effect
+ * @param state - Mutable hysteresis state (confirmation counters) — updated in place
+ * @returns The weight to apply (proposed if confirmed, current otherwise)
+ */
+export function applyHysteresis(
+  currencyCode: string,
+  proposedWeight: number,
+  currentWeight: number,
+  state: HysteresisState
+): number {
+  const delta = Math.abs(proposedWeight - currentWeight);
+
+  // Small change — within the noise band. Reset confirmation counter, keep current weight.
+  if (delta <= HYSTERESIS_BAND) {
+    state.confirmationCounts.set(currencyCode, 0);
+    return currentWeight;
+  }
+
+  // Large change — check if confirmed
+  const count = state.confirmationCounts.get(currencyCode) ?? 0;
+  const newCount = count + 1;
+  state.confirmationCounts.set(currencyCode, newCount);
+
+  if (newCount >= HYSTERESIS_CONFIRMATION_THRESHOLD) {
+    // Confirmed — apply the proposed weight, reset counter
+    state.confirmationCounts.set(currencyCode, 0);
+    return proposedWeight;
+  }
+
+  // Not yet confirmed — hold current weight
+  return currentWeight;
+}
+
+/**
+ * Apply hysteresis to an entire weight map. Convenience wrapper.
+ * @param proposed - The weights the engine wants to set
+ * @param current - The weights currently in effect
+ * @param state - Mutable hysteresis state — updated in place
+ * @returns The weights to apply
+ */
+export function applyHysteresisToBasket(
+  proposed: Map<string, number>,
+  current: Map<string, number>,
+  state: HysteresisState
+): Map<string, number> {
+  const result = new Map<string, number>();
+  for (const [code, proposedW] of proposed) {
+    const currentW = current.get(code) ?? proposedW;
+    result.set(code, applyHysteresis(code, proposedW, currentW, state));
+  }
+  return result;
+}
+
 // ---- §22A: Final Basket Verification ----
 
 export interface BasketVerification {

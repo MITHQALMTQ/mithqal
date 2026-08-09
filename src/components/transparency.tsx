@@ -316,9 +316,9 @@ const FORMULAS: Record<string, { section: string; formula: string; desc: string 
     desc: "0–100 scale across five risk vectors. < 50 green, 50–70 amber, > 70 red.",
   },
   shockAbsorber: {
-    section: "§17 — Shock Absorber (A_t)",
-    formula: "A_t = clamp(σ / σ_max, 0, 1) · threshold",
-    desc: "When volatility σ < 2%: A_t = 0 (no dampening). σ ≥ 2%: A_t = 0.5 (halves momentum). σ ≥ 6%: A_t = 1.0 (fully dampens).",
+    section: "§17.4 — Shock Absorber (A_t)",
+    formula: "A_t = 1.0 if σ ≤ 2%; 0.5 if σ ≥ 5%; linear between",
+    desc: "When volatility σ ≤ 2%: A_t = 1.0 (no dampening — full momentum passes through). σ ≥ 5%: A_t = 0.5 (halves momentum's effect). Between 2% and 5%: linear interpolation. Applied to combined (M_i × R_i − 1) term per §17.7.",
   },
   momentum: {
     section: "§15 — Momentum (M_i)",

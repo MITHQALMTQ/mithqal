@@ -420,8 +420,8 @@ export function InstitutionalEconomics() {
                 },
                 {
                   icon: ShieldCheck,
-                  title: "102% Floor",
-                  body: "Reserve ratio never falls below 102%. Minting pauses if RR < 102%; redemption remains always-on regardless.",
+                  title: "100% Constitutional Floor (102% Policy Target)",
+                  body: "Reserve ratio never falls below 100% (constitutional floor — minting auto-pauses if RR < 100%). 102% is the policy target. Redemption remains always-on regardless (constitutional invariant — burn never pauses).",
                 },
                 {
                   icon: Vault,

@@ -1,6 +1,26 @@
 /**
- * MITHQAL v19.0 — COMPREHENSIVE STRESS TEST SUITE
- * 
+ * @deprecated DEPRECATED — use `stress-test-fixed.ts` instead.
+ *
+ * This file has a known bug (documented in reserve-dynamicity-audit.md §16):
+ * the `makeReserveAssets` helper derives gold quantity as
+ * `(totalReserve × 0.16) / goldPrice`, so the dollar value never changes
+ * and NAV_m is stuck at $1.0000 regardless of the gold price shock.
+ *
+ * `stress-test-fixed.ts` is the corrected version with FIXED physical bullion
+ * quantities (FIXED_GOLD_OZ = 2,122.86 oz, FIXED_SILVER_OZ = 36,758 oz)
+ * that properly reflects price shocks in the NAV.
+ *
+ * This file is retained for historical reference only. Do NOT use it for
+ * production stress testing. All stress test consumers should import from
+ * `stress-test-fixed.ts` instead.
+ *
+ * @see stress-test-fixed.ts
+ * @see docs/verification/reserve-dynamicity-audit.md §16 (U8)
+ */
+
+/**
+ * MITHQAL v19.0 — COMPREHENSIVE STRESS TEST SUITE (DEPRECATED)
+ *
  * Tests every scenario the monetary engine must handle:
  * 1. Gold price shocks (up/down)
  * 2. Individual currency crashes (each of 8 currencies)
