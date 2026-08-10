@@ -297,7 +297,7 @@ const FORMULAS: Record<string, { section: string; formula: string; desc: string 
   },
   reserveRatio: {
     section: "§4 — Reserve Ratio (RR)",
-    formula: "RR = R_a / (S × NAV_m)",
+    formula: "RR = R_a / (S × PAR)",
     desc: "Adjusted reserve over redemption liability. Must be ≥ 100% by constitutional invariant; minting auto-pauses if it dips below.",
   },
   lcr: {
@@ -333,7 +333,7 @@ const FORMULAS: Record<string, { section: string; formula: string; desc: string 
   structural: {
     section: "§13 — Structural Weight (C_i)",
     formula: "C_i = α·COFER + β·SWIFT + γ·BIS",
-    desc: "Composite of IMF COFER (α=0.40), SWIFT RMBI (β=0.40), and BIS Triennial flows (γ=0.20).",
+    desc: "Composite of IMF COFER (α=0.50), SWIFT RMBI (β=0.40), and BIS Triennial flows (γ=0.10).",
   },
   normalized: {
     section: "§20 — Normalized Weight (W_i)",
@@ -1076,7 +1076,7 @@ export default function TransparencyDashboard() {
               </Badge>
               {state && (
                 <Badge className="border-gold/30 bg-gold/10 text-gold hover:bg-gold/10">
-                  v19.0 · {state.monetary?.specVersion ?? "constitutional spec"}
+                  v19.0.3 · {state.monetary?.specVersion ?? "constitutional spec"}
                 </Badge>
               )}
             </div>
@@ -1608,14 +1608,14 @@ export default function TransparencyDashboard() {
         </Reveal>
         ) : null}
 
-        {/* Monetary Engine v19.0 — Constitutional Monetary Infrastructure */}
+        {/* Monetary Engine v19.0.3 — Constitutional Monetary Infrastructure */}
         {state?.monetary ? (
           <Reveal>
             <div className="mt-6 rounded-2xl border border-gold/30 bg-gradient-to-br from-gold/[0.06] to-ink-soft p-6 sm:p-7">
               <div className="flex items-center gap-2 text-gold">
                 <TrendingUp className="h-4 w-4" />
                 <span className="text-[11px] font-semibold uppercase tracking-[0.22em]">
-                  Monetary Engine · v19.0 Constitutional Specification
+                  Monetary Engine · v19.0.3 Constitutional Specification
                 </span>
               </div>
               <h2 className="font-display mt-3 text-xl text-foreground sm:text-2xl">
@@ -1664,7 +1664,7 @@ export default function TransparencyDashboard() {
                   {
                     label: "§4 Reserve Ratio (RR)",
                     value: state.monetary.reserveRatio.ratio.toFixed(2) + "%",
-                    sub: "R_a / (S × NAV_m)",
+                    sub: "R_a / (S × PAR)",
                     tone: state.monetary.reserveRatio.compliant ? "text-reserve" : "text-destructive",
                     tooltipKey: "reserveRatio" as const,
                   },
@@ -1950,7 +1950,7 @@ export default function TransparencyDashboard() {
           <div className="flex items-center gap-2 text-sm">
             <Lock className="h-4 w-4 text-gold" />
             <span className="text-fg-muted">
-              Testnet simulator — no real value held or transferred. Mechanics mirror the v19.0
+              Testnet simulator — no real value held or transferred. Mechanics mirror the v19.0.3
               Constitution. Every figure above is reproducible from the public ledger.
             </span>
           </div>

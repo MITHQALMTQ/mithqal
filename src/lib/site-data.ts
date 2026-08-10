@@ -1,4 +1,4 @@
-// Mithqal public institutional site — content distilled from the v19.0
+// Mithqal public institutional site — content distilled from the v19.0.3
 // Consolidated Implementation Specification. This is the credibility-layer
 // copy that faces investors, advisors, anchor participants and the public.
 
@@ -230,7 +230,7 @@ export const INTEGRATION = [
 
 /* ---- Build-in-public status ---- */
 export const STATUS_ITEMS = [
-  { label: "Constitution", value: "v19.0", state: "Published 22 July 2026", tone: "done" },
+  { label: "Constitution", value: "v19.0.3", state: "Published 22 July 2026", tone: "done" },
   { label: "Specification", value: "1.46M chars", state: "Public on GitHub", tone: "done" },
   { label: "GitHub repository", value: "Live", state: "Open source", tone: "done" },
   { label: "Entity A — Settlement Institution", value: "JOZOUR LLC (NJ)", state: "Active — formation phase", tone: "done" },
@@ -249,7 +249,7 @@ export const STATUS_ITEMS = [
  *
  *   Entity A — The Mithqal Institution (non-profit, constitutional settlement)
  *     • Operates the settlement function: mint / redeem MTQ against verified reserves
- *     • Governed by the Constitution v19.0 and the Monetary Council
+ *     • Governed by the Constitution v19.0.3 and the Monetary Council
  *     • Non-profit: purpose is settlement integrity, not yield generation
  *     • Reserves held in segregated custody (Custody Account A)
  *     • Currently operating through JOZOUR LLC during the formation phase
@@ -303,7 +303,7 @@ export const LEGAL_STATUS = {
   entityA: {
     name: "The Mithqal Institution",
     type: "Non-profit constitutional settlement institution",
-    role: "Operates the settlement function (mint/redeem MTQ against verified reserves). Governed by the Constitution v19.0 and the Monetary Council. Non-profit — purpose is settlement integrity, not yield.",
+    role: "Operates the settlement function (mint/redeem MTQ against verified reserves). Governed by the Constitution v19.0.3 and the Monetary Council. Non-profit — purpose is settlement integrity, not yield.",
     currentOperator: "JOZOUR LLC (formation-phase operator)",
     targetStructure: "Foundation (Entity A) — to be registered in a reputable jurisdiction in Phase 1",
     ein: "84-3470275",
@@ -329,7 +329,7 @@ export const LEGAL_STATUS = {
   // Constitutional + regulatory status (applies to Entity A)
   fincenMSB: "FinCEN Form 107 — In preparation (Entity A)",
   njMTL: "In progress (Entity A)",
-  constitutionalVersion: "v19.0 — Released 22 July 2026",
+  constitutionalVersion: "v19.0.3 — Released 22 July 2026",
   constitutionalStatus: "Constitutional Release Candidate — Pending Independent External Validation",
   // The two-entity separation is constitutionally mandated by Article VIII
   articleVIII: "Yield Separation — the settlement function and yield generation are absolutely separate. No assets, liabilities, or risks cross between Entity A and Entity B.",
@@ -352,7 +352,7 @@ export const LEGAL_STATUS = {
     // Regulatory
     { label: "FinCEN MSB Registration", value: "FinCEN Form 107 (MSB) — preparation in progress; not yet filed", status: "In preparation" },
     { label: "NJ Money Transmitter License", value: "Application pending", status: "In progress" },
-    { label: "Constitutional Version", value: "v19.0 (22 July 2026)", status: "Published" },
+    { label: "Constitutional Version", value: "v19.0.3 (22 July 2026)", status: "Published" },
     { label: "Constitutional Status", value: "Release Candidate", status: "Pending validation" },
     { label: "Article VIII — Yield Separation", value: "Absolute separation between Entity A and Entity B", status: "Constitutional invariant" },
   ],
@@ -389,16 +389,16 @@ export const LAYER_ZERO = {
 
 /* ---- Formation Phase 0 Timeline ---- */
 export const PHASE_ZERO_TIMELINE = [
-  { milestone: "Constitution v19.0", status: "done", date: "22 July 2026" },
+  { milestone: "Constitution v19.0.3", status: "done", date: "22 July 2026" },
   { milestone: "NJ LLC formation (JOZOUR LLC)", status: "done", date: "22 Oct 2019 (ID 0600463904)" },
   { milestone: "IRS EIN assigned", status: "done", date: "24 Oct 2019 (84-3470275)" },
   { milestone: "Testnet deployment (Monad Testnet, 9/9 on-chain tests PASS)", status: "done", date: "Live" },
-  { milestone: "Monetary Engine v19.0 (55 sections implemented)", status: "done", date: "July 2026" },
+  { milestone: "Monetary Engine v19.0.3 (55 sections implemented)", status: "done", date: "July 2026" },
   { milestone: "Institutional due-diligence audit (15-panel simulation)", status: "done", date: "29 July 2026" },
   { milestone: "Self-assessment corrected (honest scoring 7.5/10)", status: "done", date: "29 July 2026" },
   { milestone: "Legal pages (privacy, terms, risk-disclosure, cookies)", status: "done", date: "29 July 2026" },
   { milestone: "Anti-platform clause enforced on-chain (selector checks)", status: "done", date: "29 July 2026" },
-  { milestone: "attestReserves drift guard + rate limit (±10% / 1hr)", status: "done", date: "29 July 2026" },
+  { milestone: "attestReserves drift guard + rate limit (±10% / 1hr)", status: "pending", date: "Solidity guards implemented; TS wrapper + API route pending" },
   { milestone: "PII consent gate on Brain compliance endpoint", status: "done", date: "29 July 2026" },
   { milestone: "SECURITY.md rewritten (honest [CURRENT]/[PLANNED]/[TARGETED] labelling)", status: "done", date: "29 July 2026" },
   { milestone: "Formation team — being assembled (advisors + Council nominees)", status: "in-progress", date: "Q3 2026" },

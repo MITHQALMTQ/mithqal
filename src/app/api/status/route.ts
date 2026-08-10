@@ -19,7 +19,7 @@ import { ALL_CHAINS } from "@/lib/chains";
  * `network` / `chainId` / `contracts` fields (Monad) for backward compat.
  *
  * Constitutional context:
- *   The v19.0 Constitution requires the institution to publish a continuously
+ *   The v19.0.3 Constitution requires the institution to publish a continuously
  *   verifiable state surface. This endpoint is the lightweight liveness probe
  *   for that surface — it is intentionally cheap (no on-chain reads, no oracle
  *   fetches) so it can be polled aggressively by uptime monitors.
@@ -28,7 +28,7 @@ import { ALL_CHAINS } from "@/lib/chains";
  *   {
  *     ok: true,
  *     service: "Mithqal OS",
- *     version: "v19.0",
+ *     version: "v19.0.3",
  *     timestamp: "<ISO 8601>",
  *     database: "connected" | "disconnected",
  *     network: "Monad Testnet",       // legacy field — primary chain
@@ -64,7 +64,7 @@ export async function GET() {
     return NextResponse.json({
       ok: true,
       service: "Mithqal OS",
-      version: "v19.0",
+      version: "v19.0.3",
       timestamp: new Date().toISOString(),
       database,
       // Legacy fields — pinned to the primary (default) chain, Monad Testnet.

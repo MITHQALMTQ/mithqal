@@ -60,7 +60,7 @@ export interface OracleSnapshot {
   fxAgo1d: Record<string, number>;
 }
 
-// The 8 eligible basket currencies per the v19.0 worked example (Part III).
+// The 8 eligible basket currencies per the v19.0.3 worked example (Part III).
 // §12: all 8 are at "full" lifecycle status (fully included in the basket),
 // admitted on 2024-01-01 (placeholder genesis date).
 export const BASE_CURRENCIES: CurrencyData[] = [

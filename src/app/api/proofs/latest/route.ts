@@ -11,7 +11,7 @@ import { db, ensureSchema } from "@/lib/db";
  * intact.
  *
  * This endpoint is PUBLIC (no auth) — it is the transparency mechanism
- * required by Article VII of the v19.0 Constitution: "daily cryptographic,
+ * required by Article VII of the v19.0.3 Constitution: "daily cryptographic,
  * privacy-preserving solvency proof. Anyone with sufficient technical
  * capability can verify the reserve ratio independently."
  *

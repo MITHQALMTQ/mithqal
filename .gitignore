@@ -16,3 +16,5 @@ foundry/out/
 foundry/cache/
 prisma/*.db-journal
 .anvil/
+logs/
+*.tsbuildinfo

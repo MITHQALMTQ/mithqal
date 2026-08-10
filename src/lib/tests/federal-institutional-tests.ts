@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * MITHQAL v19.0 — FEDERAL & INSTITUTIONAL AUDIT TEST SUITE (Task 8-a)
+ * MITHQAL v19.0.3 — FEDERAL & INSTITUTIONAL AUDIT TEST SUITE (Task 8-a)
  * ============================================================================
  *
  * Author: Federal Banking & Institutional Audit Expert (Task ID 8-a)
@@ -350,7 +350,7 @@ function computeRWA(assets: ReserveAsset[]): number {
 const RWA_BASELINE = computeRWA(baselineAssets);
 
 console.log("\n" + "═".repeat(78));
-console.log("  MITHQAL v19.0 — FEDERAL & INSTITUTIONAL AUDIT TEST SUITE (Task 8-a)");
+console.log("  MITHQAL v19.0.3 — FEDERAL & INSTITUTIONAL AUDIT TEST SUITE (Task 8-a)");
 console.log("  Independent recomputation of every federal metric — does NOT trust the engine.");
 console.log("═".repeat(78));
 console.log("\n  Baseline reserve composition (v19.0.7 — 3% over-collateralization buffer):");
@@ -1553,7 +1553,7 @@ category("9. MiCAR / EU CRYPTO REGULATION (asset-referenced tokens)");
 {
   // MiCAR Article 17: ART white paper must be published, comprehensive, and
   // approved by the competent authority. For MTQ, the constitution/blueprint
-  // (v19.0 specification — 55 sections) serves as the "white paper".
+  // (v19.0.3 specification — 55 sections) serves as the "white paper".
   // Check: constitution has 55 sections, all required content present.
   const constitutionSections = 55;
   const requiredWhitePaperSections = [

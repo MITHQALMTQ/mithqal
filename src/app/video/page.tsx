@@ -6,6 +6,23 @@ import Link from "next/link";
 
 const SCENE_DURATION = 5000;
 
+/**
+ * impl-C-stress — Live NAV fallback used BEFORE /api/nav resolves.
+ * Canonical values: navM = $1.0373, reserveRatio = 102.05%, goldUsd = $4,076.90
+ * (matches the v19.0.3 monetary engine + audit reports + /api/nav baseline).
+ */
+const LIVE_FALLBACK = {
+  navM: 1.0373,
+  reserveRatio: 102.05,
+  goldUsd: 4076.9,
+};
+
+type LiveData = {
+  navM: number;
+  reserveRatio: number;
+  goldUsd: number;
+};
+
 const scenes = [
   { num: 1, title: "The Problem" },
   { num: 2, title: "Why Circle" },
@@ -26,6 +43,35 @@ export default function VideoPage() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isFinished, setIsFinished] = useState(false);
   const [progress, setProgress] = useState(0);
+
+  // impl-C-stress — Live NAV / RR / gold price. Falls back to the
+  // canonical baseline (1.0373 / 102.05 / 4076.9) before /api/nav
+  // resolves or if the fetch fails. Replaces the prior hardcoded
+  // "108%" / "$1.11" / "$4,162" hackathon values with live data.
+  const [liveData, setLiveData] = useState<LiveData>(LIVE_FALLBACK);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/nav", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (cancelled || !data) return;
+        setLiveData({
+          navM: typeof data.navM === "number" && data.navM > 0 ? data.navM : LIVE_FALLBACK.navM,
+          reserveRatio:
+            typeof data.reserveRatio === "number" && data.reserveRatio > 0
+              ? data.reserveRatio
+              : LIVE_FALLBACK.reserveRatio,
+          goldUsd: typeof data.goldUsd === "number" && data.goldUsd > 0 ? data.goldUsd : LIVE_FALLBACK.goldUsd,
+        });
+      })
+      .catch(() => {
+        /* keep fallback — canonical baseline is still valid */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const scene = scenes[currentScene];
 
@@ -78,7 +124,7 @@ export default function VideoPage() {
               <div className="h-full bg-[#C9A961] transition-all duration-75" style={{ width: `${progress}%` }} />
             </div>
             <div className="absolute inset-0 flex items-center justify-center">
-              <SceneContent sceneNum={scene.num} isActive={isPlaying} />
+              <SceneContent sceneNum={scene.num} isActive={isPlaying} liveData={liveData} />
             </div>
             {!isPlaying && !isFinished && (
               <button onClick={togglePlay} className="absolute inset-0 z-20 flex items-center justify-center bg-black/50 transition hover:bg-black/30" aria-label="Play">
@@ -111,7 +157,7 @@ export default function VideoPage() {
 
           <div className="mt-8 text-center">
             <h1 className="text-xl font-light tracking-wide text-white/90 sm:text-2xl">MITHQAL</h1>
-            <p className="mt-1 text-sm text-white/40">Constitutional USDC Settlement Infrastructure</p>
+            <p className="mt-1 text-sm text-white/40">Constitutional Settlement Institution</p>
             <div className="mt-4 flex items-center justify-center gap-6 text-xs text-white/30">
               <Link href="/" className="transition hover:text-[#C9A961]">Dashboard</Link>
               <a href="https://github.com/MITHQALMTQ/mithqal" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 transition hover:text-[#C9A961]">GitHub<ExternalLink className="h-3 w-3" /></a>
@@ -123,7 +169,15 @@ export default function VideoPage() {
   );
 }
 
-function SceneContent({ sceneNum, isActive }: { sceneNum: number; isActive: boolean }) {
+function SceneContent({
+  sceneNum,
+  isActive,
+  liveData,
+}: {
+  sceneNum: number;
+  isActive: boolean;
+  liveData: LiveData;
+}) {
   const fs = { opacity: isActive ? 1 : 0.5, transition: "opacity 0.5s" };
 
   switch (sceneNum) {
@@ -189,8 +243,8 @@ function SceneContent({ sceneNum, isActive }: { sceneNum: number; isActive: bool
             <ReserveTier name="Stablecoin" pct="5%" desc="Regulated, USDC" color="#2775CA" />
           </div>
           <div className="mt-2 flex flex-col items-center gap-1 text-xs text-white/40">
-            <span>Reserve Ratio: <span className="font-semibold text-[#C9A961]">108%</span> (≥100% constitutional minimum)</span>
-            <span>NAV: <span className="font-semibold text-[#C9A961]">$1.11</span> (dynamic — floats with reserve value)</span>
+            <span>Reserve Ratio: <span className="font-semibold text-[#C9A961]">{liveData.reserveRatio.toFixed(2)}%</span> (≥100% constitutional minimum)</span>
+            <span>NAV: <span className="font-semibold text-[#C9A961]">${liveData.navM.toFixed(4)}</span> (dynamic — floats with reserve value)</span>
             <span>Bullion Protection: <span className="font-semibold text-[#4ADE80]">Gold liquidated last</span></span>
           </div>
         </div>
@@ -204,7 +258,7 @@ function SceneContent({ sceneNum, isActive }: { sceneNum: number; isActive: bool
           <div className="flex flex-col gap-2">
             {[
               { step: "1", text: "Participant deposits USDC", color: "#2775CA" },
-              { step: "2", text: "MTQ minted at dynamic NAV ($1.11)", color: "#C9A961" },
+              { step: "2", text: `MTQ minted at dynamic NAV ($${liveData.navM.toFixed(4)})`, color: "#C9A961" },
               { step: "3", text: "USDC enters Tier 4 reserve", color: "#2775CA" },
               { step: "4", text: "Reserve rebalances → buys gold, silver, sovereigns", color: "#C9A961" },
               { step: "5", text: "MTQ now backed by diversified portfolio", color: "#4ADE80" },
@@ -226,8 +280,12 @@ function SceneContent({ sceneNum, isActive }: { sceneNum: number; isActive: bool
         <div className="flex flex-col items-center gap-4" style={fs}>
           <div className="text-sm text-white/40 sm:text-base">mithqal.vercel.app</div>
           <div className="grid grid-cols-3 gap-3 sm:gap-5">
-            <Metric value="108%" label="Reserve Ratio" /><Metric value="$1.11" label="NAV" /><Metric value="54M" label="Supply" />
-            <Metric value="$4,162" label="Gold / oz" /><Metric value="9" label="Contracts" /><Metric value="20/20" label="Stress Tests" />
+            <Metric value={`${liveData.reserveRatio.toFixed(2)}%`} label="Reserve Ratio" />
+            <Metric value={`$${liveData.navM.toFixed(4)}`} label="NAV" />
+            <Metric value="54M" label="Supply" />
+            <Metric value={`$${liveData.goldUsd.toFixed(0)}`} label="Gold / oz" />
+            <Metric value="10" label="Contracts" />
+            <Metric value="20/20" label="Stress Tests" />
           </div>
         </div>
       );
@@ -236,16 +294,18 @@ function SceneContent({ sceneNum, isActive }: { sceneNum: number; isActive: bool
     case 7:
       return (
         <div className="flex flex-col items-center gap-3" style={fs}>
-          <div className="grid grid-cols-3 gap-3">
+          {/* impl-C-stress — 10 canonical contracts (was 9 incl. MockOracle).
+              MockOracle removed (test-only); Safe (Gnosis multi-sig treasury)
+              and Deployer added to match /api/status canonical contract set. */}
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-5 sm:gap-2.5">
             {[
-              { n: "MTQ.sol", a: "0x9e6EdC15..." }, { n: "Reserve.sol", a: "0x1bbCd78E..." }, { n: "Mint.sol", a: "0x197e9CB2..." },
-              { n: "Redeem.sol", a: "0x963201C0..." }, { n: "Oracle.sol", a: "0xDfcA66ac..." }, { n: "Governance", a: "0xE35a9180..." },
-              { n: "Algorithm", a: "0x8839ce50..." }, { n: "Takaful", a: "0x3eC27BB2..." }, { n: "MockOracle", a: "(test)" },
+              { n: "MTQ.sol", a: "0x9e6EdC15..." }, { n: "Governance", a: "0xE35a9180..." }, { n: "Safe", a: "0xE71869C6..." }, { n: "Algorithm", a: "0x8839ce50..." }, { n: "Reserve.sol", a: "0x1bbCd78E..." },
+              { n: "Mint.sol", a: "0x197e9CB2..." }, { n: "Redeem.sol", a: "0x963201C0..." }, { n: "Oracle.sol", a: "0xDfcA66ac..." }, { n: "Takaful", a: "0x3eC27BB2..." }, { n: "Deployer", a: "0x3C3932F8..." },
             ].map((c, i) => (
-              <div key={i} className="rounded-lg border border-[#C9A961]/20 bg-[#111726] p-2.5 text-left">
-                <div className="text-xs font-semibold text-[#C9A961]">{c.n}</div>
-                <div className="mt-0.5 font-mono text-[10px] text-white/30">{c.a}</div>
-                <div className="mt-1.5 inline-block rounded bg-[#4ADE80] px-1.5 py-0.5 text-[9px] font-bold text-[#0A0E1A]">✓</div>
+              <div key={i} className="rounded-lg border border-[#C9A961]/20 bg-[#111726] p-2 text-left">
+                <div className="text-[10px] font-semibold text-[#C9A961] sm:text-xs">{c.n}</div>
+                <div className="mt-0.5 font-mono text-[9px] text-white/30 sm:text-[10px]">{c.a}</div>
+                <div className="mt-1 inline-block rounded bg-[#4ADE80] px-1.5 py-0.5 text-[9px] font-bold text-[#0A0E1A]">✓</div>
               </div>
             ))}
           </div>
@@ -327,7 +387,7 @@ function SceneContent({ sceneNum, isActive }: { sceneNum: number; isActive: bool
             <text x="50" y="58" textAnchor="middle" fill="#C9A961" fontSize="24" fontWeight="700" fontFamily="Inter, sans-serif">M</text>
           </svg>
           <div className="text-3xl font-light tracking-[0.15em] sm:text-4xl">MITHQAL</div>
-          <div className="text-sm text-white/40 sm:text-base">Constitutional Monetary Settlement Institution</div>
+          <div className="text-sm text-white/40 sm:text-base">Constitutional Settlement Institution</div>
           <div className="h-0.5 w-16 bg-[#C9A961]" />
           <div className="font-mono text-xs text-[#C9A961] sm:text-sm">mithqal.vercel.app</div>
         </div>

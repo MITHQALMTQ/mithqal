@@ -335,7 +335,7 @@ export default function StatusPage() {
         <section className="mt-10">
           <h2 className="font-display text-lg text-foreground">On-Chain Verification</h2>
           <p className="mb-3 text-xs text-fg-muted">
-            Live reads from the deployed MTQ v19.0 contract suite on Monad
+            Live reads from the deployed MTQ v19.0.3 contract suite on Monad
             Testnet (source:{" "}
             <code className="rounded bg-ink-card px-1 py-0.5 text-[11px] text-foreground">
               /api/onchain-test

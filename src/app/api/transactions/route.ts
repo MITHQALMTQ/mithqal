@@ -19,7 +19,7 @@ import { db, ensureSchema } from "@/lib/db";
  * Constitutional context:
  *   All mint/redeem/transfer operations are recorded on-chain (Monad Testnet)
  *   and indexed into the `transactions` table for transparency. Fees are
- *   recorded in the `fees` table per §9 of the v19.0 specification.
+ *   recorded in the `fees` table per §9 of the v19.0.3 specification.
  */
 export async function GET(req: Request) {
   try {

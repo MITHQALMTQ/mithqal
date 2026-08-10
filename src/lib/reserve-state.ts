@@ -63,7 +63,7 @@ export interface ReserveState {
 // Initial state mirrors the FIXED constants from reserve-allocation.ts
 const INITIAL_GOLD_OZ = 2122.86;
 const INITIAL_SILVER_OZ = 36758;
-const INITIAL_CASH_USD = 32_450_000;
+const INITIAL_CASH_USD = 29_000_000; // v19.0.2 §19.2 canonical over-collateralization baseline
 const INITIAL_SOVEREIGN_USD = 13_500_000;
 const INITIAL_STABLECOIN_USD = 2_700_000;
 
@@ -115,7 +115,7 @@ export function initializeReserveState(
   }
 
   reserveStateStore = {
-    reserveStateVersion: 0, algorithmVersion: "v19.0", constitutionVersion: "v19.0",
+    reserveStateVersion: 0, algorithmVersion: "v19.0.3", constitutionVersion: "v19.0.3",
     oracleSnapshotVersion: "init", executionVersion: "1.0.0-simulation", timestamp: now,
     target: assets.map((a) => ({ ...a, dataSourceId: "constitutional-engine" })),
     executed: assets.map((a) => ({ ...a, dataSourceId: "internal-ledger" })),
@@ -211,9 +211,32 @@ export function commitCustodianConfirmation(custodianAssets: ReserveAssetState[]
   return reserveStateStore;
 }
 
-/** Per §12: Production execution disabled until institutional requirements satisfied. */
+/**
+ * Per §12: Production execution disabled until institutional requirements satisfied.
+ *
+ * §29.2 / §29.10 — execution mode is now env-driven so the same code path can
+ * run in three regimes without recompilation:
+ *
+ *   - SIMULATION (default, safe): auto-approves with all 5 institutional roles;
+ *     executes against simulated custodian adapters. Used for testnet / dev.
+ *   - SHADOW: §29 trigger detection + audit logging run live, but execution
+ *     is gated behind manual institutional approval (severity-based thresholds
+ *     enforced in execution-engine.ts `approveRebalanceProposal`).
+ *   - LIVE: same as SHADOW for approval gating; additionally `isExecutionAllowed`
+ *     returns false in `executeRebalanceProposal` so no custodian transaction
+ *     is submitted without explicit human-in-the-loop authorization.
+ *
+ * The literal values "LIVE" / "SHADOW" are not in the historical
+ * `ExecutionMode` union ("SIMULATION" | "PAPER" | "INSTITUTIONAL_TEST" |
+ * "PRODUCTION"); they are returned via type assertion so callers that
+ * compare `mode === "SIMULATION"` (the only check execution-engine.ts
+ * makes for auto-approval) continue to work as intended.
+ */
 export function getExecutionMode(): ExecutionMode {
-  return "SIMULATION";
+  const envMode = process.env.EXECUTION_MODE;
+  if (envMode === "LIVE") return "LIVE" as ExecutionMode;
+  if (envMode === "SHADOW") return "SHADOW" as ExecutionMode;
+  return "SIMULATION"; // default — safe
 }
 
 export function isExecutionAllowed(): boolean {

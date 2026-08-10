@@ -28,11 +28,11 @@ const fraunces = Fraunces({
 export const metadata: Metadata = {
   metadataBase: new URL("https://mithqal.vercel.app"),
   title: {
-    default: "Mithqal — Constitutional Settlement Institution v20",
+    default: "Mithqal — Constitutional Settlement Institution v19.0.3",
     template: "%s · Mithqal",
   },
   description:
-    "Mithqal — a constitutional, fully-reserved, neutral settlement institution for international trade. Built on the v19.0 specification. 100%+ reserves, verifiable operations, permanently non-platform.",
+    "Mithqal — a constitutional, fully-reserved, neutral settlement institution for international trade. Built on the v19.0.3 specification. 100%+ reserves, verifiable operations, constitutionally non-platform.",
   keywords: [
     "Mithqal",
     "MTQ",
@@ -54,7 +54,7 @@ export const metadata: Metadata = {
     siteName: "Mithqal",
     title: "Mithqal — Constitutional Settlement Institution",
     description:
-      "A constitutional, fully-reserved, neutral settlement institution for international trade. 100%+ reserves, verifiable operations, permanently non-platform.",
+      "A constitutional, fully-reserved, neutral settlement institution for international trade. 100%+ reserves, verifiable operations, constitutionally non-platform.",
     images: [
       {
         url: "/og-image.png",
@@ -68,7 +68,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Mithqal — Constitutional Settlement Institution",
     description:
-      "A constitutional, fully-reserved, neutral settlement institution. 100%+ reserves, verifiable operations, permanently non-platform.",
+      "A constitutional, fully-reserved, neutral settlement institution. 100%+ reserves, verifiable operations, constitutionally non-platform.",
     images: ["/og-image.png"],
   },
   icons: {

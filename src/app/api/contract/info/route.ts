@@ -14,7 +14,7 @@ import { computeLiveNav } from "@/lib/nav-compute";
  *   (2) Live oracle prices (goldUsd, silverUsd, stablecoins) from the
  *       on-chain MockOracle if deployed, otherwise from the free public-API
  *       fallback (gold-api.com).
- *   (3) The full v19.0 Monetary Engine computation, sourced from the
+ *   (3) The full v19.0.3 Monetary Engine computation, sourced from the
  *       UNIFIED `computeLiveNav()` helper (Task 5-a — single source of
  *       truth). This is the SAME computation that /api/mint, /api/redeem,
  *       /api/transfer, /api/transparency (monetary.nav override),
@@ -53,7 +53,7 @@ export async function GET() {
     //     this is what the public sees in the response payload.
     //   - `navResult` (from computeLiveNav) additionally carries the
     //     8-currency FX basket, historical anchors and momentum inputs
-    //     that the v19.0 Currency Engine (§12-22) needs to compute basket
+    //     that the v19.0.3 Currency Engine (§12-22) needs to compute basket
     //     weights. We do NOT publish this entire blob here — only the
     //     top-level NAV / reserve / ratio outputs that depend on it.
     const oracleSnapshot = await getOracleSnapshot();
@@ -106,7 +106,7 @@ export async function GET() {
         oracleAddress: oracleSnapshot.oracleAddress,
         fetchedAt: oracleSnapshot.fetchedAt,
       },
-      // ---- (3) v19.0 Monetary Engine outputs (UNIFIED — Task 5-a) ----
+      // ---- (3) v19.0.3 Monetary Engine outputs (UNIFIED — Task 5-a) ----
       monetary: {
         // §2 Three-layer reserve valuation
         reserves: {

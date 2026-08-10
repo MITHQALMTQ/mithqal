@@ -23,7 +23,7 @@ import {
 } from "@/lib/reserve-allocation";
 
 // GET /api/transparency — public, unauthenticated snapshot of the
-// Institution's live state per the v19.0 Constitutional Monetary Infrastructure
+// Institution's live state per the v19.0.3 Constitutional Monetary Infrastructure
 // Specification. Returns: 3-layer reserves, 3 NAVs, Reserve Ratio (§4), LCR (§5),
 // duration (§8), CRI (§9), 8-currency basket with momentum/reversion/liquidity,
 // shock absorber (EWMA), basket verification (§22A), and fee schedule.
@@ -320,7 +320,7 @@ export async function GET() {
         tiers: state.tiers,
         recentOperations: recent,
       },
-      // v19.0 Monetary Engine
+      // v19.0.3 Monetary Engine
       // Task 5-a — NAV / reserve-ratio fields overridden with the UNIFIED
       // live NAV from `computeLiveNav()` (the same source /api/mint,
       // /api/redeem, /api/contract/info, /api/nav and the public-site hero
@@ -329,7 +329,7 @@ export async function GET() {
       // state — they describe the simulator's mechanical state and do
       // not affect the displayed NAV price.
       monetary: {
-        specVersion: "v19.0",
+        specVersion: "v19.0.3",
         goldUsd: monetary.goldUsd,
         // §2 Three-layer reserve valuation — overridden with unified totals
         reserves: {
@@ -816,7 +816,7 @@ async function buildExpandedTransparency(
 }
 
 const FORMATION_MILESTONES = [
-  { id: "blueprint", label: "Constitution v19.0 published", done: true },
+  { id: "blueprint", label: "Constitution v19.0.3 published", done: true },
   { id: "github", label: "GitHub repository live", done: true },
   { id: "x", label: "X / Twitter presence", done: true },
   { id: "docs", label: "Public Constitution reference", done: true },

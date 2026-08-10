@@ -7,7 +7,7 @@ import { computeLiveNav } from "@/lib/nav-compute";
 /**
  * POST /api/transfer — Record a transfer (peer-to-peer MTQ movement).
  *
- * Constitutional context (§9.3 of v19.0):
+ * Constitutional context (§9.3 of v19.0.3):
  *   - Transfer fee: 0.01% (1 bps), capped at $1,000.
  *   - This is informational ONLY — the actual transfer happens on-chain
  *     via MetaMask (ERC-20 transfer). The backend simply records the

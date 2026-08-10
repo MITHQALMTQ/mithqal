@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * MITHQAL v19.0 — BUSINESS CONTINUITY VERIFICATION (Task 17-b, Part XI)
+ * MITHQAL v19.0.3 — BUSINESS CONTINUITY VERIFICATION (Task 17-b, Part XI)
  * ============================================================================
  *
  * Built by the Enterprise Risk Manager role. Verifies the system can survive
@@ -395,7 +395,7 @@ function scenario(
 // ============================================================
 
 console.log("\n" + "=".repeat(78));
-console.log("  MITHQAL v19.0 — BUSINESS CONTINUITY VERIFICATION (Task 17-b, Part XI)");
+console.log("  MITHQAL v19.0.3 — BUSINESS CONTINUITY VERIFICATION (Task 17-b, Part XI)");
 console.log("  13 disaster scenarios — verify constitutional invariants hold");
 console.log("=".repeat(78));
 console.log(`\nBASELINE: gold=${fmtUsd(BASE_GOLD)}/oz, supply=${fmtComma(BASE_SUPPLY, 0)} MTQ`);

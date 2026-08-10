@@ -230,7 +230,7 @@ export async function POST(req: Request): Promise<Response> {
     const metadata: Record<string, string | number> = {
       // §42.2 #1-10: Version identification
       proof_version: "1.0",
-      constitution_version: "v19.0",
+      constitution_version: "v19.0.3",
       constitutional_amendment_number: "0",
       constants_registry_version: getConstantsVersion(),
       software_release_version: softwareReleaseVersion,

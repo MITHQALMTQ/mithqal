@@ -8,7 +8,7 @@ import { getOracleSnapshot, priceToWei } from "@/lib/oracle-client";
  * MockOracle contract on Monad Testnet (if deployed) or the live free
  * API fallback (if not yet deployed).
  *
- * Constitutional context (§30-33 v19.0):
+ * Constitutional context (§30-33 v19.0.3):
  *   The Constitution requires a multi-oracle consensus. This endpoint
  *   currently serves the single-source mock for testnet. On mainnet, it
  *   will return the weighted median of Chainlink + Pyth + Chronicle.

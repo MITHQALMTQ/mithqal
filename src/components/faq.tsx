@@ -62,7 +62,7 @@ const FAQS: FaqItem[] = [
     id: "what-is-mithqal",
     question: "What is Mithqal?",
     answer:
-      "A constitutional monetary institution that issues MTQ, a fully-reserved settlement unit for cross-border trade. Mithqal is permanently non-platform: it operates no exchange, no DeFi product, and no retail offering — by constitutional invariant.",
+      "A constitutional monetary institution that issues MTQ, a fully-reserved settlement unit for cross-border trade. Mithqal is constitutionally non-platform: it operates no exchange, no DeFi product, and no retail offering — by constitutional invariant.",
     category: "Identity",
     tags: ["intro", "overview", "mission"],
   },
@@ -86,7 +86,7 @@ const FAQS: FaqItem[] = [
     id: "diff-usdt-usdc",
     question: "How is MTQ different from USDT/USDC?",
     answer:
-      "MTQ is permanently non-platform (no exchange, no DeFi, no retail product), constitutionally frozen against drift, and governed by a Council — not a company board. USDT and USDC are issued by companies that can change their reserves, freeze balances, or pivot their business model. MTQ cannot — those powers are permanently removed by the Constitution.",
+      "MTQ is constitutionally non-platform (no exchange, no DeFi, no retail product), constitutionally frozen against drift, and governed by a Council — not a company board. USDT and USDC are issued by companies that can change their reserves, freeze balances, or pivot their business model. MTQ cannot — those powers are constitutionally removed by the Constitution.",
     category: "Identity",
     tags: ["usdt", "usdc", "comparison", "competitor"],
   },
@@ -94,7 +94,7 @@ const FAQS: FaqItem[] = [
     id: "can-i-invest",
     question: "Can I invest in MTQ?",
     answer:
-      "No. MTQ is never sold unbacked. You can mint MTQ by depositing eligible reserves, or invest in the Operating Company (Entity B) via equity. The entire ICO/IDO/IEO playbook is forbidden by the Constitution — permanently.",
+      "No. MTQ is never sold unbacked. You can mint MTQ by depositing eligible reserves, or invest in the Operating Company (Entity B) via equity. The entire ICO/IDO/IEO playbook is forbidden by the Constitution — by constitutional invariant.",
     category: "Operations",
     tags: ["invest", "ico", "equity", "fundraising"],
   },
@@ -142,7 +142,7 @@ const FAQS: FaqItem[] = [
     id: "what-is-constitution",
     question: "What is the Constitution?",
     answer:
-      "A 1.46M-character specification (v19.0) covering 57 sections across 6 parts: math, currency engine, reserves, oracles, governance, and compliance. It is the supreme law of the Institution — every operational decision must trace back to a clause in it. Read it on the Constitution view.",
+      "A 1.46M-character specification (v19.0.3) covering 57 sections across 6 parts: math, currency engine, reserves, oracles, governance, and compliance. It is the supreme law of the Institution — every operational decision must trace back to a clause in it. Read it on the Constitution view.",
     category: "Governance",
     tags: ["constitution", "spec", "v19", "law"],
   },
@@ -182,7 +182,7 @@ const FAQS: FaqItem[] = [
     id: "is-this-ico",
     question: "Is this an ICO?",
     answer:
-      "No. The entire ICO/IDO/IEO playbook is forbidden by the Constitution — permanently. Fundraising occurs through Entity B (equity), not through MTQ. MTQ is minted only against verified reserves; it is never sold unbacked to raise capital.",
+      "No. The entire ICO/IDO/IEO playbook is forbidden by the Constitution — by constitutional invariant. Fundraising occurs through Entity B (equity), not through MTQ. MTQ is minted only against verified reserves; it is never sold unbacked to raise capital.",
     category: "Operations",
     tags: ["ico", "ido", "ieo", "token sale", "fundraising"],
   },
@@ -206,7 +206,7 @@ const FAQS: FaqItem[] = [
     id: "reserve-ratio",
     question: "What is the reserve ratio?",
     answer:
-      "Reserve Ratio = Adjusted Reserve / (Supply × NAV). Must be ≥100% at all times (constitutional invariant). If it dips below, minting auto-pauses until it recovers. Redemption remains available regardless — it is a constitutional right that cannot be suspended.",
+      "Reserve Ratio = Adjusted Reserve / (Supply × PAR), where PAR = $1.00. Must be ≥100% at all times (constitutional invariant). If it dips below, minting auto-pauses until it recovers. Redemption remains available regardless — it is a constitutional right that cannot be suspended.",
     category: "Reserves",
     tags: ["reserve ratio", "rr", "solvency", "invariant"],
   },
@@ -214,7 +214,7 @@ const FAQS: FaqItem[] = [
     id: "amend-constitution",
     question: "Can the Constitution be amended?",
     answer:
-      "Yes, through a supermajority Council vote + independent review. But the 20 constitutional invariants (§45) are non-amendable — permanently frozen. These include the non-platform clause, the 100% reserve requirement, the prohibition on unbacked minting, and the redemption guarantee. No vote can ever override them.",
+      "Yes, through a supermajority Council vote + independent review. But the 10 on-chain invariants (§45) are non-amendable — non-amendable. These include the non-platform clause, the 100% reserve requirement, the prohibition on unbacked minting, and the redemption-never-paused rule. No vote can ever override them.",
     category: "Governance",
     tags: ["amend", "invariants", "frozen", "council", "vote"],
   },
@@ -281,7 +281,7 @@ export default function FAQ() {
                 FAQ
               </Badge>
               <Badge className="border-line bg-ink-card text-fg-muted hover:bg-ink-card">
-                {FAQS.length} questions · v19.0
+                {FAQS.length} questions · v19.0.3
               </Badge>
             </div>
           </Reveal>
@@ -502,7 +502,7 @@ export default function FAQ() {
 
         <Separator className="my-8 bg-line" />
         <p className="text-center text-[10px] leading-relaxed text-fg-muted">
-          {FAQS.length} questions · {CATEGORIES.length - 1} categories · Mithqal v19.0
+          {FAQS.length} questions · {CATEGORIES.length - 1} categories · Mithqal v19.0.3
           Constitutional Settlement Institution. Nothing here constitutes an
           offer to sell securities or any MTQ unit.
         </p>

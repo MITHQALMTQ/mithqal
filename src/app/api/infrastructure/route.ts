@@ -17,7 +17,7 @@ import {
   // --- Runtime-wired functions (Task FREE-ITEMS-2) ---
   // These were previously spec-echo: defined but never invoked at runtime.
   // We now call each one and surface its result in the API response so the
-  // v19.0 Constitutional Infrastructure is fully exercisable end-to-end.
+  // v19.0.3 Constitutional Infrastructure is fully exercisable end-to-end.
   COUNTERPARTY_EXPOSURE_LIMITS,
   getOracleConsensus,
   computeRedemptionSequence,
@@ -65,7 +65,7 @@ import {
 import { HAIRCUTS, type ReserveAsset } from "@/lib/monetary-engine-v19";
 
 // GET /api/infrastructure — public, unauthenticated. Returns the complete
-// v19.0 Constitutional Infrastructure: invariants, constants registry,
+// v19.0.3 Constitutional Infrastructure: invariants, constants registry,
 // assurance framework, redemption hierarchy, settlement pipeline, supply
 // lifecycle, regulatory framework, Sharia governance, and stress scenarios.
 //
@@ -84,7 +84,7 @@ import { HAIRCUTS, type ReserveAsset } from "@/lib/monetary-engine-v19";
  * contains the word "guarantee" so the scan has something to find.
  */
 const CONSTITUTION_SUMMARY =
-  "The Mithqal v19.0 Constitutional Specification defines a fully reserved, " +
+  "The Mithqal v19.0.3 Constitutional Specification defines a fully reserved, " +
   "gold-anchored monetary infrastructure. The Institution is constitutionally " +
   "neutral and operates under a guarantee of mathematical auditability. " +
   "Reserves are segregated, never lent, and never commingled with operational " +
@@ -453,7 +453,7 @@ export async function GET() {
   });
 
   return NextResponse.json({
-    specVersion: "v19.0",
+    specVersion: "v19.0.3",
     // §45 Constitutional Invariants (21 non-amendable provisions)
     invariants: CONSTITUTIONAL_INVARIANTS,
     // §53 Constitutional Constants Registry

@@ -6,7 +6,7 @@ import { priceToWei } from "@/lib/oracle-client";
 /**
  * POST /api/admin/update-price — Returns calldata for updating MockOracle prices.
  *
- * Constitutional context (§30-33 of v19.0):
+ * Constitutional context (§30-33 of v19.0.3):
  *   - The Constitution requires a multi-oracle consensus. The MockOracle is
  *     the testnet single-source stand-in. On mainnet, this will be replaced
  *     by a MultiOracleConsensus adapter (Chainlink + Pyth + Chronicle).

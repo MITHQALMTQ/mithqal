@@ -13,7 +13,7 @@ import { computeLiveNav } from "@/lib/nav-compute";
 
 /**
  * GET /api/reserve/status — public, unauthenticated snapshot of the
- * Mithqal reserve composition and live valuation per §23 of the v19.0
+ * Mithqal reserve composition and live valuation per §23 of the v19.0.3
  * Constitutional Monetary Infrastructure Specification.
  *
  * Task 4-b: the reserve composition is now derived from the shared
@@ -139,7 +139,7 @@ export async function GET() {
     // /api/transparency and the public-site hero.)
     const supply = 54_000_000;
 
-    // Compute the full v19.0 monetary state (3-layer reserves, 3 NAVs, RR).
+    // Compute the full v19.0.3 monetary state (3-layer reserves, 3 NAVs, RR).
     const monetary = computeMonetaryStateV19(
       oracleSnapshot,
       reserveAssets,
@@ -164,10 +164,11 @@ export async function GET() {
     // trigger is surfaced in the API response.
     //
     // NOTE: `computeSDPEmergency` accepts (structuralWeight, referencePrice,
-    // currentPrice, currentWeight). We pass w.structuralWeight (§13),
+    // currentPrice, currentWeight, currency). We pass w.structuralWeight (§13),
     // w.goldPrice12moAgo as the reference (§14, 12mo ago), w.goldPrice as
-    // the current price (today), and w.normalizedWeight as the live weight
-    // (§20). These are all available on CurrencyWeight — no defaults needed.
+    // the current price (today), w.normalizedWeight as the live weight
+    // (§20), and w.code as the currency code so the emitted `details`
+    // string names the deviating currency instead of being blank (H-2 fix).
     let sdp: { triggered: boolean; details: string } = {
       triggered: false,
       details: "No SDP triggers — all currencies within 5% deviation threshold",
@@ -180,7 +181,8 @@ export async function GET() {
           w.structuralWeight,
           w.goldPrice12moAgo, // referencePrice (§14, 12mo ago)
           w.goldPrice,        // currentPrice (today)
-          w.normalizedWeight
+          w.normalizedWeight,
+          w.code              // currency code — H-2 fix (was "" before)
         );
         if (sdpResult.trigger.triggered && sdpResult.trigger.details) {
           triggeredDetails.push(sdpResult.trigger.details);
@@ -202,17 +204,33 @@ export async function GET() {
     }
 
     // Compose the public reserve composition view (per-asset share + haircut).
-    const reserves = reserveAssets.map((a) => {
-      const valueUsd = a.quantity * a.priceUsd;
+    // H-1 fix: derive `reserves[]` from `computeLiveNav().reserveAssets` so
+    // that `totalReserveUsd === sum(reserves[].amount)`. Previously this
+    // array was built from `computeDynamicReserveAllocation` (sovereign +
+    // stablecoin USD values derived from totalReserve × policy ratios),
+    // which produced a sum that disagreed with `totalReserveUsd` (which
+    // comes from `computeLiveNav` and uses the FIXED $29M cash baseline).
+    const buildReservesFromAssets = (
+      assets: ReserveAsset[],
+      total: number
+    ) => assets.map((a) => {
+      const unit = a.assetClass === "gold" || a.assetClass === "silver" ? "oz" : "usd";
+      const amount = unit === "oz" ? a.quantity * a.priceUsd : a.quantity;
       return {
         assetType: a.assetClass,
         name: a.name,
-        amount: a.quantity,
-        valueUsd,
-        sharePct: (valueUsd / totalReserve) * 100,
+        amount,
+        valueUsd: amount,
+        sharePct: total > 0 ? (amount / total) * 100 : 0,
         haircut: a.haircut,
       };
     });
+
+    // Seed `reserves` from the dynamic allocation as the FALLBACK. If
+    // `computeLiveNav()` succeeds (below), we overwrite this with the
+    // unified baseline composition so the reported per-asset breakdown
+    // matches `totalReserveUsd` exactly.
+    let reserves = buildReservesFromAssets(reserveAssets, totalReserve);
 
     // ---- Task 5-a — UNIFIED NAV OVERRIDE ----
     // The monetary object above is computed via `computeMonetaryStateV19`
@@ -223,9 +241,9 @@ export async function GET() {
     // $2.7M stablecoin). To make every "1 MTQ = $X" surface in the app
     // agree with /api/mint, /api/redeem, /api/contract/info, /api/nav,
     // /api/transparency and the public-site hero, we override the NAV
-    // + reserve-ratio fields with the unified values. The `reserves`
-    // array (per-asset composition) stays from the dynamic allocation
-    // since it describes the TARGET allocation, not the price.
+    // + reserve-ratio fields with the unified values. We ALSO rebuild
+    // `reserves[]` from `liveNav.reserveAssets` (H-1 fix) so the
+    // per-asset breakdown is consistent with `totalReserveUsd`.
     let unifiedNavM = monetary.nav.market;
     let unifiedNavL = monetary.nav.prudential;
     let unifiedNavStress = monetary.nav.stress;
@@ -242,6 +260,12 @@ export async function GET() {
       unifiedReserveMarketUsd = liveNav.reserveMarketUsd;
       unifiedReserveAdjustedUsd = liveNav.reserveAdjustedUsd;
       unifiedSupply = liveNav.supply;
+      // H-1 fix: rebuild `reserves[]` from the SAME baseline composition
+      // that produced `unifiedReserveMarketUsd`, so
+      //   totalReserveUsd === sum(reserves[].amount)
+      // exactly. The dynamic-allocation `reserves[]` above is now only a
+      // fallback used when `computeLiveNav()` itself throws.
+      reserves = buildReservesFromAssets(liveNav.reserveAssets, unifiedReserveMarketUsd);
     } catch (navErr) {
       // Fail closed — keep the locally-computed values so the API still
       // returns a usable response even if the unified oracle is down.

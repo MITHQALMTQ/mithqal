@@ -109,7 +109,7 @@ const BASELINE_CURRENCIES: CurrencySpec[] = [
 
 /**
  * Reserve layers — constitutional RANGES (fixed) with policy TARGETS (dynamic within range).
- * Per Section 23 of the v19.0 Constitution:
+ * Per Section 23 of the v19.0.3 Constitution:
  *   - Fiat: 70–80% range, 75% policy target
  *   - Bullion: 15–25% range, 20% policy target (gold 60-95% of bullion = 16% of total, silver 5-40% = 4%)
  *   - Stablecoins: 2–8% range, 5% policy target

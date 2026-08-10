@@ -1,6 +1,6 @@
 /**
  * Mithqal Investor Teaser Deck — slide content.
- * Distilled from the Mithqal v19.0 specification.
+ * Distilled from the Mithqal v19.0.3 specification.
  * Pure content module; no client/server concerns.
  */
 
@@ -25,7 +25,7 @@ export const SLIDES: Slide[] = [
     eyebrow: "Mithqal",
     title: "A constitutional settlement institution.",
     body: "Neutral. Fully reserved. Constitutionally non-platform.",
-    footer: "Investor Teaser · Confidential · v19.0",
+    footer: "Investor Teaser · Confidential · v19.0.3",
   },
   {
     id: "thesis",
@@ -124,7 +124,7 @@ export const SLIDES: Slide[] = [
     eyebrow: "Status & Contact",
     title: "Blueprint locked. Building the institution.",
     bullets: [
-      "Constitution v19.0 — published.",
+      "Constitution v19.0.3 — published.",
       "GitHub + X live.",
       "Testnet dashboard live (simulator).",
       "Formation Committee convening — advisors, anchor, Council nominees sought.",

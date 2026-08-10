@@ -104,7 +104,7 @@ export const FIXED_SILVER_OZ = 36_758;     // ≈ $2.160M at $58.76/oz
  * The dynamic fiat ratio instead governs the TARGET allocation reported
  * to clients and used by the rebalance engine.
  */
-export const FIXED_CASH_USD = 32_450_000; // v19.0.9: raised to 8% buffer (constitutional Monte Carlo optimal — 99% survival)
+export const FIXED_CASH_USD = 29_000_000; // v19.0.2 §19.2 canonical over-collateralization baseline
 
 // ============================================================
 // Types

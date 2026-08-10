@@ -4,7 +4,7 @@
  * Task 7-a — Tokenomics & Game-Theory Live-Readiness Verification
  *
  * Built by the Crypto-Economics Expert role. Exercises the entire
- * monetary design (§1–§55 of the v19.0 specification) through 7 test
+ * monetary design (§1–§55 of the v19.0.3 specification) through 7 test
  * categories:
  *
  *   1. Supply Dynamics            — conservation, monotonicity, caps

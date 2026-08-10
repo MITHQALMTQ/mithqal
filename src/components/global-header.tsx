@@ -14,7 +14,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
  * Enhances every page with "live data pulse" + "verify on chain" trust signals.
  */
 export function GlobalHeader() {
-  const [onchainScore, setOnchainScore] = useState("9/9");
+  const [onchainScore, setOnchainScore] = useState("15/15");
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -67,10 +67,10 @@ export function GlobalHeader() {
       {/* Constitutional shield */}
       <div
         className="inline-flex items-center gap-1 rounded-full border border-gold/30 bg-gold/10 px-2 py-1 text-[10px] font-semibold text-gold"
-        title="Constitution v19.0 — Published"
+        title="Constitution v19.0.3 — Published"
       >
         <Shield className="h-2.5 w-2.5" />
-        v19.0
+        v19.0.3
       </div>
 
       {/* Language switcher (audit recommendation #7: en/ar/fr) */}

@@ -21,7 +21,7 @@ import {
 /**
  * GET /api/stress-lab — Constitutional Stress Laboratory (Article XV — Task 12-c P0-5).
  *
- * Runs all 20 standardized stress scenarios against the v19.0 monetary
+ * Runs all 20 standardized stress scenarios against the v19.0.3 monetary
  * engine + the live unified reserve composition (from `computeLiveNav()`),
  * returning per-scenario:
  *   - NAV before / after
@@ -202,7 +202,7 @@ interface ScenarioResult {
  * Run a single Stress Lab scenario through the constitutional stress engine.
  *
  * Applies the scenario's gold/silver/sovereign/stablecoin shocks to the
- * baseline reserveAssets array, recomputes the v19.0 monetary state, and
+ * baseline reserveAssets array, recomputes the v19.0.3 monetary state, and
  * derives the post-shock NAV + RR. The LRR-after is computed via the
  * per-scenario LRR formula (sovereign shock + liquidity haircut +
  * redemption-rate override).

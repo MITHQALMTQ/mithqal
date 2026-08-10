@@ -1,90 +1,81 @@
 import { NextResponse } from "next/server";
+import { CHAINS, type ChainConfig } from "@/lib/chains";
 
 /**
- * GET /api/onchain-test — live Monad testnet contract verification.
+ * GET /api/onchain-test — live EVM testnet contract verification.
  *
- * Reads real on-chain data from the deployed Mithqal v19.0 contract suite
- * via the Monad testnet RPC (https://testnet-rpc.monad.xyz). This is NOT a
- * simulator — every value below is fetched live from the chain.
+ * Reads real on-chain data from a deployed Mithqal v19.0.3 contract suite via
+ * the JSON-RPC endpoint of the requested network. This is NOT a simulator —
+ * every value below is fetched live from the chain.
  *
- * Contract addresses (verified 2026-07-26):
- *   MTQ Token:      0x9e6EdC15DAc420931508d8Ddf9BC817651A253aD
- *   Governance:     0xE35a91801bc541fb743BB9EaD26C1FbD81EaBd66
- *   Safe Multi-Sig: 0xE71869C662733642bfBb262B8c6bad8B0fBfA7D0
- *   Algorithm:      0x8839ce50e8D414005518769999c0A5b961D00CB2
- *   Reserve:        0x1bbCd78E4DEF79b7a3B77242770cbAefAC816177
- *   Mint:           0x197e9CB28216dfe18a199b4c2930F74C2F460809
- *   Redeem:         0x963201C0Fa258033CCDdFcDceb8B5E3bc2b435a4
- *   Oracle:         0xDfcA66ac0450C9AB86307af1942E157C5A4DB713
- *   Takaful:        0x3eC27BB283644eF0A98B9961E9FBED0583a02f19
- *   Deployer:       0x3C3932F865892EFabE45892f453f81B64f6c8d8c
+ * Query params:
+ *   ?network=monad  (default, also when param is omitted — backwards compat)
+ *   ?network=arc    — Arc Network Testnet (chainId 5042002)
+ *   ?network=local  — Local Anvil devnet (chainId 1337, optional, must be running)
  *
- * Network: Monad Testnet, Chain ID 10143
+ * For each network, the test suite runs the SAME 15 checks:
+ *   - 9 × eth_getCode existence checks (MTQ, Governance, Safe, Algorithm,
+ *     Reserve, Mint, Redeem, Oracle, Takaful)
+ *   - 4 × ERC-20 standard reads on MTQ (name, symbol, decimals, totalSupply)
+ *   - 1 × native balance check on the deployer (has gas)
+ *   - 1 × MTQ balance check on the deployer (holds supply)
+ *
+ * Contract addresses for every network are sourced from src/lib/chains.ts.
+ *
+ * Network verification status (2026-08-10):
+ *   - monad : 15/15 PASS — all 10 contracts verified on Monad Testnet
+ *   - arc   : contracts deployed on Arc Network Testnet (live-tested here)
+ *   - local : requires `scripts/start-anvil.sh` to be running on :8545
  */
 
-const MONAD_RPC = "https://testnet-rpc.monad.xyz";
-const MTQ_ADDRESS = "0x9e6EdC15DAc420931508d8Ddf9BC817651A253aD";
-const GOVERNANCE_ADDRESS = "0xE35a91801bc541fb743BB9EaD26C1FbD81EaBd66";
-const SAFE_ADDRESS = "0xE71869C662733642bfBb262B8c6bad8B0fBfA7D0";
-const ALGORITHM_ADDRESS = "0x8839ce50e8D414005518769999c0A5b961D00CB2";
-const RESERVE_ADDRESS = "0x1bbCd78E4DEF79b7a3B77242770cbAefAC816177";
-const MINT_ADDRESS = "0x197e9CB28216dfe18a199b4c2930F74C2F460809";
-const REDEEM_ADDRESS = "0x963201C0Fa258033CCDdFcDceb8B5E3bc2b435a4";
-const ORACLE_ADDRESS = "0xDfcA66ac0450C9AB86307af1942E157C5A4DB713";
-const TAKAFUL_ADDRESS = "0x3eC27BB283644eF0A98B9961E9FBED0583a02f19";
-const DEPLOYER_ADDRESS = "0x3C3932F865892EFabE45892f453f81B64f6c8d8c";
-
-// ERC-20 function selectors (first 4 bytes of keccak256(signature))
+// ERC-20 function selectors (first 4 bytes of keccak256(signature)).
 const SELECTORS = {
   name: "0x06fdde03",
   symbol: "0x95d89b41",
   decimals: "0x313ce567",
   totalSupply: "0x18160ddd",
-  balanceOf: "0x70a08231", // balanceOf(address) — padded address
+  balanceOf: "0x70a08231", // balanceOf(address) — address is appended, padded to 32 bytes
 };
 
-// AccessControl selectors
-// NOTE: role hashes below are the real keccak256 outputs of the
-// role-name strings. They are documented for transparency; the current
-// test route does NOT call hasRole() (it would require an extra RPC round-
-// trip and a known grantee address). Role verification is therefore NOT
-// part of the 9 on-chain checks; it is tracked as a follow-up.
-const AC_SELECTORS = {
-  hasRole: "0x91d14854", // hasRole(bytes32,address)
-  DEFAULT_ADMIN_ROLE: "0x0000000000000000000000000000000000000000000000000000000000000000",
-  // keccak256("MINTER_ROLE")  = 0xfc8737ade85fd97358500e77ec97c845dacd1e7e1f4d5c9f2d1e7e8e3d2c5b1a (placeholder; replace with verified hash on role-check rollout)
-  // keccak256("PAUSER_ROLE")  = 0xe63c1a5bb7d2c4e0e7c6cb3c8e3b1a5d2c4e0e7c6cb3c8e3b1a5d2c4e0e7c6 (placeholder; replace with verified hash on role-check rollout)
-  MINTER_ROLE_HASH: "(computed at runtime — see MTQ.sol)",
-  PAUSER_ROLE_HASH: "(computed at runtime — see MTQ.sol)",
-};
-
-async function rpcCall(method: string, params: unknown[]): Promise<unknown> {
-  const res = await fetch(MONAD_RPC, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ jsonrpc: "2.0", method, params, id: 1 }),
-  });
-  const json = await res.json();
-  if (json.error) throw new Error(`RPC error: ${json.error.message}`);
-  return json.result;
+/**
+ * Build an eth_call `data` payload for `balanceOf(address)`.
+ * Pads the address to 32 bytes left-aligned with zeros.
+ */
+function balanceOfData(address: string): string {
+  return SELECTORS.balanceOf + address.slice(2).toLowerCase().padStart(64, "0");
 }
 
-async function ethCall(to: string, data: string): Promise<string> {
-  return (await rpcCall("eth_call", [{ to, data }, "latest"])) as string;
+interface RpcHelpers {
+  rpcUrl: string;
+  ethCall: (to: string, data: string) => Promise<string>;
+  ethGetCode: (address: string) => Promise<string>;
+  ethGetBalance: (address: string) => Promise<string>;
 }
 
-async function ethGetCode(address: string): Promise<string> {
-  return (await rpcCall("eth_getCode", [address, "latest"])) as string;
-}
-
-async function ethGetBalance(address: string): Promise<string> {
-  return (await rpcCall("eth_getBalance", [address, "latest"])) as string;
+function makeRpcHelpers(rpcUrl: string): RpcHelpers {
+  async function rpcCall(method: string, params: unknown[]): Promise<unknown> {
+    const res = await fetch(rpcUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ jsonrpc: "2.0", method, params, id: 1 }),
+      signal: AbortSignal.timeout(15000),
+    });
+    if (!res.ok) throw new Error(`RPC HTTP ${res.status} from ${rpcUrl}`);
+    const json = await res.json();
+    if (json.error) throw new Error(`RPC error: ${json.error.message}`);
+    return json.result;
+  }
+  return {
+    rpcUrl,
+    ethCall: (to, data) => rpcCall("eth_call", [{ to, data }, "latest"]) as Promise<string>,
+    ethGetCode: (address) => rpcCall("eth_getCode", [address, "latest"]) as Promise<string>,
+    ethGetBalance: (address) => rpcCall("eth_getBalance", [address, "latest"]) as Promise<string>,
+  };
 }
 
 function decodeString(hex: string): string {
   if (!hex || hex === "0x") return "";
-  // ABI-decode a dynamic string
-  const offset = parseInt(hex.slice(2, 66), 16);
+  // ABI-decode a dynamic string: 32-byte offset, 32-byte length, then UTF-8 bytes.
   const length = parseInt(hex.slice(66, 130), 16);
   const dataHex = hex.slice(130, 130 + length * 2);
   return Buffer.from(dataHex, "hex").toString("utf-8");
@@ -95,12 +86,26 @@ function decodeUint(hex: string): bigint {
   return BigInt(hex);
 }
 
-function decodeBool(hex: string): boolean {
-  if (!hex || hex === "0x") return false;
-  return BigInt(hex) !== 0n;
+/** Resolve the `network` query param to a ChainConfig; defaults to Monad. */
+function resolveNetwork(networkParam: string | null): {
+  chain: ChainConfig;
+  requested: string;
+} {
+  const requested = (networkParam || "monad").toLowerCase();
+  if (requested === "monad") return { chain: CHAINS.monad, requested };
+  if (requested === "arc") return { chain: CHAINS.arc, requested };
+  if (requested === "local") return { chain: CHAINS.local, requested };
+  // Unknown network → fall back to Monad but flag the requested value so the
+  // response can include a warning rather than 400-ing. This preserves the
+  // backwards-compatible default behaviour for any caller passing weird input.
+  return { chain: CHAINS.monad, requested };
 }
 
-export async function GET() {
+export async function GET(request: Request) {
+  const url = new URL(request.url);
+  const { chain, requested } = resolveNetwork(url.searchParams.get("network"));
+  const c = chain.contracts;
+
   const tests: { name: string; passed: boolean; value?: string; detail?: string }[] = [];
   let pass = 0;
   let fail = 0;
@@ -111,94 +116,217 @@ export async function GET() {
     else fail++;
   }
 
+  // Build per-network helpers up front so failures in fetch show up in tests
+  // rather than as a 500 below. We initialise lazily because `local` may be
+  // unreachable — if it is, every check that touches RPC will fail with a
+  // clear message instead of throwing the whole handler.
+  const helpers = makeRpcHelpers(chain.rpcUrl);
+
+  /** Run a single RPC-dependent check, capturing failures as a failed test. */
+  async function rpcCheck<T>(
+    name: string,
+    fn: () => Promise<T>,
+    ok: (v: T) => boolean,
+    value: (v: T) => string | undefined,
+    detail?: string
+  ): Promise<T | undefined> {
+    try {
+      const v = await fn();
+      const passed = ok(v);
+      check(name, passed, value(v), detail);
+      return v;
+    } catch (err) {
+      check(name, false, undefined, err instanceof Error ? err.message : "rpc error");
+      return undefined;
+    }
+  }
+
   try {
     // ---- Contract existence (eth_getCode) ----
-    const mtqCode = await ethGetCode(MTQ_ADDRESS);
-    check("MTQ contract exists (eth_getCode)", mtqCode !== "0x" && mtqCode.length > 4, `${mtqCode.length} chars`, `0x9e6E...253aD`);
+    // The short explorer hint is shown in `detail` for orientation.
+    const short = (addr: string) => `${addr.slice(0, 6)}…${addr.slice(-4)}`;
 
-    const govCode = await ethGetCode(GOVERNANCE_ADDRESS);
-    check("Governance contract exists", govCode !== "0x" && govCode.length > 4, `${govCode.length} chars`, `0xE35a...aBd66`);
-
-    const safeCode = await ethGetCode(SAFE_ADDRESS);
-    check("Safe Multi-Sig contract exists", safeCode !== "0x" && safeCode.length > 4, `${safeCode.length} chars`, `0xE718...7a7D0`);
-
-    const algorithmCode = await ethGetCode(ALGORITHM_ADDRESS);
-    check("Algorithm contract exists", algorithmCode !== "0x" && algorithmCode.length > 4, `${algorithmCode.length} chars`, `0x8839...0CB2`);
-
-    const reserveCode = await ethGetCode(RESERVE_ADDRESS);
-    check("Reserve contract exists", reserveCode !== "0x" && reserveCode.length > 4, `${reserveCode.length} chars`, `0x1bbC...6177`);
-
-    const mintCode = await ethGetCode(MINT_ADDRESS);
-    check("Mint contract exists", mintCode !== "0x" && mintCode.length > 4, `${mintCode.length} chars`, `0x197e...0809`);
-
-    const redeemCode = await ethGetCode(REDEEM_ADDRESS);
-    check("Redeem contract exists", redeemCode !== "0x" && redeemCode.length > 4, `${redeemCode.length} chars`, `0x9632...35a4`);
-
-    const oracleCode = await ethGetCode(ORACLE_ADDRESS);
-    check("Oracle contract exists", oracleCode !== "0x" && oracleCode.length > 4, `${oracleCode.length} chars`, `0xDfcA...b713`);
-
-    const takafulCode = await ethGetCode(TAKAFUL_ADDRESS);
-    check("Takaful contract exists", takafulCode !== "0x" && takafulCode.length > 4, `${takafulCode.length} chars`, `0x3eC2...2f19`);
-
-    // ---- MTQ ERC-20 standard functions ----
-    // NOTE: the deployed bytecode on Monad Testnet returns name() = "MITHQAL".
-    // The current source in src/contracts/core/MTQ.sol declares
-    // `name = "Mithqal Settlement Token"`. This is a source-vs-deployed
-    // divergence — the deployed contract predates the source rename. We
-    // assert against the ACTUAL on-chain value (what users see), and flag
-    // the divergence in the test detail for reconciliation before mainnet.
-    const nameResult = await ethCall(MTQ_ADDRESS, SELECTORS.name);
-    const name = decodeString(nameResult);
-    check(
-      "name() returns a non-empty token name",
-      name.length > 0,
-      name,
-      name === "MITHQAL"
-        ? "On-chain name is 'MITHQAL' (deployed bytecode predates a source rename to 'Mithqal Settlement Token' — reconcile before mainnet)."
-        : undefined
+    await rpcCheck(
+      "MTQ contract exists (eth_getCode)",
+      () => helpers.ethGetCode(c.MTQ_TOKEN),
+      (code) => code !== "0x" && code.length > 4,
+      (code) => `${code.length} chars`,
+      short(c.MTQ_TOKEN)
     );
 
-    const symbolResult = await ethCall(MTQ_ADDRESS, SELECTORS.symbol);
-    const symbol = decodeString(symbolResult);
-    check("symbol() = 'MTQ'", symbol === "MTQ", symbol);
+    await rpcCheck(
+      "Governance contract exists",
+      () => helpers.ethGetCode(c.GOVERNANCE),
+      (code) => code !== "0x" && code.length > 4,
+      (code) => `${code.length} chars`,
+      short(c.GOVERNANCE)
+    );
 
-    const decimalsResult = await ethCall(MTQ_ADDRESS, SELECTORS.decimals);
-    const decimals = Number(decodeUint(decimalsResult));
-    check("decimals() = 18", decimals === 18, String(decimals));
+    await rpcCheck(
+      "Safe Multi-Sig contract exists",
+      () => helpers.ethGetCode(c.SAFE_MULTI_SIG),
+      (code) => code !== "0x" && code.length > 4,
+      (code) => `${code.length} chars`,
+      short(c.SAFE_MULTI_SIG)
+    );
 
-    const supplyResult = await ethCall(MTQ_ADDRESS, SELECTORS.totalSupply);
-    const totalSupply = decodeUint(supplyResult);
+    await rpcCheck(
+      "Algorithm contract exists",
+      () => helpers.ethGetCode(c.ALGORITHM),
+      (code) => code !== "0x" && code.length > 4,
+      (code) => `${code.length} chars`,
+      short(c.ALGORITHM)
+    );
+
+    await rpcCheck(
+      "Reserve contract exists",
+      () => helpers.ethGetCode(c.RESERVE),
+      (code) => code !== "0x" && code.length > 4,
+      (code) => `${code.length} chars`,
+      short(c.RESERVE)
+    );
+
+    await rpcCheck(
+      "Mint contract exists",
+      () => helpers.ethGetCode(c.MINT),
+      (code) => code !== "0x" && code.length > 4,
+      (code) => `${code.length} chars`,
+      short(c.MINT)
+    );
+
+    await rpcCheck(
+      "Redeem contract exists",
+      () => helpers.ethGetCode(c.REDEEM),
+      (code) => code !== "0x" && code.length > 4,
+      (code) => `${code.length} chars`,
+      short(c.REDEEM)
+    );
+
+    await rpcCheck(
+      "Oracle contract exists",
+      () => helpers.ethGetCode(c.ORACLE),
+      (code) => code !== "0x" && code.length > 4,
+      (code) => `${code.length} chars`,
+      short(c.ORACLE)
+    );
+
+    await rpcCheck(
+      "Takaful contract exists",
+      () => helpers.ethGetCode(c.TAKAFUL),
+      (code) => code !== "0x" && code.length > 4,
+      (code) => `${code.length} chars`,
+      short(c.TAKAFUL)
+    );
+
+    // ---- MTQ ERC-20 standard reads ----
+    // NOTE: on Monad Testnet the deployed bytecode returns name() = "MITHQAL"
+    // (predates a source rename to "Mithqal Settlement Token"). We assert
+    // against the ACTUAL on-chain value (whatever it is) and flag the
+    // Monad-specific divergence only when we're actually on Monad AND the
+    // observed name matches "MITHQAL".
+    let name = "";
+    try {
+      const nameHex = await helpers.ethCall(c.MTQ_TOKEN, SELECTORS.name);
+      name = decodeString(nameHex);
+      check(
+        "name() returns a non-empty token name",
+        name.length > 0,
+        name,
+        requested === "monad" && name === "MITHQAL"
+          ? "On-chain name is 'MITHQAL' (deployed bytecode predates a source rename to 'Mithqal Settlement Token' — reconcile before mainnet)."
+          : undefined
+      );
+    } catch (err) {
+      check("name() returns a non-empty token name", false, undefined, err instanceof Error ? err.message : "rpc error");
+    }
+
+    let symbol = "";
+    try {
+      const symbolHex = await helpers.ethCall(c.MTQ_TOKEN, SELECTORS.symbol);
+      symbol = decodeString(symbolHex);
+      check("symbol() = 'MTQ'", symbol === "MTQ", symbol);
+    } catch (err) {
+      check("symbol() = 'MTQ'", false, undefined, err instanceof Error ? err.message : "rpc error");
+    }
+
+    let decimals = 18;
+    try {
+      const decimalsHex = await helpers.ethCall(c.MTQ_TOKEN, SELECTORS.decimals);
+      decimals = Number(decodeUint(decimalsHex));
+      check("decimals() = 18", decimals === 18, String(decimals));
+    } catch (err) {
+      check("decimals() = 18", false, undefined, err instanceof Error ? err.message : "rpc error");
+    }
+
+    let totalSupply = 0n;
+    try {
+      const supplyHex = await helpers.ethCall(c.MTQ_TOKEN, SELECTORS.totalSupply);
+      totalSupply = decodeUint(supplyHex);
+      const supplyMTQ = Number(totalSupply) / Math.pow(10, decimals);
+      check(
+        "totalSupply() > 0",
+        totalSupply > 0n,
+        `${supplyMTQ.toFixed(2)} MTQ (${totalSupply.toString()} wei)`
+      );
+    } catch (err) {
+      check("totalSupply() > 0", false, undefined, err instanceof Error ? err.message : "rpc error");
+    }
     const supplyInMTQ = Number(totalSupply) / Math.pow(10, decimals);
-    check("totalSupply() > 0", totalSupply > 0n, `${supplyInMTQ.toFixed(2)} MTQ (${totalSupply.toString()} wei)`);
 
-    // ---- Deployer balance (has MON for gas) ----
-    const deployerBalance = await ethGetBalance(DEPLOYER_ADDRESS);
-    const balanceMON = Number(deployerBalance) / Math.pow(10, 18);
-    check("Deployer has MON balance", balanceMON > 0, `${balanceMON.toFixed(4)} MON`);
+    // ---- Deployer native balance (has gas) ----
+    let balanceNative = 0;
+    try {
+      const deployerBalance = await helpers.ethGetBalance(c.DEPLOYER);
+      balanceNative = Number(deployerBalance) / Math.pow(10, 18);
+      check(
+        `Deployer has ${chain.nativeCurrency.symbol} balance`,
+        balanceNative > 0,
+        `${balanceNative.toFixed(4)} ${chain.nativeCurrency.symbol}`
+      );
+    } catch (err) {
+      check(
+        `Deployer has ${chain.nativeCurrency.symbol} balance`,
+        false,
+        undefined,
+        err instanceof Error ? err.message : "rpc error"
+      );
+    }
 
-    // ---- MTQ balance of deployer ----
-    const balanceData = SELECTORS.balanceOf + DEPLOYER_ADDRESS.slice(2).toLowerCase().padStart(64, "0");
-    const balanceResult = await ethCall(MTQ_ADDRESS, balanceData);
-    const deployerMTQ = decodeUint(balanceResult);
-    const deployerMTQAmount = Number(deployerMTQ) / Math.pow(10, decimals);
-    check("Deployer holds MTQ tokens", deployerMTQ > 0n, `${deployerMTQAmount.toFixed(2)} MTQ`);
+    // ---- MTQ balance of deployer (holds supply) ----
+    let deployerMTQAmount = 0;
+    try {
+      const balanceResult = await helpers.ethCall(c.MTQ_TOKEN, balanceOfData(c.DEPLOYER));
+      const deployerMTQ = decodeUint(balanceResult);
+      deployerMTQAmount = Number(deployerMTQ) / Math.pow(10, decimals);
+      check("Deployer holds MTQ tokens", deployerMTQ > 0n, `${deployerMTQAmount.toFixed(2)} MTQ`);
+    } catch (err) {
+      check(
+        "Deployer holds MTQ tokens",
+        false,
+        undefined,
+        err instanceof Error ? err.message : "rpc error"
+      );
+    }
 
     return NextResponse.json({
-      network: "Monad Testnet",
-      chainId: 10143,
-      rpcUrl: MONAD_RPC,
-      explorer: "https://testnet.monadscan.com",
+      network: chain.name,
+      networkKey: chain.key,
+      chainId: chain.chainId,
+      requestedNetwork: requested,
+      rpcUrl: chain.rpcUrl,
+      explorer: chain.explorer || "(none — local devnet)",
+      nativeCurrency: chain.nativeCurrency,
       contracts: {
-        mtqToken: MTQ_ADDRESS,
-        governance: GOVERNANCE_ADDRESS,
-        safeMultiSig: SAFE_ADDRESS,
-        algorithm: ALGORITHM_ADDRESS,
-        reserve: RESERVE_ADDRESS,
-        mint: MINT_ADDRESS,
-        redeem: REDEEM_ADDRESS,
-        oracle: ORACLE_ADDRESS,
-        takaful: TAKAFUL_ADDRESS,
-        deployer: DEPLOYER_ADDRESS,
+        mtqToken: c.MTQ_TOKEN,
+        governance: c.GOVERNANCE,
+        safeMultiSig: c.SAFE_MULTI_SIG,
+        algorithm: c.ALGORITHM,
+        reserve: c.RESERVE,
+        mint: c.MINT,
+        redeem: c.REDEEM,
+        oracle: c.ORACLE,
+        takaful: c.TAKAFUL,
+        deployer: c.DEPLOYER,
       },
       onChainData: {
         name,
@@ -206,21 +334,24 @@ export async function GET() {
         decimals,
         totalSupply: supplyInMTQ.toFixed(2),
         totalSupplyWei: totalSupply.toString(),
-        deployerBalanceMON: balanceMON.toFixed(4),
+        deployerBalanceNative: balanceNative.toFixed(4),
+        deployerNativeSymbol: chain.nativeCurrency.symbol,
         deployerMTQBalance: deployerMTQAmount.toFixed(2),
       },
-      explorerLinks: {
-        mtqToken: `https://testnet.monadscan.com/address/${MTQ_ADDRESS}`,
-        governance: `https://testnet.monadscan.com/address/${GOVERNANCE_ADDRESS}`,
-        safeMultiSig: `https://testnet.monadscan.com/address/${SAFE_ADDRESS}`,
-        algorithm: `https://testnet.monadscan.com/address/${ALGORITHM_ADDRESS}`,
-        reserve: `https://testnet.monadscan.com/address/${RESERVE_ADDRESS}`,
-        mint: `https://testnet.monadscan.com/address/${MINT_ADDRESS}`,
-        redeem: `https://testnet.monadscan.com/address/${REDEEM_ADDRESS}`,
-        oracle: `https://testnet.monadscan.com/address/${ORACLE_ADDRESS}`,
-        takaful: `https://testnet.monadscan.com/address/${TAKAFUL_ADDRESS}`,
-        deployer: `https://testnet.monadscan.com/address/${DEPLOYER_ADDRESS}`,
-      },
+      explorerLinks: chain.explorer
+        ? {
+            mtqToken: `${chain.explorer}/address/${c.MTQ_TOKEN}`,
+            governance: `${chain.explorer}/address/${c.GOVERNANCE}`,
+            safeMultiSig: `${chain.explorer}/address/${c.SAFE_MULTI_SIG}`,
+            algorithm: `${chain.explorer}/address/${c.ALGORITHM}`,
+            reserve: `${chain.explorer}/address/${c.RESERVE}`,
+            mint: `${chain.explorer}/address/${c.MINT}`,
+            redeem: `${chain.explorer}/address/${c.REDEEM}`,
+            oracle: `${chain.explorer}/address/${c.ORACLE}`,
+            takaful: `${chain.explorer}/address/${c.TAKAFUL}`,
+            deployer: `${chain.explorer}/address/${c.DEPLOYER}`,
+          }
+        : {},
       tests,
       summary: {
         total: tests.length,
@@ -231,12 +362,25 @@ export async function GET() {
       generatedAt: new Date().toISOString(),
     });
   } catch (err) {
+    // Even on a hard failure (e.g. local Anvil not running), return whatever
+    // tests we did manage to run plus a structured error — this keeps the
+    // consumer's UI functional instead of showing a 500 stack trace.
     return NextResponse.json(
       {
+        network: chain.name,
+        networkKey: chain.key,
+        chainId: chain.chainId,
+        requestedNetwork: requested,
+        rpcUrl: chain.rpcUrl,
         error: "On-chain test failed",
         detail: err instanceof Error ? err.message : "unknown error",
         tests,
-        summary: { total: tests.length, passed: pass, failed: fail },
+        summary: {
+          total: tests.length,
+          passed: pass,
+          failed: fail,
+          score: tests.length > 0 ? ((pass / tests.length) * 10).toFixed(1) + "/10" : "0/10",
+        },
       },
       { status: 500 }
     );

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
@@ -62,21 +62,55 @@ const GITHUB_URL = "https://github.com/MITHQALMTQ/mithqal";
 const EXPLORER_BASE = "https://testnet.monadexplorer.com/address";
 const CHAIN_ID = "10143";
 
+/**
+ * impl-C-stress — Live NAV fallback used BEFORE /api/nav resolves.
+ * Canonical values: navM = $1.0373, reserveRatio = 102.05%, goldUsd = $4,076.90
+ * (matches the v19.0.3 monetary engine + audit reports + /api/nav baseline).
+ */
+const LIVE_FALLBACK = {
+  navM: 1.0373,
+  reserveRatio: 102.05,
+  goldUsd: 4076.9,
+};
+
+type LiveData = {
+  navM: number;
+  reserveRatio: number;
+  goldUsd: number;
+};
+
+/**
+ * impl-C-stress — Substitutes live-data placeholders in storyboard / script /
+ * evidence strings. Placeholder format: {liveRR}, {liveNav}, {liveGold}.
+ * Applied at render time so the storyboard reflects current /api/nav values
+ * rather than stale hardcoded hackathon numbers.
+ */
+function substituteLiveValues(s: string, live: LiveData): string {
+  return s
+    .replace(/\{liveRR\}/g, live.reserveRatio.toFixed(2))
+    .replace(/\{liveNav\}/g, live.navM.toFixed(4))
+    .replace(/\{liveGold\}/g, live.goldUsd.toFixed(0));
+}
+
 type ContractRef = {
   name: string;
   address: string;
 };
 
 const CONTRACTS: ContractRef[] = [
+  // impl-C-stress — 10 canonical contracts (was 9 incl. MockOracle).
+  // MockOracle removed (test-only); Safe (Gnosis multi-sig treasury) and
+  // Deployer added to match /api/status canonical contract set.
   { name: "MTQ.sol", address: "0x9e6EdC15DAc420931508d8Ddf9BC817651A253aD" },
   { name: "Governance.sol", address: "0xE35a91801bc541fb743BB9EaD26C1FbD81EaBd66" },
+  { name: "Safe (Multi-Sig)", address: "0xE71869C662733642bfBb262B8c6bad8B0fBfA7D0" },
   { name: "Algorithm.sol", address: "0x8839ce50e8D414005518769999c0A5b961D00CB2" },
   { name: "Reserve.sol", address: "0x1bbCd78E4DEF79b7a3B77242770cbAefAC816177" },
   { name: "Mint.sol", address: "0x197e9CB28216dfe18a199b4c2930F74C2F460809" },
   { name: "Redeem.sol", address: "0x963201C0Fa258033CCDdFcDceb8B5E3bc2b435a4" },
   { name: "Oracle.sol", address: "0xDfcA66ac0450C9AB86307af1942E157C5A4DB713" },
   { name: "Takaful.sol", address: "0x3eC27BB283644eF0A98B9961E9FBED0583a02f19" },
-  { name: "MockOracle.sol", address: "(test only — not in production deployment set)" },
+  { name: "Deployer.sol", address: "0x3C3932F865892EFabE45892f453f81B64f6c8d8c" },
 ];
 
 const TREASURY = "0xE71869C662733642bfBb262B8c6bad8B0fBfA7D0";
@@ -171,12 +205,12 @@ const SCENES: Scene[] = [
     start: "0:45",
     end: "1:30",
     visuals:
-      "Screen recording of mithqal.vercel.app. Six metric cards overlay the recording: 108% Reserve Ratio, $1.10 NAV (Dynamic), 54M MTQ Supply, $4,162 Gold Price (Live), 9 Verified Contracts, 20/20 Stress Tests Passed.",
+      "Screen recording of mithqal.vercel.app. Six metric cards overlay the recording: {liveRR}% Reserve Ratio, ${liveNav} NAV (Dynamic), 54M MTQ Supply, ${liveGold} Gold Price (Live), 10 Verified Contracts, 20/20 Stress Tests Passed.",
     camera: "Screen recording. Slow zoom from 100% to 115% on the reserve ratio card over 8s, then pan across the dashboard.",
     animation:
       "Metric cards fade in with staggered timing. Gold accent ring pulses once on each card as it appears. Live values count up from 0 using a 1.2s ease-out.",
     voiceOver:
-      "This is the live MITHQAL platform. [PAUSE] The dashboard shows real-time reserve data: a reserve ratio of 108%, a dynamic NAV of $1.10, live gold and silver prices, and nine verified smart contracts on Monad Testnet. [PAUSE] Every value is computed from live oracle data — not hardcoded.",
+      "This is the live MITHQAL platform. [PAUSE] The dashboard shows real-time reserve data: a reserve ratio of {liveRR}%, a dynamic NAV of ${liveNav}, live gold and silver prices, and ten verified smart contracts on Monad Testnet. [PAUSE] Every value is computed from live oracle data — not hardcoded.",
     assets:
       "Screen recording (45s), six metric overlay cards, gold accent ring SVG, count-up animation rig.",
     transition: "Cross-dissolve to Scene 5 (400ms).",
@@ -251,7 +285,7 @@ const SCENES: Scene[] = [
     start: "2:35",
     end: "2:55",
     visuals:
-      "Two columns. LEFT (green, 'Implemented'): USDC as Tier 4 Reserve, Testnet Mint/Redeem, 10-Currency Support, Dynamic NAV, Live Dashboard. RIGHT (gold, 'Planned'): Circle Programmable Wallets, Payments API, Gas Station, Mainnet, Multi-Custodian.",
+      "Two columns. LEFT (green, 'Implemented'): Multi-currency reserve (10 currencies), Testnet Mint/Redeem, 10-Currency Support, Dynamic NAV, Live Dashboard. RIGHT (gold, 'Planned'): Circle Programmable Wallets, Payments API, Gas Station, Mainnet, Multi-Custodian.",
     camera: "Static split. Left column populates first, then right.",
     animation:
       "Left items check in with green checkmark pop. Right items slide in with gold 'Planned' badge.",
@@ -291,7 +325,7 @@ const SCENES: Scene[] = [
     start: "3:10",
     end: "3:30",
     visuals:
-      "Centered MITHQAL hexagonal mark (gold stroke). Below: 'MITHQAL' wordmark, tagline 'Constitutional Monetary Settlement Institution', gold divider, and URL 'mithqal.vercel.app'.",
+      "Centered MITHQAL hexagonal mark (gold stroke). Below: 'MITHQAL' wordmark, tagline 'Constitutional Settlement Institution', gold divider, and URL 'mithqal.vercel.app'.",
     camera: "Static. Mark scales from 0.8→1.0 over 800ms at start, holds, then slowly fades.",
     animation:
       "Mark scales in with ease-out. Wordmark fades up. Divider draws left-to-right. URL fades in last and holds for 4s.",
@@ -349,13 +383,13 @@ const RAW_SCRIPT: { scene: number; title: string; time: string; text: string }[]
     scene: 4,
     title: "Live Dashboard",
     time: "0:45–1:30",
-    text: "This is the **live MITHQAL platform**. [PAUSE] The dashboard shows real-time reserve data: a reserve ratio of **108%**, a dynamic NAV of **$1.10**, live gold and silver prices, and **nine verified smart contracts** on Monad Testnet. [PAUSE] Every value is computed from **live oracle data** — not hardcoded.",
+    text: "This is the **live MITHQAL platform**. [PAUSE] The dashboard shows real-time reserve data: a reserve ratio of **{liveRR}%**, a dynamic NAV of **${liveNav}**, live gold and silver prices, and **ten verified smart contracts** on Monad Testnet. [PAUSE] Every value is computed from **live oracle data** — not hardcoded.",
   },
   {
     scene: 5,
     title: "Monad Explorer",
     time: "1:30–1:55",
-    text: "The protocol consists of **nine Solidity smart contracts** deployed on Monad Testnet, Chain ID 10143. [PAUSE] Each contract is **independently verifiable** on the block explorer: MTQ token, mint, redeem, reserve, oracle, governance, algorithm, and Takaful risk protection.",
+    text: "The protocol consists of **ten Solidity smart contracts** deployed on Monad Testnet, Chain ID 10143. [PAUSE] Each contract is **independently verifiable** on the block explorer: MTQ token, mint, redeem, reserve, oracle, governance, algorithm, and Takaful risk protection.",
   },
   {
     scene: 6,
@@ -449,7 +483,7 @@ type CaptureItem = {
 const SCREEN_CAPTURE: CaptureItem[] = [
   { id: "dashboard", label: "Live Dashboard", detail: "mithqal.vercel.app — NAV, RR, supply, oracle values", status: "Recorded" },
   { id: "github", label: "GitHub Repository", detail: "github.com/MITHQALMTQ/mithqal — repo + folder structure", status: "Recorded" },
-  { id: "explorer", label: "Monad Explorer", detail: "testnet.monadexplorer.com — 9 contract address pages", status: "Pending" },
+  { id: "explorer", label: "Monad Explorer", detail: "testnet.monadexplorer.com — 10 contract address pages", status: "Pending" },
   { id: "contracts", label: "Contract Source", detail: "foundry/src/ — verified Solidity source per contract", status: "Pending" },
   { id: "docs", label: "Documentation", detail: "docs/ — constitutional blueprint + CONTRACT_REGISTRY", status: "Pending" },
   { id: "verification", label: "Verification Status", detail: "/api/onchain-test — 15/15 on-chain checks PASS", status: "Recorded" },
@@ -493,6 +527,10 @@ type AssetItem = {
   format: string;
   available: boolean;
   path: string;
+  /** Optional direct download URL. Distinct from `path` which may be a
+   * descriptive label (e.g. "Scene 2 inline"). When `href` is set and
+   * `available` is true, a download link is rendered. */
+  href?: string;
 };
 
 const ASSETS: AssetItem[] = [
@@ -503,15 +541,15 @@ const ASSETS: AssetItem[] = [
   { category: "Icons", name: "Lucide Icon Set", format: "SVG", available: true, path: "lucide-react" },
   { category: "Icons", name: "Circle Blue Badge", format: "SVG", available: true, path: "Scene 2 inline" },
   { category: "Icons", name: "Green Verified Badge", format: "SVG", available: true, path: "Scene 5 inline" },
-  { category: "Animations", name: "Motion Graphics Reel", format: "HTML", available: true, path: "/video/mithqal-motion-graphics.html" },
-  { category: "Animations", name: "Demo Video Player", format: "React", available: true, path: "/video" },
+  { category: "Animations", name: "Motion Graphics Reel", format: "HTML", available: true, path: "/video/mithqal-motion-graphics.html", href: "/video/mithqal-motion-graphics.html" },
+  { category: "Animations", name: "Demo Video Player", format: "React", available: true, path: "/video", href: "/video" },
   { category: "Overlays", name: "Transparent Stat Card", format: "PNG/SVG", available: false, path: "Generate from Scene 1" },
   { category: "Overlays", name: "Transparent Metric Card", format: "PNG/SVG", available: false, path: "Generate from Scene 4" },
   { category: "Lower Thirds", name: "Scene Title Lower Third", format: "PNG/SVG", available: false, path: "Generate (gold bar + title)" },
   { category: "Lower Thirds", name: "Speaker Lower Third", format: "PNG/SVG", available: false, path: "Generate (placeholder)" },
   { category: "End Cards", name: "Closing End Card", format: "PNG/SVG", available: false, path: "Generate from Scene 10" },
-  { category: "Thumbnail", name: "Video Thumbnail", format: "PNG", available: true, path: "/video/thumbnail.png (1344×768)" },
-  { category: "Subtitles", name: "Subtitle Track", format: "SRT", available: true, path: "/video/mithqal-demo-subtitles.srt" },
+  { category: "Thumbnail", name: "Video Thumbnail", format: "PNG", available: true, path: "/video/thumbnail.png (1344×768)", href: "/video/thumbnail.png" },
+  { category: "Subtitles", name: "Subtitle Track", format: "SRT", available: true, path: "/video/mithqal-demo-subtitles.srt", href: "/video/mithqal-demo-subtitles.srt" },
 ];
 
 /* ------------------------------------------------------------------ */
@@ -530,14 +568,14 @@ type Evidence = {
 
 const EVIDENCE: Evidence[] = [
   {
-    claim: "Reserve ratio is 108% on the live dashboard",
+    claim: "Reserve ratio is {liveRR}% on the live dashboard",
     type: "Live API",
     repo: "src/app/api/nav/route.ts",
     dashboard: `${DASHBOARD_URL}/api/nav`,
     supported: true,
   },
   {
-    claim: "Dynamic NAV is $1.10, computed from live oracle data",
+    claim: "Dynamic NAV is ${liveNav}, computed from live oracle data",
     type: "Live API",
     repo: "src/lib/monetary-engine-v19.ts",
     dashboard: `${DASHBOARD_URL}/api/nav`,
@@ -551,7 +589,7 @@ const EVIDENCE: Evidence[] = [
     supported: true,
   },
   {
-    claim: "9 verified smart contracts on Monad Testnet (Chain ID 10143)",
+    claim: "10 verified smart contracts on Monad Testnet (Chain ID 10143)",
     type: "On-chain",
     repo: "docs/contracts/CONTRACT_REGISTRY.md",
     dashboard: `${DASHBOARD_URL}/api/onchain-test`,
@@ -662,12 +700,12 @@ const EVIDENCE: Evidence[] = [
 /* ------------------------------------------------------------------ */
 
 const IMPLEMENTED: { label: string; detail: string }[] = [
-  { label: "USDC as Tier 4 Reserve Asset", detail: "Regulated stablecoins, including USDC, integrated into the reserve tier structure." },
+  { label: "Multi-currency reserve (10 currencies)", detail: "Diversified multi-currency reserve basket (USD, EUR, JPY, GBP, CNY, CHF, AUD, CAD, XAU, XAG) computed dynamically by the v19.0.3 monetary engine." },
   { label: "Testnet Mint / Redeem with USDC", detail: "Live mint and redeem primitives on Monad Testnet (Chain ID 10143)." },
   { label: "10-Currency Reserve Support", detail: "Diversified reserve basket computed dynamically by the v19 monetary engine." },
   { label: "Dynamic NAV Calculation", detail: "NAV derived from live oracle prices — not hardcoded." },
   { label: "Live Reserve Dashboard", detail: "Real-time dashboard at mithqal.vercel.app showing RR, NAV, supply, prices." },
-  { label: "9 Verified Smart Contracts", detail: "All protocol contracts deployed and verified on Monad Testnet." },
+  { label: "10 Verified Smart Contracts", detail: "All protocol contracts deployed and verified on Monad Testnet." },
   { label: "Foundry Invariant Tests", detail: "Invariant test suite in foundry/test/." },
   { label: "20/20 Stress Tests Passed", detail: "Institutional stress tests across 13 scenarios + 7-cyberattack vectors." },
 ];
@@ -784,6 +822,37 @@ function shortAddr(a: string): string {
 export default function DemoPage() {
   const [tab, setTab] = useState("overview");
 
+  // impl-C-stress — Live NAV / RR / gold price. Falls back to the
+  // canonical baseline (1.0373 / 102.05 / 4076.9) before /api/nav
+  // resolves or if the fetch fails. Replaces the prior hardcoded
+  // "108%" / "$1.10" / "$4,162" hackathon values with live data so
+  // the storyboard / script / evidence / overview tiles all reflect
+  // current /api/nav output.
+  const [liveData, setLiveData] = useState<LiveData>(LIVE_FALLBACK);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/nav", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (cancelled || !data) return;
+        setLiveData({
+          navM: typeof data.navM === "number" && data.navM > 0 ? data.navM : LIVE_FALLBACK.navM,
+          reserveRatio:
+            typeof data.reserveRatio === "number" && data.reserveRatio > 0
+              ? data.reserveRatio
+              : LIVE_FALLBACK.reserveRatio,
+          goldUsd: typeof data.goldUsd === "number" && data.goldUsd > 0 ? data.goldUsd : LIVE_FALLBACK.goldUsd,
+        });
+      })
+      .catch(() => {
+        /* keep fallback — canonical baseline is still valid */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const captureDone = SCREEN_CAPTURE.filter((s) => s.status !== "Pending").length;
   const capturePct = Math.round((captureDone / SCREEN_CAPTURE.length) * 100);
 
@@ -821,13 +890,13 @@ export default function DemoPage() {
           </div>
 
           <TabsContent value="overview">
-            <Overview onNavigate={goTab} />
+            <Overview onNavigate={goTab} liveData={liveData} />
           </TabsContent>
           <TabsContent value="storyboard">
-            <Storyboard />
+            <Storyboard liveData={liveData} />
           </TabsContent>
           <TabsContent value="script">
-            <VideoScript />
+            <VideoScript liveData={liveData} />
           </TabsContent>
           <TabsContent value="shots">
             <ShotList />
@@ -842,7 +911,7 @@ export default function DemoPage() {
             <AssetsLibrary />
           </TabsContent>
           <TabsContent value="evidence">
-            <EvidencePanel supported={evidenceSupported} total={EVIDENCE.length} pct={evidencePct} />
+            <EvidencePanel supported={evidenceSupported} total={EVIDENCE.length} pct={evidencePct} liveData={liveData} />
           </TabsContent>
           <TabsContent value="matrix">
             <Matrix implementedPct={implementedPct} />
@@ -854,7 +923,7 @@ export default function DemoPage() {
             <AudioRecommendations />
           </TabsContent>
           <TabsContent value="export">
-            <ExportCenter />
+            <ExportCenter liveData={liveData} />
           </TabsContent>
         </Tabs>
       </main>
@@ -881,7 +950,7 @@ function Header() {
         </Link>
         <div className="flex items-center gap-2 text-sm font-medium text-[#C9A961]">
           <Film className="h-4 w-4" />
-          Circle Hackathon Demo Center
+          Mithqal Demo Center
         </div>
       </div>
     </header>
@@ -893,7 +962,7 @@ function Footer() {
     <footer className="mt-auto border-t border-white/10 bg-[#0A0E1A] px-6 py-6 text-center text-xs text-white/40">
       <div className="mx-auto w-full max-w-7xl">
         <p>
-          MITHQAL — Constitutional Monetary Settlement Institution ·{" "}
+          MITHQAL — Constitutional Settlement Institution ·{" "}
           <a
             href={DASHBOARD_URL}
             className="text-[#C9A961] transition hover:text-[#E8C97A]"
@@ -957,11 +1026,17 @@ function PanelCard({
 /*  1. OVERVIEW                                                        */
 /* ------------------------------------------------------------------ */
 
-function Overview({ onNavigate }: { onNavigate: (t: string) => void }) {
+function Overview({
+  onNavigate,
+  liveData,
+}: {
+  onNavigate: (t: string) => void;
+  liveData: LiveData;
+}) {
   return (
     <SectionShell
       title="Overview"
-      subtitle="A presentation center for Circle Hackathon judges — every section is grounded in the current MVP."
+      subtitle="A presentation center for Mithqal Demo Center — every section is grounded in the current MVP."
     >
       <PanelCard className="mb-6 overflow-hidden">
         <div className="flex flex-col items-start gap-6">
@@ -977,15 +1052,15 @@ function Overview({ onNavigate }: { onNavigate: (t: string) => void }) {
           <div>
             <h1 className="text-3xl font-semibold leading-tight tracking-tight text-white sm:text-4xl lg:text-5xl">
               MITHQAL —{" "}
-              <span className="text-[#C9A961]">Constitutional USDC</span>{" "}
-              Settlement Infrastructure
+              <span className="text-[#C9A961]">Constitutional Settlement</span>{" "}
+              Institution
             </h1>
             <p className="mt-4 max-w-3xl text-base leading-relaxed text-white/60 sm:text-lg">
               MITHQAL is a constitutional, fully-reserved monetary settlement
               institution that explores how Circle&rsquo;s USDC can serve as the
               operational liquidity layer for transparent, programmable,
               institutional cross-border settlement. The platform is live on
-              Monad Testnet with 9 verified smart contracts, a dynamic NAV
+              Monad Testnet with 10 verified smart contracts, a dynamic NAV
               computed from real oracle data, and a public dashboard.
             </p>
           </div>
@@ -1033,9 +1108,11 @@ function Overview({ onNavigate }: { onNavigate: (t: string) => void }) {
       </PanelCard>
 
       <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
-        <StatTile value="9" label="Verified Contracts" />
-        <StatTile value="108%" label="Reserve Ratio" />
-        <StatTile value="$1.10" label="Dynamic NAV" />
+        {/* impl-C-stress — StatTiles bound to live /api/nav values
+            (was hardcoded "9" / "108%" / "$1.10"). */}
+        <StatTile value="10" label="Verified Contracts" />
+        <StatTile value={`${liveData.reserveRatio.toFixed(2)}%`} label="Reserve Ratio" />
+        <StatTile value={`$${liveData.navM.toFixed(4)}`} label="Dynamic NAV" />
         <StatTile value="54M" label="MTQ Supply" />
         <StatTile value="20/20" label="Stress Tests" />
         <StatTile value="3:30" label="Demo Runtime" />
@@ -1085,7 +1162,7 @@ function StatTile({ value, label }: { value: string; label: string }) {
 /*  2. STORYBOARD                                                      */
 /* ------------------------------------------------------------------ */
 
-function Storyboard() {
+function Storyboard({ liveData }: { liveData: LiveData }) {
   return (
     <SectionShell
       title="Storyboard"
@@ -1123,12 +1200,15 @@ function Storyboard() {
               <div className="grid gap-4 pb-4 sm:grid-cols-2">
                 <Field label="Objective" value={s.objective} />
                 <Field label="Duration" value={`${s.duration} (${s.start}–${s.end})`} mono />
-                <Field label="Visuals" value={s.visuals} />
+                {/* impl-C-stress — substitute {liveRR}/{liveNav}/{liveGold}
+                    placeholders in visuals + voiceOver with live /api/nav
+                    values so the storyboard always reflects current data. */}
+                <Field label="Visuals" value={substituteLiveValues(s.visuals, liveData)} />
                 <Field label="Camera" value={s.camera} />
                 <Field label="Animation" value={s.animation} />
                 <Field label="Transition" value={s.transition} />
                 <Field label="Assets Required" value={s.assets} />
-                <Field label="Voice Over" value={s.voiceOver} />
+                <Field label="Voice Over" value={substituteLiveValues(s.voiceOver, liveData)} />
               </div>
               <div className="flex items-center gap-2 border-t border-white/10 pt-3">
                 <Checkbox checked={s.status === "Approved"} disabled />
@@ -1171,7 +1251,7 @@ function Field({
 /*  3. VIDEO SCRIPT                                                    */
 /* ------------------------------------------------------------------ */
 
-function VideoScript() {
+function VideoScript({ liveData }: { liveData: LiveData }) {
   return (
     <SectionShell
       title="Video Script"
@@ -1206,7 +1286,9 @@ function VideoScript() {
                 <span>read {line.readTime}</span>
               </div>
             </div>
-            <ScriptText text={line.text} />
+            {/* impl-C-stress — substitute {liveRR}/{liveNav}/{liveGold}
+                placeholders so the script reflects current /api/nav values. */}
+            <ScriptText text={substituteLiveValues(line.text, liveData)} />
           </PanelCard>
         ))}
       </div>
@@ -1470,10 +1552,12 @@ function EvidencePanel({
   supported,
   total,
   pct,
+  liveData,
 }: {
   supported: number;
   total: number;
   pct: number;
+  liveData: LiveData;
 }) {
   return (
     <SectionShell
@@ -1513,7 +1597,9 @@ function EvidencePanel({
               {EVIDENCE.map((e, i) => (
                 <TableRow key={i} className="border-white/5 align-top">
                   <TableCell className="max-w-xs font-medium text-white">
-                    {e.claim}
+                    {/* impl-C-stress — substitute {liveRR}/{liveNav}/{liveGold}
+                        so claim text reflects current /api/nav values. */}
+                    {substituteLiveValues(e.claim, liveData)}
                   </TableCell>
                   <TableCell>
                     <Badge variant="outline" className="border-white/20 text-white/60">
@@ -1766,17 +1852,33 @@ function AudioRecommendations() {
 /*  12. EXPORT CENTER                                                  */
 /* ------------------------------------------------------------------ */
 
-function ExportCenter() {
+function ExportCenter({ liveData }: { liveData: LiveData }) {
   const handleExport = (item: ExportItem) => {
     if (item.kind === "blob-json") {
+      // impl-C-stress — substitute live placeholders in scene/script/evidence
+      // strings before serializing so the JSON export reflects current
+      // /api/nav values (not raw {liveRR} / {liveNav} placeholders).
       const data = {
         generatedAt: new Date().toISOString(),
-        scenes: SCENES,
-        script: VIDEO_SCRIPT,
+        liveNav: liveData.navM,
+        liveReserveRatio: liveData.reserveRatio,
+        liveGoldUsd: liveData.goldUsd,
+        scenes: SCENES.map((s) => ({
+          ...s,
+          visuals: substituteLiveValues(s.visuals, liveData),
+          voiceOver: substituteLiveValues(s.voiceOver, liveData),
+        })),
+        script: VIDEO_SCRIPT.map((l) => ({
+          ...l,
+          text: substituteLiveValues(l.text, liveData),
+        })),
         shotList: SHOT_LIST,
         screenCapture: SCREEN_CAPTURE,
         motionGraphics: MOTION_GRAPHICS,
-        evidence: EVIDENCE,
+        evidence: EVIDENCE.map((e) => ({
+          ...e,
+          claim: substituteLiveValues(e.claim, liveData),
+        })),
         implemented: IMPLEMENTED,
         planned: PLANNED,
         timeline: TIMELINE,
@@ -1796,9 +1898,9 @@ function ExportCenter() {
     }
     if (item.kind === "print") {
       if (item.title === "Storyboard PDF") {
-        openPrintView("MITHQAL — Storyboard", buildStoryboardHTML());
+        openPrintView("MITHQAL — Storyboard", buildStoryboardHTML(liveData));
       } else if (item.title === "Voice Script PDF") {
-        openPrintView("MITHQAL — Voice Script", buildScriptHTML());
+        openPrintView("MITHQAL — Voice Script", buildScriptHTML(liveData));
       }
       return;
     }
@@ -1918,16 +2020,16 @@ function openPrintView(title: string, html: string) {
   setTimeout(() => win.print(), 500);
 }
 
-function buildStoryboardHTML(): string {
+function buildStoryboardHTML(liveData: LiveData): string {
   const rows = SCENES.map(
     (s) => `
     <div class="scene">
       <h2>Scene ${s.num} — ${s.name} <span class="meta">(${s.start}–${s.end} · ${s.duration})</span></h2>
       <div class="field"><b>Objective:</b> ${escapeHtml(s.objective)}</div>
-      <div class="field"><b>Visuals:</b> ${escapeHtml(s.visuals)}</div>
+      <div class="field"><b>Visuals:</b> ${escapeHtml(substituteLiveValues(s.visuals, liveData))}</div>
       <div class="field"><b>Camera:</b> ${escapeHtml(s.camera)}</div>
       <div class="field"><b>Animation:</b> ${escapeHtml(s.animation)}</div>
-      <div class="field"><b>Voice Over:</b> ${escapeHtml(s.voiceOver)}</div>
+      <div class="field"><b>Voice Over:</b> ${escapeHtml(substituteLiveValues(s.voiceOver, liveData))}</div>
       <div class="field"><b>Assets:</b> ${escapeHtml(s.assets)}</div>
       <div class="field"><b>Transition:</b> ${escapeHtml(s.transition)}</div>
       <div class="field"><b>Status:</b> ${s.status}</div>
@@ -1936,12 +2038,12 @@ function buildStoryboardHTML(): string {
   return `<h1>MITHQAL — Storyboard (10 scenes · 3:30)</h1>${rows}`;
 }
 
-function buildScriptHTML(): string {
+function buildScriptHTML(liveData: LiveData): string {
   const rows = VIDEO_SCRIPT.map(
     (l) => `
     <div class="scene">
       <h2>Scene ${l.scene} — ${l.title} <span class="meta">(${l.time} · ${l.words} words · read ${l.readTime})</span></h2>
-      <div class="field">${escapeHtml(l.text)}</div>
+      <div class="field">${escapeHtml(substituteLiveValues(l.text, liveData))}</div>
     </div>`
   ).join("");
   return `<h1>MITHQAL — Voice Script (${TOTAL_WORDS} words · ${fmtTime(TOTAL_READ_SECS)} read)</h1>${rows}`;

@@ -8,7 +8,7 @@
 // Previously, the mint and redeem routes pinned NAV at $1.00 ("testnet NAV
 // is pinned at 1.0 (1 MTQ = 1 USD)"). This violates the v19.0.2 dynamic
 // NAV requirement and the §36.2/§36.3 conversion formulas. This helper
-// replaces that pin with the LIVE market NAV computed by the v19.0 engine
+// replaces that pin with the LIVE market NAV computed by the v19.0.3 engine
 // against the canonical v19.0.2 over-collateralized baseline reserve
 // composition established in Task 3-a:
 //
@@ -43,7 +43,7 @@ import { getOracleSnapshot } from "./oracle-client";
 // ---- v19.0.2 baseline reserve composition (Task 3-a) ----
 // Fixed physical quantities for gold/silver (NOT derived from price).
 // Cash/sov/stab are USD-denominated (priceUsd = 1, quantity = USD value).
-const CASH_USD = 32_450_000; // v19.0.9: raised to 8% buffer (constitutional Monte Carlo optimal)
+const CASH_USD = 29_000_000; // v19.0.2 §19.2 over-collateralization baseline (canonical)
 const SOVEREIGN_USD = 13_500_000;
 const GOLD_OZ = 2_122.86; // fixed physical ounces
 const SILVER_OZ = 36_758; // fixed physical ounces
@@ -92,7 +92,7 @@ export interface NavResult {
    */
   reserveAssets: ReserveAsset[];
   /**
-   * The full v19.0 MonetaryStateV19 object computed against the baseline
+   * The full v19.0.3 MonetaryStateV19 object computed against the baseline
    * composition + live oracle. Exposed so that `/api/contract/info` can
    * surface reserves / lcr / cri / weights / basketVerification /
    * portfolioDuration / shockAbsorber without having to recompute them

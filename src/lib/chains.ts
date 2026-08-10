@@ -137,3 +137,60 @@ export function chainById(chainId: number): ChainConfig | undefined {
 export function chainByKey(key: "monad" | "arc" | "local"): ChainConfig {
   return CHAINS[key];
 }
+
+// ---------------------------------------------------------------------------
+// Solana (non-EVM) networks
+// ---------------------------------------------------------------------------
+//
+// Solana is a completely different VM (Sealevel + SPL Token Program) — it
+// cannot be modelled as an EVM ChainConfig. We expose it as a separate
+// `SolanaNetwork` interface so consumers know they're dealing with a
+// different runtime (no eth_getCode, no ERC-20 selectors — use the Solana
+// JSON-RPC API instead, see src/lib/solana.ts).
+//
+// The MTQ token on Solana Devnet is a real SPL token, but it is a SEPARATE
+// representation from the EVM MTQ: supply is NOT unified, balances are NOT
+// bridged. It exists purely as a read-only public-facing reference.
+
+export interface SolanaNetwork {
+  /** Short internal key. */
+  key: string;
+  /** Human-readable name shown in UI / API responses. */
+  name: string;
+  /** Solana JSON-RPC endpoint (HTTPS, no auth). */
+  rpcUrl: string;
+  /** Block explorer base URL (no trailing slash). */
+  explorer: string;
+  /** SPL Token mint address (base58). */
+  mintAddress: string;
+  /** Deployer / treasury wallet holding the MTQ supply (base58). */
+  walletAddress: string;
+  /** Token symbol (informational — SPL mints don't enforce symbols). */
+  symbol: string;
+  /** Token decimals (SPL mints are configured at deploy-time). */
+  decimals: number;
+  /** Always false — distinguishes from EVM ChainConfig at the type level. */
+  isEvm: false;
+}
+
+export const SOLANA_NETWORKS: SolanaNetwork[] = [
+  {
+    key: "solana-devnet",
+    name: "Solana Devnet",
+    rpcUrl: "https://api.devnet.solana.com",
+    explorer: "https://explorer.solana.com",
+    mintAddress: "GAGRdrY6jcRTmD7A9KzvXA5sGMpNAkkRXwDoXBrEjxS4",
+    walletAddress: "DbFjzWcD6kNmewadiG7ThjD7L4o3w3UhFhG31fPQhXb3",
+    symbol: "MTQ",
+    decimals: 18,
+    isEvm: false,
+  },
+];
+
+/** Default Solana network — convenience accessor. */
+export const DEFAULT_SOLANA_NETWORK = SOLANA_NETWORKS[0];
+
+/** Look up a Solana network by its short key. */
+export function solanaByKey(key: string): SolanaNetwork | undefined {
+  return SOLANA_NETWORKS.find((n) => n.key === key);
+}

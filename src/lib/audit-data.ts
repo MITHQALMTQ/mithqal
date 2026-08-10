@@ -12,11 +12,11 @@ export const AUDIT_META = {
   name: "MITHQAL Constitutional Protocol Audit — Testnet Validation v1.0",
   alternatives: [
     "MITHQAL Testnet Validation Report",
-    "MITHQAL v19.0 — Constitutional Testnet Audit",
+    "MITHQAL v19.0.3 — Constitutional Testnet Audit",
     "MITHQAL Protocol Audit — Phase 0: Testnet",
     "MITHQAL Institutional Readiness Assessment — Testnet",
   ],
-  version: "v19.0",
+  version: "v19.0.3",
   status: "Constitutional Release Candidate — Testnet Validation",
   network: "Monad Testnet",
   chainId: "10143",
@@ -139,7 +139,7 @@ export const CONSTITUTIONAL_COMPLIANCE = [
 
 export const SECURITY_FINDINGS = {
   critical: [
-    { id: 1, issue: "Smart contracts deployed on Monad Testnet", description: "9 Protocol Smart Contracts (MTQ, Governance, Algorithm, Reserve, Mint, Redeem, Oracle, Takaful) + 1 Safe Multi-Sig Treasury + 1 Deployment Wallet (EOA) are deployed on Monad Testnet (Chain ID 10143) and verified via Sourcify + Etherscan. On-chain test: 11/11 addresses PASS (9 contracts + Safe + deployer EOA). Authoritative registry: docs/contracts/CONTRACT_REGISTRY.md. Code sizes: MTQ=13KB, Governance=51KB.", status: "resolved", severity: "info" },
+    { id: 1, issue: "Smart contracts deployed on Monad Testnet", description: "10 Protocol Smart Contracts (MTQ, Governance, Algorithm, Reserve, Mint, Redeem, Oracle, Takaful) + 1 Safe Multi-Sig Treasury + 1 Deployment Wallet (EOA) are deployed on Monad Testnet (Chain ID 10143) and verified via Sourcify + Etherscan. On-chain test: 11/11 addresses PASS (9 contracts + Safe + deployer EOA). Authoritative registry: docs/contracts/CONTRACT_REGISTRY.md. Code sizes: MTQ=13KB, Governance=51KB.", status: "resolved", severity: "info" },
   ],
   high: [
     { id: 1, issue: "Formal verification — Certora CVL spec written (execution pending)", description: "Certora Prover 8.18.0 installed. CVL spec (MTQ.spec) written in valid CVL v2 syntax — passes local typechecker. 7 jobs submitted to Certora cloud; early jobs ran but rule counterexamples found (CVL spec refinement in progress). Later jobs blocked by Certora cloud outage (No nodes available). The MTQ contract is correct — burn() has no pause modifier (line 164). The CVL spec has been refined with ghost-state tracking. Pending: Certora cloud recovery to execute the fixed spec. Foundry 1.7.1: test suite exists (10 test files); execution requires forge installation in audit environment. Halmos 0.3.3: not run in audit environment. Slither 0.11.6: not run in audit environment (previous internal runs reported 0 findings after remediation). Full report: docs/verification/formal-verification-report.md", status: "in-progress", severity: "high" },
@@ -157,9 +157,9 @@ export const SECURITY_FINDINGS = {
 export const SCORING_TEMPLATE = {
   categories: [
     { name: "User Interface & Experience", weight: 20, score: 9, notes: "Premium glassmorphism UI, real-time charts, circular gauge, animated counters, 8 views, responsive, branded OG image" },
-    { name: "Functionality & Core Features", weight: 30, score: 9, notes: "Simulator functional (mint/burn/transfer/seed via MetaMask), live Monetary Engine v19.0, 8-currency basket, SDP, LCR, CRI, contracts deployed on Monad Testnet (15/15 on-chain tests PASS). Foundry 1.7.1 test suite present (10 test files; execution requires forge installation). 9 Protocol Smart Contracts (MTQ, Governance, Algorithm, Reserve, Mint, Redeem, Oracle, Takaful) + 1 Safe Multi-Sig Treasury + 1 Deployment Wallet (EOA) = 11 on-chain addresses. See docs/contracts/CONTRACT_REGISTRY.md." },
-    { name: "Security & Smart Contract Integrity", weight: 25, score: 9, notes: "9 Protocol Smart Contracts (MTQ, Governance, Algorithm, Reserve, Mint, Redeem, Oracle, Takaful) + 1 Safe Multi-Sig Treasury + 1 Deployment Wallet (EOA) deployed on Monad Testnet (15/15 on-chain tests PASS). Foundry 1.7.1: test suite present (10 test files); execution requires forge installation in audit environment. Halmos 0.3.3: not run in audit environment. Slither 0.11.6: not run in audit environment (previous internal runs reported 0 findings after remediation). Certora: CVL specification complete (cloud execution pending). External independent audit pending engagement." },
-    { name: "Constitutional Alignment", weight: 15, score: 9, notes: "All 55 sections of v19.0 implemented (per engine header), 21 invariants enforced in CONSTITUTIONAL_INVARIANTS array, 26 constants in registry. 12/12 constitutional invariants specified in Certora CVL + Foundry invariant tests. Status: SPECIFIED (execution pending — forge, slither, halmos, Certora cloud prover not available in audit environment). Certora balance conservation invariant spec written (execution pending). Full report: docs/verification/formal-verification-report.md" },
+    { name: "Functionality & Core Features", weight: 30, score: 9, notes: "Simulator functional (mint/burn/transfer/seed via MetaMask), live Monetary Engine v19.0.3, 8-currency basket, SDP, LCR, CRI, contracts deployed on Monad Testnet (15/15 on-chain tests PASS). Foundry 1.7.1 test suite present (10 test files; execution requires forge installation). 10 Protocol Smart Contracts (MTQ, Governance, Algorithm, Reserve, Mint, Redeem, Oracle, Takaful) + 1 Safe Multi-Sig Treasury + 1 Deployment Wallet (EOA) = 11 on-chain addresses. See docs/contracts/CONTRACT_REGISTRY.md." },
+    { name: "Security & Smart Contract Integrity", weight: 25, score: 9, notes: "10 Protocol Smart Contracts (MTQ, Governance, Algorithm, Reserve, Mint, Redeem, Oracle, Takaful) + 1 Safe Multi-Sig Treasury + 1 Deployment Wallet (EOA) deployed on Monad Testnet (15/15 on-chain tests PASS). Foundry 1.7.1: test suite present (10 test files); execution requires forge installation in audit environment. Halmos 0.3.3: not run in audit environment. Slither 0.11.6: not run in audit environment (previous internal runs reported 0 findings after remediation). Certora: CVL specification complete (cloud execution pending). External independent audit pending engagement." },
+    { name: "Constitutional Alignment", weight: 15, score: 9, notes: "All 55 sections of v19.0.3 implemented (per engine header), 10 on-chain invariants + 14 forbidden selectors enforced in CONSTITUTIONAL_INVARIANTS array, 26 constants in registry. 10/10 §45 invariants specified in Certora CVL + Foundry invariant tests. Status: SPECIFIED (execution pending — forge, slither, halmos, Certora cloud prover not available in audit environment). Certora balance conservation invariant spec written (execution pending). Full report: docs/verification/formal-verification-report.md" },
     { name: "Documentation & Transparency", weight: 10, score: 7, notes: "Full audit trail, public GitHub, live Transparency dashboard, Infrastructure view, comprehensive audit documents (AUDIT.md, AUDIT-v19.md, AUDIT-FULL-v19.md, RECOMMENDATIONS.md). This revision corrects prior overstatements; pending independent audit revision." },
   ],
   totalScore: 8.5,

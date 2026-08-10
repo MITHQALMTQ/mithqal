@@ -905,7 +905,7 @@ export default function TestnetDashboard() {
         <Separator className="my-8 bg-line" />
         <div className="flex items-start gap-2 text-xs leading-relaxed text-fg-muted">
           <Lock className="mt-0.5 h-3.5 w-3.5 shrink-0 text-gold" />
-          <span>Testnet simulator — no real value held or transferred. Mechanics mirror the v19.0 Constitution. 100%+ reserve mandate, no discretionary minting, bullion preservation (gold only liquidated after all superior tiers exhausted), 0.05% fees, four-tier diversified reserve basket.</span>
+          <span>Testnet simulator — no real value held or transferred. Mechanics mirror the v19.0.3 Constitution. 100%+ reserve mandate, no discretionary minting, bullion preservation (gold only liquidated after all superior tiers exhausted), 0.05% fees, four-tier diversified reserve basket.</span>
         </div>
       </div>
 

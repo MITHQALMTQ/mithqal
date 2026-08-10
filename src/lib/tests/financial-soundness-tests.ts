@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * MITHQAL v19.0 — FINANCIAL SOUNDNESS TEST SUITE (Task 7-b)
+ * MITHQAL v19.0.3 — FINANCIAL SOUNDNESS TEST SUITE (Task 7-b)
  * ============================================================================
  *
  * Author: Finance Expert sub-agent (Task ID 7-b)
@@ -298,7 +298,7 @@ const R_l = indReserves.liquidation;
 const CAPITAL_BUFFER = R_a - L_LIABILITY; // $1.118M baseline
 
 console.log("\n" + "═".repeat(78));
-console.log("  MITHQAL v19.0 — FINANCIAL SOUNDNESS TEST SUITE (Task 7-b)");
+console.log("  MITHQAL v19.0.3 — FINANCIAL SOUNDNESS TEST SUITE (Task 7-b)");
 console.log("  Independent recomputation of every metric — does NOT trust the engine.");
 console.log("═".repeat(78));
 console.log("\n  Baseline reserve composition (v19.0.2 over-collateralization):");

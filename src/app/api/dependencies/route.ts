@@ -179,7 +179,7 @@ export async function GET() {
   };
 
   return NextResponse.json({
-    specVersion: "v19.0",
+    specVersion: "v19.0.3",
     section: "§56 — Constitutional Dependency Framework",
     constitutionalPrinciple:
       "No institutional operation shall depend on any single external entity, " +

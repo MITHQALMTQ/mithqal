@@ -27,6 +27,7 @@
  */
 
 import type { AssetClass, ReserveAssetState } from "./reserve-state";
+import { isReserveStateInitialized, getReserveState } from "./reserve-state";
 
 // ============================================================
 // Types
@@ -301,15 +302,54 @@ export function registerSimulatedCustodians(): void {
   }
 }
 
+/**
+ * Track whether the simulated custodian holdings have been seeded from the
+ * reserve baseline. The holdings seed is idempotent per-process but MUST be
+ * re-applied whenever the underlying reserve state is re-initialized (e.g.
+ * after a sandbox restart). We track the latest reserve-state version we
+ * seeded against so a subsequent `initializeReserveState(...)` call (which
+ * bumps the version) triggers a re-seed.
+ */
+let lastSeededReserveVersion: number | null = null;
+
+/**
+ * Ensure the simulated custodian holdings have been seeded from the reserve
+ * state's `executed` view. This bridges the dead-code gap (C-2) where
+ * `initializeSimulatedCustodianHoldings()` was defined but never invoked,
+ * leaving `/api/custody/holdings` to return all-zero confirmedQuantity.
+ *
+ * Idempotent: tracks the last-seeded `reserveStateVersion` so it only
+ * re-seeds when the underlying state has actually changed. Safe to call
+ * from any code path that touches a custodian (e.g. `getCustodianAdapter`,
+ * `listCustodians`) — the no-op fast path returns immediately.
+ *
+ * If the reserve state has not been initialized yet (rare — the holdings
+ * route initializes it on first call), this is also a no-op.
+ */
+export function ensureSimulatedCustodianHoldingsSeeded(): void {
+  if (!isReserveStateInitialized()) return;
+  const state = getReserveState();
+  if (lastSeededReserveVersion === state.reserveStateVersion) return;
+  registerSimulatedCustodians();
+  initializeSimulatedCustodianHoldings(state.executed);
+  lastSeededReserveVersion = state.reserveStateVersion;
+}
+
 /** Get a custodian adapter by ID. */
 export function getCustodianAdapter(custodianId: string): CustodianAdapter | null {
   registerSimulatedCustodians();
+  // C-2 fix: lazily seed the simulated holdings from the reserve baseline
+  // the first time any consumer asks for an adapter. Without this, the
+  // holdings inquiry would return confirmedQuantity = 0 for every asset
+  // because `initializeSimulatedCustodianHoldings()` was never invoked.
+  ensureSimulatedCustodianHoldingsSeeded();
   return custodianRegistry.get(custodianId) ?? null;
 }
 
 /** List all registered custodians. */
 export function listCustodians(): Array<{ custodianId: string; custodianType: CustodianType; custodianName: string }> {
   registerSimulatedCustodians();
+  ensureSimulatedCustodianHoldingsSeeded();
   return Array.from(custodianRegistry.values()).map((c) => ({
     custodianId: c.custodianId,
     custodianType: c.custodianType,

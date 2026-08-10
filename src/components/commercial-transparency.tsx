@@ -227,7 +227,7 @@ const PRINCIPLES: Principle[] = [
   {
     title: "Immutable Audit Trail",
     description:
-      "Every commercial transaction with revenue impact is signed with HMAC-SHA256 and recorded permanently. Insert-only — no edits, no deletes.",
+      "Every commercial transaction with revenue impact is signed with HMAC-SHA256 and recorded in an insert-only ledger. Insert-only — no edits, no deletes.",
     icon: Fingerprint,
   },
 ];
@@ -561,7 +561,7 @@ export function CommercialTransparency() {
                   "All commissions are declared pre-trade and verified post-trade.",
                   "All rebates from dealers are disclosed and routed to the Institution.",
                   "Any fee discrepancy is flagged in the compliance check (rule 2).",
-                  "The audit trail (HMAC-signed) records every fee event permanently.",
+                  "The audit trail (HMAC-signed) records every fee event in an insert-only audit trail.",
                 ].map((rule) => (
                   <li key={rule} className="flex items-start gap-2 text-xs text-foreground">
                     <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-reserve" aria-hidden="true" />

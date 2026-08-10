@@ -80,13 +80,14 @@ contract Reserve {
     uint256 public tier3Usd; // Sukuk (Sharia-compliant sovereign bonds)
 
     uint256 public totalReserveUsd;
+    uint256 public lastTotalReserveUsd; // §37 — last attested total (for ±10% drift guard)
     uint256 public lastAttestationTimestamp;
     bytes32 public lastPorHash; // Proof-of-Reserves report hash
 
     // ---- Events ----
     event ReserveDeposited(address indexed minter, uint256 amountUsd, uint8 tier, bytes32 depositProof);
     event ReserveWithdrawn(address indexed redeemer, uint256 amountUsd, bytes32 burnProof);
-    event ReserveAttested(uint256 totalReserveUsd, bytes32 indexed porHash, uint64 timestamp);
+    event ReserveAttested(uint256 newTotalReserveUsd, bytes32 indexed porHash, uint64 timestamp);
     event RoleGranted(bytes32 indexed role, address indexed account);
     event RoleRevoked(bytes32 indexed role, address indexed account);
 
@@ -172,13 +173,37 @@ contract Reserve {
      * @dev Attest reserves — called by the Reserve Oracle (ORACLE_ROLE) to
      *      update the Proof-of-Reserves hash. The off-chain custodian
      *      signs the quarterly audit report; the Oracle relays the hash.
-     * @param porHash  Hash of the Proof-of-Reserves audit report
+     *
+     *      §37 Attestation guards (v19.0 blueprint):
+     *        1. PoR hash must be non-zero (cryptographic anchor to the audit).
+     *        2. 1-hour rate limit between attestations (anti-spam / replay).
+     *        3. ±10% drift guard against the last attested total — any
+     *           larger movement is treated as a material change requiring
+     *           Council quorum (reverts here; the Council path is a
+     *           separate governance flow not yet implemented on-chain).
+     *
+     *      The drift check uses basis-point math (×10000) so the 10% cap
+     *      reads as `drift <= 1000`. The first attestation after deploy
+     *      (lastTotalReserveUsd == 0) skips the drift guard.
+     *
+     * @param newTotalReserveUsd  Newly attested total reserve (USD, 18 decimals)
+     * @param porHash             Hash of the Proof-of-Reserves audit report
      */
-    function attestReserves(bytes32 porHash) external onlyRole(ORACLE_ROLE) {
+    function attestReserves(uint256 newTotalReserveUsd, bytes32 porHash) external onlyRole(ORACLE_ROLE) {
         require(porHash != bytes32(0), "Reserve: missing PoR hash");
+        // §37: 1-hour rate limit between attestations.
+        require(block.timestamp >= lastAttestationTimestamp + 1 hours, "Reserve: attestation rate limit (1hr)");
+        // §37: ±10% drift guard against the last attested total.
+        if (lastTotalReserveUsd > 0) {
+            uint256 drift = newTotalReserveUsd > lastTotalReserveUsd
+                ? ((newTotalReserveUsd - lastTotalReserveUsd) * 10000) / lastTotalReserveUsd
+                : ((lastTotalReserveUsd - newTotalReserveUsd) * 10000) / lastTotalReserveUsd;
+            require(drift <= 1000, "Reserve: drift exceeds 10% — requires Council quorum");
+        }
+        lastTotalReserveUsd = newTotalReserveUsd;
         lastAttestationTimestamp = block.timestamp;
         lastPorHash = porHash;
-        emit ReserveAttested(totalReserveUsd, porHash, uint64(block.timestamp));
+        emit ReserveAttested(newTotalReserveUsd, porHash, uint64(block.timestamp));
     }
 
     /**

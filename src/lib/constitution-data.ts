@@ -1,4 +1,4 @@
-// Mithqal Constitution v19.0 — structured, citable reference.
+// Mithqal Constitution v19.0.3 — structured, citable reference.
 // The blueprint is a 4-layer architecture (Institutional / Monetary /
 // Governance & Policy / Technical / Operations) with ~47 articles.
 // This module structures the full table of contents plus detailed
@@ -21,7 +21,7 @@ export interface Article {
   purpose: string;
   /** detailed sections (optional — index articles omit this) */
   sections?: Section[];
-  /** a permanently-frozen flag for invariants */
+  /** a non-amendable flag for invariants */
   frozen?: boolean;
 }
 
@@ -135,7 +135,7 @@ const LAYER_1: Layer = {
       number: "Article V",
       title: "Anti-Platform / No Constitutional Drift",
       purpose:
-        "The Institution shall not expand beyond its constitutional purpose. The anti-platform provisions are permanently frozen.",
+        "The Institution shall not expand beyond its constitutional purpose. The anti-platform provisions are non-amendable.",
       frozen: true,
       sections: [
         {
@@ -155,7 +155,7 @@ const LAYER_1: Layer = {
           p: "Financial services (deposits, loans, credit, underwriting, bonds, trade finance, factoring). Trading & exchange (matching, order books, market making, brokerage, custody of participant funds). Asset management. DeFi (liquidity pools, yield farming, staking, lending, derivatives). Platform services (trade matching, logistics, customs, credit scoring, identity, dispute resolution).",
         },
         {
-          h: "Permanently Frozen",
+          h: "Non-amendable",
           p: "The anti-platform provisions cannot be amended, cannot be interpreted away, and cannot be eroded through incremental expansion. This protection is essential to the Institution's identity — without it, Mithqal would be a platform, not a constitutional monetary institution.",
         },
       ],
@@ -207,7 +207,7 @@ const LAYER_1: Layer = {
       number: "Article XII",
       title: "Amendment Philosophy",
       purpose:
-        "The Constitution evolves only when necessary. Amendments must preserve identity, preserve invariants, improve stability, respect neutrality, and pass supermajority. Anti-platform provisions are permanently frozen.",
+        "The Constitution evolves only when necessary. Amendments must preserve identity, preserve invariants, improve stability, respect neutrality, and pass supermajority. Anti-platform provisions are non-amendable.",
     },
     {
       id: "l1-art13",
@@ -350,7 +350,7 @@ export const ALL_ARTICLES = LAYERS.flatMap((layer) =>
 
 export const PREAMBLE = {
   identity:
-    "MITHQAL is a Constitutional Monetary Institution. The Digital Settlement Infrastructure is one constitutional function of the Institution. If the underlying technology evolves or is replaced, the Institution persists. Technology is implementation; the Institution is identity.",
+    "MITHQAL is a Constitutional Settlement Institution. The Digital Settlement Infrastructure is one constitutional function of the Institution. If the underlying technology evolves or is replaced, the Institution persists. Technology is implementation; the Institution is identity.",
   mission:
     "To provide a constitutional, neutral, resilient, and fully reserved settlement infrastructure for international trade.",
   humility:

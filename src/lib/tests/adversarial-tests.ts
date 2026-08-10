@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * MITHQAL v19.0 — ADVERSARIAL / ATTACK TEST SUITE (Task 7-c)
+ * MITHQAL v19.0.3 — ADVERSARIAL / ATTACK TEST SUITE (Task 7-c)
  * ============================================================================
  *
  * Purpose: Think like an attacker. Try to break the Mithqal monetary engine,
@@ -269,7 +269,7 @@ const baselineReserve = makeReserveAssets(BASE_GOLD, BASE_SILVER);
 const baseline = computeMonetaryStateV19(baselineOracle, baselineReserve, SUPPLY, LCR, CRI, 0.015, []);
 
 console.log("\n" + "=".repeat(78));
-console.log("  MITHQAL v19.0 — ADVERSARIAL / ATTACK TEST SUITE (Task 7-c)");
+console.log("  MITHQAL v19.0.3 — ADVERSARIAL / ATTACK TEST SUITE (Task 7-c)");
 console.log("  Think like an attacker. Find the break points.");
 console.log("=".repeat(78));
 console.log(`\nBASELINE (gold=${fmtUsd(BASE_GOLD)}, silver=${fmtUsd(BASE_SILVER)}, supply=${SUPPLY.toLocaleString()} MTQ):`);

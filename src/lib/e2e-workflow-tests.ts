@@ -1,5 +1,5 @@
 /**
- * MITHQAL v19.0 — END-TO-END WORKFLOW TEST ENGINE
+ * MITHQAL v19.0.3 — END-TO-END WORKFLOW TEST ENGINE
  * =================================================
  *
  * Task 5-b: Build a comprehensive end-to-end workflow test engine that
@@ -1238,7 +1238,7 @@ function scenario5(): ScenarioResult {
 
 function main(): void {
   console.log("=".repeat(78));
-  console.log("MITHQAL v19.0 — END-TO-END WORKFLOW TEST ENGINE");
+  console.log("MITHQAL v19.0.3 — END-TO-END WORKFLOW TEST ENGINE");
   console.log("Simulates 5 real-world trade scenarios with full invariant verification");
   console.log("=".repeat(78));
   console.log(`Baseline: gold=$${fmt(BASE_GOLD, 2)}/oz  silver=$${fmt(BASE_SILVER, 2)}/oz  supply=${fmtComma(SUPPLY)} MTQ`);
@@ -1361,7 +1361,7 @@ function main(): void {
     console.log("  ✅ Currency conversions use correct FX rates");
     console.log("  ✅ §33 SDP triggers correctly when deviation > 5%");
     console.log("");
-    console.log("  MTQ monetary engine v19.0 is production-ready for real-world trade scenarios.");
+    console.log("  MTQ monetary engine v19.0.3 is production-ready for real-world trade scenarios.");
   } else {
     console.log("  ❌ INVARIANT FAILURES DETECTED — see per-scenario reports above.");
     process.exitCode = 1;

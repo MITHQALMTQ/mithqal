@@ -31,7 +31,7 @@ export default function TermsPage() {
             This website is operated by <strong>JOZOUR LLC</strong>, a New
             Jersey Limited Liability Company (NJ filing 0600463904). The
             &quot;Mithqal Institution&quot; is a constitutional concept
-            described in the Mithqal Constitution v19.0; it is not itself a
+            described in the Mithqal Constitution v19.0.3; it is not itself a
             separately incorporated legal entity at this time.
           </p>
         </section>
@@ -55,7 +55,7 @@ export default function TermsPage() {
           <p>
             Nothing on this site constitutes an offer to sell, or a
             solicitation of an offer to buy, any security, token, or
-            financial instrument. The Mithqal Constitution permanently
+            financial instrument. The Mithqal Constitution constitutionally
             prohibits a token sale. Expressions of interest submitted via the
             Formation Committee intake are <strong>not</strong> commitments
             and do not create any obligation on either party.

@@ -49,7 +49,7 @@ const INVARIANT_DETAIL: Record<string, { section: string; description: string; r
   "Constitutional Identity": {
     section: "§1 — Constitutional Objectives",
     description:
-      "The Institution's identity — a Constitutional Monetary Institution providing neutral, fully-reserved settlement infrastructure for international trade — cannot be changed by any amendment, governance decision, or emergency measure. This is the bedrock provision from which every other invariant derives.",
+      "The Institution's identity — a Constitutional Settlement Institution providing neutral, fully-reserved settlement infrastructure for international trade — cannot be changed by any amendment, governance decision, or emergency measure. This is the bedrock provision from which every other invariant derives.",
     related: ["Institutional Neutrality", "Non-Sovereign Monetary Status"],
   },
   "Institutional Neutrality": {
@@ -79,7 +79,7 @@ const INVARIANT_DETAIL: Record<string, { section: string; description: string; r
   "100% Reserve Minimum": {
     section: "§4 — Reserve Ratio (RR)",
     description:
-      "The reserve ratio (RR = R_a / (S × NAV_m)) must remain ≥ 100% at all times. Minting auto-pauses if RR drops below; the Safe Multi-Sig refuses any custodian action that would push RR below the floor. This invariant cannot be suspended even in constitutional emergency.",
+      "The reserve ratio (RR = R_a / (S × PAR)) must remain ≥ 100% at all times. Minting auto-pauses if RR drops below; the Safe Multi-Sig refuses any custodian action that would push RR below the floor. This invariant cannot be suspended even in constitutional emergency.",
     related: ["No Fractional Reserve", "Reserve Segregation", "Mandatory Proof of Reserves"],
   },
   "No Fractional Reserve": {
@@ -246,7 +246,7 @@ export default function InfrastructureView() {
         <div className="relative mx-auto w-full max-w-6xl">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
             <div className="flex items-center gap-2">
-              <Badge className="glass border-gold/40 text-gold hover:bg-gold/10">v19.0 Constitutional Infrastructure</Badge>
+              <Badge className="glass border-gold/40 text-gold hover:bg-gold/10">v19.0.3 Constitutional Infrastructure</Badge>
               <Badge className="glass border-line text-fg-muted hover:bg-ink-card">Release Candidate</Badge>
             </div>
             <div className="mt-6 flex items-center gap-4">
@@ -257,7 +257,7 @@ export default function InfrastructureView() {
               </div>
             </div>
             <p className="mt-6 max-w-2xl text-sm leading-relaxed text-fg-muted sm:text-base">
-              The complete v19.0 constitutional infrastructure — 55 sections implemented across 6 parts (per the engine header; the 57-section blueprint is the source of truth, with 2 sections pending implementation). Every module is auditable and faithful to the specification. This is the institutional plumbing that makes Mithqal trustworthy.
+              The complete v19.0.3 constitutional infrastructure — 55 sections implemented across 6 parts (per the engine header; the 57-section blueprint is the source of truth, with 2 sections pending implementation). Every module is auditable and faithful to the specification. This is the institutional plumbing that makes Mithqal trustworthy.
             </p>
           </motion.div>
         </div>
@@ -448,7 +448,7 @@ export default function InfrastructureView() {
           <Separator className="my-8 bg-line" />
           <div className="flex items-center gap-2 rounded-xl border border-gold/30 bg-gold/[0.05] p-4 text-xs text-fg-muted">
             <Shield className="h-4 w-4 shrink-0 text-gold" />
-            <span>v19.0 Constitutional Release Candidate — Pending Independent External Validation. 55 of 57 sections implemented (per the engine header). The specification is the single source of truth.</span>
+            <span>v19.0.3 Constitutional Release Candidate — Pending Independent External Validation. 55 of 57 sections implemented (per the engine header). The specification is the single source of truth.</span>
           </div>
         </div>
       )}
@@ -624,7 +624,7 @@ function InvariantDetailBody({
         </div>
         <p className="rounded-lg border border-line bg-ink-card p-3 text-sm leading-relaxed text-foreground/90">
           {detail?.description ??
-            "This provision is part of the §45 set of constitutional invariants — non-amendable provisions that define the permanent identity of the Institution. The full description is being progressively published in the v19.0 specification."}
+            "This provision is part of the §45 set of constitutional invariants — non-amendable provisions that define the permanent identity of the Institution. The full description is being progressively published in the v19.0.3 specification."}
         </p>
       </div>
 
@@ -649,7 +649,7 @@ function InvariantDetailBody({
       ) : null}
 
       <div className="rounded-lg border border-line bg-ink-card/50 p-3 text-[11px] leading-relaxed text-fg-muted">
-        <strong className="text-gold">Non-amendable.</strong> This provision is permanently frozen
+        <strong className="text-gold">Non-amendable.</strong> This provision is non-amendable
         under §45. The constitutional amendment process (§43) cannot reach it; no Council vote,
         no emergency measure, no governance decision can modify, suspend, or override it.
       </div>

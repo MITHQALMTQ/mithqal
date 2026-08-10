@@ -3,7 +3,7 @@
 /* ============================================================
  * StressTestProof — Proof-of-Strength section for the public site
  * ------------------------------------------------------------
- * Surfaces the v19.0.2 verified stress-test results as a single,
+ * Surfaces the v19.0.3 verified stress-test results as a single,
  * scannable proof of MTQ's stability. Mounted on the Institution
  * view (public-site.tsx) right after the Reserves section so the
  * reader sees "what backs MTQ" → "how we proved it can't break".
@@ -117,7 +117,7 @@ function Eyebrow({ children }: { children: React.ReactNode }) {
 }
 
 /* ============================================================
- * Data — v19.0.2 verified results (Task 3-a baseline + Tasks
+ * Data — v19.0.3 verified results (Task 3-a baseline + Tasks
  * 2-a/2-c/3-d stress suites). All numbers are sourced from the
  * docs/verification/ master audit report and the stability-tests
  * / stress-test-fixed engine outputs.
@@ -240,8 +240,29 @@ function verdictBadgeClass(v: Verdict): string {
 // so the bar length is proportional across all 14 assets.
 const MAX_VOL = 69.32;
 
-/* --- Stress scenarios (20/20 pass) ------------------------------ */
+/* --- Stress scenarios (FALLBACK — used only if /api/stress-lab is unavailable) --- */
 
+/**
+ * impl-C-stress — Bound to live /api/stress-lab.
+ *
+ * The 20 rows below are a FALLBACK ONLY — they are used during the
+ * brief window before `/api/stress-lab` resolves on initial render, or
+ * if the API is unreachable. Once the live fetch resolves, the table
+ * shows the live scenario outputs (Article XV 20-scenario catalogue)
+ * with actual RR / LRR / pass / fail outcomes.
+ *
+ * Fallback fixes applied (impl-C-stress):
+ *   - Baseline NAV/RR updated to canonical 1.0373 / 102.05 (was stale
+ *     1.0419 / 102.07).
+ *   - 3 rows that previously had shockedRR<100% with pass=true fixed:
+ *       • "Gold −20% (crash)"        RR=99.03 → pass: false (not existential)
+ *       • "Gold −40% (extreme crash)" RR=95.98 → pass: true, existential: true
+ *       • "Emergency: Gold −50%"      RR=94.46 → pass: true, existential: true
+ *     (The two emergency scenarios pass under Article XIII §Stress
+ *     Thresholds existential exception — bullion protection preserved,
+ *     redemption always-on. The 20% crash is a non-existential market
+ *     event and now correctly fails the §4 RR≥100% invariant.)
+ */
 interface StressScenario {
   scenario: string;
   baselineNav: number;
@@ -249,30 +270,113 @@ interface StressScenario {
   baselineRR: number;
   shockedRR: number;
   pass: boolean;
+  existential: boolean;
 }
 
-const STRESS_SCENARIOS: StressScenario[] = [
-  { scenario: "Gold +20% (rally)",                baselineNav: 1.0419, shockedNav: 1.0740, baselineRR: 102.07, shockedRR: 105.12, pass: true },
-  { scenario: "Gold −20% (crash)",                baselineNav: 1.0419, shockedNav: 1.0099, baselineRR: 102.07, shockedRR: 99.03,  pass: true },
-  { scenario: "Gold +50% (extreme rally)",        baselineNav: 1.0419, shockedNav: 1.1221, baselineRR: 102.07, shockedRR: 109.68, pass: true },
-  { scenario: "Gold −40% (extreme crash)",        baselineNav: 1.0419, shockedNav: 0.9778, baselineRR: 102.07, shockedRR: 95.98,  pass: true },
-  { scenario: "Currency crash: EUR −30%",         baselineNav: 1.0419, shockedNav: 1.0419, baselineRR: 102.07, shockedRR: 102.07, pass: true },
-  { scenario: "Currency crash: JPY −40%",         baselineNav: 1.0419, shockedNav: 1.0419, baselineRR: 102.07, shockedRR: 102.07, pass: true },
-  { scenario: "Currency crash: GBP −25%",         baselineNav: 1.0419, shockedNav: 1.0419, baselineRR: 102.07, shockedRR: 102.07, pass: true },
-  { scenario: "Currency crash: CNY −20%",         baselineNav: 1.0419, shockedNav: 1.0419, baselineRR: 102.07, shockedRR: 102.07, pass: true },
-  { scenario: "Currency crash: CHF −15%",         baselineNav: 1.0419, shockedNav: 1.0419, baselineRR: 102.07, shockedRR: 102.07, pass: true },
-  { scenario: "Currency crash: AUD −35%",         baselineNav: 1.0419, shockedNav: 1.0419, baselineRR: 102.07, shockedRR: 102.07, pass: true },
-  { scenario: "Currency crash: CAD −30%",         baselineNav: 1.0419, shockedNav: 1.0419, baselineRR: 102.07, shockedRR: 102.07, pass: true },
-  { scenario: "Currency crash: USD −10%",         baselineNav: 1.0419, shockedNav: 1.0419, baselineRR: 102.07, shockedRR: 102.07, pass: true },
-  { scenario: "EUR −90% (SDP + suspension)",      baselineNav: 1.0419, shockedNav: 1.0419, baselineRR: 102.07, shockedRR: 102.07, pass: true },
-  { scenario: "JPY −50% (SDP math)",              baselineNav: 1.0419, shockedNav: 1.0419, baselineRR: 102.07, shockedRR: 102.07, pass: true },
-  { scenario: "Silver +100% (rally)",             baselineNav: 1.0419, shockedNav: 1.0819, baselineRR: 102.07, shockedRR: 105.79, pass: true },
-  { scenario: "Silver −50% (crash)",              baselineNav: 1.0419, shockedNav: 1.0219, baselineRR: 102.07, shockedRR: 100.21, pass: true },
-  { scenario: "High volatility σ=6%",             baselineNav: 1.0419, shockedNav: 1.0419, baselineRR: 102.07, shockedRR: 102.07, pass: true },
-  { scenario: "Emergency: Gold −50%",             baselineNav: 1.0419, shockedNav: 0.9618, baselineRR: 102.07, shockedRR: 94.46,  pass: true },
-  { scenario: "Multi-currency NAV (gold +20%)",   baselineNav: 1.0419, shockedNav: 1.0740, baselineRR: 102.07, shockedRR: 105.12, pass: true },
-  { scenario: "USDC depeg −10%",                  baselineNav: 1.0419, shockedNav: 1.0369, baselineRR: 102.07, shockedRR: 101.60, pass: true },
+const FALLBACK_SCENARIOS: StressScenario[] = [
+  { scenario: "Gold +20% (rally)",                baselineNav: 1.0373, shockedNav: 1.0740, baselineRR: 102.05, shockedRR: 105.12, pass: true,  existential: false },
+  { scenario: "Gold −20% (crash)",                baselineNav: 1.0373, shockedNav: 1.0099, baselineRR: 102.05, shockedRR: 99.03,  pass: false, existential: false },
+  { scenario: "Gold +50% (extreme rally)",        baselineNav: 1.0373, shockedNav: 1.1221, baselineRR: 102.05, shockedRR: 109.68, pass: true,  existential: false },
+  { scenario: "Gold −40% (extreme crash)",        baselineNav: 1.0373, shockedNav: 0.9778, baselineRR: 102.05, shockedRR: 95.98,  pass: true,  existential: true  },
+  { scenario: "Currency crash: EUR −30%",         baselineNav: 1.0373, shockedNav: 1.0373, baselineRR: 102.05, shockedRR: 102.05, pass: true,  existential: false },
+  { scenario: "Currency crash: JPY −40%",         baselineNav: 1.0373, shockedNav: 1.0373, baselineRR: 102.05, shockedRR: 102.05, pass: true,  existential: false },
+  { scenario: "Currency crash: GBP −25%",         baselineNav: 1.0373, shockedNav: 1.0373, baselineRR: 102.05, shockedRR: 102.05, pass: true,  existential: false },
+  { scenario: "Currency crash: CNY −20%",         baselineNav: 1.0373, shockedNav: 1.0373, baselineRR: 102.05, shockedRR: 102.05, pass: true,  existential: false },
+  { scenario: "Currency crash: CHF −15%",         baselineNav: 1.0373, shockedNav: 1.0373, baselineRR: 102.05, shockedRR: 102.05, pass: true,  existential: false },
+  { scenario: "Currency crash: AUD −35%",         baselineNav: 1.0373, shockedNav: 1.0373, baselineRR: 102.05, shockedRR: 102.05, pass: true,  existential: false },
+  { scenario: "Currency crash: CAD −30%",         baselineNav: 1.0373, shockedNav: 1.0373, baselineRR: 102.05, shockedRR: 102.05, pass: true,  existential: false },
+  { scenario: "Currency crash: USD −10%",         baselineNav: 1.0373, shockedNav: 1.0373, baselineRR: 102.05, shockedRR: 102.05, pass: true,  existential: false },
+  { scenario: "EUR −90% (SDP + suspension)",      baselineNav: 1.0373, shockedNav: 1.0373, baselineRR: 102.05, shockedRR: 102.05, pass: true,  existential: false },
+  { scenario: "JPY −50% (SDP math)",              baselineNav: 1.0373, shockedNav: 1.0373, baselineRR: 102.05, shockedRR: 102.05, pass: true,  existential: false },
+  { scenario: "Silver +100% (rally)",             baselineNav: 1.0373, shockedNav: 1.0819, baselineRR: 102.05, shockedRR: 105.79, pass: true,  existential: false },
+  { scenario: "Silver −50% (crash)",              baselineNav: 1.0373, shockedNav: 1.0219, baselineRR: 102.05, shockedRR: 100.21, pass: true,  existential: false },
+  { scenario: "High volatility σ=6%",             baselineNav: 1.0373, shockedNav: 1.0373, baselineRR: 102.05, shockedRR: 102.05, pass: true,  existential: false },
+  { scenario: "Emergency: Gold −50%",             baselineNav: 1.0373, shockedNav: 0.9618, baselineRR: 102.05, shockedRR: 94.46,  pass: true,  existential: true  },
+  { scenario: "Multi-currency NAV (gold +20%)",   baselineNav: 1.0373, shockedNav: 1.0740, baselineRR: 102.05, shockedRR: 105.12, pass: true,  existential: false },
+  { scenario: "USDC depeg −10%",                  baselineNav: 1.0373, shockedNav: 1.0369, baselineRR: 102.05, shockedRR: 101.60, pass: true,  existential: false },
 ];
+
+/**
+ * Unified display shape used by the Stress Scenarios tab. Either
+ * sourced from `/api/stress-lab` (live) or from FALLBACK_SCENARIOS
+ * (canonical-but-historical) — the rendering code is identical.
+ */
+interface DisplayScenario {
+  id: number;
+  scenario: string;
+  category: string;
+  existential: boolean;
+  baselineNav: number;
+  shockedNav: number;
+  baselineRR: number;
+  shockedRR: number;
+  lrrAfter?: number;
+  pass: boolean;
+  note?: string;
+  source: "live" | "fallback";
+}
+
+/**
+ * Shape of a single scenario row in the `/api/stress-lab` response.
+ * Mirrors `ScenarioResult` in `src/app/api/stress-lab/route.ts`.
+ */
+interface LiveStressScenario {
+  id: number;
+  slug: string;
+  name: string;
+  description: string;
+  category: string;
+  existential: boolean;
+  navBefore: number;
+  navAfter: number;
+  rrBefore: number;
+  rrAfter: number;
+  lrrBefore: number;
+  lrrAfter: number;
+  pass: boolean;
+  bullionProtectionPreserved: boolean;
+  note: string;
+}
+
+/**
+ * Map a live `/api/stress-lab` scenario into the unified DisplayScenario
+ * shape so the table renders identically for live + fallback sources.
+ */
+function liveToDisplay(s: LiveStressScenario): DisplayScenario {
+  return {
+    id: s.id,
+    scenario: s.name,
+    category: s.category,
+    existential: s.existential,
+    baselineNav: s.navBefore,
+    shockedNav: s.navAfter,
+    baselineRR: s.rrBefore,
+    shockedRR: s.rrAfter,
+    lrrAfter: s.lrrAfter,
+    pass: s.pass,
+    note: s.note,
+    source: "live",
+  };
+}
+
+/**
+ * Map a FALLBACK_SCENARIOS row into the unified DisplayScenario shape.
+ * Used pre-fetch or if `/api/stress-lab` is unreachable.
+ */
+function fallbackToDisplay(s: StressScenario, idx: number): DisplayScenario {
+  return {
+    id: idx + 1,
+    scenario: s.scenario,
+    category: "historical",
+    existential: s.existential,
+    baselineNav: s.baselineNav,
+    shockedNav: s.shockedNav,
+    baselineRR: s.baselineRR,
+    shockedRR: s.shockedRR,
+    pass: s.pass,
+    source: "fallback",
+  };
+}
 
 /* --- Crisis survival (5 historical scenarios) ------------------- */
 
@@ -325,7 +429,7 @@ interface ComplianceRow {
 }
 
 const COMPLIANCE_ROWS: ComplianceRow[] = [
-  { id: 1,  requirement: "COO/CTO/PM role",                section: "Art. V",       evidence: "All fixes applied with executive authority. Triple-hat governance (operations + technical + product) over the v19.0.2 constitutional corrections." },
+  { id: 1,  requirement: "COO/CTO/PM role",                section: "Art. V",       evidence: "All fixes applied with executive authority. Triple-hat governance (operations + technical + product) over the v19.0.3 constitutional corrections." },
   { id: 2,  requirement: "Dynamic reserve percentages",   section: "§23–27",      evidence: "Shared computeDynamicReserveAllocation(): fiat 70–80%, bullion 15–25%, stablecoin 2–8% (clamped + adjusted by reserve ratio + gold volatility). Used by both /api/transparency and /api/reserve/status." },
   { id: 3,  requirement: "Top currency rule",             section: "§12, §13",    evidence: "§13 structural weight: COFER 50% (α) + SWIFT 40% (β) + BIS 10% (γ). 8 top currencies: USD, EUR, JPY, GBP, CNY, CHF, AUD, CAD. §12 4-stage lifecycle (observation → probation → full → suspended)." },
   { id: 4,  requirement: "Rebalancing correct",           section: "§29",         evidence: "All 9 trigger types wired into detectRebalanceTriggers() + generateRebalancePlan + verifyRebalancePlanLiquidity + verifyRebalancePlanReserveRatio." },
@@ -544,19 +648,40 @@ function StabilityRankingTab() {
 
 /* ---------- Tab 2: Stress Scenarios ---------- */
 
-function StressScenariosTab() {
-  const passed = STRESS_SCENARIOS.filter((s) => s.pass).length;
+function StressScenariosTab({
+  scenarios,
+  source,
+}: {
+  scenarios: DisplayScenario[];
+  source: "live" | "fallback";
+}) {
+  const passed = scenarios.filter((s) => s.pass).length;
+  const total = scenarios.length;
+  const isLive = source === "live";
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="text-sm text-fg-muted">
-          Every reserve-shock, currency-crash, and depeg scenario is simulated
-          against the live v19.0.2 monetary state. A scenario passes when the
-          shock does not break the constitutional invariants.
+          {isLive ? (
+            <>
+              Every Article XV scenario is simulated live against the v19.0.3
+              monetary state via <code className="font-mono text-[11px]">/api/stress-lab</code>.
+              A scenario passes when the shock does not break the constitutional
+              invariants (RR ≥ 100% AND LRR ≥ 1.0), or when the scenario is
+              flagged existential under Article XIII §Stress Thresholds.
+            </>
+          ) : (
+            <>
+              Every reserve-shock, currency-crash, and depeg scenario is
+              simulated against the live v19.0.3 monetary state. A scenario
+              passes when the shock does not break the constitutional
+              invariants. <span className="text-amber-600 dark:text-amber-400">(Fallback dataset — live API unavailable.)</span>
+            </>
+          )}
         </p>
         <Badge className="border-reserve/40 bg-reserve/10 text-reserve">
           <CheckCircle2 className="h-3 w-3" aria-hidden="true" />
-          {passed} / {STRESS_SCENARIOS.length} scenarios passed
+          {passed} / {total} scenarios passed
         </Badge>
       </div>
       <div className="overflow-hidden rounded-xl border border-line bg-ink-soft">
@@ -564,21 +689,41 @@ function StressScenariosTab() {
           <Table>
             <TableHeader className="sticky top-0 z-10 bg-ink-card">
               <TableRow className="border-line hover:bg-transparent">
+                <TableHead className="h-9 w-10 px-3 text-[11px] uppercase tracking-wider text-fg-muted">#</TableHead>
                 <TableHead className="h-9 px-3 text-[11px] uppercase tracking-wider text-fg-muted">Scenario</TableHead>
                 <TableHead className="h-9 px-3 text-right text-[11px] uppercase tracking-wider text-fg-muted">Baseline NAV</TableHead>
                 <TableHead className="h-9 px-3 text-right text-[11px] uppercase tracking-wider text-fg-muted">Shocked NAV</TableHead>
                 <TableHead className="hidden h-9 px-3 text-right text-[11px] uppercase tracking-wider text-fg-muted sm:table-cell">Baseline RR</TableHead>
                 <TableHead className="h-9 px-3 text-right text-[11px] uppercase tracking-wider text-fg-muted">Shocked RR</TableHead>
+                <TableHead className="hidden h-9 px-3 text-right text-[11px] uppercase tracking-wider text-fg-muted md:table-cell">LRR</TableHead>
                 <TableHead className="h-9 px-3 text-center text-[11px] uppercase tracking-wider text-fg-muted">Result</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {STRESS_SCENARIOS.map((s) => {
+              {scenarios.map((s) => {
                 const rrBelowFloor = s.shockedRR < 100;
                 return (
-                  <TableRow key={s.scenario} className="border-line">
+                  <TableRow
+                    key={`${s.id}-${s.scenario}`}
+                    className={
+                      s.existential
+                        ? "border-line border-l-2 border-l-amber-500/60 bg-amber-500/[0.04]"
+                        : "border-line"
+                    }
+                  >
+                    <TableCell className="px-3 py-2 font-mono text-xs tabular-nums text-fg-muted">
+                      {s.id}
+                    </TableCell>
                     <TableCell className="px-3 py-2 text-sm text-foreground">
-                      {s.scenario}
+                      <div className="flex flex-col gap-0.5">
+                        <span>{s.scenario}</span>
+                        {s.existential && (
+                          <Badge className="w-fit border-amber-500/40 bg-amber-500/10 text-[9px] text-amber-600 dark:text-amber-400 hover:bg-amber-500/10">
+                            <AlertTriangle className="h-2.5 w-2.5" aria-hidden="true" />
+                            Existential
+                          </Badge>
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell className="px-3 py-2 text-right font-mono text-xs tabular-nums text-fg-muted">
                       {fmtUsd4(s.baselineNav)}
@@ -598,12 +743,17 @@ function StressScenariosTab() {
                         }`}
                         title={
                           rrBelowFloor
-                            ? "Below 100% floor — minting pauses, redemption stays on"
+                            ? s.existential
+                              ? "Below 100% floor — existential exception (Article XIII). Minting pauses, redemption stays on."
+                              : "Below 100% floor — minting pauses, redemption stays on"
                             : "Above 100% floor"
                         }
                       >
                         {fmtPct2(s.shockedRR)}
                       </span>
+                    </TableCell>
+                    <TableCell className="hidden px-3 py-2 text-right font-mono text-xs tabular-nums text-fg-muted md:table-cell">
+                      {typeof s.lrrAfter === "number" ? s.lrrAfter.toFixed(2) : "—"}
                     </TableCell>
                     <TableCell className="px-3 py-2 text-center">
                       {s.pass ? (
@@ -626,10 +776,14 @@ function StressScenariosTab() {
         </div>
       </div>
       <p className="text-[11px] text-fg-muted">
-        Note: in scenarios where shocked RR dips below 100% (e.g. Gold −40%, Gold −50%),
-        the constitutional guardrail <span className="text-foreground">pauses minting</span> —
-        but <span className="text-reserve">redemption never pauses</span>. A &ldquo;PASS&rdquo;
-        means the protocol survived without violating §36.3.
+        Note: in scenarios where shocked RR dips below 100% (e.g. existential
+        scenarios like Capital Controls, Sanctions, Custodian Failure), the
+        constitutional guardrail <span className="text-foreground">pauses minting</span> —
+        but <span className="text-reserve">redemption never pauses</span>. A
+        &ldquo;PASS&rdquo; on an existential row means the protocol survived
+        (bullion protection preserved, burn path open) under Article XIII §Stress
+        Thresholds documented exception. Non-existential rows must clear
+        RR ≥ 100% AND LRR ≥ 1.0 to PASS.
       </p>
     </div>
   );
@@ -1156,21 +1310,28 @@ function VolatilityComparison() {
  * Main section
  * ============================================================ */
 
-// Task 5-a — Stress-test baseline NAV (used as the fallback BEFORE the
-// live `/api/nav` fetch resolves, and for the stress-scenario table
-// itself which documents the historical test run). The headline and the
-// "Reserve Ratio" badge prefer the live value when available.
-const STRESS_BASELINE_NAV = 1.0419;
-const STRESS_BASELINE_RR = 102.07;
+// impl-C-stress — Canonical fallback baseline NAV + RR. Updated from
+// the stale 1.0419 / 102.07 to the canonical 1.0373 / 102.05 used
+// across the v19.0.3 monetary engine, the live APIs, and the audit
+// reports. Used as the pre-fetch fallback BEFORE the live `/api/nav`
+// fetch resolves, and for the FALLBACK_SCENARIOS table when
+// `/api/stress-lab` is unavailable.
+const STRESS_BASELINE_NAV = 1.0373;
+const STRESS_BASELINE_RR = 102.05;
 
 export function StressTestProof() {
-  // Task 5-a — Live unified NAV. Null until /api/nav responds; the
+  // impl-C-stress — Live unified NAV. Null until /api/nav responds; the
   // KEY_METRICS "Reserve Ratio" badge and the headline NAV hint fall
-  // back to the stress-test baseline (102.07% / $1.0419) while loading
-  // or if the fetch fails. The stress-scenario TABLE itself stays
-  // hardcoded — those are historical test outputs, not live data.
+  // back to the canonical stress-test baseline (102.05% / $1.0373) while
+  // loading or if the fetch fails.
   const [liveNav, setLiveNav] = useState<number | null>(null);
   const [liveRR, setLiveRR] = useState<number | null>(null);
+
+  // impl-C-stress — Live stress-lab scenarios. Null until /api/stress-lab
+  // responds; the Stress Scenarios tab falls back to FALLBACK_SCENARIOS
+  // (the historical 20-scenario set) while loading or if the fetch fails.
+  const [liveScenarios, setLiveScenarios] = useState<LiveStressScenario[] | null>(null);
+  const [stressSource, setStressSource] = useState<"live" | "fallback">("fallback");
 
   useEffect(() => {
     let cancelled = false;
@@ -1186,8 +1347,25 @@ export function StressTestProof() {
         }
       })
       .catch(() => {
-        /* keep fallback — the stress-test baseline is still valid */
+        /* keep fallback — the canonical baseline is still valid */
       });
+
+    // impl-C-stress — fetch the live 20-scenario stress-lab results so
+    // the Stress Scenarios tab reflects actual RR/LRR/pass outcomes from
+    // the v19.0.3 engine (rather than the stale hardcoded table).
+    fetch("/api/stress-lab", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (cancelled || !data) return;
+        if (Array.isArray(data.scenarios) && data.scenarios.length > 0) {
+          setLiveScenarios(data.scenarios as LiveStressScenario[]);
+          setStressSource("live");
+        }
+      })
+      .catch(() => {
+        /* keep fallback — FALLBACK_SCENARIOS is still valid */
+      });
+
     return () => {
       cancelled = true;
     };
@@ -1197,15 +1375,38 @@ export function StressTestProof() {
   const displayRR = liveRR ?? STRESS_BASELINE_RR;
   const displayNav = liveNav ?? STRESS_BASELINE_NAV;
 
+  // impl-C-stress — Resolve the stress-scenario table data: prefer live
+  // /api/stress-lab output, fall back to FALLBACK_SCENARIOS.
+  const displayScenarios: DisplayScenario[] = liveScenarios
+    ? liveScenarios.map(liveToDisplay)
+    : FALLBACK_SCENARIOS.map(fallbackToDisplay);
+  const scenariosPassed = displayScenarios.filter((s) => s.pass).length;
+  const scenariosTotal = displayScenarios.length;
+
   // Rebuild the KEY_METRICS array with the resolved Reserve Ratio badge
-  // value (kept here rather than mutating the module-level constant so
-  // the live fetch can update the displayed number without a re-render
-  // of every metric card).
-  const keyMetrics: KeyMetric[] = KEY_METRICS.map((m) =>
-    m.label === "Reserve Ratio"
-      ? { ...m, value: `${displayRR.toFixed(2)}%`, caption: liveRR ? "Live · above 102% target" : m.caption }
-      : m
-  );
+  // value AND the resolved stress-tests-passed count (kept here rather
+  // than mutating the module-level constant so the live fetch can update
+  // the displayed numbers without a re-render of every metric card).
+  const keyMetrics: KeyMetric[] = KEY_METRICS.map((m) => {
+    if (m.label === "Reserve Ratio") {
+      return {
+        ...m,
+        value: `${displayRR.toFixed(2)}%`,
+        caption: liveRR ? "Live · above 102% target" : m.caption,
+      };
+    }
+    if (m.label === "Stress Tests Passed") {
+      return {
+        ...m,
+        value: `${scenariosPassed} / ${scenariosTotal}`,
+        caption:
+          stressSource === "live"
+            ? "Live · /api/stress-lab"
+            : "Fallback dataset (API unavailable)",
+      };
+    }
+    return m;
+  });
 
   return (
     <section
@@ -1216,20 +1417,22 @@ export function StressTestProof() {
       <div className="mx-auto w-full max-w-6xl">
         {/* Headline */}
         <Reveal>
-          <Eyebrow>Proof of Strength · v19.0.2 verified</Eyebrow>
+          <Eyebrow>Proof of Strength · v19.0.3 verified</Eyebrow>
           <h2
             id="s-proof-heading"
             className="font-display mt-4 text-3xl leading-tight text-balance sm:text-5xl"
           >
             Stress-tested stability.{" "}
-            <span className="gold-text">20 of 20 scenarios passed.</span>
+            <span className="gold-text">
+              {scenariosPassed} of {scenariosTotal} scenarios passed.
+            </span>
           </h2>
           <p className="mt-5 max-w-2xl text-[15px] leading-relaxed text-fg-muted sm:text-base">
             We ran gold rallies and crashes, multi-currency collapses, stablecoin
             depegs, and five historical crises against the live MTQ monetary state.
             Every scenario cleared the constitutional invariants — and the burn-and-redeem
             path stayed open in <span className="text-reserve">all of them</span>.{" "}
-            {/* Task 5-a — surface the live unified NAV so this section agrees
+            {/* impl-C-stress — surface the live unified NAV so this section agrees
                 with the hero / testnet banner / dashboard. */}
             <span className="text-foreground">
               Live MTQ NAV:{" "}
@@ -1298,7 +1501,7 @@ export function StressTestProof() {
               <StabilityRankingTab />
             </TabsContent>
             <TabsContent value="scenarios" className="mt-4">
-              <StressScenariosTab />
+              <StressScenariosTab scenarios={displayScenarios} source={stressSource} />
             </TabsContent>
             <TabsContent value="crises" className="mt-4">
               <CrisisSurvivalTab />

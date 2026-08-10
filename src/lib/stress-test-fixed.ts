@@ -1,5 +1,5 @@
 /**
- * MITHQAL v19.0 — FIXED STRESS TEST SUITE
+ * MITHQAL v19.0.3 — FIXED STRESS TEST SUITE
  *
  * Corrected version of `stress-test-comprehensive.ts`.
  *
@@ -304,7 +304,7 @@ const BASELINE_NAV = baseline.nav.market;
 const BASELINE_RATIO = baseline.reserveRatio.ratio;
 
 console.log("\n" + "=".repeat(78));
-console.log("MITHQAL v19.0 — FIXED STRESS TEST SUITE");
+console.log("MITHQAL v19.0.3 — FIXED STRESS TEST SUITE");
 console.log("Corrected: physical bullion quantities held fixed across price shocks");
 console.log("=".repeat(78));
 console.log(`\nBASELINE (gold=$${BASE_GOLD}/oz, silver=$${BASE_SILVER}/oz):`);

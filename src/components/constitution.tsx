@@ -133,7 +133,7 @@ export default function ConstitutionDocs() {
                   The Constitution
                 </div>
                 <div className="text-[10px] uppercase tracking-[0.18em] text-fg-muted">
-                  v19.0 · citable reference
+                  v19.0.3 · citable reference
                 </div>
               </div>
               {/* B6 — Article count indicator. Verified ALL_ARTICLES.length === 47
@@ -141,7 +141,7 @@ export default function ConstitutionDocs() {
                   count + spec version visible at the top, so readers know what
                   the document contains at a glance. */}
               <Badge className="ml-1 hidden border-gold/40 bg-gold/10 text-gold hover:bg-gold/10 sm:inline-flex">
-                {ALL_ARTICLES.length} Articles · v19.0 Constitution
+                {ALL_ARTICLES.length} Articles · v19.0.3 Constitution
               </Badge>
             </div>
           </div>
@@ -336,7 +336,7 @@ export default function ConstitutionDocs() {
                 </span>
               </div>
               <p className="mt-2">
-                Mithqal Constitution v19.0 — {activeLayer?.name ?? "Institutional Constitution"}
+                Mithqal Constitution v19.0.3 — {activeLayer?.name ?? "Institutional Constitution"}
                 {activeArticle ? `, ${activeArticle.number}: ${activeArticle.title}` : ", Preamble"}.
                 The full specification is version-controlled at{" "}
                 <a
@@ -347,7 +347,7 @@ export default function ConstitutionDocs() {
                 >
                   github.com/MITHQALMTQ <ExternalLink className="h-3 w-3" />
                 </a>
-                . Anti-platform and invariant provisions are permanently frozen and not subject to amendment.
+                . Anti-platform and invariant provisions are non-amendable and not subject to amendment.
               </p>
             </div>
           </div>
@@ -517,7 +517,7 @@ function ArticleView({
           <div className="mt-4 flex flex-wrap items-center gap-2">
             {article.frozen ? (
               <Badge className="border-gold/40 bg-gold/10 text-gold hover:bg-gold/10">
-                <Lock className="mr-1 h-3 w-3" /> Permanently frozen
+                <Lock className="mr-1 h-3 w-3" /> Non-amendable
               </Badge>
             ) : null}
             {sections.length > 0 ? (
@@ -648,7 +648,7 @@ function ArticleView({
         <div className="mt-10 rounded-xl border border-line bg-ink-soft/50 p-5">
           <p className="text-sm leading-relaxed text-fg-muted">
             This article is part of the {layerName}. The full provisions are defined in the
-            v19.0 specification. The summary above captures its purpose; detailed
+            v19.0.3 specification. The summary above captures its purpose; detailed
             provisions are being progressively published.
           </p>
         </div>

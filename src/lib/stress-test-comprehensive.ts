@@ -19,7 +19,7 @@
  */
 
 /**
- * MITHQAL v19.0 — COMPREHENSIVE STRESS TEST SUITE (DEPRECATED)
+ * MITHQAL v19.0.3 — COMPREHENSIVE STRESS TEST SUITE (DEPRECATED)
  *
  * Tests every scenario the monetary engine must handle:
  * 1. Gold price shocks (up/down)
@@ -113,7 +113,7 @@ const baseline = computeMonetaryStateV19(
 );
 
 console.log("\n" + "=".repeat(70));
-console.log("MITHQAL v19.0 COMPREHENSIVE STRESS TEST SUITE");
+console.log("MITHQAL v19.0.3 COMPREHENSIVE STRESS TEST SUITE");
 console.log("Tests all monetary engine scenarios per blueprint §1-§56");
 console.log("=".repeat(70));
 console.log(`\nBASELINE (gold=$${BASE_GOLD}, silver=$${BASE_SILVER}):`);

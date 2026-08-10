@@ -2,7 +2,7 @@
  * On-chain MockOracle client — reads prices from the deployed MockOracle.sol
  * on Monad Testnet (Chain ID 10143).
  *
- * Constitutional context (§30-33 v19.0):
+ * Constitutional context (§30-33 v19.0.3):
  *   The Constitution requires a multi-oracle consensus. This is the testnet
  *   single-source mock implementation. On mainnet, this will be replaced by
  *   a MultiOracleConsensus adapter that aggregates Chainlink + Pyth + Chronicle.

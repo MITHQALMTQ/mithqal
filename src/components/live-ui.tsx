@@ -122,7 +122,7 @@ export function DeltaArrow({
 /**
  * VerifyOnChainBadge — "9/9 PASS" badge linking to on-chain test.
  */
-export function VerifyOnChainBadge({ score = "9/9", href = "/api/onchain-test" }: { score?: string; href?: string }) {
+export function VerifyOnChainBadge({ score = "15/15", href = "/api/onchain-test" }: { score?: string; href?: string }) {
   return (
     <a
       href={href}

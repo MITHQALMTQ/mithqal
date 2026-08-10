@@ -312,7 +312,7 @@ export default function ApiDocsPage() {
         {/* Footer */}
         <div className="mt-12 border-t border-line pt-6 text-center text-xs text-fg-muted">
           <p>
-            © 2026 Mithqal Constitutional Monetary Institution · v19.0 specification.
+            © 2026 Mithqal Constitutional Settlement Institution · v19.0.3 specification.
           </p>
           <p className="mt-1">
             This page is auto-generated from{" "}

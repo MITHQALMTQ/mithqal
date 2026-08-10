@@ -257,7 +257,7 @@ export function CurrencyWeightingIntro({ data }: { data: WeightingData | null })
         <ConceptCard
           icon={<Gauge className="h-5 w-5 text-reserve" />}
           title="Structural Weight (§13)"
-          desc="Each currency starts with a base weight from 3 sources: COFER (40%), SWIFT (40%), BIS flows (20%). USD dominates at ~47%, reflecting its reserve status."
+          desc="Each currency starts with a base weight from 3 sources: COFER (50%), SWIFT (40%), BIS flows (10%). USD dominates at ~47%, reflecting its reserve status."
           formula="C_i = α·COFER + β·SWIFT + γ·BIS"
           tooltipKey="structural"
         />
