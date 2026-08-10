@@ -234,11 +234,18 @@ interface LiveStateData {
 // the same KPI layout so the section never collapses to a blank shell.
 // NOTE: lastUpdate is a static string to prevent hydration mismatch —
 // it's replaced with live data after mount via useEffect.
+//
+// impl-fix-pages — fallback values pinned to the canonical v19.0.2 baseline
+// composition (reserve-policy-spec.ts BASELINE_COMPOSITION): EXPECTED_NAV_M
+// = $1.0373, EXPECTED_RR = 102.05%, baseline gold price = $4,076.90/oz, and
+// the baseline supply of 54,000,000 MTQ. These match the values returned by
+// /api/nav at the canonical baseline, so the pre-fetch render is identical
+// to the post-fetch render when the live oracle reports the baseline price.
 const LIVE_FALLBACK: LiveStateData = {
   supply: 54_000_000,
-  navMarket: 1.04,
-  reserveRatio: 102.07,
-  goldUsd: 4053.7,
+  navMarket: 1.0373,
+  reserveRatio: 102.05,
+  goldUsd: 4076.9,
   lastUpdate: "",
 };
 
@@ -837,7 +844,11 @@ const FALLBACK_BASKET: BasketCurrency[] = [
   { code: "CAD", name: "Canadian Dollar", weight: 1.36 },
 ];
 
-const FALLBACK_GOLD_USD = 4053.7;
+// impl-fix-pages — Canonical baseline gold price (BASELINE_COMPOSITION /
+// $4,076.90/oz per reserve-policy-spec.ts). Used only as a pre-fetch
+// fallback before /api/transparency resolves; the live oracle price takes
+// precedence as soon as the response lands.
+const FALLBACK_GOLD_USD = 4076.9;
 
 // Per-currency accent colour, used to tint each bar. Stays inside the gold
 // palette so the section feels native to the institutional dark/gold theme.

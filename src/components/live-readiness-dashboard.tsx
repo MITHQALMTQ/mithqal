@@ -34,6 +34,7 @@
  * Task ID: 7-d  ·  Agent: Live-Readiness Dashboard Builder
  * ============================================================ */
 
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import {
   ShieldCheck,
@@ -120,7 +121,101 @@ function Eyebrow({ children }: { children: React.ReactNode }) {
 
 /* ============================================================
  * DATA — sourced from /home/z/my-project/worklog.md (§7-a/7-b/7-c)
+ *
+ * impl-fix-pages — the FINANCIAL_METRICS table below holds the historical
+ * Task-7 test-run outputs as the pre-fetch baseline. The §3 MetricsSection
+ * and §2 SuiteSection now override the rows that have a canonical live API
+ * mapping with values fetched from /api/nav, /api/reserve/status, /api/lrr
+ * and /api/stress-lab. Rows without a live endpoint (VaR/CVaR/duration/
+ * revenue) stay as the documented Task-7 outputs — they are derived by the
+ * v19 engine server-side and are not exposed by a single live endpoint.
  * ============================================================ */
+
+/* ---------- impl-fix-pages — live API shapes (subset we consume) ---------- */
+interface NavApiResponse {
+  navM?: number;
+  navL?: number;
+  reserveRatio?: number;
+  supply?: number;
+  reserveMarketUsd?: number;
+  reserveAdjustedUsd?: number;
+  goldUsd?: number;
+  silverUsd?: number;
+}
+interface ReserveStatusApiResponse {
+  totalReserveUsd?: number;
+  threeLayer?: {
+    market?: number;
+    adjusted?: number;
+    liquidation?: number;
+  };
+}
+interface LrrApiResponse {
+  lrr?: number;
+  threshold?: string;
+  compliant?: boolean;
+}
+interface StressLabApiResponse {
+  summary?: {
+    scenariosPassed?: number;
+    scenariosRun?: number;
+    worstCaseRR?: number;
+  };
+}
+
+/**
+ * impl-fix-pages — canonical baseline values for the pre-fetch render.
+ * Mirrors `BASELINE_COMPOSITION` in `src/lib/reserve-policy-spec.ts` so the
+ * pre-fetch numbers are identical to what /api/nav returns at the baseline
+ * gold price of $4,076.90/oz (NAV_m = $1.0373, RR = 102.05%, supply = 54M,
+ * R_m = ~$56M, R_a = ~$55M, R_l = ~$50M, LRR ≈ 8.32).
+ */
+const LIVE_BASELINE = {
+  navM: 1.0373,
+  reserveRatio: 102.05,
+  supply: 54_000_000,
+  reserveMarketUsd: 56_265_000,
+  reserveAdjustedUsd: 55_119_000,
+  reserveLiquidationUsd: 50_203_000,
+  lrr: 8.42,
+  stressPassed: 20,
+  stressRun: 20,
+} as const;
+
+interface LiveReadinessData {
+  navM: number;
+  reserveRatio: number;
+  supply: number;
+  reserveMarketUsd: number;
+  reserveAdjustedUsd: number;
+  reserveLiquidationUsd: number;
+  lrr: number;
+  stressPassed: number;
+  stressRun: number;
+  /** "live" once any of the live endpoints has resolved, otherwise "baseline". */
+  source: "baseline" | "live";
+}
+
+const LIVE_INITIAL: LiveReadinessData = {
+  navM: LIVE_BASELINE.navM,
+  reserveRatio: LIVE_BASELINE.reserveRatio,
+  supply: LIVE_BASELINE.supply,
+  reserveMarketUsd: LIVE_BASELINE.reserveMarketUsd,
+  reserveAdjustedUsd: LIVE_BASELINE.reserveAdjustedUsd,
+  reserveLiquidationUsd: LIVE_BASELINE.reserveLiquidationUsd,
+  lrr: LIVE_BASELINE.lrr,
+  stressPassed: LIVE_BASELINE.stressPassed,
+  stressRun: LIVE_BASELINE.stressRun,
+  source: "baseline",
+};
+
+function fmtUsdShort(n: number): string {
+  if (!Number.isFinite(n) || n <= 0) return "—";
+  if (n >= 1_000_000_000) return `$${(n / 1_000_000_000).toFixed(2)}B`;
+  if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(3)}M`;
+  if (n >= 1_000) return `$${(n / 1_000).toFixed(1)}K`;
+  return `$${n.toFixed(0)}`;
+}
 
 type Verdict = "READY" | "CONDITIONAL" | "NOT_READY";
 
@@ -421,7 +516,15 @@ function defenseBadgeLabel(pct: number): string {
 
 /* ---------- §1 Header + overall verdict ---------- */
 
-function HeaderSection() {
+function HeaderSection({ live }: { live: LiveReadinessData }) {
+  // impl-fix-pages — Total tests / Passed reflect the live stress-lab count
+  // when available. The non-stress suites (crypto/financial/adversarial/e2e)
+  // are historical Task-7 outputs and stay pinned to the documented counts.
+  const nonStressPassed = SUITES.filter((s) => s.id !== "stress").reduce((a, s) => a + s.passed, 0);
+  const nonStressTotal = SUITES.filter((s) => s.id !== "stress").reduce((a, s) => a + s.total, 0);
+  const totalTests = nonStressTotal + live.stressRun;
+  const totalPassed = nonStressPassed + live.stressPassed;
+  const findingsCount = Math.max(0, totalTests - totalPassed);
   return (
     <div className="space-y-6">
       <Reveal>
@@ -434,10 +537,13 @@ function HeaderSection() {
       </Reveal>
       <Reveal delay={0.1}>
         <p className="max-w-3xl text-base leading-relaxed text-fg-muted sm:text-lg">
-          165 tests across 5 suites. 154 passed. 0 critical vulnerabilities.
+          {totalTests} tests across 5 suites. {totalPassed} passed. 0 critical vulnerabilities.
           Every monetary invariant, financial gate, and adversarial defense
           has been independently re-derived from the v19 engine — not
           trusted from internal assertions.
+          {live.source === "live" && (
+            <span className="ml-1 text-reserve">· live · /api/nav · /api/stress-lab</span>
+          )}
         </p>
       </Reveal>
 
@@ -478,9 +584,9 @@ function HeaderSection() {
       {/* Summary stat strip */}
       <Reveal delay={0.18}>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-          <SummaryStat label="Total tests" value="165" icon={Activity} accent="gold" />
-          <SummaryStat label="Passed" value="154" icon={CheckCircle2} accent="reserve" />
-          <SummaryStat label="Findings" value="11" icon={AlertTriangle} accent="amber" />
+          <SummaryStat label="Total tests" value={`${totalTests}`} icon={Activity} accent="gold" />
+          <SummaryStat label="Passed" value={`${totalPassed}`} icon={CheckCircle2} accent="reserve" />
+          <SummaryStat label="Findings" value={`${findingsCount}`} icon={AlertTriangle} accent="amber" />
           <SummaryStat label="Critical" value="0" icon={XCircle} accent="reserve" />
           <SummaryStat label="High" value="0" icon={ShieldCheck} accent="reserve" />
         </div>
@@ -535,25 +641,49 @@ function SummaryStat({
 
 /* ---------- §2 Test suite results grid ---------- */
 
-function SuiteSection() {
+function SuiteSection({ live }: { live: LiveReadinessData }) {
+  // impl-fix-pages — override the stress-suite card with live /api/stress-lab
+  // counts when available. The other 4 suites stay pinned to their
+  // documented Task-7 counts (they are historical test-run outputs).
+  const nonStressPassed = SUITES.filter((s) => s.id !== "stress").reduce((a, s) => a + s.passed, 0);
+  const nonStressTotal = SUITES.filter((s) => s.id !== "stress").reduce((a, s) => a + s.total, 0);
+  const totalTests = nonStressTotal + live.stressRun;
+  const totalPassed = nonStressPassed + live.stressPassed;
+  const resolvedSuites = SUITES.map((s) =>
+    s.id === "stress"
+      ? {
+          ...s,
+          passed: live.stressPassed,
+          total: live.stressRun,
+          headline: `${live.stressPassed} / ${live.stressRun} pass${
+            live.source === "live" ? " · live · /api/stress-lab" : ""
+          }`,
+          verdict: (live.stressRun > 0 && live.stressPassed === live.stressRun
+            ? "READY"
+            : live.stressRun > 0 && live.stressPassed / live.stressRun >= 0.8
+              ? "CONDITIONAL"
+              : "NOT_READY") as Verdict,
+        }
+      : s,
+  );
   return (
     <div className="space-y-5">
       <Reveal>
         <SectionHeading
           icon={Gauge}
           title="Test suite results"
-          subtitle="5 independent suites · 165 tests · 154 passed"
+          subtitle={`5 independent suites · ${totalTests} tests · ${totalPassed} passed`}
         />
       </Reveal>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {SUITES.map((s, i) => (
+        {resolvedSuites.map((s, i) => (
           <Reveal key={s.id} delay={i * 0.06}>
             <SuiteCard suite={s} />
           </Reveal>
         ))}
         {/* Aggregate card filling the 6th slot */}
-        <Reveal delay={SUITES.length * 0.06}>
-          <AggregateCard />
+        <Reveal delay={resolvedSuites.length * 0.06}>
+          <AggregateCard totalPassed={totalPassed} totalTests={totalTests} live={live} />
         </Reveal>
       </div>
     </div>
@@ -562,7 +692,7 @@ function SuiteSection() {
 
 function SuiteCard({ suite }: { suite: SuiteSummary }) {
   const Icon = suite.icon;
-  const pct = (suite.passed / suite.total) * 100;
+  const pct = suite.total > 0 ? (suite.passed / suite.total) * 100 : 0;
   return (
     <Card className="card-hover gap-0 border-line bg-ink-soft/60 py-0">
       <CardHeader className="gap-2 px-4 pt-4 pb-2 sm:px-5 sm:pt-5">
@@ -601,10 +731,16 @@ function SuiteCard({ suite }: { suite: SuiteSummary }) {
   );
 }
 
-function AggregateCard() {
-  const totalPassed = SUITES.reduce((a, s) => a + s.passed, 0);
-  const totalTests = SUITES.reduce((a, s) => a + s.total, 0);
-  const pct = (totalPassed / totalTests) * 100;
+function AggregateCard({
+  totalPassed,
+  totalTests,
+  live,
+}: {
+  totalPassed: number;
+  totalTests: number;
+  live: LiveReadinessData;
+}) {
+  const pct = totalTests > 0 ? (totalPassed / totalTests) * 100 : 0;
   return (
     <Card className="border-gold/30 bg-gradient-to-br from-ink-soft via-ink-soft to-gold/[0.06] py-0">
       <CardHeader className="gap-2 px-4 pt-4 pb-2 sm:px-5 sm:pt-5">
@@ -617,7 +753,7 @@ function AggregateCard() {
           </CardTitle>
         </div>
         <CardDescription className="text-[11px] uppercase tracking-wider text-fg-muted">
-          across all 5 suites
+          across all 5 suites{live.source === "live" ? " · live" : ""}
         </CardDescription>
       </CardHeader>
       <CardContent className="px-4 pb-4 pt-1 sm:px-5 sm:pb-5">
@@ -644,14 +780,79 @@ function AggregateCard() {
 
 /* ---------- §3 Key financial metrics ---------- */
 
-function MetricsSection() {
+function MetricsSection({ live }: { live: LiveReadinessData }) {
+  // impl-fix-pages — override the FINANCIAL_METRICS rows that have a canonical
+  // live API mapping (NAV / Supply / RR / R_m / R_a / R_l / LCR baseline) with
+  // the values just fetched from /api/nav, /api/reserve/status and /api/lrr.
+  // Rows without a live endpoint (VaR/CVaR/duration/revenue) stay pinned to
+  // the documented Task-7 outputs — they are derived server-side and are not
+  // exposed by a single live endpoint.
+  const resolvedMetrics: MetricRow[] = FINANCIAL_METRICS.map((m) => {
+    if (m.label === "NAV (Net Asset Value)") {
+      return {
+        ...m,
+        value: `$${live.navM.toFixed(4)}`,
+        hint:
+          live.source === "live"
+            ? `live · /api/nav · +${((live.navM - 1) * 100).toFixed(2)}% premium to PAR`
+            : m.hint,
+      };
+    }
+    if (m.label === "MTQ Supply") {
+      return {
+        ...m,
+        value: live.supply.toLocaleString("en-US"),
+        hint: live.source === "live" ? "live · /api/nav · outstanding" : m.hint,
+      };
+    }
+    if (m.label === "Reserve Ratio (§4)") {
+      return {
+        ...m,
+        value: `${live.reserveRatio.toFixed(2)}%`,
+        hint: live.source === "live" ? "live · /api/nav · ≥ 100% required" : m.hint,
+      };
+    }
+    if (m.label === "Total Reserves R_m") {
+      return {
+        ...m,
+        value: fmtUsdShort(live.reserveMarketUsd),
+        hint: live.source === "live" ? "live · /api/nav · market value" : m.hint,
+      };
+    }
+    if (m.label === "Adjusted Reserves R_a") {
+      return {
+        ...m,
+        value: fmtUsdShort(live.reserveAdjustedUsd),
+        hint: live.source === "live" ? "live · /api/nav · after haircuts" : m.hint,
+      };
+    }
+    if (m.label === "Liquidation Reserves R_l") {
+      return {
+        ...m,
+        value: fmtUsdShort(live.reserveLiquidationUsd),
+        hint: live.source === "live" ? "live · /api/reserve/status · fire-sale floor" : m.hint,
+      };
+    }
+    if (m.label === "LCR — baseline") {
+      return {
+        ...m,
+        value: live.lrr.toFixed(2),
+        hint: live.source === "live" ? "live · /api/lrr · ≥ 1.0 required" : m.hint,
+      };
+    }
+    return m;
+  });
   return (
     <div className="space-y-5">
       <Reveal>
         <SectionHeading
           icon={Scale}
           title="Key financial metrics"
-          subtitle="Independently re-derived from the v19 engine · Basel III / IFRS-9 framing"
+          subtitle={
+            live.source === "live"
+              ? "Live · /api/nav · /api/reserve/status · /api/lrr · Basel III / IFRS-9 framing"
+              : "Independently re-derived from the v19 engine · Basel III / IFRS-9 framing"
+          }
         />
       </Reveal>
       <Reveal delay={0.05}>
@@ -672,7 +873,7 @@ function MetricsSection() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {FINANCIAL_METRICS.map((m, i) => (
+                {resolvedMetrics.map((m, i) => (
                   <TableRow key={i} className="border-line">
                     <TableCell className="px-3 py-2 text-xs font-medium text-foreground sm:text-sm">
                       <span className="flex items-center gap-2">
@@ -1095,6 +1296,104 @@ function SectionHeading({
  * ============================================================ */
 
 export function LiveReadinessDashboard() {
+  // impl-fix-pages — Live API fetching. Mirrors the pattern in
+  // stress-test-proof.tsx / video/page.tsx: pre-fetch baseline values are
+  // the canonical Task-7 outputs; once /api/nav, /api/reserve/status,
+  // /api/lrr, and /api/stress-lab resolve, the displayed NAV / RR / supply /
+  // reserves / LCR / stress-count rows are overridden with live values so
+  // the dashboard always agrees with every other live surface.
+  const [live, setLive] = useState<LiveReadinessData>(LIVE_INITIAL);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    // /api/nav — NAV_m, RR, supply, R_m, R_a (single source of truth for the
+    // displayed NAV / RR / reserves / supply).
+    fetch("/api/nav", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data: NavApiResponse | null) => {
+        if (cancelled || !data) return;
+        setLive((prev) => {
+          const next = { ...prev, source: "live" as const };
+          if (typeof data.navM === "number" && Number.isFinite(data.navM) && data.navM > 0) {
+            next.navM = data.navM;
+          }
+          if (typeof data.reserveRatio === "number" && Number.isFinite(data.reserveRatio) && data.reserveRatio > 0) {
+            next.reserveRatio = data.reserveRatio;
+          }
+          if (typeof data.supply === "number" && Number.isFinite(data.supply) && data.supply > 0) {
+            next.supply = data.supply;
+          }
+          if (typeof data.reserveMarketUsd === "number" && Number.isFinite(data.reserveMarketUsd) && data.reserveMarketUsd > 0) {
+            next.reserveMarketUsd = data.reserveMarketUsd;
+          }
+          if (typeof data.reserveAdjustedUsd === "number" && Number.isFinite(data.reserveAdjustedUsd) && data.reserveAdjustedUsd > 0) {
+            next.reserveAdjustedUsd = data.reserveAdjustedUsd;
+          }
+          return next;
+        });
+      })
+      .catch(() => {
+        /* keep baseline — canonical Task-7 values are still valid */
+      });
+
+    // /api/reserve/status — liquidation reserves R_l (threeLayer.liquidation).
+    fetch("/api/reserve/status", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data: ReserveStatusApiResponse | null) => {
+        if (cancelled || !data) return;
+        const liq = data.threeLayer?.liquidation;
+        if (typeof liq === "number" && Number.isFinite(liq) && liq > 0) {
+          setLive((prev) => ({ ...prev, reserveLiquidationUsd: liq, source: "live" }));
+        }
+      })
+      .catch(() => {
+        /* keep baseline */
+      });
+
+    // /api/lrr — LRR / LCR baseline (single source of truth for the
+    // "LCR — baseline" row).
+    fetch("/api/lrr", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data: LrrApiResponse | null) => {
+        if (cancelled || !data) return;
+        if (typeof data.lrr === "number" && Number.isFinite(data.lrr) && data.lrr > 0) {
+          setLive((prev) => ({ ...prev, lrr: data.lrr as number, source: "live" }));
+        }
+      })
+      .catch(() => {
+        /* keep baseline */
+      });
+
+    // /api/stress-lab — live 20-scenario stress test results (single source
+    // of truth for the §2 "Stress Scenarios" suite card and the headline
+    // "Total tests / Passed" summary).
+    fetch("/api/stress-lab", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data: StressLabApiResponse | null) => {
+        if (cancelled || !data) return;
+        const s = data.summary;
+        if (!s) return;
+        setLive((prev) => {
+          const next = { ...prev, source: "live" as const };
+          if (typeof s.scenariosPassed === "number" && Number.isFinite(s.scenariosPassed)) {
+            next.stressPassed = s.scenariosPassed;
+          }
+          if (typeof s.scenariosRun === "number" && Number.isFinite(s.scenariosRun)) {
+            next.stressRun = s.scenariosRun;
+          }
+          return next;
+        });
+      })
+      .catch(() => {
+        /* keep baseline — FALLBACK 20/20 from Task-7 is still valid */
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   return (
     <section
       id="s-live-readiness"
@@ -1103,9 +1402,9 @@ export function LiveReadinessDashboard() {
     >
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,color-mix(in_oklch,var(--gold)_8%,transparent),transparent_55%)]" />
       <div className="relative mx-auto w-full max-w-6xl space-y-12 px-5 py-14 sm:px-8 sm:py-20">
-        <HeaderSection />
-        <SuiteSection />
-        <MetricsSection />
+        <HeaderSection live={live} />
+        <SuiteSection live={live} />
+        <MetricsSection live={live} />
         <DefenseSection />
         <FindingsSection />
         <ChecklistSection />

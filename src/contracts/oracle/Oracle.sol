@@ -167,18 +167,32 @@ contract Oracle {
     }
 
     /**
-     * @notice Get the gold price (USD/oz, 8 decimals) — convenience alias for getPrice("GOLD").
-     * @dev Kept for backwards-compatibility with MockOracle.sol consumers.
+     * @notice Get the gold price (USD/oz, 8 decimals) — with staleness check.
+     * @dev FIX (adversarial certification finding #3): previously bypassed the
+     *      staleness check that getPrice("GOLD") enforces. Now reverts if stale.
      */
     function getGoldPrice() external view returns (uint256) {
+        require(goldPrice > 0, "Oracle: gold price not set");
+        // slither-disable-next-line timestamp
+        require(
+            block.timestamp - lastUpdated["GOLD"] <= MAX_STALENESS,
+            "Oracle: gold price stale (> 1 hour) - refresh required"
+        );
         return goldPrice;
     }
 
     /**
-     * @notice Get the silver price (USD/oz, 8 decimals) — convenience alias for getPrice("SILVER").
-     * @dev Kept for backwards-compatibility with MockOracle.sol consumers.
+     * @notice Get the silver price (USD/oz, 8 decimals) — with staleness check.
+     * @dev FIX (adversarial certification finding #3): previously bypassed the
+     *      staleness check that getPrice("SILVER") enforces. Now reverts if stale.
      */
     function getSilverPrice() external view returns (uint256) {
+        require(silverPrice > 0, "Oracle: silver price not set");
+        // slither-disable-next-line timestamp
+        require(
+            block.timestamp - lastUpdated["SILVER"] <= MAX_STALENESS,
+            "Oracle: silver price stale (> 1 hour) - refresh required"
+        );
         return silverPrice;
     }
 

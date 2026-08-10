@@ -36,6 +36,7 @@
  * Task ID: 5-c  ·  Agent: E2E Web Presentation Builder
  * ============================================================ */
 
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import {
   ArrowRight,
@@ -1096,7 +1097,112 @@ function CrisisProtectionCallout() {
  * Main section
  * ============================================================ */
 
+/**
+ * impl-fix-pages — canonical baseline for the pre-fetch render. Mirrors
+ * `BASELINE_COMPOSITION` in `src/lib/reserve-policy-spec.ts` so the
+ * pre-fetch badge matches what /api/nav returns at the baseline gold
+ * price of $4,076.90/oz (NAV_m = $1.0373, RR = 102.05%).
+ */
+const LIVE_FALLBACK = {
+  navM: 1.0373,
+  reserveRatio: 102.05,
+  goldUsd: 4076.9,
+} as const;
+
+type LiveEngineState = {
+  navM: number;
+  reserveRatio: number;
+  goldUsd: number;
+  source: "baseline" | "live";
+};
+
+/**
+ * LiveEngineBadge — small inline strip showing the CURRENT live NAV /
+ * Reserve Ratio / gold price fetched from /api/nav. Mounted at the top of
+ * the E2E section so the page wires to the same live API endpoint every
+ * other dashboard uses, WITHOUT overwriting the documented scenario
+ * narrative values below (those are the EXACT outputs of the Task-5-b
+ * test engine run at the $4,076.90/oz baseline — recomputing them live
+ * would invalidate the per-step math, e.g. deposit / NAV = MTQ minted).
+ */
+function LiveEngineBadge({ live }: { live: LiveEngineState }) {
+  return (
+    <div
+      className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-1.5 rounded-lg border border-reserve/30 bg-reserve/[0.06] px-3 py-2 text-[11px]"
+      role="status"
+      aria-live="polite"
+    >
+      <span className="flex items-center gap-1.5 font-semibold uppercase tracking-wider text-reserve">
+        <span
+          className="inline-block h-1.5 w-1.5 rounded-full bg-reserve"
+          aria-hidden="true"
+        />
+        Live engine state · /api/nav
+      </span>
+      <span className="font-mono tabular-nums text-foreground">
+        NAV <span className="text-gold">${live.navM.toFixed(4)}</span>
+      </span>
+      <span className="font-mono tabular-nums text-foreground">
+        RR <span className="text-gold">{live.reserveRatio.toFixed(2)}%</span>
+      </span>
+      <span className="font-mono tabular-nums text-foreground">
+        Gold <span className="text-gold">${live.goldUsd.toFixed(2)}/oz</span>
+      </span>
+      {live.source === "baseline" && (
+        <span className="text-fg-muted">· loading live prices…</span>
+      )}
+      <span className="ml-auto text-fg-muted">
+        scenario narratives pinned to the $4,076.90/oz baseline
+      </span>
+    </div>
+  );
+}
+
 export function E2EScenarios() {
+  // impl-fix-pages — Live NAV / RR / gold via /api/nav so this section
+  // shares the same single source of truth as every other dashboard. The
+  // scenario narrative values below remain the documented Task-5-b test
+  // outputs (see comment on SCENARIOS above); only the live engine badge
+  // at the top of the section reflects the current oracle state.
+  const [live, setLive] = useState<LiveEngineState>({
+    navM: LIVE_FALLBACK.navM,
+    reserveRatio: LIVE_FALLBACK.reserveRatio,
+    goldUsd: LIVE_FALLBACK.goldUsd,
+    source: "baseline",
+  });
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/nav", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data: { navM?: number; reserveRatio?: number; goldUsd?: number } | null) => {
+        if (cancelled || !data) return;
+        setLive((prev) => {
+          const next: LiveEngineState = { ...prev, source: "live" };
+          if (typeof data.navM === "number" && Number.isFinite(data.navM) && data.navM > 0) {
+            next.navM = data.navM;
+          }
+          if (
+            typeof data.reserveRatio === "number" &&
+            Number.isFinite(data.reserveRatio) &&
+            data.reserveRatio > 0
+          ) {
+            next.reserveRatio = data.reserveRatio;
+          }
+          if (typeof data.goldUsd === "number" && Number.isFinite(data.goldUsd) && data.goldUsd > 0) {
+            next.goldUsd = data.goldUsd;
+          }
+          return next;
+        });
+      })
+      .catch(() => {
+        /* keep baseline — canonical $1.0373 / 102.05% / $4,076.90 is still valid */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   return (
     <section
       id="s-e2e"
@@ -1122,6 +1228,14 @@ export function E2EScenarios() {
             FX rates, fees, and the constitutional invariants that held at every
             checkpoint.
           </p>
+        </Reveal>
+
+        {/* impl-fix-pages — live engine state badge (sourced from /api/nav).
+            Shown above the scenario summary so the section is wired to the
+            same live endpoint as every other dashboard. The scenario
+            narratives below remain pinned to the documented baseline. */}
+        <Reveal delay={0.04}>
+          <LiveEngineBadge live={live} />
         </Reveal>
 
         <Reveal delay={0.05}>

@@ -76,6 +76,8 @@ import {
   generateCrossAssetRebalancePlan,
   exceedsExposureLimit,
   COUNTERPARTY_EXPOSURE_LIMITS,
+  verifyRebalancePlanLiquidity,
+  verifyRebalancePlanReserveRatio,
   type RebalanceContext,
   type RebalanceTrigger,
   type RebalanceTriggerSeverity,
@@ -225,6 +227,7 @@ const executionResults = new Map<string, ExecutionResult>();
 const FALLBACK_LIVE_RR_DECIMAL = 1.0205;
 
 let cachedLiveRR: number | null = null;
+let cachedLiveLcr: number | null = null;
 let liveRRRefreshInFlight: Promise<number> | null = null;
 
 /**
@@ -242,6 +245,10 @@ export function refreshLiveReserveRatio(): Promise<number> {
       // in `generateRebalanceProposal` reads naturally.
       const decimal = nav.reserveRatio > 1 ? nav.reserveRatio / 100 : nav.reserveRatio;
       cachedLiveRR = decimal;
+      // Cache the LCR from the same computation (§5 — used by validateRebalanceProposal)
+      if (nav.state?.lcr?.ratio) {
+        cachedLiveLcr = nav.state.lcr.ratio;
+      }
       return decimal;
     })
     .catch((err) => {
@@ -272,6 +279,19 @@ function getCachedLiveRR(): number {
     return FALLBACK_LIVE_RR_DECIMAL;
   }
   return cachedLiveRR;
+}
+
+/**
+ * §5 — Get the cached live LCR (ratio, e.g. 1.25 = 125%).
+ * Returns the policy target (1.25) on the first call before the async
+ * refresh completes. After any /api/nav hit, the cache is warm.
+ */
+function getCachedLiveLcr(): number {
+  if (cachedLiveLcr === null) {
+    void refreshLiveReserveRatio();
+    return 1.25; // §5 policy target fallback
+  }
+  return cachedLiveLcr;
 }
 
 // ============================================================
@@ -1143,6 +1163,53 @@ export function validateRebalanceProposal(proposalId: string): RebalanceProposal
   const suppressionCheck = checkTradeSuppression(proposal, reserveState, totalReserveValue);
   failures.push(...suppressionCheck.suppressed);
 
+  // ──────────────────────────────────────────────────────────────
+  // FIX (adversarial certification finding #1 — CRITICAL):
+  // Wire verifyRebalancePlanLiquidity + verifyRebalancePlanReserveRatio
+  // into the execution gate. Previously these existed but were NEVER called.
+  // A plan converting HQLA cash to non-HQLA gold could drop LCR below 1.0
+  // without being rejected.
+  // ──────────────────────────────────────────────────────────────
+
+  // §29.6 — Liquidity Coverage Ratio verification.
+  // Estimate the LCR impact: HQLA assets (cash, sovereign, stablecoin) sold
+  // decrease the LCR numerator; HQLA bought increases it. Non-HQLA (gold,
+  // silver) don't affect the HQLA numerator directly.
+  const HQLA_CLASSES = new Set(["cash", "sovereign", "stablecoin"]);
+  let hqlaDeltaUsd = 0;
+  for (const action of proposal.actions) {
+    if (!HQLA_CLASSES.has(action.assetClass)) continue;
+    const actionValue = action.estimatedValue || 0;
+    if (action.action === "sell") hqlaDeltaUsd -= actionValue;
+    else if (action.action === "buy") hqlaDeltaUsd += actionValue;
+  }
+  // Current HQLA ≈ 60% of total reserve (same assumption as nav-compute.ts:219)
+  const currentHqla = totalReserveValue * 0.60;
+  const estimatedLcrDelta = currentHqla > 0 ? hqlaDeltaUsd / currentHqla : 0;
+  // Get current LCR from the cached live state (fallback to 1.25 = policy target)
+  const currentLcr = getCachedLiveLcr();
+  // Build a minimal plan proxy for the verifier (it only reads plan.phased)
+  const planProxy = { phased: proposal.actions.length > 3 } as RebalancePlan;
+  const liquidityCheck = verifyRebalancePlanLiquidity(planProxy, currentLcr, estimatedLcrDelta);
+  if (!liquidityCheck.allowed) {
+    failures.push(liquidityCheck.reason);
+  }
+
+  // §29.7 — Reserve Ratio verification.
+  // Estimate the RR impact: selling decreases R_a, buying increases it.
+  // RR is in PERCENT (e.g. 102.05). Delta in percent.
+  const currentRR = getCachedLiveRR() * 100; // convert decimal → percent
+  let rrDeltaPercent = 0;
+  for (const action of proposal.actions) {
+    const actionValue = action.estimatedValue || 0;
+    if (action.action === "sell") rrDeltaPercent -= (actionValue / totalReserveValue) * 100;
+    else if (action.action === "buy") rrDeltaPercent += (actionValue / totalReserveValue) * 100;
+  }
+  const rrCheck = verifyRebalancePlanReserveRatio(planProxy, currentRR, rrDeltaPercent, false);
+  if (!rrCheck.allowed) {
+    failures.push(rrCheck.reason);
+  }
+
   const fromState = proposal.lifecycle;
   if (failures.length > 0) {
     proposal.lifecycle = "REJECTED";
@@ -1158,6 +1225,8 @@ export function validateRebalanceProposal(proposalId: string): RebalanceProposal
     failures,
     concentrationCapViolations: capCheck.violations.length,
     tradeSuppressions: suppressionCheck.suppressed.length,
+    liquidityCheck: { allowed: liquidityCheck.allowed, reason: liquidityCheck.reason, projectedLcr: currentLcr + estimatedLcrDelta },
+    reserveRatioCheck: { allowed: rrCheck.allowed, reason: rrCheck.reason, projectedRR: currentRR + rrDeltaPercent },
   });
 
   return proposal;

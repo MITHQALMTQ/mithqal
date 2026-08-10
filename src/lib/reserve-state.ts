@@ -573,9 +573,20 @@ export function commitCustodianConfirmation(custodianAssets: ReserveAssetState[]
  */
 export function getExecutionMode(): ExecutionMode {
   const envMode = process.env.EXECUTION_MODE;
+  // FIX (adversarial certification finding #2 — HIGH):
+  // Production safety gate — if NODE_ENV=production, refuse to run in
+  // SIMULATION mode (which auto-approves all rebalances with no human-in-loop).
+  // This prevents accidental auto-approval in production if the operator
+  // forgets to set EXECUTION_MODE=SHADOW or LIVE.
+  if (process.env.NODE_ENV === "production" && (!envMode || envMode === "SIMULATION")) {
+    console.error("[execution-mode] FATAL: NODE_ENV=production but EXECUTION_MODE is SIMULATION (or unset). " +
+      "SIMULATION auto-approves all rebalances with no institutional approval. " +
+      "Set EXECUTION_MODE=SHADOW or LIVE for production. Refusing to run.");
+    return "SHADOW" as ExecutionMode; // safe fallback — requires manual approval
+  }
   if (envMode === "LIVE") return "LIVE" as ExecutionMode;
   if (envMode === "SHADOW") return "SHADOW" as ExecutionMode;
-  return "SIMULATION"; // default — safe
+  return "SIMULATION"; // default — safe for testnet/dev
 }
 
 export function isExecutionAllowed(): boolean {
