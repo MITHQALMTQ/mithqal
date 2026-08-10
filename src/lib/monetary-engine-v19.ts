@@ -560,7 +560,7 @@ export function checkMinimumFloor(
 // protection for the live currency-weight computation in computeMonetaryStateV19.
 
 // Module-level persistent hysteresis state (survives across API calls)
-let moduleHysteresisState: HysteresisState = { confirmationCounts: new Map() };
+let moduleHysteresisState: HysteresisState = { confirmationCounts: new Map(), lastDirections: new Map() };
 let moduleHysteresisPrevWeights: Map<string, number> = new Map();
 
 const HYSTERESIS_BAND = 0.02; // 2% absolute weight change threshold
@@ -569,6 +569,11 @@ const HYSTERESIS_CONFIRMATION_THRESHOLD = 2; // 2 consecutive observations requi
 export interface HysteresisState {
   /** Per-currency confirmation counter. Maps currency code → consecutive observations above band. */
   confirmationCounts: Map<string, number>;
+  /** Per-currency direction tracker. Maps currency code → sign of last drift (+1 / -1 / 0).
+   *  §22B anti-whipsaw: if the drift direction REVERSES, the counter resets (the prior
+   *  confirmation no longer applies to the new direction). Prevents ±3% oscillation from
+   *  confirming on cycle 2. */
+  lastDirections: Map<string, number>;
 }
 
 /**
@@ -594,6 +599,17 @@ export function applyHysteresis(
     state.confirmationCounts.set(currencyCode, 0);
     return currentWeight;
   }
+
+  // Large change — track direction for §22B anti-whipsaw
+  const direction = proposedWeight > currentWeight ? 1 : -1;
+  const lastDirections = state.lastDirections ?? new Map<string, number>();
+  const lastDirection = lastDirections.get(currencyCode) ?? 0;
+  if (lastDirection !== 0 && direction !== lastDirection) {
+    // Direction REVERSED — reset counter (the prior confirmation was for the opposite direction)
+    state.confirmationCounts.set(currencyCode, 0);
+  }
+  lastDirections.set(currencyCode, direction);
+  state.lastDirections = lastDirections;
 
   // Large change — check if confirmed
   const count = state.confirmationCounts.get(currencyCode) ?? 0;

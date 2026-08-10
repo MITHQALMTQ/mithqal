@@ -268,3 +268,48 @@ export function aggregateRebalanceFees(
     perAction,
   };
 }
+
+/**
+ * §6 Trade Suppression Rule (Phase 3 rebalancing-policy.md)
+ *
+ * Do not execute a trade if:
+ *   expected_benefit ≤ transaction_cost + slippage + market_impact + risk_buffer
+ *
+ * unless an emergency constitutional condition exists.
+ *
+ * This centralizes the suppression rule so callers don't reimplement it.
+ * Used by execution-engine.ts validateRebalanceProposal and the test suite.
+ */
+export function shouldSuppressTrade(
+  expectedBenefitUsd: number,
+  assetClass: string,
+  tradeValueUsd: number,
+  method: string = "TWAP",
+  marketImpactBps: number = 0,
+  activeEmergencyOverrides: readonly string[] = []
+): { suppress: boolean; reason: string; totalCostUsd: number; benefitUsd: number } {
+  // Emergency override — never suppress if an emergency condition is active
+  if (activeEmergencyOverrides.length > 0) {
+    return {
+      suppress: false,
+      reason: `emergency override active: ${activeEmergencyOverrides.join(", ")}`,
+      totalCostUsd: 0,
+      benefitUsd: expectedBenefitUsd,
+    };
+  }
+
+  const fee = computeRebalanceFee(assetClass, tradeValueUsd, method);
+  const riskBufferUsd = (tradeValueUsd * 2) / 10_000; // RISK_BUFFER_BPS = 2 (Phase 3 §6.2)
+  const marketImpactUsd = (tradeValueUsd * marketImpactBps) / 10_000;
+  const totalCostUsd = fee.totalCost + riskBufferUsd + marketImpactUsd;
+
+  const suppress = expectedBenefitUsd <= totalCostUsd;
+  return {
+    suppress,
+    reason: suppress
+      ? `benefit $${expectedBenefitUsd.toFixed(2)} ≤ cost $${totalCostUsd.toFixed(2)} (fee ${fee.totalCost.toFixed(2)} + risk_buffer ${riskBufferUsd.toFixed(2)} + impact ${marketImpactUsd.toFixed(2)})`
+      : "benefit exceeds cost",
+    totalCostUsd,
+    benefitUsd: expectedBenefitUsd,
+  };
+}

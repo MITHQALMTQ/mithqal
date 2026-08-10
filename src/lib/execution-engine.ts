@@ -74,6 +74,8 @@ import { getCustodianAdapter, type CustodianTransactionRequest } from "./custodi
 import {
   detectRebalanceTriggers,
   generateCrossAssetRebalancePlan,
+  exceedsExposureLimit,
+  COUNTERPARTY_EXPOSURE_LIMITS,
   type RebalanceContext,
   type RebalanceTrigger,
   type RebalanceTriggerSeverity,
@@ -85,6 +87,17 @@ import { computeRebalanceFee } from "./rebalance-fees";
 
 // §3.1 / §4 — live NAV computer (for the live reserve ratio used in RR projection).
 import { computeLiveNav } from "./nav-compute";
+
+// Phase 4 — centralized machine-readable policy spec. SINGLE SOURCE OF TRUTH
+// for all reserve policy limits. No magic numbers in the validation logic —
+// every cap, threshold, and emergency override identifier flows from here.
+import {
+  CONCENTRATION_SPEC,
+  TRADE_SUPPRESSION_SPEC,
+  FEE_SPEC,
+  TURNOVER_SPEC,
+  RESERVE_POLICY_SPEC,
+} from "./reserve-policy-spec";
 
 // §29.10 — append-only audit ledger (JSONL).
 import { appendFileSync, mkdirSync } from "fs";
@@ -351,6 +364,448 @@ function auditLifecycleTransition(
     executionMode: getExecutionMode(),
     details,
   });
+}
+
+// ============================================================
+// Phase 4 — §10 Concentration Cap Runtime Gate
+// ============================================================
+//
+// Per §10 (v19 addendum §4): the 7-tier counterparty exposure cap table is
+// cumulative across tiers — a single counterparty that is simultaneously the
+// largest issuer AND custodian is independently bound by Tier 1, Tier 2,
+// AND Tier 3. The cap table is the SINGLE source of truth for counterparty
+// exposure limits; this gate rejects any proposal whose post-trade portfolio
+// would push a §10 group beyond its cap.
+//
+// The cap values are imported from `reserve-policy-spec.ts` CONCENTRATION_SPEC
+// (re-exported via the v19-infrastructure.ts `COUNTERPARTY_EXPOSURE_LIMITS`
+// array, which carries the per-tier metadata used by `exceedsExposureLimit`).
+// NO magic numbers in this gate.
+
+/**
+ * §10 — Map an institutional `RebalanceAction.assetClass` to the currency
+ * code used for per-currency / per-jurisdiction exposure grouping.
+ *
+ *   gold   → XAU
+ *   silver → XAG
+ *   cash / sovereign / stablecoin → USD (all USD-denominated in the simulation)
+ */
+function assetClassToCurrency(assetClass: RebalanceAction["assetClass"]): string {
+  switch (assetClass) {
+    case "gold": return "XAU";
+    case "silver": return "XAG";
+    default: return "USD";
+  }
+}
+
+/**
+ * §10 — Build the per-group exposure maps (in PERCENT — `exceedsExposureLimit`
+ * expects 0..100) from a portfolio keyed by asset class.
+ *
+ * Three groupings (the simulation does not yet distinguish issuer from
+ * custodian or jurisdiction from currency — we use the most restrictive
+ * available mapping so the §10 invariant is enforced even with the
+ * simplified data model):
+ *
+ *   - perCounterparty + perCustodian  → grouped by `custodianId`
+ *   - perIssuer + perInfrastructure   → grouped by `assetClass`
+ *   - perJurisdiction + perCurrency   → grouped by `assetClassToCurrency`
+ */
+function buildExposureMaps(
+  portfolio: Map<RebalanceAction["assetClass"], number>,
+  totalUsd: number,
+  assetClassToCustodian: Map<RebalanceAction["assetClass"], string>,
+): {
+  perCustodian: Map<string, number>;
+  perIssuer: Map<string, number>;
+  perCurrency: Map<string, number>;
+} {
+  const perCustodian = new Map<string, number>();
+  const perIssuer = new Map<string, number>();
+  const perCurrency = new Map<string, number>();
+  for (const [assetClass, valueUsd] of portfolio) {
+    const pct = totalUsd > 0 ? (Math.max(0, valueUsd) / totalUsd) * 100 : 0;
+    const custodian = assetClassToCustodian.get(assetClass) ?? "unknown";
+    perCustodian.set(custodian, (perCustodian.get(custodian) ?? 0) + pct);
+    perIssuer.set(assetClass, (perIssuer.get(assetClass) ?? 0) + pct);
+    const currency = assetClassToCurrency(assetClass);
+    perCurrency.set(currency, (perCurrency.get(currency) ?? 0) + pct);
+  }
+  return { perCustodian, perIssuer, perCurrency };
+}
+
+/**
+ * §10 — Post-trade counterparty exposure gate.
+ *
+ * For each §10 tier (per-counterparty, per-custodian, per-issuer,
+ * per-jurisdiction, per-infrastructure, per-currency — aggregate is skipped
+ * because it is always 100% by construction), compute the post-trade
+ * exposure per group and reject the proposal if any group exceeds its cap.
+ *
+ * Design note on pre-existing violations: the canonical simulation baseline
+ * (cash $29M + sovereign $13.5M + stablecoin $2.7M ≈ 80% of total) is held
+ * by a SINGLE simulated custodian (`sim-bank-01`), which already exceeds
+ * the §10.2 per-custodian 25% cap. This is a known simulation simplification
+ * (only 2 custodians vs CONCENTRATION_SPEC.MIN_CUSTODIANS=3). To avoid
+ * blocking every proposal that touches the dominant custodian, this gate
+ * uses the "worsening" rule: a trade is REJECTED only if it INCREASES the
+ * exposure to an already-over-cap group (or pushes a previously-compliant
+ * group over the cap). Trades that REDUCE an over-cap exposure are allowed
+ * (the system should be free to rebalance toward compliance).
+ *
+ * The cap values come from `COUNTERPARTY_EXPOSURE_LIMITS` (which mirrors
+ * `CONCENTRATION_SPEC`); the cross-check against `CONCENTRATION_SPEC` is
+ * done at module load via the assertion below.
+ */
+function checkConcentrationCap(
+  reserveState: ReserveState,
+  actions: RebalanceAction[],
+  totalReserveValue: number,
+): { violations: string[] } {
+  const violations: string[] = [];
+  if (totalReserveValue <= 0) return { violations };
+
+  // Pre-trade portfolio (assetClass → USD value) from executed state.
+  const preTradePortfolio = new Map<RebalanceAction["assetClass"], number>();
+  for (const a of reserveState.executed) {
+    const v = a.unit === "oz" ? a.quantity * a.marketPrice : a.quantity;
+    preTradePortfolio.set(
+      a.assetClass as RebalanceAction["assetClass"],
+      (preTradePortfolio.get(a.assetClass as RebalanceAction["assetClass"]) ?? 0) + v,
+    );
+  }
+
+  // Post-trade portfolio: apply every action's buy/sell delta.
+  const postTradePortfolio = new Map(preTradePortfolio);
+  for (const action of actions) {
+    const delta = action.action === "buy" ? action.estimatedValue : -action.estimatedValue;
+    postTradePortfolio.set(
+      action.assetClass,
+      (postTradePortfolio.get(action.assetClass) ?? 0) + delta,
+    );
+  }
+
+  const preTotal = Array.from(preTradePortfolio.values()).reduce(
+    (s, v) => s + Math.max(0, v), 0,
+  );
+  const postTotal = Array.from(postTradePortfolio.values()).reduce(
+    (s, v) => s + Math.max(0, v), 0,
+  );
+  if (postTotal <= 0) return { violations };
+
+  // assetClass → custodianId lookup.
+  const assetClassToCustodian = new Map<RebalanceAction["assetClass"], string>();
+  for (const a of reserveState.executed) {
+    assetClassToCustodian.set(
+      a.assetClass as RebalanceAction["assetClass"],
+      a.custodianId ?? "unknown",
+    );
+  }
+
+  const preMaps = buildExposureMaps(preTradePortfolio, preTotal, assetClassToCustodian);
+  const postMaps = buildExposureMaps(postTradePortfolio, postTotal, assetClassToCustodian);
+
+  for (const limit of COUNTERPARTY_EXPOSURE_LIMITS) {
+    if (limit.key === "aggregate") continue; // always 100% by construction
+    let preMap: Map<string, number>;
+    let postMap: Map<string, number>;
+    if (limit.key === "per-counterparty" || limit.key === "per-custodian") {
+      preMap = preMaps.perCustodian;
+      postMap = postMaps.perCustodian;
+    } else if (limit.key === "per-issuer" || limit.key === "per-infrastructure") {
+      preMap = preMaps.perIssuer;
+      postMap = postMaps.perIssuer;
+    } else if (limit.key === "per-jurisdiction" || limit.key === "per-currency") {
+      preMap = preMaps.perCurrency;
+      postMap = postMaps.perCurrency;
+    } else {
+      continue;
+    }
+    for (const [group, postPct] of postMap) {
+      const result = exceedsExposureLimit(postPct, limit);
+      if (!result.exceeded) continue;
+      const prePct = preMap.get(group) ?? 0;
+      // §10 "worsening" rule — allow trades that REDUCE an already-over-cap
+      // exposure (the system must remain free to rebalance toward §10
+      // compliance). Reject only when the trade increases (or holds) the
+      // over-cap exposure.
+      if (postPct < prePct) continue;
+      violations.push(
+        `§10.${limit.tier} ${limit.name} breach: ${group} at ${postPct.toFixed(2)}% > cap ${limit.capPct}% (over by ${result.overBy.toFixed(2)}pp; pre-trade ${prePct.toFixed(2)}%)`,
+      );
+    }
+  }
+  return { violations };
+}
+
+// Compile-time cross-check: the v19-infrastructure cap table MUST agree with
+// the centralized CONCENTRATION_SPEC. If they drift, this assertion fails at
+// module load (a deliberate loud failure — the spec is the single source of
+// truth and the two arrays must not diverge).
+function _crossCheckConcentrationSpecAgreesWithV19Infrastructure(): void {
+  const byKey = new Map(COUNTERPARTY_EXPOSURE_LIMITS.map((l) => [l.key, l.capPct / 100]));
+  const expected: Record<string, number> = {
+    "per-counterparty": CONCENTRATION_SPEC.PER_COUNTERPARTY,
+    "per-custodian": CONCENTRATION_SPEC.PER_CUSTODIAN,
+    "per-issuer": CONCENTRATION_SPEC.PER_ISSUER,
+    "per-jurisdiction": CONCENTRATION_SPEC.PER_JURISDICTION,
+    "per-infrastructure": CONCENTRATION_SPEC.PER_INFRASTRUCTURE,
+    "per-currency": CONCENTRATION_SPEC.PER_CURRENCY,
+    "aggregate": CONCENTRATION_SPEC.AGGREGATE,
+  };
+  for (const [key, expectedPct] of Object.entries(expected)) {
+    const actualPct = byKey.get(key);
+    if (actualPct === undefined) {
+      throw new Error(`§10 cap-table drift: "${key}" missing from COUNTERPARTY_EXPOSURE_LIMITS`);
+    }
+    if (Math.abs(actualPct - expectedPct) > 1e-9) {
+      throw new Error(
+        `§10 cap-table drift: "${key}" capPct=${actualPct} in v19-infrastructure vs CONCENTRATION_SPEC=${expectedPct}`,
+      );
+    }
+  }
+}
+_crossCheckConcentrationSpecAgreesWithV19Infrastructure();
+
+// ============================================================
+// Phase 4 — §29.6 Trade Suppression Rule (Phase 3 §6)
+// ============================================================
+//
+// Per Phase 3 §6.1: do not execute a trade if
+//
+//     expected_benefit ≤ transaction_cost + slippage + market_impact + risk_buffer
+//
+// UNLESS an emergency constitutional condition exists (§33 SDP, §44
+// Constitutional Emergency, or a Tier 3 trigger). The emergency override
+// identifiers are imported from TRADE_SUPPRESSION_SPEC.EMERGENCY_OVERRIDES
+// (sdp_triggered, constitutional_emergency, concentration_cap,
+// reserve_ratio_breach, minimum_floor_breach). They are NOT §29 trigger
+// types — they are conceptual labels for the conditions that bypass
+// suppression. We bridge the two namespaces below.
+
+/**
+ * §29.6 — Map a §29 trigger type to a §29.6 emergency override identifier.
+ * Returns `null` if the trigger type does not correspond to an override.
+ */
+const TRIGGER_TYPE_TO_OVERRIDE: Record<string, string> = {
+  concentration_cap: "concentration_cap",
+  minimum_floor: "minimum_floor_breach",
+  reserve_ratio: "reserve_ratio_breach",
+};
+
+/**
+ * §29.6 / Phase 3 §6.3 — Determine whether a proposal's triggers constitute
+ * an emergency override that bypasses the trade suppression rule.
+ *
+ * Returns `true` if ANY of:
+ *   - The proposal has a "critical" severity trigger (covers sdp_triggered +
+ *     constitutional_emergency — both are Tier 3 emergencies by §33 / §44).
+ *   - The proposal has a trigger whose type maps to one of
+ *     TRADE_SUPPRESSION_SPEC.EMERGENCY_OVERRIDES (concentration_cap,
+ *     minimum_floor, reserve_ratio).
+ *
+ * On the raw-actions path (no triggers), this returns `false` — suppression
+ * applies normally because there is no constitutional justification to bypass.
+ */
+export function isEmergencyOverride(
+  triggers: RebalanceTrigger[] | undefined,
+): boolean {
+  if (!triggers || triggers.length === 0) return false;
+  const overrides = TRADE_SUPPRESSION_SPEC.EMERGENCY_OVERRIDES;
+  for (const t of triggers) {
+    if (t.severity === "critical") return true;
+    const mapped = TRIGGER_TYPE_TO_OVERRIDE[t.type];
+    if (mapped && (overrides as readonly string[]).includes(mapped)) return true;
+  }
+  return false;
+}
+
+/**
+ * §29.6 / Phase 3 §6 — Trade suppression check.
+ *
+ * For each action, computes:
+ *
+ *   expected_benefit = |current_weight − target_weight| × totalReserveValue
+ *   total_cost       = computeRebalanceFee(assetClass, tradeValue, method).totalCost
+ *                      + market_impact_estimate
+ *                      + RISK_BUFFER_BPS × tradeValue / 10_000
+ *
+ * If `expected_benefit ≤ total_cost` AND the proposal is NOT an emergency
+ * override, the action is suppressed (Tier 1 — observe instead of trade).
+ *
+ * `market_impact_estimate` is set to the fee's `slippageCost` (the fee
+ * model's market-impact estimate, per §29.5). This is intentionally
+ * conservative — it effectively doubles the slippage component, biasing
+ * toward NOT trading (per Phase 3 §6.2 "Conservative — biases toward NOT
+ * trading"). A dedicated `estimateMarketImpact` function (Phase 2 §6.4)
+ * can replace this proxy when implemented.
+ */
+function checkTradeSuppression(
+  proposal: RebalanceProposal,
+  reserveState: ReserveState,
+  totalReserveValue: number,
+): { suppressed: string[] } {
+  // Emergency overrides bypass suppression entirely (Phase 3 §6.3).
+  if (isEmergencyOverride(proposal.triggers)) {
+    return { suppressed: [] };
+  }
+  const suppressed: string[] = [];
+  const riskBufferBps = FEE_SPEC.RISK_BUFFER_BPS;
+
+  for (const action of proposal.actions) {
+    const asset = reserveState.executed.find((s) => s.assetClass === action.assetClass);
+    const currentWeight = asset?.actualWeight ?? 0;
+    const targetWeight = asset?.targetWeight ?? 0;
+    const drift = Math.abs(currentWeight - targetWeight);
+
+    // expected_benefit: drift reduction × portfolio value (Phase 3 §6.2).
+    const expectedBenefit = drift * totalReserveValue;
+
+    // total_cost: fee (execution + slippage + spread) + market impact + risk buffer.
+    const fee = computeRebalanceFee(action.assetClass, action.estimatedValue, "TWAP");
+    const marketImpactEstimate = fee.slippageCost; // conservative proxy (Phase 2 §6.4)
+    const riskBufferUsd = (riskBufferBps * action.estimatedValue) / 10_000;
+    const totalCost = fee.totalCost + marketImpactEstimate + riskBufferUsd;
+
+    if (expectedBenefit <= totalCost) {
+      suppressed.push(
+        `§29.6 trade suppressed: ${action.assetClass} ${action.action} — expected benefit $${expectedBenefit.toFixed(2)} ≤ total cost $${totalCost.toFixed(2)} (fee $${fee.totalCost.toFixed(2)} + impact $${marketImpactEstimate.toFixed(2)} + risk buffer $${riskBufferUsd.toFixed(2)} at ${riskBufferBps}bps) — Tier 1 observe`,
+      );
+    }
+  }
+  return { suppressed };
+}
+
+// ============================================================
+// Phase 4 — Invariant I-4 Weekly Turnover Tracker (3% cap per asset)
+// ============================================================
+//
+// Per Invariant I-4 (Certora-proven): the weekly weight-change per asset
+// MUST NOT exceed 3% (TURNOVER_SPEC.WEEKLY_CAP_PER_ASSET). The cap MAY be
+// exceeded under a documented Tier 3 emergency (Phase 3 §1 property 9:
+// "3% weekly cap may be exceeded under documented emergency — requires
+// Council authorization + post-incident audit").
+//
+// Implementation: an in-memory Map records each EXECUTED trade's weight
+// impact per asset with a timestamp. Before execution, we sum the historical
+// weight changes for each asset in the last 7 days + the projected weight
+// change from the pending proposal; if the total exceeds the cap and the
+// proposal is NOT a Tier 3 emergency, REJECT with "weekly turnover cap
+// exceeded for {asset}".
+//
+// DETERMINISM (§29.12): NO `Date.now()` is called in the decision logic.
+// The check function takes `asOfTimestamp` as a required parameter; callers
+// (the route handler) pass `Date.now()` explicitly. The record function
+// also takes `asOfTimestamp` as a parameter. The in-memory Map is the
+// operational cache; the §29.10 audit ledger is the canonical record.
+
+interface TurnoverRecord {
+  assetClass: RebalanceAction["assetClass"];
+  /** Absolute weight change (always ≥ 0). Churning counts both ways. */
+  weightChange: number;
+  /** ms since epoch — passed by the caller, NOT Date.now(). */
+  timestamp: number;
+  proposalId: string;
+}
+
+/**
+ * In-memory turnover tracker. Lost on restart — the §29.10 audit ledger is
+ * the canonical record. Acceptable for SIMULATION mode.
+ */
+const turnoverRecords: TurnoverRecord[] = [];
+
+/**
+ * Idempotency set: a proposal's turnover impact is recorded at most once,
+ * even if `recordTurnoverImpact` is called multiple times (defensive —
+ * `executeRebalanceProposal` guards against double-execution via lifecycle
+ * state, but this set is a belt-and-braces backstop).
+ */
+const recordedProposalIds = new Set<string>();
+
+/**
+ * Invariant I-4 — Check whether executing this proposal would exceed the
+ * weekly turnover cap for any asset. Returns the list of violations
+ * (empty if all clear).
+ *
+ * Per Phase 3 §1 property 9 / Invariant I-4: the 3% weekly cap MAY be
+ * exceeded under a documented Tier 3 emergency. We treat
+ * `proposal.maxSeverity === "critical"` as the Tier 3 emergency signal —
+ * the §29.10 audit ledger captures the constitutional justification.
+ */
+function checkWeeklyTurnoverCap(
+  proposal: RebalanceProposal,
+  totalReserveValue: number,
+  asOfTimestamp: number,
+): { violations: string[] } {
+  // Tier 3 emergency bypass (documented — the audit ledger carries the
+  // critical-severity trigger that justifies the override).
+  if (proposal.maxSeverity === "critical") {
+    return { violations: [] };
+  }
+
+  const weeklyCap = TURNOVER_SPEC.WEEKLY_CAP_PER_ASSET; // 0.03
+  const windowMs = TURNOVER_SPEC.WEEKLY_WINDOW_MS;      // 7 days
+  const cutoff = asOfTimestamp - windowMs;
+
+  // Project the absolute weight change per asset from this proposal.
+  const projectedByAsset = new Map<RebalanceAction["assetClass"], number>();
+  for (const action of proposal.actions) {
+    if (totalReserveValue <= 0) continue;
+    const weightChange = Math.abs(action.estimatedValue / totalReserveValue);
+    projectedByAsset.set(
+      action.assetClass,
+      (projectedByAsset.get(action.assetClass) ?? 0) + weightChange,
+    );
+  }
+
+  const violations: string[] = [];
+  for (const [assetClass, projected] of projectedByAsset) {
+    const historical = turnoverRecords
+      .filter((r) => r.assetClass === assetClass && r.timestamp >= cutoff)
+      .reduce((sum, r) => sum + r.weightChange, 0);
+    const total = historical + projected;
+    if (total > weeklyCap) {
+      violations.push(
+        `Invariant I-4 weekly turnover cap exceeded for ${assetClass}: ${(total * 100).toFixed(2)}% > ${(weeklyCap * 100).toFixed(0)}% cap (historical ${(historical * 100).toFixed(2)}% + projected ${(projected * 100).toFixed(2)}%)`,
+      );
+    }
+  }
+  return { violations };
+}
+
+/**
+ * Invariant I-4 — Record the executed trade's weight impact per asset.
+ * Called AFTER successful execution settles so subsequent proposals see
+ * the updated turnover. Idempotent (see `recordedProposalIds`).
+ */
+function recordTurnoverImpact(
+  proposal: RebalanceProposal,
+  totalReserveValue: number,
+  asOfTimestamp: number,
+): void {
+  if (recordedProposalIds.has(proposal.proposalId)) return;
+  recordedProposalIds.add(proposal.proposalId);
+  if (totalReserveValue <= 0) return;
+  for (const action of proposal.actions) {
+    const weightChange = Math.abs(action.estimatedValue / totalReserveValue);
+    if (weightChange <= 0) continue;
+    turnoverRecords.push({
+      assetClass: action.assetClass,
+      weightChange,
+      timestamp: asOfTimestamp,
+      proposalId: proposal.proposalId,
+    });
+  }
+}
+
+/**
+ * Phase 4 — test/diagnostic helper: reset the in-memory turnover tracker.
+ * Used by integration tests to establish a deterministic baseline. NOT
+ * called by production code paths.
+ */
+export function _resetTurnoverTrackerForTests(): void {
+  turnoverRecords.length = 0;
+  recordedProposalIds.clear();
 }
 
 // ============================================================
@@ -650,19 +1105,43 @@ export function validateRebalanceProposal(proposalId: string): RebalanceProposal
   // Constitutional validation checks
   const failures: string[] = [];
 
+  // §22A — post-trade weight bounds (use centralized spec, no magic numbers).
+  const maxCap = RESERVE_POLICY_SPEC.BASKET_VERIFICATION.MAX_CAP;       // 0.60
+  const minFloor = RESERVE_POLICY_SPEC.BASKET_VERIFICATION.MIN_FLOOR;   // 0.005
+  // §4 — post-trade reserve ratio floor (PAR-based hard invariant).
+  const rrHardFloor = RESERVE_POLICY_SPEC.RESERVE_RATIO.HARD_FLOOR;     // 1.00
+
   for (const action of proposal.actions) {
-    // Check post-trade weight is within constitutional bounds
-    if (action.postTradeWeight > 0.60) {
-      failures.push(`${action.assetClass} post-trade weight ${(action.postTradeWeight * 100).toFixed(1)}% exceeds 60% cap`);
+    // §22A — post-trade weight within constitutional bounds.
+    if (action.postTradeWeight > maxCap) {
+      failures.push(`${action.assetClass} post-trade weight ${(action.postTradeWeight * 100).toFixed(1)}% exceeds ${(maxCap * 100).toFixed(0)}% cap`);
     }
-    if (action.postTradeWeight < 0.005 && action.assetClass !== "stablecoin") {
-      failures.push(`${action.assetClass} post-trade weight ${(action.postTradeWeight * 100).toFixed(2)}% below 0.5% floor`);
+    if (action.postTradeWeight < minFloor && action.assetClass !== "stablecoin") {
+      failures.push(`${action.assetClass} post-trade weight ${(action.postTradeWeight * 100).toFixed(2)}% below ${(minFloor * 100).toFixed(1)}% floor`);
     }
-    // Check post-trade reserve ratio
-    if (action.postTradeReserveRatio < 1.00) {
-      failures.push(`${action.assetClass} post-trade RR ${(action.postTradeReserveRatio * 100).toFixed(1)}% below 100% floor`);
+    // §4 — post-trade reserve ratio hard floor.
+    if (action.postTradeReserveRatio < rrHardFloor) {
+      failures.push(`${action.assetClass} post-trade RR ${(action.postTradeReserveRatio * 100).toFixed(1)}% below ${(rrHardFloor * 100).toFixed(0)}% floor`);
     }
   }
+
+  // Phase 4 — §10 concentration cap runtime gate (7-tier counterparty
+  // exposure cap table). Computed against the live reserve state + the
+  // proposal's post-trade portfolio. Rejects trades that would push a §10
+  // group beyond its cap (with the "worsening" rule documented above).
+  const reserveState = getReserveState();
+  const totalReserveValue = reserveState.executed.reduce(
+    (sum, s) => sum + (s.unit === "oz" ? s.quantity * s.marketPrice : s.quantity),
+    0,
+  );
+  const capCheck = checkConcentrationCap(reserveState, proposal.actions, totalReserveValue);
+  failures.push(...capCheck.violations);
+
+  // Phase 4 — §29.6 / Phase 3 §6 trade suppression check. Suppresses
+  // individual actions whose expected benefit ≤ total cost (Tier 1 — observe
+  // instead). Emergency overrides bypass suppression entirely (§6.3).
+  const suppressionCheck = checkTradeSuppression(proposal, reserveState, totalReserveValue);
+  failures.push(...suppressionCheck.suppressed);
 
   const fromState = proposal.lifecycle;
   if (failures.length > 0) {
@@ -677,6 +1156,8 @@ export function validateRebalanceProposal(proposalId: string): RebalanceProposal
   // §29.10 — audit the validation transition (PROPOSED→VALIDATED or PROPOSED→REJECTED).
   auditLifecycleTransition(proposal, fromState, proposal.lifecycle, "system:validateRebalanceProposal", {
     failures,
+    concentrationCapViolations: capCheck.violations.length,
+    tradeSuppressions: suppressionCheck.suppressed.length,
   });
 
   return proposal;
@@ -802,14 +1283,64 @@ export function approveRebalanceProposal(
  * Per §12: Do NOT connect executeRebalancePlan() to real financial accounts yet.
  * In SIMULATION mode: executes against simulated custodian adapters.
  * In PRODUCTION mode: would execute against real custodian APIs (disabled).
+ *
+ * Phase 4 — Invariant I-4 weekly turnover cap (3% per asset) is enforced
+ * BEFORE execution. If the cumulative weight change for any asset in the
+ * last 7 days + this proposal's projected weight change exceeds
+ * TURNOVER_SPEC.WEEKLY_CAP_PER_ASSET and the proposal is NOT a Tier 3
+ * emergency (maxSeverity !== "critical"), execution is REJECTED with
+ * "weekly turnover cap exceeded for {asset}". The check uses an
+ * `asOfTimestamp` parameter (NOT `Date.now()` in the decision logic —
+ * §29.12 determinism); the default falls back to `Date.now()` so the
+ * existing route handler that doesn't pass an options object continues
+ * to work unchanged.
  */
-export async function executeRebalanceProposal(proposalId: string): Promise<ExecutionResult> {
+export async function executeRebalanceProposal(
+  proposalId: string,
+  options?: { asOfTimestamp?: number },
+): Promise<ExecutionResult> {
   const proposal = proposals.get(proposalId);
   if (!proposal) throw new Error(`Proposal ${proposalId} not found`);
   if (proposal.lifecycle !== "APPROVED") throw new Error(`Proposal ${proposalId} is not in APPROVED state`);
 
   if (!isExecutionAllowed()) {
     throw new Error(`Execution not allowed in current mode (${getExecutionMode()})`);
+  }
+
+  // §29.12 — asOfTimestamp is caller-supplied for determinism. The default
+  // `Date.now()` is a parameter value (NOT decision logic) — the actual
+  // check function `checkWeeklyTurnoverCap` is pure: it uses only its
+  // arguments.
+  const asOfTimestamp = options?.asOfTimestamp ?? Date.now();
+
+  // Phase 4 — Invariant I-4 pre-execution weekly turnover cap check.
+  const reserveState = getReserveState();
+  const totalReserveValue = reserveState.executed.reduce(
+    (sum, s) => sum + (s.unit === "oz" ? s.quantity * s.marketPrice : s.quantity),
+    0,
+  );
+  const turnoverCheck = checkWeeklyTurnoverCap(
+    proposal, totalReserveValue, asOfTimestamp,
+  );
+  if (turnoverCheck.violations.length > 0) {
+    const reason = `Invariant I-4 weekly turnover cap exceeded: ${turnoverCheck.violations.join("; ")}`;
+    proposal.lifecycle = "FAILED";
+    proposal.rejectionReason = reason;
+    proposals.set(proposalId, proposal);
+    // §29.10 — audit the turnover-cap rejection (APPROVED→FAILED).
+    auditLifecycleTransition(proposal, "APPROVED", "FAILED", "system:turnover-cap", {
+      turnoverViolations: turnoverCheck.violations,
+      asOfTimestamp,
+    });
+    const result: ExecutionResult = {
+      proposalId,
+      transactionRefs: [],
+      settledActions: [],
+      failed: true,
+      failureReason: reason,
+    };
+    executionResults.set(proposalId, result);
+    return result;
   }
 
   const fromStateApproved = proposal.lifecycle;
@@ -832,8 +1363,8 @@ export async function executeRebalanceProposal(proposalId: string): Promise<Exec
 
     for (const action of proposal.actions) {
       // Get the appropriate custodian adapter
-      const reserveState = getReserveState();
-      const asset = reserveState.executed.find((s) => s.assetClass === action.assetClass);
+      const rs = getReserveState();
+      const asset = rs.executed.find((s) => s.assetClass === action.assetClass);
       if (!asset || !asset.custodianId) {
         failed = true;
         failureReason = `No custodian for asset ${action.assetClass}`;
@@ -890,6 +1421,14 @@ export async function executeRebalanceProposal(proposalId: string): Promise<Exec
       failureReason,
       settledActionCount: settledActions.length,
     });
+
+    // Phase 4 — Invariant I-4: record the executed trade's weight impact
+    // per asset so subsequent proposals see the updated turnover. Only
+    // recorded on successful settlement (failed proposals don't churn the
+    // portfolio). Idempotent via `recordedProposalIds`.
+    if (!failed) {
+      recordTurnoverImpact(proposal, totalReserveValue, asOfTimestamp);
+    }
   } catch (err) {
     failed = true;
     failureReason = err instanceof Error ? err.message : "unknown error";
