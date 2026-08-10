@@ -246,3 +246,19 @@ All rights reserved. The Mithqal Constitution and all source code are the intell
 ---
 
 > _The T-bill of crypto settlement — boring, neutral, over-collateralised._
+
+## Solana Deployment
+
+MITHQAL has deployed an MTQ token on Solana Devnet for testing and integration.
+
+| Parameter | Value |
+|-----------|-------|
+| **Mint Address** | `GAGRdrY6jcRTmD7A9KzvXA5sGMpNAkkRXwDoXBrEjxS4` |
+| **Symbol** | MTQ |
+| **Decimals** | 18 |
+| **Wallet** | `DbFjzWcD6kNmewadiG7ThjD7L4o3w3UhFhG31fPQhXb3` |
+| **Initial Balance** | 18.44... (10 billion) |
+| **Network** | Solana Devnet |
+
+The token metadata has been submitted to the Solana Foundation token registry ([PR #22](https://github.com/solana-foundation/tokens/pull/22)). Once merged, MTQ will be discoverable in Solana wallets and explorers.
+
