@@ -103,8 +103,39 @@ async function tick() {
   }
 
   // Restart services if down
-  if (existsSync(MITHQAL_DIR) && existsSync(MITHQAL_ENV) && !(await isPortListening(3000))) { startDetached(MITHQAL_DIR, ["bun", "run", "dev"], "/home/z/my-project/dev.log", "mithqal dev"); }
+  // CRITICAL: pass DATABASE_URL + DATABASE_AUTH_TOKEN explicitly as env vars
+  // because /start.sh writes a root .env with DATABASE_URL=file:... that
+  // overrides the mithqal .env (process.env takes precedence over .env files).
+  if (existsSync(MITHQAL_DIR) && existsSync(MITHQAL_ENV) && !(await isPortListening(3000))) {
+    const envVars = readEnvVars(MITHQAL_ENV, ["DATABASE_URL", "DATABASE_AUTH_TOKEN"]);
+    startDetachedWithEnv(MITHQAL_DIR, ["bun", "run", "dev"], "/home/z/my-project/dev.log", "mithqal dev", envVars);
+  }
   if (existsSync(DISCORD_BOT_DIR) && existsSync(`${DISCORD_BOT_DIR}/index.ts`) && existsSync(MITHQAL_ENV) && !(await isPortListening(3004))) { try { mkdirSync(`${DISCORD_BOT_DIR}/logs`, { recursive: true }); } catch {}; startDetached(DISCORD_BOT_DIR, ["bun", "index.ts"], `${DISCORD_BOT_DIR}/logs/bot.log`, "discord bot"); }
+}
+
+// Helper: read specific env vars from a .env file
+function readEnvVars(envFile, keys) {
+  const result = {};
+  try {
+    const content = readFileSync(envFile, "utf-8");
+    for (const key of keys) {
+      const m = content.match(new RegExp(`^${key}=(.*)$`, "m"));
+      if (m) result[key] = m[1].trim().replace(/^["']|["']$/g, "");
+    }
+  } catch {}
+  return result;
+}
+
+// Like startDetached but with extra env vars (overrides process.env)
+function startDetachedWithEnv(cwd, command, logFile, label, extraEnv) {
+  log(`▶ starting ${label} (with ${Object.keys(extraEnv).length} env overrides)`);
+  try {
+    mkdirSync(cwd, { recursive: true });
+    const fd = openSync(logFile, "w");
+    const child = spawn(command[0], command.slice(1), { cwd, stdio: ["ignore", fd, fd], detached: true, env: { ...process.env, ...extraEnv } });
+    child.unref();
+    log(`✓ ${label} spawned (pid ${child.pid})`);
+  } catch (e) { log(`✗ ${label} spawn FAILED: ${e.message}`); }
 }
 
 log("========================================");
