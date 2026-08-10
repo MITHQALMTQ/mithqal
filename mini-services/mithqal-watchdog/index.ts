@@ -38,19 +38,60 @@ function startDetached(cwd, command, logFile, label) {
 async function tick() {
   // Backup .env to /home/sync (best-effort — may not persist, but worth trying)
   if (existsSync(MITHQAL_ENV)) { try { mkdirSync(SYNC_DIR, { recursive: true }); copyFileSync(MITHQAL_ENV, ENV_BACKUP); } catch {} }
-  
-  // Restore .env if missing
-  if (!existsSync(MITHQAL_ENV) && existsSync(ENV_BACKUP)) {
-    try { copyFileSync(ENV_BACKUP, MITHQAL_ENV); log(`✓ restored .env from ${ENV_BACKUP}`); } catch (e) { log(`✗ env restore failed: ${e.message}`); }
+
+  // Restore .env — multi-tier fallback:
+  //   1. /home/sync/mithqal.env (persistent mount — may survive)
+  //   2. .env.encrypted in the git repo (decrypt with GitHub token's SHA-256)
+  //   3. Re-clone from GitHub first (which brings .env.encrypted), then decrypt
+  if (!existsSync(MITHQAL_ENV)) {
+    let restored = false;
+    // Tier 1: /home/sync backup
+    if (existsSync(ENV_BACKUP)) {
+      try { copyFileSync(ENV_BACKUP, MITHQAL_ENV); log(`✓ restored .env from ${ENV_BACKUP} (tier 1: sync)`); restored = true; } catch (e) { log(`✗ tier 1 env restore failed: ${e.message}`); }
+    }
+    // Tier 2: decrypt from .env.encrypted in the repo (if repo exists)
+    if (!restored && existsSync(`${MITHQAL_DIR}/.env.encrypted`)) {
+      try {
+        // Need a GitHub token to derive the decryption key. Check /home/sync first, then prompt.
+        let token = existsSync(ENV_BACKUP) ? (readFileSync(ENV_BACKUP, "utf-8").match(/^GITHUB_TOKEN=(.*)$/m) || [])[1]?.trim() : null;
+        // If no token in sync backup, try reading from any surviving .env in the root project
+        if (!token && existsSync("/home/z/my-project/.env")) {
+          token = (readFileSync("/home/z/my-project/.env", "utf-8").match(/^GITHUB_TOKEN=(.*)$/m) || [])[1]?.trim();
+        }
+        if (token) {
+          const { createHash } = await import("node:crypto");
+          const key = createHash("sha256").update(token).digest("hex");
+          execSync(`openssl enc -d -aes-256-cbc -pbkdf2 -in ${MITHQAL_DIR}/.env.encrypted -pass pass:${key} > ${MITHQAL_ENV}`, { stdio: "pipe", timeout: 10000 });
+          log(`✓ restored .env from .env.encrypted (tier 2: git decrypt)`); restored = true;
+        }
+      } catch (e) { log(`✗ tier 2 env restore failed: ${e.message}`); }
+    }
+    if (!restored) { log(`✗ could not restore .env from any source — MANUAL INTERVENTION REQUIRED`); }
   }
 
-  // Re-clone mithqal if missing
+  // Re-clone mithqal if missing (gets all committed code + .env.encrypted)
   if (!existsSync(`${MITHQAL_DIR}/package.json`)) {
     log("✗ mithqal source missing — re-cloning");
-    const token = existsSync(ENV_BACKUP) ? (readFileSync(ENV_BACKUP, "utf-8").match(/^GITHUB_TOKEN=(.*)$/m) || [])[1]?.trim() : null;
-    if (token) {
-      try { execSync(`git clone https://x-access-token:${token}@github.com/MITHQALMTQ/mithqal.git ${MITHQAL_DIR}`, { stdio: "pipe", timeout: 180000 }); execSync(`git -C ${MITHQAL_DIR} remote set-url origin https://github.com/MITHQALMTQ/mithqal.git`); log("✓ re-cloned mithqal"); } catch (e) { log(`✗ re-clone failed: ${e.message}`); }
+    // Try to get token from any surviving source
+    let token = existsSync(ENV_BACKUP) ? (readFileSync(ENV_BACKUP, "utf-8").match(/^GITHUB_TOKEN=(.*)$/m) || [])[1]?.trim() : null;
+    if (!token && existsSync("/home/z/my-project/.env")) {
+      token = (readFileSync("/home/z/my-project/.env", "utf-8").match(/^GITHUB_TOKEN=(.*)$/m) || [])[1]?.trim();
     }
+    if (token) {
+      try {
+        execSync(`git clone https://x-access-token:${token}@github.com/MITHQALMTQ/mithqal.git ${MITHQAL_DIR}`, { stdio: "pipe", timeout: 180000 });
+        execSync(`git -C ${MITHQAL_DIR} remote set-url origin https://github.com/MITHQALMTQ/mithqal.git`);
+        log("✓ re-cloned mithqal (all committed code + .env.encrypted)");
+      } catch (e) { log(`✗ re-clone failed: ${e.message}`); }
+    } else {
+      log("✗ no GitHub token available — cannot re-clone. MANUAL INTERVENTION REQUIRED.");
+    }
+  }
+
+  // After re-clone, restore .env from .env.encrypted (tier 2 above will handle on next tick)
+  // but also copy the watchdog + discord-bot from the repo to their live locations
+  if (existsSync(`${MITHQAL_DIR}/mini-services/mithqal-watchdog/index.ts`) && !existsSync("/home/z/my-project/mini-services/mithqal-watchdog/index.ts")) {
+    try { execSync(`mkdir -p /home/z/my-project/mini-services/mithqal-watchdog && cp ${MITHQAL_DIR}/mini-services/mithqal-watchdog/* /home/z/my-project/mini-services/mithqal-watchdog/`); log("✓ restored watchdog source from repo"); } catch (e) { log(`✗ watchdog restore failed: ${e.message}`); }
   }
 
   // Install deps if missing
@@ -62,8 +103,8 @@ async function tick() {
   }
 
   // Restart services if down
-  if (existsSync(MITHQAL_DIR) && !(await isPortListening(3000))) { startDetached(MITHQAL_DIR, ["bun", "run", "dev"], "/home/z/my-project/dev.log", "mithqal dev"); }
-  if (existsSync(DISCORD_BOT_DIR) && existsSync(`${DISCORD_BOT_DIR}/index.ts`) && !(await isPortListening(3004))) { try { mkdirSync(`${DISCORD_BOT_DIR}/logs`, { recursive: true }); } catch {}; startDetached(DISCORD_BOT_DIR, ["bun", "index.ts"], `${DISCORD_BOT_DIR}/logs/bot.log`, "discord bot"); }
+  if (existsSync(MITHQAL_DIR) && existsSync(MITHQAL_ENV) && !(await isPortListening(3000))) { startDetached(MITHQAL_DIR, ["bun", "run", "dev"], "/home/z/my-project/dev.log", "mithqal dev"); }
+  if (existsSync(DISCORD_BOT_DIR) && existsSync(`${DISCORD_BOT_DIR}/index.ts`) && existsSync(MITHQAL_ENV) && !(await isPortListening(3004))) { try { mkdirSync(`${DISCORD_BOT_DIR}/logs`, { recursive: true }); } catch {}; startDetached(DISCORD_BOT_DIR, ["bun", "index.ts"], `${DISCORD_BOT_DIR}/logs/bot.log`, "discord bot"); }
 }
 
 log("========================================");
