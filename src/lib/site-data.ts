@@ -16,7 +16,7 @@ export const IDENTITY = {
     "Not a replacement for sovereign currencies",
   ],
   is: [
-    "A constitutional monetary institution",
+    "A constitutional settlement institution",
     "A fully-reserved settlement unit (MTQ)",
     "Complementary to sovereign currencies & CBDCs",
     "Infrastructure for banks and trade-finance platforms",

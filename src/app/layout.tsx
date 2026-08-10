@@ -40,7 +40,7 @@ export const metadata: Metadata = {
     "reserve-backed",
     "stablecoin",
     "cross-border trade",
-    "constitutional monetary institution",
+    "constitutional settlement institution",
     "fully reserved",
   ],
   authors: [{ name: "Mithqal" }],

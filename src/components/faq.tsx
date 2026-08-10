@@ -62,7 +62,7 @@ const FAQS: FaqItem[] = [
     id: "what-is-mithqal",
     question: "What is Mithqal?",
     answer:
-      "A constitutional monetary institution that issues MTQ, a fully-reserved settlement unit for cross-border trade. Mithqal is constitutionally non-platform: it operates no exchange, no DeFi product, and no retail offering — by constitutional invariant.",
+      "A constitutional settlement institution that issues MTQ, a fully-reserved settlement unit for cross-border trade. Mithqal is constitutionally non-platform: it operates no exchange, no DeFi product, and no retail offering — by constitutional invariant.",
     category: "Identity",
     tags: ["intro", "overview", "mission"],
   },

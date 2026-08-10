@@ -93,7 +93,7 @@ const en: Messages = {
   "institution.heading": "A monetary authority, not a platform",
   "institution.body": "The Institution is not a software project, a blockchain application, or a product. It is a constitutional entity whose sole function is to issue and redeem a fully-reserved settlement unit. If the underlying technology is replaced, the Institution persists — because it is an institution, not a technology.",
   "institution.is.title": "Mithqal is",
-  "institution.is.1": "A constitutional monetary institution",
+  "institution.is.1": "A constitutional settlement institution",
   "institution.is.2": "A fully-reserved settlement unit (MTQ)",
   "institution.is.3": "Complementary to sovereign currencies & CBDCs",
   "institution.is.4": "Infrastructure for banks and trade-finance platforms",

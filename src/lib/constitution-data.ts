@@ -156,7 +156,7 @@ const LAYER_1: Layer = {
         },
         {
           h: "Non-amendable",
-          p: "The anti-platform provisions cannot be amended, cannot be interpreted away, and cannot be eroded through incremental expansion. This protection is essential to the Institution's identity — without it, Mithqal would be a platform, not a constitutional monetary institution.",
+          p: "The anti-platform provisions cannot be amended, cannot be interpreted away, and cannot be eroded through incremental expansion. This protection is essential to the Institution's identity — without it, Mithqal would be a platform, not a constitutional settlement institution.",
         },
       ],
     },

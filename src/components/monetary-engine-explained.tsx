@@ -533,7 +533,7 @@ function HeroSection() {
 
       <Reveal delay={0.1}>
         <p className="mx-auto mt-6 max-w-2xl text-base leading-relaxed text-fg-muted sm:text-lg">
-          MITHQAL is a constitutional monetary institution. MTQ is{" "}
+          MITHQAL is a constitutional settlement institution. MTQ is{" "}
           <span className="font-medium text-gold">100% reserved</span>,{" "}
           <span className="font-medium text-gold">neutral</span>,{" "}
           <span className="font-medium text-gold">algorithmic</span>, and{" "}
