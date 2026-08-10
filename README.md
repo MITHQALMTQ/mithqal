@@ -4,7 +4,7 @@
 >
 > **One Currency. Every Trade.**
 
-**Website:** [mithqal.io](https://mithqal.io) · **X:** [@MithqalMTQ](https://x.com/MithqalMTQ) · **Docs:** [Constitution](https://mithqal.io/?view=constitution)
+**Website:** [https://mithqal.vercel.app/) · **X:** [@MithqalMTQ](https://x.com/MithqalMTQ) · 
 
 ---
 
