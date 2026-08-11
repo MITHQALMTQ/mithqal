@@ -517,7 +517,7 @@ export const LIQUIDATION_ORDER = [
 // v19.0.2 §19.2 — Canonical Baseline Composition
 // ============================================================
 export const BASELINE_COMPOSITION = {
-  CASH_USD: 29_000_000,
+  CASH_USD: 31_000_000, // v20 institutional hardening: increased from $29M
   SOVEREIGN_USD: 13_500_000,
   GOLD_OZ: 2_122.86,
   SILVER_OZ: 36_758,

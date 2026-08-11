@@ -217,41 +217,15 @@ export async function GET() {
     //
     // NOTE: `computeSDPEmergency` accepts (structuralWeight, referencePrice,
     // currentPrice, currentWeight). We pass w.structuralWeight (§13),
-    // w.goldPrice12moAgo as the reference (§14, 12mo ago), w.goldPrice as
-    // the current price (today), and w.normalizedWeight as the live weight
-    // (§20). These are all available on CurrencyWeight — no defaults needed.
-    let sdp: { triggered: boolean; details: string } = {
-      triggered: false,
-      details: "No SDP triggers — all currencies within 5% deviation threshold",
+    // v20 FIX: Use the monetary engine's SDP result (which checks FX deviation, 
+    // not goldPriceInCurrency deviation). The old code here was computing SDP
+    // using goldPrice12moAgo vs goldPrice — which triggered SDP for ALL currencies
+    // whenever gold moved >5%, even if FX rates were stable.
+    // The monetary engine now correctly checks FX deviation and applies SDP weights.
+    const sdp: { triggered: boolean; details: string } = {
+      triggered: monetary.sdp?.triggered ?? false,
+      details: monetary.sdp?.details ?? "No SDP data from monetary engine",
     };
-    try {
-      const triggeredDetails: string[] = [];
-      for (const w of monetary.weights) {
-        if (!w.goldPrice12moAgo || w.goldPrice12moAgo <= 0) continue;
-        const sdpResult = computeSDPEmergency(
-          w.structuralWeight,
-          w.goldPrice12moAgo, // referencePrice (§14, 12mo ago)
-          w.goldPrice,        // currentPrice (today)
-          w.normalizedWeight
-        );
-        if (sdpResult.trigger.triggered && sdpResult.trigger.details) {
-          triggeredDetails.push(sdpResult.trigger.details);
-        }
-      }
-      if (triggeredDetails.length > 0) {
-        sdp = {
-          triggered: true,
-          details: triggeredDetails.join(" | "),
-        };
-      }
-    } catch (sdpErr) {
-      // Fail closed — never break the public transparency API over SDP
-      // evaluation. Surfaces the error in the `details` string instead.
-      sdp = {
-        triggered: false,
-        details: `SDP evaluation failed: ${sdpErr instanceof Error ? sdpErr.message : "unknown"}`,
-      };
-    }
 
     return NextResponse.json({
       // §1 Numeraire Independence — Multi-currency NAV

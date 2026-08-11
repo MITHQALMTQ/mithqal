@@ -855,20 +855,23 @@ export function computeMonetaryStateV19(
   }
 
   // §33 SDP Application (P1 fix — was display-only, now applied to weights)
-  // For each currency, check if price deviation > 5% from 12-month reference.
-  // If triggered, apply emergency weight via computeSDPEmergency, then re-normalize.
+  // SDP measures CURRENCY FX deviation, NOT gold-price-in-currency deviation.
+  // If gold rallies 80% but USD/EUR/JPY are stable, SDP should NOT trigger.
+  // The check uses the currency's FX rate vs its 12-month-ago FX rate.
   let sdpTriggered = false;
   const sdpDetails: string[] = [];
   for (const w of weightEntries) {
-    if (w.p12moAgo > 0 && w.priceToday > 0) {
-      const deviation = Math.abs(w.priceToday / w.p12moAgo - 1);
-      if (deviation > SDP_TRIGGER_THRESHOLD) {
+    // Use the currency's own FX deviation (not goldPriceInCurrency)
+    const fxAgo = (snapshot as any).fxAgo?.[w.code] ?? w.fx;
+    if (fxAgo > 0 && w.fx > 0) {
+      const fxDeviation = Math.abs(w.fx / fxAgo - 1);
+      if (fxDeviation > SDP_TRIGGER_THRESHOLD) {
         sdpTriggered = true;
-        const emergencyWeight = w.structuralWeight * (w.p12moAgo / w.priceToday);
+        const emergencyWeight = w.structuralWeight * (fxAgo / w.fx);
         const cappedWeight = Math.max(emergencyWeight, w.normalizedWeight * SDP_CAP);
-        sdpDetails.push(`${w.code} deviated ${(deviation * 100).toFixed(2)}% — SDP applied (W: ${(w.normalizedWeight * 100).toFixed(2)}% → ${(cappedWeight * 100).toFixed(2)}%)`);
+        sdpDetails.push(`${w.code} FX deviated ${(fxDeviation * 100).toFixed(2)}% from 12mo reference — SDP applied (W: ${(w.normalizedWeight * 100).toFixed(2)}% → ${(cappedWeight * 100).toFixed(2)}%)`);
         w.normalizedWeight = cappedWeight;
-        w.isCapped = true; // Mark as SDP-adjusted
+        w.isCapped = true;
       }
     }
   }

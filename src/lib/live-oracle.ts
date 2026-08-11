@@ -44,7 +44,7 @@ const CACHE_TTL = 60_000;
 // Conservative fallbacks (only used if no historical snapshots exist yet).
 // These are clearly labelled as stale-constants-of-last-resort. Once the
 // system has been running for 30+ days, these are never used.
-const FALLBACK_GOLD_12MO_AGO = 2400;
+const FALLBACK_GOLD_12MO_AGO = 2500; // Updated Aug 2026: gold was ~$2,500 12 months ago (was 2400 — caused false SDP triggers)
 const FALLBACK_GOLD_7D_AGO = 4000;
 const FALLBACK_GOLD_YESTERDAY = 4045;
 

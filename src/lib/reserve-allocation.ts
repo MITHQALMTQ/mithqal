@@ -104,7 +104,7 @@ export const FIXED_SILVER_OZ = 36_758;     // ≈ $2.160M at $58.76/oz
  * The dynamic fiat ratio instead governs the TARGET allocation reported
  * to clients and used by the rebalance engine.
  */
-export const FIXED_CASH_USD = 29_000_000; // v19.0.2 §19.2 canonical over-collateralization baseline
+export const FIXED_CASH_USD = 31_000_000; // v20 institutional hardening: increased from $29M to survive 40% gold crash
 
 // ============================================================
 // Types

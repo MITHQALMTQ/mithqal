@@ -136,6 +136,38 @@ export async function POST(req: Request) {
 
     // §36.3 Redemption is NEVER suspended — do NOT check mintingPaused here.
 
+    // ---- v20 Recommendation 2: Graduated Redemption Throttle ----
+    // When RR ∈ [100%, 102%]: limit redemption to 5% of supply per 24h
+    // When RR < 100%: limit redemption to 2% of supply per 24h
+    // This is a RATE LIMITER, NOT a pause — §34 "redemption never paused" is preserved.
+    const rr = navResult.reserveRatio;
+    const supply = navResult.supply;
+    let throttleLimitPct = 1.0; // 100% — no throttle when RR > 102%
+    let throttleReason = "normal — no throttle (RR > 102%)";
+    if (rr < 100) {
+      throttleLimitPct = 0.02; // 2% of supply per 24h when RR < 100%
+      throttleReason = `stress throttle (RR ${rr.toFixed(2)}% < 100%) — max 2% of supply per 24h`;
+    } else if (rr < 102) {
+      throttleLimitPct = 0.05; // 5% of supply per 24h when RR ∈ [100%, 102%]
+      throttleReason = `elevated throttle (RR ${rr.toFixed(2)}% ∈ [100%, 102%]) — max 5% of supply per 24h`;
+    }
+    const maxRedeemPer24h = supply * throttleLimitPct;
+    // Check cumulative redemptions in the last 24h (from DB)
+    const recentRedemptions = await db.testnetOperation.findMany({
+      where: { type: "redeem", createdAt: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) } },
+      select: { mtq: true },
+    }).catch(() => []);
+    const cumulativeRedeemed = recentRedemptions.reduce((sum, r) => sum + (r.mtq || 0), 0);
+    if (cumulativeRedeemed + mtqAmount > maxRedeemPer24h) {
+      return NextResponse.json({
+        error: `Redemption throttle active: ${throttleReason}. Cumulative 24h: ${cumulativeRedeemed.toFixed(2)} MTQ, requested: ${mtqAmount} MTQ, limit: ${maxRedeemPer24h.toFixed(0)} MTQ. Please retry later — redemption is never paused, only rate-limited during stress.`,
+        throttleReason,
+        cumulativeRedeemed,
+        maxRedeemPer24h,
+        rr: rr.toFixed(2),
+      }, { status: 429 });
+    }
+
     // ---- §36.3 Redemption formula: Claim = Burned MTQ × Current NAV ----
     const navUsd = navResult.navM; // dynamic market NAV (≈ $1.04 at baseline)
     const claimUsd = mtqAmount * navUsd;
