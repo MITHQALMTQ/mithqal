@@ -402,3 +402,45 @@ Stage Summary:
 - No contracts redeployed
 - No secrets leaked
 - Dev server + Anvil + Vercel production all operational
+
+---
+Task ID: RECOVERY
+Agent: main (COO/PM)
+Task: Diagnose sandbox reset root cause + recover full MITHQAL project from GitHub/Turso/Vercel + set up correct persistence architecture
+
+Work Log:
+- Diagnosed root cause: root filesystem is overlay with `volatile` flag — writable layer lives in RAM, wiped on every restart. `/home/sync` is NOT a separate mount (not a mountpoint), so it's on the same volatile overlay. All prior persistence workarounds (watchdog process, /home/sync, encrypted .env) failed because they targeted volatile storage.
+- User provided credentials: Turso (URL + token), GitHub (repo URL + PAT), Vercel (token + URL), SMTP (iCloud app-specific password).
+- Configured git remote: https://github.com/MITHQALMTQ/mithqal.git with PAT auth. Fetched origin/main — found 20+ commits of full MITHQAL history including v20 blueprint, Phase 4/5 implementation, all audits, and the Phase 2.5 study doc (commit f0367a0).
+- Git reset --hard origin/main restored 696 files: docs/architecture/mithqal-canonical-v20.md, src/lib/* (30+ modules including reserve-policy-spec.ts, monetary-engine-v19.ts, nav-compute.ts, execution-engine.ts, state-persistence.ts, multi-oracle.ts, live-oracle.ts), src/contracts/core/*.sol (Reserve.sol, Mint.sol, Algorithm.sol, MTQ.sol, Redeem.sol), mini-services/ (discord-bot, mithqal-watchdog, notify-service), 70+ verification docs, prisma/schema.prisma.
+- bun install: 288 packages installed successfully.
+- Turso connection verified: SELECT 1 OK. 16 tables present (AssumptionsRegister, CommercialAuditEntry, engine_state, fees, proposals, reserves, transactions, users, GoldPriceSnapshot, etc.) — full database survived.
+- Prisma client generated (bunx prisma generate).
+- Decrypted .env.encrypted using SHA-256 of GitHub token (per RESTORE-ENV.md). Recovered ALL credentials: DISCORD_BOT_TOKEN, DISCORD_APP_ID, DISCORD_NOTIFY_CHANNEL_ID, SMTP_PASS, ADMIN_PASSWORD_HASH, OPERATOR_TOTP_SECRET, GEMINI/GROQ/HUGGINGFACE API keys, AUDIT_SIGNING_KEY, JWT_SECRET, CRON_SECRET, NEXTAUTH_SECRET. Merged into .env (55 vars total).
+- Fixed next.config.ts: removed deprecated `eslint` key (Next.js 16 no longer supports it, was causing warnings).
+- Solved dev server instability: server kept dying after ~2 requests. Root cause: (1) `bun run dev` pipes through `tee` which breaks when backgrounded, (2) memory pressure from multiple simultaneous API route compiles. Fix: use `npx next dev` directly with `setsid` + `nohup` + `NODE_OPTIONS=--max-old-space-size=768` + full FD redirection (`< /dev/null`).
+- Created .zscripts/start-all.sh: single supervisor script that starts all 4 services with proper detachment (nohup + setsid + disown).
+- Created .zscripts/status.sh: quick health check for all services.
+- Created .zscripts/bootstrap-recover.sh: one-command recovery script for future restarts (validates creds → clones from GitHub → bun install → prisma generate → Turso verify → start watchdog → start mini-services → start dev server).
+- Created .zscripts/auto-push-watchdog.sh: commits + pushes to GitHub every 5 minutes to prevent future data loss.
+- Browser verification (agent-browser): homepage renders correctly — "Mithqal — Constitutional Settlement Institution v19.0.3", full navigation (Institution, Transparency, Engine, Infrastructure, Constitution, Testnet, OS, Audit, Deck, FAQ, Playbook, Admin), Two-Entity Architecture, JOZOUR LLC entity data. No console errors. Fast Refresh working. Transparency page navigation tested OK. Screenshot saved.
+- API verification: /api/nav returns live Turso data — NAV=$1.0899, RR=106.79%, Supply=54,000,000 MTQ, Gold=$4,368.40, Silver=$64.91. /api/oracle, /api/transparency, /api/infrastructure all HTTP 200.
+- Discord bot verified: logged in as MithqalMTQ#8586, connected to 1 guild, registered 5 slash commands (/help /status /oracle /nav /reserve), notify channel #general.
+
+Stage Summary:
+- ALL SERVICES LIVE AND STABLE:
+  ✅ Dev Server (port 3000) — HTTP 200, live Turso data
+  ✅ Discord Bot (port 3004) — MithqalMTQ#8586, 1 guild, 5 commands
+  ✅ Notify Service (port 3003) — running
+  ✅ Auto-Push Watchdog — committing every 5 min to GitHub
+- DATA RECOVERED:
+  ✅ GitHub: full source (696 files, 20+ commits) — MITHQALMTQ/mithqal
+  ✅ Turso: 16 tables, live data (NAV=$1.09, RR=106.79%)
+  ✅ .env.encrypted: all credentials recovered (Discord, SMTP, admin, API keys)
+- PERSISTENCE ARCHITECTURE (correct, going forward):
+  GitHub (source of truth) ← auto-push every 5 min
+  Turso (durable database) ← Prisma + @libsql/client
+  Sandbox (volatile) ← bootstrap-recover.sh on every restart
+- For future restarts: `bash .zscripts/bootstrap-recover.sh` restores everything from GitHub + Turso.
+- The .env.encrypted backup mechanism works: SHA-256 of GitHub token decrypts all credentials. This is the survival mechanism for credentials across restarts.
+- Memory: 2523MB used / 4041MB total — stable with all 4 services running.

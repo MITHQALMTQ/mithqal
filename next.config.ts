@@ -7,9 +7,6 @@ const nextConfig: NextConfig = {
     // Production code is fully typed.
     ignoreBuildErrors: true,
   },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
   async headers() {
     return [
       {

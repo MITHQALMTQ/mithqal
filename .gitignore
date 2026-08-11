@@ -18,3 +18,15 @@ prisma/*.db-journal
 .anvil/
 logs/
 *.tsbuildinfo
+
+# Local-only runtime artifacts (never deploy these)
+.zscripts/*.pid
+.zscripts/*.png
+.zscripts/watchdog-start.log
+.zscripts/discord-bot.log
+.zscripts/notify-service.log
+.zscripts/mithqal-watchdog.log
+.zscripts/watchdog.log
+.zscripts/bootstrap.log
+db/custom.db
+db/custom.db-journal
