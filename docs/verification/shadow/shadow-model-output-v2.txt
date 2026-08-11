@@ -1,0 +1,80 @@
+=== MITHQAL SHADOW RESERVE MODEL ===
+SHADOW/SIMULATION ONLY — does NOT affect production
+
+Live Prices:
+  Gold:   $4358/oz
+  Silver: $65/oz
+
+=== BASELINE METRICS ===
+
+Model A (Current v20 Runtime):
+  R_m:        $58,840,694
+  R_a:        $57,648,734
+  NAV_m:      $1.089642
+  RR:         106.7569%
+  LCR:        8.68
+  LRR:        6.24
+  GARC:       59.58%
+  Max ccy:    USD = 80.9%
+  Breaches:   USD concentration >60% (80.9%)
+
+Model H (Gold/Silver/Dynamic-FX):
+  R_m:        $57,042,494
+  R_a:        $55,763,921
+  NAV_m:      $1.056342
+  RR:         103.2665%
+  LCR:        8.34
+  LRR:        5.48
+  GARC:       58.61%
+  Max ccy:    USD = 44.8%
+  Breaches:   NONE
+
+=== CURRENCY CONCENTRATION ===
+
+Model A:
+  USD: 80.9%
+  XAU: 15.2%
+  XAG: 3.9%
+
+Model H:
+  USD: 44.8%
+  XAU: 15.8%
+  EUR: 14.2%
+  CHF: 12.1%
+  SGD: 5.1%
+  XAG: 4.0%
+  AED: 2.5%
+  GBP: 1.6%
+
+=== STRESS TEST MATRIX ===
+
+Scenario                                                    Model A RR     Model H RR     A Breach?   H Breach?
+------------------------------------------------------------------------------------------------------------------------
+Gold -10%                                                   105.13%        101.64%        PASS        PASS
+Gold -20%                                                   103.50%        100.01%        PASS        PASS
+Gold -30%                                                   101.87%        98.38%         PASS        FAIL
+Gold -40%                                                   100.25%        96.76%         PASS        FAIL
+Gold -50%                                                   98.62%         95.13%         FAIL        FAIL
+Gold +30%                                                   111.64%        108.15%        PASS        PASS
+Silver -20%                                                 105.93%        102.44%        PASS        PASS
+Silver -30%                                                 105.52%        102.03%        PASS        PASS
+Silver -50%                                                 104.70%        101.21%        PASS        PASS
+Silver -70%                                                 103.88%        100.39%        PASS        PASS
+USD +20% (vs basket)                                        104.06%        93.76%         PASS        FAIL
+USD -20%                                                    106.76%        110.08%        PASS        PASS
+EUR -20%                                                    106.76%        100.34%        PASS        PASS
+EUR -30%                                                    106.76%        98.88%         PASS        FAIL
+JPY -30%                                                    106.76%        103.27%        PASS        PASS
+CHF +20%                                                    106.76%        105.77%        PASS        PASS
+GBP -20%                                                    106.76%        102.93%        PASS        PASS
+SGD -15%                                                    106.76%        102.48%        PASS        PASS
+AED peg break -10%                                          106.76%        103.01%        PASS        PASS
+Stablecoin -5%                                              106.52%        103.11%        PASS        PASS
+Stablecoin -10%                                             106.29%        102.95%        PASS        PASS
+Stablecoin -20%                                             105.82%        102.64%        PASS        PASS
+Stablecoin -100% (total depeg)                              102.05%        100.13%        PASS        PASS
+Sovereign -5% (haircut +5%)                                 105.52%        101.81%        PASS        PASS
+Sovereign -15%                                              103.04%        98.91%         PASS        FAIL
+A: Gold -30%                                                101.87%        98.38%         PASS        FAIL
+B: Silver -50%                                              104.70%        101.21%        PASS        PASS
+C: Gold -30% + Silver -50%                                  99.82%         96.33%         FAIL        FAIL

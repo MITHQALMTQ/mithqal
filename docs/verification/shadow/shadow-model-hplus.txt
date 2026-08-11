@@ -1,0 +1,70 @@
+Max currency         | USD 80.9% | USD 44.8% | USD 44.6%
+
+=== STRESS TEST: Model A vs Model H vs Model H+ ===
+
+Scenario                                               Model A     Model H     Model H+    
+-------------------------------------------------------------------------------------------
+Gold -10%                                              105.1%      101.6%      112.4%      
+Gold -20%                                              103.5%      100.0%      110.8%      
+Gold -30%                                              101.9%      98.4%       109.2%      
+Gold -40%                                              100.2%      96.8%       107.6%      
+Gold -50%                                              98.6%       95.1%       105.9%      
+Gold +30%                                              111.6%      108.1%      118.9%      
+Silver -20%                                            105.9%      102.4%      113.2%      
+Silver -30%                                            105.5%      102.0%      112.8%      
+Silver -50%                                            104.7%      101.2%      112.0%      
+Silver -70%                                            103.9%      100.4%      111.2%      
+USD +20% (vs basket)                                   104.1%      93.8%       103.4%      
+USD -20%                                               106.8%      110.1%      122.0%      
+EUR -20%                                               106.8%      100.3%      110.6%      
+EUR -30%                                               106.8%      98.9%       108.9%      
+JPY -30%                                               106.8%      103.3%      114.1%      
+CHF +20%                                               106.8%      105.8%      117.0%      
+GBP -20%                                               106.8%      102.9%      113.7%      
+SGD -15%                                               106.8%      102.5%      113.1%      
+AED peg break -10%                                     106.8%      103.0%      113.8%      
+Stablecoin -5%                                         106.5%      103.1%      113.9%      
+Stablecoin -10%                                        106.3%      103.0%      113.7%      
+Stablecoin -20%                                        105.8%      102.6%      113.4%      
+Stablecoin -100% (total depeg)                         102.1%      100.1%      110.9%      
+Sovereign -5% (haircut +5%)                            105.5%      101.8%      112.5%      
+Sovereign -15%                                         103.0%      98.9%       109.4%      
+A: Gold -30%                                           101.9%      98.4%       109.2%      
+B: Silver -50%                                         104.7%      101.2%      112.0%      
+C: Gold -30% + Silver -50%                             99.8%       96.3%       107.1%      
+D: USD +20%                                            104.1%      93.8%       103.4%      
+E: USD -20%                                            106.8%      110.1%      122.0%      
+F: EUR -20%                                            106.8%      100.3%      110.6%      
+G: Multi-FX -15%                                       106.8%      98.2%       108.1%      
+H: Gold -30% + USD +20%                                101.1%      90.8%       100.5%      
+I: Gold -30% + Silver -50% + USD +20%                  99.8%       89.5%       99.1%       
+J: Gold -30% + USD +20% + 10% redemption               91.0%       81.7%       90.4%       
+K: Global FX + commodity shock                         101.2%      93.3%       103.3%      
+L: Global recession                                    106.9%      101.7%      112.2%      
+M: Global inflation shock                              113.3%      107.3%      117.6%      
+N: USD crisis                                          115.3%      120.0%      132.2%      
+O: EUR crisis                                          110.6%      103.8%      114.1%      
+P: Middle East disruption                              111.6%      108.0%      118.8%      
+Q: Asian FX crisis                                     109.6%      104.8%      115.4%      
+R: Global sovereign stress                             105.9%      100.4%      110.8%      
+S: Stablecoin depeg + FX shock                         105.8%      100.2%      110.6%      
+T: Oracle failure + market shock                       103.5%      98.5%       109.1%      
+5% redemption                                          101.4%      98.1%       108.4%      
+10% redemption                                         96.1%       92.9%       102.7%      
+20% redemption                                         85.4%       82.6%       91.2%       
+30% redemption                                         74.7%       72.3%       79.8%       
+50% redemption                                         53.4%       51.6%       57.0%       
+EXTREME: Gold-40% + Silver-50% + USD+20% + Stablecoin- 75.8%       67.7%       75.3%       
+1980 Volcker: USD+25%, Gold-40%, Sov-12%               95.2%       83.2%       92.3%       
+2022 USD surge: USD+18%, Gold-15%, Sov-6%              102.0%      92.3%       101.9%      
+1970s stagflation: USD-15%, Gold+60%, Silver+80%       119.8%      121.4%      133.1%      
+-------------------------------------------------------------------------------------------
+Breaches (RR<100%):    10/54        23/54        7/54
+
+=== MONTE CARLO (1-year, 10000 paths) ===
+
+P(RR<100%)    Model A: 7.14%  Model H: 13.57%  Model H+: 0.00%
+P(RR<102%)    Model A: 15.11%  Model H: 33.49%  Model H+: 0.00%
+99% VaR       Model A: -10.73%  Model H: -6.91%  Model H+: -6.41%
+Max DD        Model A: -14.25%  Model H: -9.18%  Model H+: -8.52%
+

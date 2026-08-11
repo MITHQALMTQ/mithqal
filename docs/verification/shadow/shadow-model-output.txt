@@ -1,0 +1,169 @@
+=== MITHQAL SHADOW RESERVE MODEL ===
+SHADOW/SIMULATION ONLY — does NOT affect production
+
+Live Prices:
+  Gold:   $4358/oz
+  Silver: $65/oz
+
+=== BASELINE METRICS ===
+
+Model A (Current v20 Runtime):
+  R_m:        $58,840,694
+  R_a:        $57,648,734
+  NAV_m:      $1.089642
+  RR:         106.7569%
+  LCR:        8.68
+  LRR:        6.24
+  GARC:       59.58%
+  Max ccy:    USD = 80.9%
+  Breaches:   USD concentration >60% (80.9%)
+
+Model H (Gold/Silver/Dynamic-FX):
+  R_m:        $52,225,494
+  R_a:        $51,003,911
+  NAV_m:      $0.967139
+  RR:         94.4517%
+  LCR:        7.45
+  LRR:        4.59
+  GARC:       54.64%
+  Max ccy:    USD = 44.1%
+  Breaches:   RR <100% (94.45%)
+
+=== CURRENCY CONCENTRATION ===
+
+Model A:
+  USD: 80.9%
+  XAU: 15.2%
+  XAG: 3.9%
+
+Model H:
+  USD: 44.1%
+  XAU: 17.2%
+  EUR: 14.4%
+  CHF: 12.3%
+  SGD: 5.1%
+  XAG: 4.4%
+  GBP: 1.8%
+  AED: 0.7%
+
+=== STRESS TEST MATRIX ===
+
+Scenario                                                    Model A RR     Model H RR     A Breach?   H Breach?
+------------------------------------------------------------------------------------------------------------------------
+Gold -10%                                                   105.13%        92.82%         PASS        FAIL
+Gold -20%                                                   103.50%        91.20%         PASS        FAIL
+Gold -30%                                                   101.87%        89.57%         PASS        FAIL
+Gold -40%                                                   100.25%        87.94%         PASS        FAIL
+Gold -50%                                                   98.62%         86.31%         FAIL        FAIL
+Gold +30%                                                   111.64%        99.33%         PASS        FAIL
+Silver -20%                                                 105.93%        93.63%         PASS        FAIL
+Silver -30%                                                 105.52%        93.22%         PASS        FAIL
+Silver -50%                                                 104.70%        92.39%         PASS        FAIL
+Silver -70%                                                 103.88%        91.57%         PASS        FAIL
+USD +20% (vs basket)                                        104.06%        85.42%         PASS        FAIL
+USD -20%                                                    106.76%        100.79%        PASS        PASS
+EUR -20%                                                    106.76%        91.74%         PASS        FAIL
+EUR -30%                                                    106.76%        90.38%         PASS        FAIL
+JPY -30%                                                    106.76%        94.45%         PASS        FAIL
+CHF +20%                                                    106.76%        96.77%         PASS        FAIL
+GBP -20%                                                    106.76%        94.11%         PASS        FAIL
+SGD -15%                                                    106.76%        93.73%         PASS        FAIL
+AED peg break -10%                                          106.76%        94.38%         PASS        FAIL
+Stablecoin -5%                                              106.52%        94.34%         PASS        FAIL
+Stablecoin -10%                                             106.29%        94.22%         PASS        FAIL
+Stablecoin -20%                                             105.82%        94.00%         PASS        FAIL
+Stablecoin -100% (total depeg)                              102.05%        92.18%         PASS        FAIL
+Sovereign -5% (haircut +5%)                                 105.52%        93.00%         PASS        FAIL
+Sovereign -15%                                              103.04%        90.09%         PASS        FAIL
+A: Gold -30%                                                101.87%        89.57%         PASS        FAIL
+B: Silver -50%                                              104.70%        92.39%         PASS        FAIL
+C: Gold -30% + Silver -50%                                  99.82%         87.51%         FAIL        FAIL
+D: USD +20%                                                 104.06%        85.42%         PASS        FAIL
+E: USD -20%                                                 106.76%        100.79%        PASS        PASS
+F: EUR -20%                                                 106.76%        91.74%         PASS        FAIL
+G: Multi-FX -15%                                            106.76%        89.70%         PASS        FAIL
+H: Gold -30% + USD +20%                                     101.13%        82.49%         PASS        FAIL
+I: Gold -30% + Silver -50% + USD +20%                       99.82%         81.17%         FAIL        FAIL
+J: Gold -30% + USD +20% + 10% redemption                    91.02%         74.24%         FAIL        FAIL
+K: Global FX + commodity shock                              101.25%        84.77%         PASS        FAIL
+L: Global recession                                         106.93%        93.02%         PASS        FAIL
+M: Global inflation shock                                   113.29%        98.63%         PASS        FAIL
+N: USD crisis                                               115.32%        110.62%        PASS        PASS
+O: EUR crisis                                               110.63%        95.24%         PASS        FAIL
+P: Middle East disruption                                   111.65%        99.31%         PASS        FAIL
+Q: Asian FX crisis                                          109.61%        96.09%         PASS        FAIL
+R: Global sovereign stress                                  105.91%        91.73%         PASS        FAIL
+S: Stablecoin depeg + FX shock                              105.82%        91.71%         PASS        FAIL
+T: Oracle failure + market shock                            103.49%        89.83%         PASS        FAIL
+5% redemption                                               101.42%        89.73%         PASS        FAIL
+10% redemption                                              96.08%         85.01%         FAIL        FAIL
+20% redemption                                              85.41%         75.56%         FAIL        FAIL
+30% redemption                                              74.73%         66.12%         FAIL        FAIL
+50% redemption                                              53.38%         47.23%         FAIL        FAIL
+EXTREME: Gold-40% + Silver-50% + USD+20% + Stablecoin-20% + Sov+10% + 20% redemption75.82%         61.19%         FAIL        FAIL
+1980 Volcker: USD+25%, Gold-40%, Sov-12%                    95.22%         74.93%         FAIL        FAIL
+2022 USD surge: USD+18%, Gold-15%, Sov-6%                   102.01%        83.90%         PASS        FAIL
+1970s stagflation: USD-15%, Gold+60%, Silver+80%            119.81%        112.26%        PASS        PASS
+------------------------------------------------------------------------------------------------------------------------
+BREACHES: Model A = 10/54, Model H = 50/54
+
+=== ANALYTICAL MONTE CARLO (1-year horizon, 10000 paths) ===
+
+Model A:
+  P(RR<100%):   7.14%
+  P(RR<102%):   15.11%
+  95% VaR:      -7.59%
+  99% VaR:      -10.73%
+  Max drawdown: -14.25%
+
+Model H:
+  P(RR<100%):   95.45%
+  P(RR<102%):   98.93%
+  95% VaR:      -5.40%
+  99% VaR:      -7.64%
+  Max drawdown: -10.14%
+
+=== CURRENCY QUALITY SCORE (CQS) ===
+
+Rank | Currency | CQS   | Tier
+----------------------------------------
+1    | CHF      | 8.16  | Core
+2    | USD      | 7.96  | Core
+3    | SGD      | 7.88  | Strategic
+4    | EUR      | 7.48  | Core
+5    | GBP      | 6.89  | Core
+6    | AED      | 6.71  | Strategic
+7    | CAD      | 6.63  | Conditional
+8    | JPY      | 6.57  | Core
+9    | AUD      | 6.56  | Conditional
+10   | SAR      | 6.38  | Strategic
+11   | CNY      | 4.63  | Conditional
+
+=== CORRELATION MATRIX ===
+
+       USD   EUR   GBP   JPY   CHF   SGD   AED   SAR   XAU   XAG   
+USD    1.00  -0.85 -0.70 -0.65 -0.80 -0.75 -0.05 -0.05 -0.50 -0.60 
+EUR    -0.85 1.00  0.65  0.45  0.75  0.55  0.10  0.10  0.40  0.45  
+GBP    -0.70 0.65  1.00  0.40  0.55  0.50  0.05  0.05  0.30  0.35  
+JPY    -0.65 0.45  0.40  1.00  0.40  0.45  0.05  0.05  0.25  0.30  
+CHF    -0.80 0.75  0.55  0.40  1.00  0.50  0.10  0.10  0.45  0.50  
+SGD    -0.75 0.55  0.50  0.45  0.50  1.00  0.15  0.15  0.35  0.40  
+AED    -0.05 0.10  0.05  0.05  0.10  0.15  1.00  0.95  0.05  0.05  
+SAR    -0.05 0.10  0.05  0.05  0.10  0.15  1.00  0.95  0.05  0.05  
+XAU    -0.50 0.40  0.30  0.25  0.45  0.35  0.05  0.05  1.00  0.65  
+XAG    -0.60 0.45  0.35  0.30  0.50  0.40  0.05  0.05  0.65  1.00  
+
+=== SCALE TESTING ===
+
+Scale     | Model A P(RR<100%) | Model H P(RR<100%) | Notes
+--------------------------------------------------------------------------------
+$1M       | 7.14%   | 95.45%            | Low / Low
+$10M      | 7.14%   | 95.45%            | Low / Low
+$100M     | 7.14%   | 95.45%            | Low / Low
+$1B       | 7.14%   | 95.45%            | Low / Low
+$10B      | 7.14%   | 95.45%            | Low / Low
+$100B     | 7.14%   | 95.45%            | Moderate / Moderate
+$1T       | 7.14%   | 95.45%            | HIGH (gold market impact) / HIGH (multi-asset impact)
+
+=== SHADOW MODEL COMPLETE ===
+This simulation did NOT modify any production state.
