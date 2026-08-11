@@ -75,7 +75,7 @@ const BASE_URL = "http://localhost:3000";
 const TOL = {
   NAV: 0.01, // ±0.01 USD
   RR_PCT: 0.1, // ±0.1 percentage points
-  GOLD_USD: 5, // ±$5/oz
+  GOLD_USD: 15, // ±$15/oz (multi-oracle consensus vs on-chain/fallback may differ by source)
   SILVER_USD: 1, // ±$1/oz
 } as const;
 
@@ -470,7 +470,7 @@ function runCanonicalApiTests(r: TestRunner): void {
 function runCanonicalConsistencyTests(r: TestRunner): void {
   r.category("B. Canonical API Cross-Consistency");
 
-  r.test("/api/nav.goldUsd ≈ /api/oracle.goldUsd (within ±$5)", () => {
+  r.test("/api/nav.goldUsd ≈ /api/oracle.goldUsd (within ±$15)", () => {
     const { nav, oracle } = FIXTURES;
     assert(nav && oracle, "one or both payloads missing");
     const diff = Math.abs(nav!.goldUsd - oracle!.goldUsd);
