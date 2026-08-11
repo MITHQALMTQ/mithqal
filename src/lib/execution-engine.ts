@@ -104,6 +104,7 @@ import {
 // §29.10 — append-only audit ledger (JSONL).
 import { appendFileSync, mkdirSync } from "fs";
 import { dirname, join } from "path";
+import { createHash } from "node:crypto";
 
 // ============================================================
 // Types
@@ -135,6 +136,10 @@ export interface RebalanceAction {
 export interface RebalanceProposal {
   proposalId: string;
   createdAt: string;
+  /** §14 — Proposal expiry timestamp (ISO). Execution rejected after this. Default: createdAt + 7 days. */
+  validUntil: string;
+  /** §14 — Cryptographic hash binding to exact proposal parameters. Changing any material parameter invalidates the approval. */
+  proposalHash: string;
   actions: RebalanceAction[];
   totalEstimatedValue: number;
   totalEstimatedFees: number;
@@ -292,6 +297,37 @@ function getCachedLiveLcr(): number {
     return 1.25; // §5 policy target fallback
   }
   return cachedLiveLcr;
+}
+
+// ============================================================
+// §14 — Proposal Hash Binding (P0 fix)
+// ============================================================
+
+/**
+ * Compute a deterministic hash of the proposal's material parameters.
+ * Binds the approval to the exact: proposal ID, actions (asset, side, quantity, value),
+ * reserve state version, and oracle snapshot version.
+ * Changing ANY material parameter produces a different hash, invalidating the approval.
+ */
+export function computeProposalHash(
+  proposalId: string,
+  actions: RebalanceAction[],
+  reserveStateVersion: number,
+  oracleSnapshotVersion: string,
+): string {
+  const material = JSON.stringify({
+    proposalId,
+    actions: actions.map(a => ({
+      assetClass: a.assetClass,
+      action: a.action,
+      quantity: a.quantity,
+      unit: a.unit,
+      estimatedValue: a.estimatedValue,
+    })),
+    reserveStateVersion,
+    oracleSnapshotVersion,
+  });
+  return createHash("sha256").update(material).digest("hex").slice(0, 32);
 }
 
 // ============================================================
@@ -1074,6 +1110,8 @@ export function generateRebalanceProposal(
   const proposal: RebalanceProposal = {
     proposalId,
     createdAt: now,
+    validUntil: new Date(Date.parse(now) + 7 * 24 * 60 * 60 * 1000).toISOString(), // §14: 7-day expiry
+    proposalHash: computeProposalHash(proposalId, rebalanceActions, reserveState.reserveStateVersion, oracleSnapshotVersion),
     actions: rebalanceActions,
     totalEstimatedValue: rebalanceActions.reduce((s, a) => s + a.estimatedValue, 0),
     totalEstimatedFees: rebalanceActions.reduce((s, a) => s + a.estimatedFees, 0),
@@ -1371,6 +1409,23 @@ export async function executeRebalanceProposal(
   const proposal = proposals.get(proposalId);
   if (!proposal) throw new Error(`Proposal ${proposalId} not found`);
   if (proposal.lifecycle !== "APPROVED") throw new Error(`Proposal ${proposalId} is not in APPROVED state`);
+
+  // §14 — Check proposal expiry (validUntil). P0 fix: expired proposals cannot be executed.
+  const asOf = options?.asOfTimestamp ?? Date.now();
+  if (proposal.validUntil && asOf > Date.parse(proposal.validUntil)) {
+    proposal.lifecycle = "EXPIRED";
+    proposals.set(proposalId, proposal);
+    throw new Error(`Proposal ${proposalId} expired (validUntil: ${proposal.validUntil})`);
+  }
+
+  // §14 — Verify proposal hash integrity. P0 fix: detect tampering post-approval.
+  const currentHash = computeProposalHash(proposal.proposalId, proposal.actions, proposal.reserveStateVersion, proposal.oracleSnapshotVersion);
+  if (proposal.proposalHash && proposal.proposalHash !== currentHash) {
+    proposal.lifecycle = "REJECTED";
+    proposal.rejectionReason = "Proposal hash mismatch — parameters altered post-approval";
+    proposals.set(proposalId, proposal);
+    throw new Error(`Proposal ${proposalId} hash mismatch — parameters were altered after approval`);
+  }
 
   if (!isExecutionAllowed()) {
     throw new Error(`Execution not allowed in current mode (${getExecutionMode()})`);

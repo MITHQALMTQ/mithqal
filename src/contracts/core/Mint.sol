@@ -54,7 +54,7 @@ contract Mint {
     // ---- Mint parameters ----
     /// @dev Mint fee in basis points. 100 = 1.00%.
     ///      Constitutional ceiling: 50 bps (0.50%) per Article VIII.
-    uint16 public mintFeeBps = 10; // 0.10% default
+    uint16 public mintFeeBps = 5; // 0.05% per v20 Blueprint §18 (was 10 — P0 fix)
     uint16 public constant MAX_MINT_FEE_BPS = 50; // 0.50% — constitutional ceiling
 
     // ---- Mint state ----
@@ -138,7 +138,7 @@ contract Mint {
         require(amountMtq > 0, "Mint: zero amount");
         require(depositProof != bytes32(0), "Mint: missing deposit proof");
         require(!depositProofUsed[depositProof], "Mint: deposit proof already used");
-        require(reserveTier >= 1 && reserveTier <= 3, "Mint: invalid tier");
+        require(reserveTier >= 1 && reserveTier <= 5, "Mint: invalid tier (1-5 per v20 4-tier model)");
         require(
             reserveDepositedUsd >= amountMtq,
             "Mint: insufficient deposit for 100%+ reserve"

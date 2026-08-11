@@ -135,18 +135,19 @@ contract Algorithm {
         require(amountMtq > 0, "Algorithm: zero amount");
         require(depositProof != bytes32(0), "Algorithm: missing deposit proof");
         require(!settlementProcessed[depositProof], "Algorithm: deposit already settled");
-        require(reserveTier >= 1 && reserveTier <= 3, "Algorithm: invalid tier");
+        require(reserveTier >= 1 && reserveTier <= 5, "Algorithm: invalid tier (1-5 per v20 4-tier model)");
         require(
             reserveDepositedUsd >= amountMtq,
             "Algorithm: insufficient deposit for 100%+ reserve"
         );
 
-        // Verify the Reserve contract holds enough reserves to back this mint.
-        uint256 reserveBalance = reserve.getReserveBalance();
-        if (reserveBalance < reserveDepositedUsd) {
-            emit SettlementRejected(msg.sender, depositProof, "reserve balance below deposit");
-            revert("Algorithm: Reserve balance below deposit value");
-        }
+        // P0 FIX: The pre-deposit balance check was incorrect — it rejected any deposit
+        // larger than the current reserve balance (which is 0 on fresh deployment).
+        // The 1:1 deposit-vs-mint check at line 140 is the real protection.
+        // The balance check should happen AFTER the deposit is recorded, not before.
+        // Removed the incorrect pre-deposit balance check.
+        //
+        // Post-deposit verification happens in MTQ.mint() via _checkReserveRatio().
 
         // Record the deposit in the Reserve ledger.
         reserve.depositReserve(reserveDepositedUsd, reserveTier, depositProof);
