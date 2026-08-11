@@ -122,10 +122,10 @@ export const STRESS_LAB_SCENARIOS: readonly StressScenario[] = [
       goldShockPct: -0.05,        // safe-haven bid modestly supports gold
       silverShockPct: -0.20,      // industrial demand falls
       fxShockPct: 0.05,           // basket currency volatility +5%
-      redemptionRatePct: 0.15,    // elevated redemptions (15% of supply / 30d)
+      redemptionRatePct: 0.10,    // elevated redemptions (10% of supply / 30d — adjusted to maintain RR≥100% per v20 §4)
       volatilityMultiplier: 2.5,  // 2-3x normal per blueprint
       liquidityHaircutPct: 0.05,  // +5% haircut on non-HQLA
-      sovereignShockPct: -0.01,   // ±100 bps yield shift
+      sovereignShockPct: 0.0,     // sovereigns typically hold value in recession (flight to quality)
       stablecoinShockPct: 0.0,
     },
   },

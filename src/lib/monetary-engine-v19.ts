@@ -123,6 +123,10 @@ export function computeNAV(reserves: ReserveValuation, supply: number): NAVSet {
 /** §4 MTQ face value (redemption par). 1 MTQ redeems for $1.00 of reserve value. */
 export const PAR_VALUE = 1.00;
 
+// §33 SDP constants (per v20 Blueprint §6.9)
+export const SDP_TRIGGER_THRESHOLD = 0.05; // 5% deviation triggers SDP
+export const SDP_CAP = 0.50; // Anti-shock cap: weights cannot drop below 50% of current
+
 export interface ReserveRatioResult {
   ratio: number; // RR = R_a / L (percentage)
   redemptionLiability: number; // L = S × PAR (redemption liability at face value)
@@ -850,6 +854,34 @@ export function computeMonetaryStateV19(
     w.belowFloor = fpLt(fp(hysteresisAdjusted.get(w.code) ?? 0), fp(W_MIN));
   }
 
+  // §33 SDP Application (P1 fix — was display-only, now applied to weights)
+  // For each currency, check if price deviation > 5% from 12-month reference.
+  // If triggered, apply emergency weight via computeSDPEmergency, then re-normalize.
+  let sdpTriggered = false;
+  const sdpDetails: string[] = [];
+  for (const w of weightEntries) {
+    if (w.p12moAgo > 0 && w.priceToday > 0) {
+      const deviation = Math.abs(w.priceToday / w.p12moAgo - 1);
+      if (deviation > SDP_TRIGGER_THRESHOLD) {
+        sdpTriggered = true;
+        const emergencyWeight = w.structuralWeight * (w.p12moAgo / w.priceToday);
+        const cappedWeight = Math.max(emergencyWeight, w.normalizedWeight * SDP_CAP);
+        sdpDetails.push(`${w.code} deviated ${(deviation * 100).toFixed(2)}% — SDP applied (W: ${(w.normalizedWeight * 100).toFixed(2)}% → ${(cappedWeight * 100).toFixed(2)}%)`);
+        w.normalizedWeight = cappedWeight;
+        w.isCapped = true; // Mark as SDP-adjusted
+      }
+    }
+  }
+  // Re-normalize if SDP applied
+  if (sdpTriggered) {
+    const sumAfterSDP = weightEntries.reduce((s, w) => s + w.normalizedWeight, 0);
+    if (sumAfterSDP > 0) {
+      for (const w of weightEntries) {
+        w.normalizedWeight = w.normalizedWeight / sumAfterSDP;
+      }
+    }
+  }
+
   // §22A Basket verification
   const basketVerification = verifyBasket(finalMap);
 
@@ -872,6 +904,11 @@ export function computeMonetaryStateV19(
     // Previously only the §4 ratio was enforced, which allowed minting to
     // continue with a malformed basket (sum ≠ 1.0, W_i < floor, W_i > cap).
     mintingPaused: !reserveRatio.compliant || !basketVerification.passed,
+    // §33 SDP status (P1 fix — now applied to weights, not just displayed)
+    sdp: {
+      triggered: sdpTriggered,
+      details: sdpDetails.join(" | ") || "No SDP triggers active",
+    },
   };
 }
 

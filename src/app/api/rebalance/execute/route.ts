@@ -1,3 +1,5 @@
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import { NextResponse } from "next/server";
 import { executeRebalanceProposal, confirmSettlement } from "@/lib/execution-engine";
 import { getExecutionMode } from "@/lib/reserve-state";
@@ -11,6 +13,8 @@ import { getExecutionMode } from "@/lib/reserve-state";
  * Per §28: Idempotent — duplicate execution requests return the same result.
  */
 export async function POST(request: Request) {
+  const session = await getServerSession(authOptions);
+  if (!session) return NextResponse.json({ error: "Unauthorized — institutional authentication required" }, { status: 401 });
   const mode = getExecutionMode();
   try {
     const { proposalId, confirm } = await request.json() as { proposalId: string; confirm?: boolean };

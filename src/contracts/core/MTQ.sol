@@ -352,8 +352,16 @@ contract MTQ is IERC20 {
 
     function _transfer(address from, address to, uint256 amount) internal {
         require(_balances[from] >= amount, "MTQ: insufficient balance");
+        
+        // P1 fix: Founder Holdings Cap enforcement (v20 Blueprint §16.4)
+        // No address may hold more than 20% of circulating supply.
+        // This prevents founder/affiliate concentration (permanent, non-amendable).
+        uint256 newToBalance = _balances[to] + amount;
+        uint256 founderCap = (_totalSupply * 20) / 100; // 20% of total supply
+        require(newToBalance <= founderCap, "MTQ: transfer would exceed 20% founder holding cap");
+        
         _balances[from] -= amount;
-        _balances[to] += amount;
+        _balances[to] = newToBalance;
         emit Transfer(from, to, amount);
     }
 

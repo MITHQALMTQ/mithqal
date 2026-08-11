@@ -1,3 +1,5 @@
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import { NextResponse } from "next/server";
 import { generateRebalanceProposal, getAllProposals } from "@/lib/execution-engine";
 import { getReserveState, isReserveStateInitialized, initializeReserveState } from "@/lib/reserve-state";
@@ -35,6 +37,8 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  const session = await getServerSession(authOptions);
+  if (!session) return NextResponse.json({ error: "Unauthorized — institutional authentication required" }, { status: 401 });
   if (!isReserveStateInitialized()) {
     initializeReserveState(4076.9, 58.76, { gold: 0.155, silver: 0.039, cash: 0.50, sovereign: 0.24, stablecoin: 0.05 });
   }
