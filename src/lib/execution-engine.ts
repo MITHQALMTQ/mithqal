@@ -106,6 +106,9 @@ import { appendFileSync, mkdirSync } from "fs";
 import { dirname, join } from "path";
 import { createHash } from "node:crypto";
 
+// P1: State persistence layer (Turso-backed)
+import { persistAllState, loadAllState, persistProposals, persistTurnoverRecords, persistHysteresisState } from "./state-persistence";
+
 // ============================================================
 // Types
 // ============================================================
@@ -208,6 +211,28 @@ export interface ExecutionResult {
 // ============================================================
 
 const proposals = new Map<string, RebalanceProposal>();
+
+// P1: Load persisted state on startup (fire-and-forget, non-blocking)
+let _stateLoaded = false;
+async function loadPersistedState() {
+  if (_stateLoaded) return;
+  _stateLoaded = true;
+  try {
+    const loaded = await loadAllState();
+    if (loaded.proposals) {
+      for (const [id, p] of loaded.proposals) proposals.set(id, p);
+      console.log(`[execution-engine] loaded ${loaded.proposals.size} persisted proposals from Turso`);
+    }
+    if (loaded.turnoverRecords) {
+      // Restore turnover records to the in-memory array
+      turnoverRecords.push(...loaded.turnoverRecords);
+      console.log(`[execution-engine] loaded ${loaded.turnoverRecords.length} persisted turnover records from Turso`);
+    }
+  } catch (err) {
+    console.warn("[execution-engine] failed to load persisted state:", err instanceof Error ? err.message : err);
+  }
+}
+void loadPersistedState();
 const executionResults = new Map<string, ExecutionResult>();
 
 // ============================================================
@@ -1129,6 +1154,7 @@ export function generateRebalanceProposal(
   };
 
   proposals.set(proposalId, proposal);
+  void persistProposals(proposals).catch(() => {}); // P1: persist to Turso
 
   // §29.10 — audit the PROPOSED entry.
   logRebalanceAudit({
@@ -1257,6 +1283,7 @@ export function validateRebalanceProposal(proposalId: string): RebalanceProposal
   }
 
   proposals.set(proposalId, proposal);
+  void persistProposals(proposals).catch(() => {}); // P1: persist to Turso
 
   // §29.10 — audit the validation transition (PROPOSED→VALIDATED or PROPOSED→REJECTED).
   auditLifecycleTransition(proposal, fromState, proposal.lifecycle, "system:validateRebalanceProposal", {
@@ -1369,6 +1396,7 @@ export function approveRebalanceProposal(
   }
 
   proposals.set(proposalId, proposal);
+  void persistProposals(proposals).catch(() => {}); // P1: persist to Turso
 
   // §29.10 — audit the approval transition (VALIDATED→APPROVED or VALIDATED→REJECTED).
   auditLifecycleTransition(proposal, fromState, proposal.lifecycle, "approver", {
@@ -1415,6 +1443,7 @@ export async function executeRebalanceProposal(
   if (proposal.validUntil && asOf > Date.parse(proposal.validUntil)) {
     proposal.lifecycle = "EXPIRED";
     proposals.set(proposalId, proposal);
+  void persistProposals(proposals).catch(() => {}); // P1: persist to Turso
     throw new Error(`Proposal ${proposalId} expired (validUntil: ${proposal.validUntil})`);
   }
 
@@ -1424,6 +1453,7 @@ export async function executeRebalanceProposal(
     proposal.lifecycle = "REJECTED";
     proposal.rejectionReason = "Proposal hash mismatch — parameters altered post-approval";
     proposals.set(proposalId, proposal);
+  void persistProposals(proposals).catch(() => {}); // P1: persist to Turso
     throw new Error(`Proposal ${proposalId} hash mismatch — parameters were altered after approval`);
   }
 
@@ -1451,6 +1481,7 @@ export async function executeRebalanceProposal(
     proposal.lifecycle = "FAILED";
     proposal.rejectionReason = reason;
     proposals.set(proposalId, proposal);
+  void persistProposals(proposals).catch(() => {}); // P1: persist to Turso
     // §29.10 — audit the turnover-cap rejection (APPROVED→FAILED).
     auditLifecycleTransition(proposal, "APPROVED", "FAILED", "system:turnover-cap", {
       turnoverViolations: turnoverCheck.violations,
@@ -1470,6 +1501,7 @@ export async function executeRebalanceProposal(
   const fromStateApproved = proposal.lifecycle;
   proposal.lifecycle = "SUBMITTED";
   proposals.set(proposalId, proposal);
+  void persistProposals(proposals).catch(() => {}); // P1: persist to Turso
   // §29.10 — audit APPROVED→SUBMITTED.
   auditLifecycleTransition(proposal, fromStateApproved, "SUBMITTED", "system:executeRebalanceProposal");
 
@@ -1482,6 +1514,7 @@ export async function executeRebalanceProposal(
     const fromStateSubmitted = proposal.lifecycle;
     proposal.lifecycle = "EXECUTING";
     proposals.set(proposalId, proposal);
+  void persistProposals(proposals).catch(() => {}); // P1: persist to Turso
     // §29.10 — audit SUBMITTED→EXECUTING.
     auditLifecycleTransition(proposal, fromStateSubmitted, "EXECUTING", "system:executeRebalanceProposal");
 
@@ -1552,6 +1585,7 @@ export async function executeRebalanceProposal(
     // portfolio). Idempotent via `recordedProposalIds`.
     if (!failed) {
       recordTurnoverImpact(proposal, totalReserveValue, asOfTimestamp);
+  void persistTurnoverRecords(turnoverRecords).catch(() => {}); // P1: persist turnover to Turso
     }
   } catch (err) {
     failed = true;
@@ -1566,6 +1600,7 @@ export async function executeRebalanceProposal(
   }
 
   proposals.set(proposalId, proposal);
+  void persistProposals(proposals).catch(() => {}); // P1: persist to Turso
 
   const result: ExecutionResult = {
     proposalId,
@@ -1613,6 +1648,7 @@ export function confirmSettlement(proposalId: string): ReserveState {
   const fromStateSettled = proposal.lifecycle;
   proposal.lifecycle = "CUSTODIAN_CONFIRMED";
   proposals.set(proposalId, proposal);
+  void persistProposals(proposals).catch(() => {}); // P1: persist to Turso
 
   // §29.10 — audit SETTLED→CUSTODIAN_CONFIRMED.
   auditLifecycleTransition(proposal, fromStateSettled, "CUSTODIAN_CONFIRMED", "system:confirmSettlement", {
@@ -1632,6 +1668,7 @@ export function finalizeProposal(proposalId: string): RebalanceProposal {
   const fromState = proposal.lifecycle;
   proposal.lifecycle = "FINAL";
   proposals.set(proposalId, proposal);
+  void persistProposals(proposals).catch(() => {}); // P1: persist to Turso
   // §29.10 — audit CUSTODIAN_CONFIRMED→FINAL.
   auditLifecycleTransition(proposal, fromState, "FINAL", "system:finalizeProposal");
   return proposal;

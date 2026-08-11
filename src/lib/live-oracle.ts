@@ -173,20 +173,29 @@ export async function getLiveOracleData(): Promise<LiveOracleData> {
 
   const sources: string[] = [];
 
-  // ---- Live spot gold ----
+  // ---- Live spot gold (P1: multi-oracle consensus) ----
   let goldUsd = 4050;
   try {
-    const goldRes = await fetch("https://api.gold-api.com/price/XAU", {
-      signal: AbortSignal.timeout(5000),
-    });
-    if (goldRes.ok) {
-      const goldData = await goldRes.json();
-      if (goldData.price && typeof goldData.price === "number") {
-        goldUsd = goldData.price;
-        sources.push("gold-api.com");
+    // P1: Use multi-oracle consensus instead of single source
+    const { getMultiOracleGoldPrice } = await import("./multi-oracle");
+    const oracleResult = await getMultiOracleGoldPrice();
+    goldUsd = oracleResult.consensusPrice;
+    sources.push(`multi-oracle(${oracleResult.method}, ${oracleResult.sources.filter(s => s.included).length}/${oracleResult.sources.length} sources)`);
+  } catch {
+    // Fallback: direct single-source fetch (original behavior)
+    try {
+      const goldRes = await fetch("https://api.gold-api.com/price/XAU", {
+        signal: AbortSignal.timeout(5000),
+      });
+      if (goldRes.ok) {
+        const goldData = await goldRes.json();
+        if (goldData.price && typeof goldData.price === "number") {
+          goldUsd = goldData.price;
+          sources.push("gold-api.com (fallback)");
+        }
       }
-    }
-  } catch {}
+    } catch {}
+  }
 
   // ---- Live FX spot ----
   let fxRates: Record<string, number> = {
