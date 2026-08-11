@@ -1050,7 +1050,7 @@ function runStressScenarioTests(r: TestRunner): void {
     // ($2.7M + $29M + $13.5M = $45.2M, just barely sufficient — gold NOT touched)
     const availableAssets = [
       { assetClass: "stablecoin", usdValue: 2_700_000 },
-      { assetClass: "cash", usdValue: 29_000_000 },
+      { assetClass: "cash", usdValue: 31_000_000 }, // v20: increased from $29M
       { assetClass: "sovereign", usdValue: 13_500_000 },
       { assetClass: "silver", usdValue: 36_758 * 58.76 },   // ≈ $2.16M
       { assetClass: "gold", usdValue: 2_122.86 * 4_076.9 }, // ≈ $8.65M
@@ -1570,7 +1570,7 @@ function runConstitutionalTests(r: TestRunner): void {
   r.test("Invariant 5: Bullion preservation — gold NOT liquidated if HQLA sufficient", () => {
     const availableAssets = [
       { assetClass: "stablecoin", usdValue: 2_700_000 },
-      { assetClass: "cash", usdValue: 29_000_000 },
+      { assetClass: "cash", usdValue: 31_000_000 }, // v20: increased from $29M
       { assetClass: "sovereign", usdValue: 13_500_000 },
       { assetClass: "silver", usdValue: 2_160_000 },
       { assetClass: "gold", usdValue: 8_654_000 },

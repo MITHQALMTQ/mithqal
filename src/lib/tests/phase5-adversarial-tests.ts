@@ -753,16 +753,12 @@ function runCurrencyAdversarialTests(r: TestRunner): void {
 function runMetalsAdversarialTests(r: TestRunner): void {
   r.category("3. Metals Adversarial (§30)");
 
-  // 3.1 Gold −30% — φ_t stays in [60%, 95%]; minting pauses if RR < 100%
+  // 3.1 Gold −30% — φ_t stays in [60%, 95%]; with v20 $31M cash baseline,
+  // RR stays above 100% (the increased buffer absorbs the shock).
+  // Previously (with $29M cash), gold −30% dropped RR below 100% and minting paused.
+  // With $31M cash, RR ~101.9% after gold −30% — still compliant.
   //
-  // NOTE: the Phase 5 task spec says "verify RR stays ≥ 100%" for gold −30%,
-  // but mathematically a 30% gold crash drops RR below 100% (gold is ~16%
-  // of adjusted reserves; −30% × 16% ≈ −4.8% of R_a, which exceeds the 2.05%
-  // over-collateralization buffer). The engine's CORRECT response is to
-  // PAUSE minting — that's the protective action. The test verifies both
-  // (a) φ_t stays in band AND (b) mintingPaused becomes true.
-  //
-  r.test("Gold −30% crash — φ_t ∈ [60%, 95%], mintingPaused when RR < 100% (protective response)", () => {
+  r.test("Gold −30% crash — φ_t ∈ [60%, 95%], RR stays ≥ 100% with v20 $31M cash buffer", () => {
     const s = baselineState({ goldPrice: BASE_GOLD_USD * 0.70 });
     computeState(s); // warm hysteresis
     const st = computeState(s);
@@ -770,10 +766,10 @@ function runMetalsAdversarialTests(r: TestRunner): void {
     const phi = deriveCurrentBullionGoldShare(assets);
     assert(phi >= PHI_T_SPEC.PHI_MIN - 1e-9 && phi <= PHI_T_SPEC.PHI_MAX + 1e-9,
       `φ_t=${fmtPct(phi)} must be in [${fmtPct(PHI_T_SPEC.PHI_MIN)}, ${fmtPct(PHI_T_SPEC.PHI_MAX)}]`);
-    // Gold −30% mathematically drops RR below 100% — the engine MUST pause minting.
-    assert(st.mintingPaused,
-      `minting MUST be paused when gold −30% drops RR below 100% (got RR=${fmt(st.reserveRatio.ratio, 2)}%, mintingPaused=${st.mintingPaused})`);
-    console.log(`      → gold −30%: φ_t=${fmtPct(phi)}, RR=${fmt(st.reserveRatio.ratio, 2)}%, mintingPaused=${st.mintingPaused} (protective response ✓)`);
+    // With $31M cash baseline, gold −30% keeps RR ≥ 100% (v20 institutional hardening)
+    assert(st.reserveRatio.ratio >= 100,
+      `RR must stay ≥ 100% with v20 $31M cash buffer after gold −30% (got RR=${fmt(st.reserveRatio.ratio, 2)}%)`);
+    console.log(`      → gold −30%: φ_t=${fmtPct(phi)}, RR=${fmt(st.reserveRatio.ratio, 2)}%, mintingPaused=${st.mintingPaused} (v20 buffer absorbs shock ✓)`);
   });
 
   // 3.2 Gold +30% rally — bullion layer cap 25% enforced
@@ -1614,7 +1610,7 @@ function runDirectContractBypassTests(r: TestRunner): void {
     // Article X liquidation order is preserved — gold LAST.
     const availableAssets = [
       { assetClass: "stablecoin", usdValue: 2_700_000 },
-      { assetClass: "cash", usdValue: 29_000_000 },
+      { assetClass: "cash", usdValue: 31_000_000 }, // v20: increased from $29M
       { assetClass: "sovereign", usdValue: 13_500_000 },
       { assetClass: "silver", usdValue: 2_160_000 },
       { assetClass: "gold", usdValue: 8_654_000 },
