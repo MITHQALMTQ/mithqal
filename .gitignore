@@ -30,3 +30,4 @@ logs/
 .zscripts/bootstrap.log
 db/custom.db
 db/custom.db-journal
+tool-results/
