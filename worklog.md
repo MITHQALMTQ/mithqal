@@ -444,3 +444,30 @@ Stage Summary:
 - For future restarts: `bash .zscripts/bootstrap-recover.sh` restores everything from GitHub + Turso.
 - The .env.encrypted backup mechanism works: SHA-256 of GitHub token decrypts all credentials. This is the survival mechanism for credentials across restarts.
 - Memory: 2523MB used / 4041MB total — stable with all 4 services running.
+
+---
+Task ID: WORKFLOW
+Agent: main (COO/PM)
+Task: Set up local-first development workflow with controlled deploys to protect GitHub/Turso/Vercel
+
+Work Log:
+- Stopped the auto-push watchdog (it was committing untested changes every 5 min, risking corruption of protected targets).
+- Cleaned up stray artifacts (mithqal/, skills/, db/custom.db, tool-results/).
+- Updated .gitignore to exclude all local-only runtime artifacts: .zscripts/*.pid, .zscripts/*.png, .zscripts/*.log, db/custom.db.
+- Created controlled deploy scripts (each with confirmation prompts, never pushes .env):
+  - .zscripts/deploy-github.sh — pushes LOCAL committed changes to GitHub origin/main
+  - .zscripts/deploy-turso.sh — pushes Prisma schema to Turso (with data-loss warning)
+  - .zscripts/deploy-vercel.sh — deploys LOCAL codebase to Vercel production
+  - .zscripts/deploy-all.sh — runs all 3 in sequence (GitHub → Turso → Vercel)
+- Created .zscripts/dev.sh — unified local dev helper with commands: status, start, stop, restart, lint, log, logs, nav, db, deploy, deploy-github, deploy-turso, deploy-vercel.
+- Wrote DEV-WORKFLOW.md documenting the full workflow: local development → test → controlled deploy. Includes architecture diagram, daily workflow, command reference, what's protected, what stays local, recovery procedures, and emergency revert instructions.
+- Committed and pushed the workflow scripts + DEV-WORKFLOW.md to GitHub (commit 6a5fcd4) so the workflow tooling itself is protected.
+
+Stage Summary:
+- ARCHITECTURE CHANGE: switched from auto-push-everything (risky) to local-first dev with controlled deploys (safe).
+- Local sandbox = active development environment (fast iteration, hot reload).
+- GitHub/Turso/Vercel = PROTECTED targets, only updated via explicit deploy commands with confirmation.
+- All workflow scripts committed to GitHub and protected.
+- All services stable: Dev (3000), Discord bot (3004), Notify (3003). Watchdog intentionally stopped.
+- NAV=$1.0900, RR=106.79% — live Turso data confirmed.
+- For future work: edit locally, test via dev server, then `bash .zscripts/dev.sh deploy "message"` when ready to publish.
