@@ -163,6 +163,16 @@ export const BASKET_VERIFICATION_SPEC = {
   MIN_FLOOR: 0.005,
   /** Maximum cap per currency: 60% (§22A/§21, L_MAX) */
   MAX_CAP: 0.60,
+  /** v21: USD-specific hard cap: 35% (prevents hidden USD anchor) */
+  USD_HARD_CAP: 0.35,
+  /** v21: EUR cap: 25% */
+  EUR_CAP: 0.25,
+  /** v21: Asian aggregate cap (JPY+SGD+CNY+CAD+AUD): 25% */
+  ASIAN_AGGREGATE_CAP: 0.25,
+  /** v21: Gulf aggregate cap (AED+SAR): 10% */
+  GULF_AGGREGATE_CAP: 0.10,
+  /** v21: Regional group cap: 40% (reduced from 70%) */
+  GROUP_CAP: 0.40,
   /** Sum of weights must equal 1.0 (§22A) */
   SUM_TARGET: 1.0,
   /** Tolerance for sum verification (floating-point) */
@@ -465,8 +475,11 @@ export const EMERGENCY_SPEC = {
 export const AMENDMENT_SPEC = {
   /** 11-stage workflow (v19 addendum §8) */
   STAGES: 11,
-  /** Timelock: 14 days (stages 9-10, v19 addendum §8) */
-  TIMELOCK_DAYS: 14,
+  /** Timelock: 90 days constitutional / 7 days policy (v21 §12.2 — fixes v20 mismatch) */
+  TIMELOCK_CONSTITUTIONAL_DAYS: 90,
+  TIMELOCK_POLICY_DAYS: 7,
+  /** @deprecated Use TIMELOCK_CONSTITUTIONAL_DAYS */
+  TIMELOCK_DAYS: 90,
   /** Supermajority: 6 of 7 Council (85.7% ≥ 75%) */
   SUPERMAJORITY: 6,
   COUNCIL_SIZE: 7,
@@ -517,25 +530,89 @@ export const LIQUIDATION_ORDER = [
 // v19.0.2 §19.2 — Canonical Baseline Composition
 // ============================================================
 export const BASELINE_COMPOSITION = {
-  CASH_USD: 31_000_000, // v20 institutional hardening: increased from $29M
+  CASH_USD: 31_000_000, // v21: institutional hardening (unchanged from v20)
   SOVEREIGN_USD: 13_500_000,
   GOLD_OZ: 2_122.86,
   SILVER_OZ: 36_758,
   STABLECOIN_USD: 2_700_000,
   SUPPLY: 54_000_000,
-  /** Expected RR: 102.05% (v19.0.2 §19.2) */
-  EXPECTED_RR: 1.0205,
-  /** Expected NAV_m: $1.0373 (at gold $4,076.9/oz) */
-  EXPECTED_NAV_M: 1.0373,
+  /** v21: Strategic target RR with 20% buffer = ~117% */
+  EXPECTED_RR: 1.17,
+  /** v21: Expected NAV_m at gold $4,358/oz */
+  EXPECTED_NAV_M: 1.09,
+  /** v21: 20% solvency buffer (Enhanced H++) */
+  SOLVENCY_BUFFER: 0.20,
 } as const;
 
 // ============================================================
 // §36 — Supported Mint/Redeem Currencies (10)
 // ============================================================
 export const SUPPORTED_CURRENCIES = [
-  "USD", "EUR", "JPY", "GBP", "CNY", "CHF", "AUD", "CAD",
+  "USD", "EUR", "CHF", "JPY", "GBP", "SGD", "AED", "SAR", "CNY", "CAD", "AUD",
   "XAU", "XAG",
 ] as const;
+
+// v21 §6.11 — Two-Layer Currency System
+/** Reserve-Eligible Currencies (Layer A — held as reserve assets) */
+export const RESERVE_CURRENCIES = [
+  "USD", "EUR", "CHF", "JPY", "GBP", "SGD", "AED", "SAR", "CNY", "CAD", "AUD",
+] as const;
+
+/** Supported Settlement Currencies (Layer B — convertible, NOT held as reserve) */
+export const SETTLEMENT_CURRENCIES = [
+  "EGP", "INR", "KRW", "TRY", "BRL", "MXN", "ZAR", "IDR", "MYR", "THB",
+] as const;
+
+// v21 §4.4 — Enhanced H++ Strategic Target Weights
+export const ENHANCED_HPP_WEIGHTS = {
+  USD: 0.27, EUR: 0.18, CHF: 0.06, JPY: 0.06, GBP: 0.05,
+  SGD: 0.04, AED: 0.03, SAR: 0.03, CNY: 0.02, CAD: 0.005, AUD: 0.005,
+} as const;
+
+// v21 §3.7 — Gold-Relative Index (GRI) — Advisory Metric
+export const GRI_SPEC = {
+  /** GRI = R_a / (GoldPrice × GoldRefQty) — advisory purchasing-power metric */
+  TARGET_MIN: 5.0,       // Strong gold coverage
+  MODERATE_THRESHOLD: 3.0, // Below this = weak coverage
+  /** GRI does NOT change PAR, does NOT trigger rebalancing */
+  ADVISORY_ONLY: true,
+} as const;
+
+// v21 §6.10 — Currency Quality Score (CQS) — 20-factor model
+export const CQS_SPEC = {
+  MIN_RESERVE_ELIGIBLE: 6.0,   // Minimum CQS for reserve eligibility
+  MIN_CONDITIONAL: 4.5,        // Minimum for conditional (with substitution)
+  MIN_SETTLEMENT_ONLY: 3.0,    // Below this = not supported
+  WATCH_TRIGGER: 6.0,          // CQS below this → WATCH state
+  REDUCE_TRIGGER: 5.5,         // CQS below this for 20 readings → REDUCE
+  SUSPEND_TRIGGER: 4.0,        // CQS below this → SUSPEND
+  REINSTATE_TRIGGER: 6.5,      // CQS above this for 60 readings → REINSTATE
+  REDUCE_CONFIRMATION_READINGS: 20,  // ~1 month at daily cadence
+  REINSTATE_CONFIRMATION_READINGS: 60, // ~3 months
+} as const;
+
+// v21 §6.12 — Currency Substitution Mechanism
+export const SUBSTITUTION_SPEC = {
+  /** When SUSPENDED, freed allocation goes to highest-CQS alternatives */
+  MAX_REPLACEMENT_FRACTION: 0.50,  // No single replacement >50% of freed allocation
+  TWAP_DAYS: 7,                    // Execute substitution over 7 days (anti-market-impact)
+  APPROVAL_SEVERITY: "HIGH",       // 4-of-5 governance approval required
+  /** Substitution must NOT default to USD */
+  PREVENT_USD_DEFAULT: true,
+} as const;
+
+// v21 §21 — Reserve Verification Levels
+export const VERIFICATION_SPEC = {
+  LEVELS: {
+    MODELED: 0,        // Hardcoded in source
+    SYSTEM_REPORTED: 1, // API reports the value
+    CUSTODIAN_ATTESTED: 2, // Independent custodian confirms
+    INDEPENDENTLY_AUDITED: 3, // Qualified auditor verifies
+    CRYPTOGRAPHIC: 4,  // Real-time on-chain proof
+  },
+  MIN_MAINNET_LEVEL: 3,
+  ATTESTATION_FRESHNESS_DAYS: 30,
+} as const;
 
 // ============================================================
 // User Fees (§5/exec-summary — still valid)
@@ -598,6 +675,14 @@ export const RESERVE_POLICY_SPEC = {
   SUPPORTED_CURRENCIES,
   USER_FEES: USER_FEES_SPEC,
   FINALITY: FINALITY_SPEC,
+  // v21 additions
+  RESERVE_CURRENCIES,
+  SETTLEMENT_CURRENCIES,
+  ENHANCED_HPP_WEIGHTS,
+  GRI: GRI_SPEC,
+  CQS: CQS_SPEC,
+  SUBSTITUTION: SUBSTITUTION_SPEC,
+  VERIFICATION: VERIFICATION_SPEC,
 } as const;
 
 export default RESERVE_POLICY_SPEC;
