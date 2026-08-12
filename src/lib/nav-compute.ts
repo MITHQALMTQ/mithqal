@@ -129,10 +129,20 @@ export async function computeLiveNav(): Promise<NavResult> {
 
   const oracle = toOracleSnapshot(liveData);
   const goldPrice = liveData.goldUsd;
-  const silverPrice =
-    oracleSnapshotData.silverUsd > 0
-      ? oracleSnapshotData.silverUsd
-      : FALLBACK_SILVER_USD;
+
+  // Silver: prefer multi-oracle consensus, fall back to oracle snapshot, then constant
+  let silverPrice = oracleSnapshotData.silverUsd > 0
+    ? oracleSnapshotData.silverUsd
+    : FALLBACK_SILVER_USD;
+  try {
+    const { getMultiOracleSilverPrice } = await import("./multi-oracle");
+    const silverOracle = await getMultiOracleSilverPrice(goldPrice);
+    if (silverOracle.consensusPrice > 0) {
+      silverPrice = silverOracle.consensusPrice;
+    }
+  } catch {
+    // keep single-source silver
+  }
 
   // Build FX rate map (USD per 1 unit foreign currency)
   const fxMap: Record<string, number> = { USD: 1.0 };

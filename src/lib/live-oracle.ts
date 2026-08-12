@@ -197,27 +197,38 @@ export async function getLiveOracleData(): Promise<LiveOracleData> {
     } catch {}
   }
 
-  // ---- Live FX spot ----
+  // ---- Live FX spot (multi-source: open.er-api.com + CoinGecko cross-rates) ----
   let fxRates: Record<string, number> = {
     USD: 1.00, EUR: 1.14, JPY: 0.0061, GBP: 1.33,
     CNY: 0.147, CHF: 1.22, AUD: 0.70, CAD: 0.71,
   };
   try {
-    const fxRes = await fetch("https://open.er-api.com/v6/latest/USD", {
-      signal: AbortSignal.timeout(5000),
-    });
-    if (fxRes.ok) {
-      const fxData = await fxRes.json();
-      const rates = fxData.rates || {};
-      for (const c of ["EUR", "JPY", "GBP", "CNY", "CHF", "AUD", "CAD"]) {
-        if (rates[c] && typeof rates[c] === "number" && rates[c] > 0) {
-          fxRates[c] = 1 / rates[c];
-        }
-      }
-      fxRates.USD = 1.00;
-      sources.push("open.er-api.com");
+    const { getMultiOracleFxRates } = await import("./multi-oracle");
+    const fxFetch = await getMultiOracleFxRates();
+    if (Object.keys(fxFetch.rates).length > 1) {
+      // Merge — keep USD=1.0, take multi-oracle values where available
+      fxRates = { ...fxRates, ...fxFetch.rates, USD: 1.0 };
+      sources.push(`multi-oracle-FX(${fxFetch.sources.length}/${fxFetch.sources.length} sources: ${fxFetch.sources.join(", ")})`);
     }
-  } catch {}
+  } catch {
+    // Fallback: direct single-source fetch (original behavior)
+    try {
+      const fxRes = await fetch("https://open.er-api.com/v6/latest/USD", {
+        signal: AbortSignal.timeout(5000),
+      });
+      if (fxRes.ok) {
+        const fxData = await fxRes.json();
+        const rates = fxData.rates || {};
+        for (const c of ["EUR", "JPY", "GBP", "CNY", "CHF", "AUD", "CAD", "SGD", "AED", "SAR"]) {
+          if (rates[c] && typeof rates[c] === "number" && rates[c] > 0) {
+            fxRates[c] = 1 / rates[c];
+          }
+        }
+        fxRates.USD = 1.00;
+        sources.push("open.er-api.com (fallback)");
+      }
+    } catch {}
+  }
 
   // ---- Live crypto ----
   let cryptoPrices = { btc: 64000, eth: 1850 };

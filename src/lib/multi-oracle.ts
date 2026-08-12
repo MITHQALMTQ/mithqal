@@ -561,6 +561,238 @@ export async function getMultiOracleGoldPrice(): Promise<MultiOracleResult> {
 // Test / inspection helpers
 // ============================================================
 
+// ============================================================
+// Silver multi-source oracle (v23 §31 — silver parity with gold)
+// ============================================================
+
+const SILVER_FALLBACK_USD = 30.0; // conservative v23 baseline ($/oz)
+
+let cachedSilver: { result: MultiOracleResult; timestamp: number } | null = null;
+let lastKnownGoodSilver: { price: number; timestamp: number } | null = null;
+
+/** Silver Source 1: gold-api.com (LBMA XAG/USD). */
+async function fetchSilverGoldApiCom(): Promise<number | null> {
+  try {
+    const res = await fetch("https://api.gold-api.com/price/XAG", {
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+      headers: { Accept: "application/json" },
+    });
+    if (!res.ok) return null;
+    const data: unknown = await res.json();
+    const price = (data as { price?: unknown })?.price;
+    if (typeof price !== "number" || !isFinite(price) || price <= 0) return null;
+    return price;
+  } catch {
+    return null;
+  }
+}
+
+/** Silver Source 2: computed proxy — gold consensus / gold-silver ratio.
+ *  Uses the gold consensus price (already multi-sourced) divided by the
+ *  historical ratio. Independent of gold-api.com's XAG endpoint. */
+async function fetchSilverComputedProxy(goldConsensus: number): Promise<number | null> {
+  if (goldConsensus <= 0) return null;
+  return goldConsensus / GOLD_SILVER_RATIO_FALLBACK;
+}
+
+/** Silver Source 3: metals-api.com (free, no key) — XAG/USD spot. */
+async function fetchSilverMetalsApi(): Promise<number | null> {
+  try {
+    // metals-api.com free tier — returns XAG/USD
+    const res = await fetch(
+      "https://api.metals.dev/v1/latest?api_key=demo&currency=USD&unit=oz",
+      {
+        signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+        headers: { Accept: "application/json" },
+      },
+    );
+    if (!res.ok) return null;
+    const data: unknown = await res.json();
+    const metals = (data as { metals?: Record<string, unknown> })?.metals;
+    const silver = metals?.silver;
+    if (typeof silver !== "number" || !isFinite(silver) || silver <= 0) return null;
+    return silver;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Get the multi-source silver price consensus.
+ *
+ * Fetches from independent sources:
+ *   1. gold-api.com (LBMA XAG/USD)
+ *   2. metals.dev (independent spot)
+ *   3. computed proxy (gold consensus / gold-silver ratio) — circuit breaker
+ *
+ * Same 4-tier fallback hierarchy as gold.
+ */
+export async function getMultiOracleSilverPrice(
+  goldConsensus?: number,
+): Promise<MultiOracleResult> {
+  if (cachedSilver && Date.now() - cachedSilver.timestamp < CACHE_TTL_MS) {
+    return cachedSilver.result;
+  }
+
+  const [goldApi, metalsApi, goldPrice] = await Promise.all([
+    fetchSilverGoldApiCom(),
+    fetchSilverMetalsApi(),
+    goldConsensus && goldConsensus > 0
+      ? Promise.resolve(goldConsensus)
+      : getMultiOracleGoldPrice().then(r => r.consensusPrice).catch(() => 0),
+  ]);
+
+  const fetched: FetchedSource[] = [
+    { name: "gold-api.com", price: goldApi },
+    { name: "metals.dev", price: metalsApi },
+  ];
+
+  const successful = fetched.filter(
+    (s): s is { name: string; price: number } => s.price !== null,
+  );
+
+  // Add computed proxy as circuit-breaker if quorum not met
+  let successfulForConsensus = successful;
+  if (successful.length < QUORUM_MIN_SOURCES) {
+    const proxy = await fetchSilverComputedProxy(goldPrice);
+    if (proxy !== null) {
+      successfulForConsensus = [
+        ...successful,
+        { name: "computed-proxy(gold÷ratio)", price: proxy },
+      ];
+      console.warn(
+        `[multi-oracle] silver: only ${successful.length}/2 primary sources succeeded — ` +
+          `computed proxy (gold÷ratio) added as circuit-breaker`,
+      );
+    }
+  }
+
+  const result = computeResult(successfulForConsensus);
+
+  // Override fallback baseline for silver
+  if (result.method === "fallback" && !lastKnownGoodSilver) {
+    result.consensusPrice = SILVER_FALLBACK_USD;
+  }
+
+  if (result.method === "median" || result.method === "single") {
+    cachedSilver = { result, timestamp: Date.now() };
+    lastKnownGoodSilver = {
+      price: result.consensusPrice,
+      timestamp: Date.now(),
+    };
+  }
+
+  return result;
+}
+
+// ============================================================
+// FX multi-source oracle (v23 §31 — FX consensus)
+// ============================================================
+
+/** FX Source 2: CoinGecko simple/price (free, no key).
+ *  Returns USD-per-unit for each currency by inverting the crypto-vs-fiat rate.
+ *  CoinGecko returns e.g. { bitcoin: { usd: 64000, eur: 59000 } } →
+ *  EUR/USD = btcUsd / btcEur. This gives us an independent FX source. */
+async function fetchFxFromCoinGecko(): Promise<Record<string, number> | null> {
+  try {
+    // Use bitcoin price in USD vs other currencies to derive FX
+    const res = await fetch(
+      "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd,eur,jpy,gbp,cny,chf,aud,cad,sgd,aed,sar",
+      {
+        signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+        headers: { Accept: "application/json" },
+      },
+    );
+    if (!res.ok) return null;
+    const data: unknown = await res.json();
+    const btc = (data as { bitcoin?: Record<string, number> })?.bitcoin;
+    if (!btc || typeof btc.usd !== "number" || btc.usd <= 0) return null;
+
+    const fxUsdPerUnit: Record<string, number> = { USD: 1.0 };
+    for (const ccy of ["EUR", "JPY", "GBP", "CNY", "CHF", "AUD", "CAD", "SGD", "AED", "SAR"]) {
+      const rate = btc[ccy.toLowerCase()];
+      if (typeof rate === "number" && rate > 0) {
+        // BTC costs `rate` units of ccy → 1 ccy = btcUsd/rate USD
+        fxUsdPerUnit[ccy] = btc.usd / rate;
+      }
+    }
+    return fxUsdPerUnit;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Get multi-source FX rates.
+ *
+ * Fetches from 2 independent sources and merges:
+ *   1. open.er-api.com (primary)
+ *   2. CoinGecko BTC cross-rates (independent derivation)
+ *
+ * Returns the median per currency where both sources succeed, or the
+ * single available source otherwise.
+ */
+export async function getMultiOracleFxRates(): Promise<{
+  rates: Record<string, number>; // USD per 1 unit foreign currency
+  sources: string[];
+}> {
+  const sources: string[] = [];
+  const rates: Record<string, number> = { USD: 1.0 };
+
+  // Source 1: open.er-api.com
+  let erApiRates: Record<string, number> | null = null;
+  try {
+    const res = await fetch("https://open.er-api.com/v6/latest/USD", {
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+    });
+    if (res.ok) {
+      const data: unknown = await res.json();
+      const r = (data as { rates?: Record<string, number> })?.rates;
+      if (r) {
+        erApiRates = {};
+        for (const ccy of ["EUR", "JPY", "GBP", "CNY", "CHF", "AUD", "CAD", "SGD", "AED", "SAR"]) {
+          if (typeof r[ccy] === "number" && r[ccy] > 0) {
+            erApiRates[ccy] = 1 / r[ccy]; // convert "foreign per USD" → "USD per foreign"
+          }
+        }
+        sources.push("open.er-api.com");
+      }
+    }
+  } catch {
+    /* handled by fallback */
+  }
+
+  // Source 2: CoinGecko (independent derivation via BTC cross-rates)
+  const cgRates = await fetchFxFromCoinGecko();
+  if (cgRates) sources.push("CoinGecko-FX");
+
+  // Merge: median where both succeed, single otherwise
+  const allCurrencies = new Set([
+    ...Object.keys(erApiRates ?? {}),
+    ...Object.keys(cgRates ?? {}),
+  ]);
+
+  for (const ccy of allCurrencies) {
+    const vals: number[] = [];
+    if (erApiRates?.[ccy] && erApiRates[ccy] > 0) vals.push(erApiRates[ccy]);
+    if (cgRates?.[ccy] && cgRates[ccy] > 0) vals.push(cgRates[ccy]);
+    if (vals.length > 0) {
+      rates[ccy] = vals.length === 1 ? vals[0] : median(vals);
+    }
+  }
+
+  // Fallbacks if a currency has no source
+  const fallbacks: Record<string, number> = {
+    EUR: 1.085, JPY: 0.0063, GBP: 1.27, CNY: 0.14, CHF: 1.12,
+    AUD: 0.66, CAD: 0.72, SGD: 0.74, AED: 0.272, SAR: 0.267,
+  };
+  for (const [ccy, val] of Object.entries(fallbacks)) {
+    if (!rates[ccy]) rates[ccy] = val;
+  }
+
+  return { rates, sources };
+}
+
 /**
  * Clear the in-memory cache (both the 60s cache and the last-known-good
  * fallback). Used by tests and manual inspection to force a fresh fetch.
@@ -569,6 +801,8 @@ export async function getMultiOracleGoldPrice(): Promise<MultiOracleResult> {
 export function _clearMultiOracleCache(): void {
   cachedResult = null;
   lastKnownGood = null;
+  cachedSilver = null;
+  lastKnownGoodSilver = null;
 }
 
 /**

@@ -64,6 +64,7 @@ import {
   LiveTimestamp as GlobalLiveTimestamp,
 } from "@/components/live-timestamp";
 import { DetailModal } from "@/components/detail-modal";
+import { V23MetricsPanel } from "@/components/v23-metrics-panel";
 
 /* ============================================================
  * Types — matches /api/transparency
@@ -1076,7 +1077,7 @@ export default function TransparencyDashboard() {
               </Badge>
               {state && (
                 <Badge className="border-gold/30 bg-gold/10 text-gold hover:bg-gold/10">
-                  v19.0.3 · {state.monetary?.specVersion ?? "constitutional spec"}
+                  v23 · {state.monetary?.specVersion ?? "constitutional spec"}
                 </Badge>
               )}
             </div>
@@ -1608,14 +1609,14 @@ export default function TransparencyDashboard() {
         </Reveal>
         ) : null}
 
-        {/* Monetary Engine v19.0.3 — Constitutional Monetary Infrastructure */}
+        {/* Monetary Engine v23 — Constitutional Monetary Infrastructure */}
         {state?.monetary ? (
           <Reveal>
             <div className="mt-6 rounded-2xl border border-gold/30 bg-gradient-to-br from-gold/[0.06] to-ink-soft p-6 sm:p-7">
               <div className="flex items-center gap-2 text-gold">
                 <TrendingUp className="h-4 w-4" />
                 <span className="text-[11px] font-semibold uppercase tracking-[0.22em]">
-                  Monetary Engine · v19.0.3 Constitutional Specification
+                  Monetary Engine · v23 Constitutional Specification
                 </span>
               </div>
               <h2 className="font-display mt-3 text-xl text-foreground sm:text-2xl">
@@ -1738,6 +1739,9 @@ export default function TransparencyDashboard() {
                 maxDuration={state.monetary.maxDuration ?? 0.75}
                 basket={state.monetary.basketVerification.passed ? 100 : 0}
               />
+
+              {/* v23 Four-Layer Advisory Metrics — GEI/BRI/LCI/DRQS/SE/SAE + stablecoin state machine */}
+              <V23MetricsPanel />
 
               {/* Detailed-view-only contents (UI9 Fix 2): basket table, data
                   sources label, fee schedule. Hidden in Quick View to keep
@@ -1950,7 +1954,7 @@ export default function TransparencyDashboard() {
           <div className="flex items-center gap-2 text-sm">
             <Lock className="h-4 w-4 text-gold" />
             <span className="text-fg-muted">
-              Testnet simulator — no real value held or transferred. Mechanics mirror the v19.0.3
+              Testnet simulator — no real value held or transferred. Mechanics mirror the v23
               Constitution. Every figure above is reproducible from the public ledger.
             </span>
           </div>
