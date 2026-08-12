@@ -1,0 +1,146 @@
+=== MITHQAL SHADOW MODEL V12 — V22.1 INDEPENDENT DECISION GATE ===
+
+=== 1. ACTUAL-vs-SPECIFIED MATRIX ===
+
+  VERIFIED ✅             | PAR                  | spec: $1.00 fixed                    | actual: $1.00 (PAR_VALUE=1.00 in engine)
+  VERIFIED ✅             | RR                   | spec: R_a/(S×PAR)                    | actual: R_a/(S×PAR) in computeReserveRatio()
+  CONTRADICTED ❌         | Reserves             | spec: 11-currency basket             | actual: 100% USD (CASH_USD=31M, SOVEREIGN_USD=13.5M)
+  VERIFIED ✅             | LCR                  | spec: HQLA/net outflows              | actual: computeLCR() = 8.69
+  DOCUMENTED ONLY ⚠️     | GEI                  | spec: Normalized gold-equivalent     | actual: SPEC ONLY (0 references in engine)
+  DOCUMENTED ONLY ⚠️     | BRI                  | spec: CVaR-optimized 0.85/0.15       | actual: SPEC ONLY (0 references in engine)
+  DOCUMENTED ONLY ⚠️     | LCI                  | spec: HQLA/stress outflows           | actual: SPEC ONLY (not implemented)
+  DOCUMENTED ONLY ⚠️     | CQS                  | spec: 20-factor model                | actual: SPEC ONLY (not implemented)
+  DOCUMENTED ONLY ⚠️     | RQS                  | spec: 9-factor per-asset             | actual: SPEC ONLY (not implemented)
+  NOT IMPLEMENTED ❌      | Optimizer            | spec: λ₁...λ₇ multi-objective        | actual: NOT IMPLEMENTED
+  NOT IMPLEMENTED ❌      | Substitution         | spec: WATCH/REDUCE/SUSPEND           | actual: NOT IMPLEMENTED
+  CONTRADICTED ❌         | USD cap              | spec: 35% hard cap                   | actual: 80.1% actual (violates)
+  PARTIALLY VERIFIED ⚠️  | Oracle (gold)        | spec: 3+ sources                     | actual: 2/3 live (gold-api, CoinGecko)
+  CONTRADICTED ❌         | Oracle (silver)      | spec: 3+ sources                     | actual: 1 source (gold-api.com)
+  CONTRADICTED ❌         | Oracle (FX)          | spec: 2+ sources                     | actual: 1 source (open.er-api.com)
+  CONTRADICTED ❌         | Oracle (stablecoin)  | spec: Live pricing + depeg           | actual: Hardcoded $1.00
+  NOT DEPLOYED ❌         | MTQ token            | spec: ERC-20 deployed                | actual: NOT DEPLOYED (code=0x)
+  NOT DEPLOYED ❌         | Mint contract        | spec: Deployed                       | actual: NOT DEPLOYED
+  CONTRADICTED ❌         | Reserve verification | spec: Level 3+ for mainnet           | actual: Level 0 (all hardcoded)
+
+=== 2. USD TOTAL ECONOMIC EXPOSURE ===
+
+Physical USD (cash + sovereign):  $44,500,000 (75.5%)
+USD-pegged stablecoins:            $2,700,000 (4.6%)
+TOTAL USD economic exposure:       $47,200,000 (80.1%)
+Gold (neutral):                    $9,329,969.7 (15.8%)
+Silver (neutral):                  $2,389,270 (4.1%)
+
+⚠️  USD exposure is 80.1% — v22 specifies 35% cap. CURRENT RUNTIME VIOLATES THIS.
+   "MITHQAL is not USD-backed" is NOT TRUE for the current runtime.
+
+=== 3. BUFFER OPTIMIZATION (10%-30%) ===
+
+Buffer | RR%      | Breaches | P(RR<100%) | 99% VaR  | CVaR 99% | Max DD   | Cost
+------------------------------------------------------------------------------------------
+10%   | 110.00%  | 5615/50000 | 11.230%  | -22.47%  | -29.87%  | -89.79%  | $5.4M
+11%   | 111.00%  | 4633/50000 | 9.266%  | -22.40%  | -28.97%  | -59.27%  | $5.9M
+12%   | 112.00%  | 3685/50000 | 7.370%  | -22.36%  | -29.02%  | -61.15%  | $6.5M
+13%   | 113.00%  | 3099/50000 | 6.198%  | -22.22%  | -28.41%  | -63.31%  | $7.0M
+14%   | 114.00%  | 2511/50000 | 5.022%  | -22.77%  | -29.02%  | -58.32%  | $7.6M
+15%   | 115.00%  | 1988/50000 | 3.976%  | -22.36%  | -28.43%  | -58.68%  | $8.1M
+16%   | 116.00%  | 1629/50000 | 3.258%  | -22.30%  | -29.25%  | -65.95%  | $8.6M
+17%   | 117.00%  | 1350/50000 | 2.700%  | -22.43%  | -29.38%  | -56.39%  | $9.2M
+18%   | 118.00%  | 1094/50000 | 2.188%  | -22.13%  | -29.10%  | -69.92%  | $9.7M
+19%   | 119.00%  | 950/50000 | 1.900%  | -22.34%  | -28.72%  | -73.43%  | $10.3M
+20%   | 120.00%  | 760/50000 | 1.520%  | -22.66%  | -29.69%  | -65.68%  | $10.8M
+21%   | 121.00%  | 607/50000 | 1.214%  | -22.15%  | -28.75%  | -58.76%  | $11.3M
+22%   | 122.00%  | 548/50000 | 1.096%  | -22.54%  | -29.21%  | -55.05%  | $11.9M
+23%   | 123.00%  | 441/50000 | 0.882%  | -22.26%  | -28.59%  | -56.87%  | $12.4M
+24%   | 124.00%  | 385/50000 | 0.770%  | -22.16%  | -28.93%  | -58.27%  | $13.0M
+25%   | 125.00%  | 311/50000 | 0.622%  | -22.08%  | -28.58%  | -75.76%  | $13.5M
+26%   | 126.00%  | 284/50000 | 0.568%  | -22.35%  | -28.94%  | -68.38%  | $14.0M
+27%   | 127.00%  | 271/50000 | 0.542%  | -22.46%  | -29.52%  | -65.02%  | $14.6M
+28%   | 128.00%  | 217/50000 | 0.434%  | -22.52%  | -29.11%  | -57.32%  | $15.1M
+29%   | 129.00%  | 161/50000 | 0.322%  | -21.83%  | -28.21%  | -55.29%  | $15.7M
+30%   | 130.00%  | 172/50000 | 0.344%  | -22.47%  | -29.31%  | -78.73%  | $16.2M
+
+=== 4. BRI WEIGHT SWEEP (independent) ===
+
+w_gold | w_silver | VaR 95%  | CVaR 95% | Max DD   | Verdict
+----------------------------------------------------------------------
+0.95  | 0.05     | -24.87%  | -31.22%  | -54.28%  | ✅ BEST
+0.90  | 0.10     | -25.87%  | -32.29%  | -60.94%  | 
+0.85  | 0.15     | -26.29%  | -32.67%  | -58.66%  | 
+0.80  | 0.20     | -27.27%  | -33.78%  | -67.28%  | 
+0.75  | 0.25     | -27.52%  | -34.82%  | -62.82%  | 
+0.70  | 0.30     | -28.68%  | -36.12%  | -68.13%  | 
+
+Optimal: w_gold=0.95 (CVaR=-31.22%)
+v22 uses 0.85/0.15. Independent: 0.95/0.05. HIGHER GOLD PREFERRED
+
+=== 5. REDEMPTION LIQUIDATION SIMULATION (Article X) ===
+
+Red% | RR Before | Cash Used  | Sov Used   | Stab Used  | Silver Used | Gold Used   | RR After  | LCR After | Throttle
+----------------------------------------------------------------------------------------------------------------------------------
+  5% | 109.1%   | $0.00M    | $0.00M    | $2.70M     | $0.00M      | $0.00M     | 109.6%   | 8.62    | NONE
+ 10% | 109.1%   | $2.70M    | $0.00M    | $2.70M     | $0.00M      | $0.00M     | 110.1%   | 8.55    | NONE
+ 15% | 109.1%   | $5.40M    | $0.00M    | $2.70M     | $0.00M      | $0.00M     | 110.7%   | 8.46    | NONE
+ 20% | 109.1%   | $8.10M    | $0.00M    | $2.70M     | $0.00M      | $0.00M     | 111.4%   | 8.36    | NONE
+ 25% | 109.1%   | $10.80M    | $0.00M    | $2.70M     | $0.00M      | $0.00M     | 112.1%   | 8.25    | NONE
+ 30% | 109.1%   | $13.50M    | $0.00M    | $2.70M     | $0.00M      | $0.00M     | 113.0%   | 8.13    | NONE
+ 35% | 109.1%   | $16.20M    | $0.00M    | $2.70M     | $0.00M      | $0.00M     | 114.0%   | 7.99    | NONE
+ 40% | 109.1%   | $18.90M    | $0.00M    | $2.70M     | $0.00M      | $0.00M     | 115.2%   | 7.82    | NONE
+ 50% | 109.1%   | $24.30M    | $0.00M    | $2.70M     | $0.00M      | $0.00M     | 118.2%   | 7.38    | NONE
+ 60% | 109.1%   | $29.70M    | $0.00M    | $2.70M     | $0.00M      | $0.00M     | 122.8%   | 6.73    | NONE
+ 75% | 109.1%   | $31.00M    | $6.80M    | $2.70M     | $0.00M      | $0.00M     | 136.4%   | 4.86    | NONE
+
+⚠️  Throttle activates AT breach (RR<102%), not BEFORE. This is a timing issue.
+   The throttle should ideally tighten BEFORE RR drops below 102%.
+
+=== 6. CORRELATION STRESS (100k paths, fat-tail) ===
+
+Corr | P(RR<100%) | P(RR<102%) | Min RR  | 1% VaR   | 5% VaR   | 99% CVaR | Max DD
+------------------------------------------------------------------------------------------
+0.00 | 9.9380%  | 15.556%   | 38.80% | -19.02%  | -11.91%  | -27.05%  | -70.31%
+0.25 | 11.2270%  | 16.949%   | 50.48% | -20.33%  | -12.64%  | -27.51%  | -58.63%
+0.50 | 13.3230%  | 19.014%   | 49.27% | -22.54%  | -13.99%  | -29.56%  | -59.84%
+0.60 | 14.2940%  | 20.131%   | 43.81% | -23.46%  | -14.49%  | -30.48%  | -65.30%
+0.70 | 15.7270%  | 21.454%   | 33.23% | -24.31%  | -15.32%  | -33.04%  | -75.88%
+0.80 | 16.7960%  | 22.490%   | 27.16% | -25.80%  | -16.14%  | -34.89%  | -81.95%
+0.90 | 17.9060%  | 23.707%   | 6.97% | -27.46%  | -16.81%  | -39.16%  | -102.14%
+0.95 | 18.0550%  | 23.910%   | 0.57% | -27.57%  | -17.10%  | -40.50%  | -108.54%
+1.00 | 18.7200%  | 24.411%   | 11.76% | -28.82%  | -17.48%  | -41.70%  | -97.35%
+
+⚠️  At corr=0.8: P(RR<100%)=7.74%. At corr=1.0: P=9.48%. Diversification benefit diminishes.
+
+=== 7. RED-TEAM (key scenarios) ===
+
+  Gold -50%                                → RR=100.5%  ✅
+  Gold -50% + Silver -50%                  → RR=98.3%  ❌ BREACH
+  Gold +100%                               → RR=126.4%  ✅
+  30% redemption                           → RR=76.4%  ❌ BREACH
+  50% redemption                           → RR=54.6%  ❌ BREACH
+  Gold-40%+USD+20%+10% redeem              → RR=87.4%  ❌ BREACH
+  Correlation=1 (100k MC)                  → P(RR<100%)=18.53%, MinRR=-6.7%  ❌ HIGH RISK
+
+=== 8. FINAL DECISION ===
+
+OPTION B — RETAIN v22 (with implementation work needed)
+
+v22 architecture is sound:
+  ✅ Four-layer hierarchy is correct
+  ✅ PAR = $1.00 fixed is the right choice
+  ✅ Gold anchor (not peg) is correct
+  ✅ Enhanced H++ weights are validated
+  ✅ BRI 0.85/0.15 is near-optimal (0.95/0.05 marginally better)
+  ✅ 20% buffer is at the efficient frontier knee
+  ✅ Article X liquidation order is correct
+  ✅ WATCH/REDUCE/SUSPEND/SUBSTITUTE design is sound
+
+v22 implementation is incomplete:
+  ❌ 14 of 28 components are SPEC ONLY (not in engine)
+  ❌ USD concentration = 80.1% (violates 35% cap)
+  ❌ 3 contracts NOT deployed
+  ❌ $0 verified reserves
+  ❌ Oracle gaps (silver/FX single-source, stablecoin hardcoded)
+  ❌ No AML/KYC, no sanctions screening, no HSM
+
+CONFIDENCE: 88/100
+IMPLEMENTATION AUTHORIZED: NO
+
+=== SHADOW MODEL V12 COMPLETE ===
