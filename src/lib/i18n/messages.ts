@@ -68,7 +68,7 @@ const en: Messages = {
   "action.returnHome": "Return to the Institution",
 
   // ---- Institution hero ----
-  "hero.eyebrow": "Constitutional Settlement Institution · Est. under the v19.0.3 Constitution",
+  "hero.eyebrow": "Constitutional Settlement Institution · Est. under the v23 Constitution",
   "hero.title": "Mithqal",
   "hero.subtitle": "A constitutional settlement institution.",
   "hero.description": "Mithqal is a neutral, fully-reserved settlement infrastructure for international trade. It is not a token, a platform, a bank, or a DeFi protocol. It is a monetary institution — governed by an immutable Constitution designed to endure beyond any single technology or market cycle.",
@@ -241,7 +241,7 @@ const ar: Messages = {
   "action.returnHome": "العودة إلى المؤسسة",
 
   // ---- الواجهة الرئيسية ----
-  "hero.eyebrow": "مؤسسة نقدية دستورية · تأسست بموجب دستور النسخة v19.0.3",
+  "hero.eyebrow": "مؤسسة نقدية دستورية · تأسست بموجب دستور النسخة v23",
   "hero.title": "ميثقال",
   "hero.subtitle": "مؤسسة تسوية نقدية دستورية.",
   "hero.description": "ميثقال بنية تحتية محايدة للتسوية بالكامل احتياطيًا للتجارة الدولية. ليست رمزًا، ولا منصة، ولا بنكًا، ولا بروتوكولًا للتمويل اللامركزي. بل هي مؤسسة نقدية تحكمها دستورية غير قابلة للتعديل مصممة لتدوم إلى ما يتجاوز أي تقنية أو دورة سوقية محددة.",
@@ -414,7 +414,7 @@ const fr: Messages = {
   "action.returnHome": "Retour à l'Institution",
 
   // ---- Hero ----
-  "hero.eyebrow": "Institution monétaire constitutionnelle · Établie sous la Constitution v19.0.3",
+  "hero.eyebrow": "Institution monétaire constitutionnelle · Établie sous la Constitution v23",
   "hero.title": "Mithqal",
   "hero.subtitle": "Une institution de règlement constitutionnelle.",
   "hero.description": "Mithqal est une infrastructure de règlement neutre, intégralement couverte par des réserves, destinée au commerce international. Ce n'est pas un jeton, une plateforme, une banque, ni un protocole DeFi. C'est une institution monétaire — gouvernée par une Constitution immuable conçue pour durer au-delà de toute technologie ou cycle de marché particulier.",
@@ -587,7 +587,7 @@ const de: Messages = {
   "action.returnHome": "Zurück zur Institution",
 
   // ---- Hero ----
-  "hero.eyebrow": "Konstitutionelle Währungsinstitution · Gegründet unter der Verfassung v19.0.3",
+  "hero.eyebrow": "Konstitutionelle Währungsinstitution · Gegründet unter der Verfassung v23",
   "hero.title": "Mithqal",
   "hero.subtitle": "Eine konstitutionelle Abwicklungsinstitution.",
   "hero.description": "Mithqal ist eine neutrale, voll gedeckte Abwicklungsinfrastruktur für den internationalen Handel. Sie ist kein Token, keine Plattform, keine Bank und kein DeFi-Protokoll. Sie ist eine Währungsinstitution — gesteuert durch eine unveränderliche Verfassung, die darauf ausgelegt ist, über jede einzelne Technologie oder jeden Marktzyklus hinaus zu bestehen.",
@@ -760,7 +760,7 @@ const es: Messages = {
   "action.returnHome": "Volver a la Institución",
 
   // ---- Hero ----
-  "hero.eyebrow": "Institución monetaria constitucional · Establecida bajo la Constitución v19.0.3",
+  "hero.eyebrow": "Institución monetaria constitucional · Establecida bajo la Constitución v23",
   "hero.title": "Mithqal",
   "hero.subtitle": "Una institución de liquidación constitucional.",
   "hero.description": "Mithqal es una infraestructura de liquidación neutral e íntegramente respaldada para el comercio internacional. No es un token, una plataforma, un banco ni un protocolo DeFi. Es una institución monetaria — gobernada por una Constitución inmutable diseñada para perdurar más allá de cualquier tecnología o ciclo de mercado particular.",
@@ -933,7 +933,7 @@ const zh: Messages = {
   "action.returnHome": "返回机构",
 
   // ---- 首屏 ----
-  "hero.eyebrow": "宪法货币机构 · 依 v19.0.3 宪法设立",
+  "hero.eyebrow": "宪法货币机构 · 依 v23 宪法设立",
   "hero.title": "Mithqal",
   "hero.subtitle": "一家宪法结算机构。",
   "hero.description": "Mithqal 是用于国际贸易的中立、全额储备结算基础设施。它不是代币、平台、银行或 DeFi 协议。它是一家货币机构——由一部不可变的宪法治理，旨在超越任何单一技术或市场周期而存续。",
