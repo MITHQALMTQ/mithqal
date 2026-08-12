@@ -1,0 +1,118 @@
+=== MITHQAL SHADOW MODEL V4 — ENHANCED H++ vs H++ ===
+
+=== 1. BASELINE METRICS ===
+
+Metric              | H++ (existing)    | Enhanced H++ (COO)  | Diff
+--------------------------------------------------------------------------------
+R_a                 | $    63221586    | $    63014838     | $-206748
+RR                  |       117.08%    |       116.69%     | -0.38pp
+LCR                 |         9.52     |         9.52      | -0.00
+Max currency        | USD=32.7%     | USD=32.4%      |
+
+=== 2. CURRENCY CONCENTRATION ===
+
+Currency | H++ (existing) | Enhanced H++ | Diff
+-------------------------------------------------------
+AED      |            1.4% |         3.0% | 1.6pp
+AUD      |            0.0% |         0.5% | 0.5pp
+CAD      |            0.0% |         0.5% | 0.5pp
+CHF      |           11.9% |         6.1% | -5.8pp
+CNY      |            0.0% |         1.9% | 1.9pp
+EUR      |           17.3% |        18.2% | 0.9pp
+GBP      |            3.9% |         5.0% | 1.1pp
+JPY      |            4.7% |         6.0% | 1.3pp
+SAR      |            0.0% |         3.0% | 3.0pp
+SGD      |            8.8% |         4.0% | -4.8pp
+USD      |           32.7% |        32.4% | -0.3pp
+XAG      |            4.8% |         4.8% | 0.0pp
+XAU      |           14.6% |        14.7% | 0.0pp
+
+=== 3. STRESS TEST COMPARISON (28 + enhanced scenarios) ===
+
+Scenario                                              H++ RR    Enh RR    Winner
+--------------------------------------------------------------------------------
+Gold -10%                                             115.4%    115.0%     H++ ✅
+Gold -30%                                             111.9%    111.6%     H++ ✅
+Gold -50%                                             108.5%    108.1%     H++ ✅
+Silver -50%                                           114.3%    113.9%     H++ ✅
+Silver -70%                                           113.2%    112.8%     H++ ✅
+USD +20%                                              103.0%    103.8%     Enh ✅
+USD -20%                                              128.0%    126.1%     H++ ✅
+EUR -30%                                              111.0%    110.3%     H++ ✅
+CHF +20%                                              119.9%    118.1%     H++ ✅
+JPY -30%                                              115.4%    114.6%     H++ ✅
+C: Gold-30%+Silver-50%                                109.2%    108.8%     H++ ✅
+H: Gold-30%+USD+20%                                   100.0%    100.7%     Enh ✅
+I: Gold-30%+Silver-50%+USD+20%                         98.3%     99.4%     Enh ✅
+J: Gold-30%+USD+20%+10% redeem                         90.0%     91.1%     Enh ✅
+Stablecoin -100%                                      114.8%    111.0%     H++ ✅
+Sovereign -15%                                        111.5%    111.3%     H++ ✅
+5% redeem                                             111.2%    110.9%     H++ ✅
+10% redeem                                            105.4%    105.0%     H++ ✅
+20% redeem                                             93.7%     93.4%     H++ ✅
+EXTREME: 4 shocks+20% redeem                           74.2%     74.7%     Enh ✅
+1980 Volcker                                           90.0%     91.6%     Enh ✅
+2022 USD surge                                        101.6%    102.6%     Enh ✅
+CNY sanctions (CNY→0)                                 117.1%    115.1%     H++ ✅
+CNY sanctions + Gold-20%                              113.7%    111.7%     H++ ✅
+CNY sanctions + USD+15%                               106.9%    106.1%     H++ ✅
+Geopolitical: Gold+25%+Silver+20%+AED/SAR stress      122.3%    121.1%     H++ ✅
+Asia crisis: JPY-20%+SGD-15%+CNY-10%                  114.4%    114.4%     H++ ✅
+Stablecoin depeg + CNY sanctions                      116.6%    114.0%     H++ ✅
+Liquidity crisis: all non-USD -10%                    109.5%    109.5%     Enh ✅
+--------------------------------------------------------------------------------
+Breaches: H++=6/29  Enhanced=5/29
+
+=== 4. MONTE CARLO (100k paths, 1yr, NORMAL regime) ===
+
+Metric         | H++ (existing)  | Enhanced H++    | Diff
+-----------------------------------------------------------------
+P(RR<100%)     | 0.0000%       | 0.0000%       | 0.0000pp
+P(RR<102%)     | 0.000%        | 0.000%        | 0.000pp
+Min RR         | 102.74%         | 102.40%         | -0.34pp
+Mean RR        | 117.06%         | 116.70%         | -0.36pp
+99% VaR        | -7.89%          | -7.60%          | 0.29pp
+CVaR (99%)     | -9.02%          | -8.74%          | 0.29pp
+Max Drawdown   | -14.34%          | -14.29%          | 0.05pp
+
+=== 5. CNY SANCTIONS + SUBSTITUTION SIMULATION ===
+
+Testing COO's WATCH → REDUCE → SUSPEND → SUBSTITUTE mechanism:
+
+  Before (CNY active):     RR = 116.69%
+  After (CNY→0, subst):    RR = 116.68%
+  Reallocation:
+    CHF: +$591391
+    SGD: +$295695
+    EUR: +$295695
+  Impact: -0.01pp
+
+=== 6. RED-TEAM: ENHANCED H++ BREAKING POINT ===
+
+Gold-30%+USD+15%                              H++: 103.10% ✅  |  Enh: 103.89% ✅
+Gold-30%+USD+20%                              H++: 99.96% ❌  |  Enh: 100.75% ✅
+Gold-35%+USD+20%                              H++: 99.08% ❌  |  Enh: 100.24% ✅
+Gold-40%+USD+20%                              H++: 97.94% ❌  |  Enh: 99.10% ❌
+Gold-30%+USD+20%+CNY sanctions                H++: 100.05% ✅  |  Enh: 99.61% ❌
+Gold-40%+USD+25%                              H++: 94.94% ❌  |  Enh: 96.47% ❌
+
+=== 7. SCORECARD ===
+
+Dimension           | H++   | Enhanced H++ | Winner
+------------------------------------------------------------
+Monetary architecture | 85    | 88          | Enh
+Reserve architecture | 88    | 90          | Enh
+Diversification      | 82    | 89          | Enh
+FX resilience        | 84    | 86          | Enh
+Gold resilience      | 85    | 85          | Tie
+Silver resilience    | 88    | 88          | Tie
+Stablecoin resilience | 88    | 88          | Tie
+Crisis resilience    | 85    | 84          | H++
+Geopolitical neutrality | 75    | 90          | Enh
+Institutional credibility | 85    | 87          | Enh
+Operational complexity | 70    | 65          | H++
+Substitution mechanism | 60    | 88          | Enh
+------------------------------------------------------------
+AVERAGE              | 81.3  | 85.7          | Enh
+
+=== SHADOW MODEL V4 COMPLETE ===
