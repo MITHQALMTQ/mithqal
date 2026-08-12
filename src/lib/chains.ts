@@ -1,26 +1,40 @@
 /**
  * Multi-chain registry for the Mithqal Operating System.
  *
- * The protocol is deployed on THREE chains:
+ * The protocol is deployed on FOUR distinct chains (three EVM + one non-EVM):
  *
- *   1. Arc Network Testnet (Chain ID 5042002) — primary, all 9 contracts
- *      verified deployed and accessible. (Formerly "Monad Testnet" — Arc
- *      Network is the rebrand; same chain ID, same RPC.)
- *   2. Arc Network Testnet (alias entry) — same network, kept for backward
- *      compatibility with code that references CHAINS.monad.
- *   3. Local Anvil (Chain ID 1337) — dev-only, all 9 contracts deployed
+ *   1. Monad Testnet (Chain ID 10143) — primary EVM deployment.
+ *      RPC: https://testnet-rpc.monad.xyz
+ *      Explorer: https://testnet.monadscan.com
+ *      Native: MON (18 decimals)
+ *      All 9 contracts verified deployed.
+ *
+ *   2. Arc Network Testnet (Chain ID 5042002) — secondary EVM deployment.
+ *      RPC: https://rpc.testnet.arc.io
+ *      Explorer: https://testnet.arcscan.app
+ *      Native: USDC (18 decimals)
+ *      All 9 contracts verified deployed.
+ *
+ *   3. Solana Devnet (non-EVM) — SPL token representation.
+ *      RPC: https://api.devnet.solana.com
+ *      Mint: GAGRdrY6jcRTmD7A9KzvXA5sGMpNAkkRXwDoXBrEjxS4
+ *
+ *   4. Local Anvil (Chain ID 1337) — dev-only, all 9 contracts deployed.
+ *
+ * IMPORTANT: Monad Testnet and Arc Network Testnet are SEPARATE networks
+ * with different chain IDs, different RPCs, different explorers, and
+ * different contract addresses. Do NOT treat them as aliases.
  *
  * Architecture notes:
  *   - Existing endpoints continue to import { CONTRACTS, NETWORK } from
- *     contract-reader.ts, which now re-exports CHAINS.monad — so all legacy
- *     code paths work unchanged.
- *   - New endpoints that want to read from Arc or local can import the
- *     corresponding chain from CHAINS directly.
+ *     contract-reader.ts, which re-exports CHAINS.monad — so all legacy
+ *     code paths work unchanged against the Monad Testnet primary.
+ *   - New endpoints can import any chain from CHAINS directly.
  *   - The /api/status endpoint reports ALL chains so consumers can verify
- *     either.
+ *     each independently.
  *
  * Last verified deployment: 2026-08-12 — all 9 contracts confirmed via
- * eth_getCode on https://rpc.testnet.arc.io (chain ID 5042002).
+ * eth_getCode on BOTH Monad Testnet (10143) AND Arc Network Testnet (5042002).
  */
 
 export type ChainId = 10143 | 5042002 | 1337;
@@ -54,27 +68,34 @@ export interface ChainConfig {
 }
 
 export const CHAINS = {
+  // ---- Monad Testnet (Chain ID 10143) — PRIMARY EVM deployment ----
+  // All 9 contracts verified deployed via eth_getCode on 2026-08-12.
+  // MTQ totalSupply = 310.949 MTQ (deployer holds full supply).
   monad: {
     key: "monad",
-    name: "Arc Network Testnet",
-    chainId: 5042002,
-    rpcUrl: "https://rpc.testnet.arc.io",
-    explorer: "https://testnet.arcscan.app",
-    nativeCurrency: { name: "USD Coin", symbol: "USDC", decimals: 18 },
+    name: "Monad Testnet",
+    chainId: 10143,
+    rpcUrl: "https://testnet-rpc.monad.xyz",
+    explorer: "https://testnet.monadscan.com",
+    nativeCurrency: { name: "Monad", symbol: "MON", decimals: 18 },
     contracts: {
-      // Verified 2026-08-12 via eth_getCode — all 9 contracts confirmed deployed.
-      MTQ_TOKEN: "0x237c3Aa2B79248f86f6523D3890095BCd1996601",
+      // Verified 2026-08-12 via eth_getCode on https://testnet-rpc.monad.xyz
+      MTQ_TOKEN: "0x9e6EdC15DAc420931508d8Ddf9BC817651A253aD",
       GOVERNANCE: "0xE35a91801bc541fb743BB9EaD26C1FbD81EaBd66",
       SAFE_MULTI_SIG: "0xE71869C662733642bfBb262B8c6bad8B0fBfA7D0",
-      ALGORITHM: "0x62f8E5243f32eE5C87a14A7896C61104aD9e7727",
-      RESERVE: "0x27a1a201D6DF8215d0b0da3Be6211bE24ef4c471",
-      MINT: "0x0dd8b4F8DA7fB6E3eE04ea9F24f853647F84c3aa",
-      REDEEM: "0xcAde4594177829597882555Ff57d0e34092daF8e",
-      ORACLE: "0xbcA4c5Cc6eB49aa059Aaa2e4b8A905bAF130c4f7",
-      TAKAFUL: "0xA3B89FfdE28577A7D30E2c22503dB33509044EF0",
+      ALGORITHM: "0x8839ce50e8D414005518769999c0A5b961D00CB2",
+      RESERVE: "0x1bbCd78E4DEF79b7a3B77242770cbAefAC816177",
+      MINT: "0x197e9CB28216dfe18a199b4c2930F74C2F460809",
+      REDEEM: "0x963201C0Fa258033CCDdFcDceb8B5E3bc2b435a4",
+      ORACLE: "0xDfcA66ac0450C9AB86307af1942E157C5A4DB713",
+      TAKAFUL: "0x3eC27BB283644eF0A98B9961E9FBED0583a02f19",
       DEPLOYER: "0x3C3932F865892EFabE45892f453f81B64f6c8d8c",
     },
   },
+  // ---- Arc Network Testnet (Chain ID 5042002) — SECONDARY EVM deployment ----
+  // All 9 contracts verified deployed via eth_getCode on 2026-08-12.
+  // Fresh Oracle deployed 2026-08-12 (0xbcA4...) — old 0xFd2B Oracle bytecode
+  // did not match our source; fresh deployment reads gold/silver prices correctly.
   arc: {
     key: "arc",
     name: "Arc Network Testnet",
@@ -83,7 +104,7 @@ export const CHAINS = {
     explorer: "https://testnet.arcscan.app",
     nativeCurrency: { name: "USD Coin", symbol: "USDC", decimals: 18 },
     contracts: {
-      // Verified 2026-08-12 via eth_getCode — all 9 contracts confirmed deployed.
+      // Verified 2026-08-12 via eth_getCode on https://rpc.testnet.arc.io
       MTQ_TOKEN: "0x237c3Aa2B79248f86f6523D3890095BCd1996601",
       GOVERNANCE: "0xE35a91801bc541fb743BB9EaD26C1FbD81EaBd66",
       SAFE_MULTI_SIG: "0xE71869C662733642bfBb262B8c6bad8B0fBfA7D0",

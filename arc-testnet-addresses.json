@@ -1,4 +1,10 @@
 {
+  "_network": "Arc Network Testnet (Chain ID: 5042002)",
+  "_rpc": "https://rpc.testnet.arc.io",
+  "_explorer": "https://testnet.arcscan.app",
+  "_nativeCurrency": "USDC (18 decimals)",
+  "_verified": "2026-08-12 via eth_getCode on https://rpc.testnet.arc.io — all 9 contracts confirmed deployed",
+  "_note": "Arc Network Testnet is a SEPARATE network from Monad Testnet. Different chain ID (5042002 vs 10143), different RPC, different explorer, different contract addresses. Oracle is a fresh deployment (0xbcA4...) — the original 0xFd2B bytecode did not match our source.",
   "MTQ": "0x237c3Aa2B79248f86f6523D3890095BCd1996601",
   "Governance": "0xE35a91801bc541fb743BB9EaD26C1FbD81EaBd66",
   "Safe": "0xE71869C662733642bfBb262B8c6bad8B0fBfA7D0",
@@ -9,16 +15,13 @@
   "Oracle": "0xbcA4c5Cc6eB49aa059Aaa2e4b8A905bAF130c4f7",
   "Takaful": "0xA3B89FfdE28577A7D30E2c22503dB33509044EF0",
   "_deployer": "0x3C3932F865892EFabE45892f453f81B64f6c8d8c",
-  "_network": "Arc Network Testnet (Chain ID: 5042002)",
-  "_rpc": "https://rpc.testnet.arc.io",
-  "_explorer": "https://testnet.arcscan.app",
-  "_nativeCurrency": "USDC (18 decimals)",
-  "_verified": "2026-08-12 via eth_getCode — all 9 contracts confirmed deployed",
   "_solana": {
+    "_network": "Solana Devnet (non-EVM, separate from both EVM chains)",
+    "_rpc": "https://api.devnet.solana.com",
+    "_explorer": "https://explorer.solana.com",
     "mintAddress": "GAGRdrY6jcRTmD7A9KzvXA5sGMpNAkkRXwDoXBrEjxS4",
     "symbol": "MTQ",
     "decimals": 18,
-    "wallet": "DbFjzWcD6kNmewadiG7ThjD7L4o3w3UhFhG31fPQhXb3",
-    "tokenBalance": "10,000,000,000"
+    "wallet": "DbFjzWcD6kNmewadiG7ThjD7L4o3w3UhFhG31fPQhXb3"
   }
 }

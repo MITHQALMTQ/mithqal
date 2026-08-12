@@ -1,22 +1,28 @@
 /**
- * On-chain MockOracle client — reads prices from the deployed MockOracle.sol
- * on Monad Testnet (Chain ID 10143).
+ * On-chain Oracle client — reads prices from the deployed Oracle.sol contract.
  *
- * Constitutional context (§30-33 v19.0.3):
+ * Reads from the Arc Network Testnet Oracle (Chain ID 5042002), where we
+ * deployed a fresh Oracle.sol that correctly implements goldPrice() and
+ * silverPrice(). The Monad Testnet Oracle (0xDfcA...) bytecode does not match
+ * our source — all reads revert — so we use the Arc Oracle as the live
+ * on-chain price source.
+ *
+ * Constitutional context (§30-33 v23):
  *   The Constitution requires a multi-oracle consensus. This is the testnet
- *   single-source mock implementation. On mainnet, this will be replaced by
- *   a MultiOracleConsensus adapter that aggregates Chainlink + Pyth + Chronicle.
+ *   single-source on-chain implementation. On mainnet, this will be replaced
+ *   by a MultiOracleConsensus adapter aggregating Chainlink + Pyth + Chronicle.
  *
  * Fallback strategy:
  *   - If MOCK_ORACLE_ADDRESS is set AND the contract responds, use on-chain prices
  *   - Otherwise, fall back to live free APIs (gold-api.com, open.er-api.com)
- *   - This ensures the dashboard always shows real prices even before deployment
+ *   - This ensures the dashboard always shows real prices even if the on-chain
+ *     Oracle is unreachable or stale.
  *
- * Price encoding: 8 decimals (matches MockOracle.sol)
+ * Price encoding: 8 decimals (matches Oracle.sol conventions)
  *   $4053.50 = 4053_50000000 = 405350000000 wei
  */
 
-const MONAD_RPC = "https://rpc.testnet.arc.io"; // v23: Arc Network (Chain ID 5042002)
+const ORACLE_RPC = "https://rpc.testnet.arc.io"; // Arc Network Testnet (Chain ID 5042002)
 
 // Function selectors (first 4 bytes of keccak256(signature))
 const SELECTORS = {
@@ -48,7 +54,7 @@ export interface OracleSnapshot {
 }
 
 async function rpcCall(method: string, params: unknown[]): Promise<unknown> {
-  const res = await fetch(MONAD_RPC, {
+  const res = await fetch(ORACLE_RPC, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ jsonrpc: "2.0", method, params, id: 1 }),
@@ -167,7 +173,7 @@ export async function getOnChainOraclePrices(
       lastUpdated,
       source: "onchain",
       oracleAddress,
-      rpcUrl: MONAD_RPC,
+      rpcUrl: ORACLE_RPC,
       fetchedAt: new Date().toISOString(),
     };
   } catch (err) {
@@ -240,7 +246,7 @@ async function getFallbackOracleSnapshot(): Promise<OracleSnapshot> {
       lastUpdated: { GOLD: now, SILVER: now, USDC: now, USDT: now, DAI: now },
       source: "fallback",
       oracleAddress: null,
-      rpcUrl: MONAD_RPC,
+      rpcUrl: ORACLE_RPC,
       fetchedAt: new Date().toISOString(),
     };
   } catch (err) {
@@ -253,7 +259,7 @@ async function getFallbackOracleSnapshot(): Promise<OracleSnapshot> {
       lastUpdated: { GOLD: now, SILVER: now, USDC: now, USDT: now, DAI: now },
       source: "fallback",
       oracleAddress: null,
-      rpcUrl: MONAD_RPC,
+      rpcUrl: ORACLE_RPC,
       fetchedAt: new Date().toISOString(),
     };
   }

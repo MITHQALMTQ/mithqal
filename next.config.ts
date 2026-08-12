@@ -28,7 +28,7 @@ const nextConfig: NextConfig = {
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com",
               "img-src 'self' data: https: blob:",
-              "connect-src 'self' https://api.gold-api.com https://open.er-api.com https://api.coingecko.com https://testnet-rpc.monad.xyz https://mithqal.vercel.app https://raw.githubusercontent.com wss:",
+              "connect-src 'self' https://api.gold-api.com https://open.er-api.com https://api.coingecko.com https://api.metals.dev https://testnet-rpc.monad.xyz https://rpc.testnet.arc.io https://api.devnet.solana.com https://mithqal.vercel.app https://raw.githubusercontent.com wss:",
               "media-src 'self' https://raw.githubusercontent.com",
               "base-uri 'self'",
               "form-action 'self'",
