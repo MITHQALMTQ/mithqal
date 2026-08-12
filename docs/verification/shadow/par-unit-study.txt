@@ -1,0 +1,176 @@
+=== MITHQAL SHADOW MODEL V10 — PAR CONSTITUTIONAL UNIT STUDY ===
+
+⚠️  SHADOW ONLY — does NOT affect production
+
+=== 1. TWO PAR ARCHITECTURES ===
+
+ARCHITECTURE A (Current v21): PAR = $1.00 (USD-denominated)
+  - 1 MTQ = $1.00 (fixed in USD)
+  - Redemption liability L = S × $1.00 = $54M
+  - RR = R_a / $54M
+  - USD is the legal reference denomination
+  - Accounting in USD
+  - Settlement in USD-equivalent
+
+ARCHITECTURE B (Proposed): PAR = 1.0000 (constitutional unit)
+  - 1 MTQ = 1 PAR (constitutional settlement unit, NOT USD)
+  - Redemption liability L = S × 1 PAR = 54M PAR units
+  - RR = R_a / (S × 1 PAR) — same formula, different conceptual unit
+  - External market value reported against: USD, EUR, CHF, gold, etc.
+  - PAR is currency-neutral
+  - Settlement in PAR, convertible to any supported currency
+
+=== 2. MATHEMATICAL EQUIVALENCE ===
+
+Architecture A (PAR=$1.00):  RR = 110.74%
+Architecture B (PAR=1 unit): RR = 110.74%
+The RR formula is IDENTICAL. The difference is CONCEPTUAL and LEGAL, not mathematical.
+
+=== 3. SETTLEMENT STABILITY UNDER FX SHOCKS ===
+
+Scenario: USD +20% vs all currencies
+
+Architecture A (PAR = $1.00):
+  - 1 MTQ still = $1.00 (PAR unchanged)
+  - EUR user redeems: gets €0.833 (was €0.869) — value dropped in EUR
+  - The settlement unit (USD) is fixed, but purchasing power in non-USD changed
+  - Settlement stability: ✅ Fixed in USD, ❌ Variable in other currencies
+
+Architecture B (PAR = 1 constitutional unit):
+  - 1 MTQ = 1 PAR (unchanged)
+  - PAR/USD = market-determined (e.g., 1 PAR = $1.09 at current NAV)
+  - EUR user redeems: gets PAR value in EUR at market rate
+  - Settlement stability: ✅ Fixed in PAR, ✅ Market-rate in all currencies
+  - BUT: PAR/USD floats → accounting value changes daily in USD
+
+=== 4. REDEMPTION VALUE CERTAINTY ===
+
+Architecture A (PAR = $1.00):
+  - Redemption value: CERTAIN in USD ($1.00 per MTQ)
+  - Redemption value: UNCERTAIN in EUR/JPY/etc. (depends on FX)
+  - Legal clarity: HIGH (dollar-denominated obligation)
+  - Sharia: ✅ Certain value in the settlement currency
+
+Architecture B (PAR = 1 constitutional unit):
+  - Redemption value: CERTAIN in PAR (1 PAR per MTQ)
+  - Redemption value: UNCERTAIN in ALL fiat currencies (depends on market)
+  - Legal clarity: MODERATE (what is "1 PAR" worth? Need valuation mechanism)
+  - Sharia: ⚠️ If PAR floats vs all currencies, redemption value is uncertain
+  - BUT: if PAR is defined as "1 unit backed by the reserve portfolio,"
+    the redemption gives you a PROPORTIONAL CLAIM on reserves, not a fixed $ amount
+
+=== 5. ACCOUNTING IMPLICATIONS ===
+
+Architecture A (PAR = $1.00):
+  - All accounting in USD (simple, universally understood)
+  - Balance sheet: Assets (USD) vs Liabilities (USD) → straightforward
+  - Tax: USD gain/loss is clear
+  - Audit: Standard USD accounting
+
+Architecture B (PAR = 1 unit):
+  - Accounting requires a "PAR valuation" (NAV-based or reserve-proportional)
+  - Balance sheet: Assets (multi-currency) vs Liabilities (PAR units)
+  - Tax: Need to determine gain/loss in local currency (complex)
+  - Audit: Non-standard unit requires explanation
+  - Complexity: SIGNIFICANTLY higher
+
+=== 6. REGULATORY CLASSIFICATION ===
+
+Architecture A (PAR = $1.00):
+  - US: Likely "payment instrument" or "money transmitter" (dollar-denominated)
+  - EU: MiCA — likely "e-money token" or "payment token"
+  - Switzerland: FINMA — likely "payment token"
+  - UAE: VARA — likely "payment token"
+  - Singapore: MAS — likely "payment service"
+
+Architecture B (PAR = 1 unit):
+  - US: RISK of "security" classification (floating-value instrument)
+  - EU: MiCA — RISK of "asset-referenced token" (ART) classification
+  - Switzerland: FINMA — may require investment product license
+  - UAE: VARA — likely "digital asset" (broader category)
+  - Singapore: MAS — may require "digital payment token" license
+  - Risk: SIGNIFICANTLY higher regulatory burden
+
+=== 7. SHARIA COMPATIBILITY ===
+
+Architecture A (PAR = $1.00):
+  - Fixed redemption value in USD → LOW gharar
+  - Clear settlement obligation → LOW uncertainty
+  - Similar to traditional Islamic banking (dollar-denominated)
+  - Sharia board review: STRAIGHTFORWARD
+
+Architecture B (PAR = 1 unit):
+  - If PAR floats vs all currencies → HIGHER gharar (uncertain value)
+  - If PAR = proportional reserve claim → may be structured as investment (different Sharia issues)
+  - Requires careful contractual structure to avoid bay' al-gharar
+  - Sharia board review: COMPLEX, requires detailed fatwa
+
+=== 8. SMART CONTRACT IMPLICATIONS ===
+
+Architecture A (PAR = $1.00):
+  - Mint: deposit USD → mint MTQ at 1:1
+  - Redeem: burn MTQ → receive $1.00 (or USD-equivalent)
+  - Simple, deterministic, easy to implement on-chain
+
+Architecture B (PAR = 1 unit):
+  - Mint: deposit any currency → value in PAR → mint MTQ
+  - Redeem: burn MTQ → receive proportional reserve claim
+  - Requires oracle for PAR valuation
+  - More complex, potentially non-deterministic
+
+=== 9. VERDICT ===
+
+ARCHITECTURE A (PAR = $1.00): RECOMMENDED (retain for now)
+
+  Strengths:
+  ✅ Settlement certainty (fixed USD value)
+  ✅ Low gharar (certain redemption value)
+  ✅ Simple accounting (USD-denominated)
+  ✅ Simpler regulatory classification (payment instrument)
+  ✅ Simpler smart contracts (1:1 USD mint/redeem)
+  ✅ Easier institutional adoption (dollar-denominated contracts)
+
+  Weaknesses:
+  ❌ USD is the conceptual anchor (not fully neutral)
+  ❌ Non-USD users face FX risk on redemption
+
+ARCHITECTURE B (PAR = constitutional unit): DEFER
+
+  Strengths:
+  ✅ Conceptually neutral (no USD dependency)
+  ✅ Proportional reserve claim (economically fair)
+
+  Weaknesses:
+  ❌ Higher gharar (floating value in all currencies)
+  ❌ Complex accounting (non-standard unit)
+  ❌ Higher regulatory burden (possible security/ART classification)
+  ❌ Complex smart contracts (oracle-dependent valuation)
+  ❌ Harder institutional adoption (non-standard settlement unit)
+  ❌ Requires Sharia fatwa (complex, time-consuming)
+
+CONCLUSION: Keep PAR = $1.00 for now. Architecture B is conceptually
+superior but operationally and legally premature. It should be studied
+as a FUTURE constitutional amendment after:
+  1. Regulatory engagement (determine if PAR-unit triggers security classification)
+  2. Sharia board review (determine if floating-value redemption is compliant)
+  3. Legal opinion (determine contractual structure for PAR-unit)
+  4. Institutional feedback (determine if institutions will accept non-USD PAR)
+
+=== 10. COMPROMISE: PAR = $1.00 + MULTI-CURRENCY REPORTING ===
+
+The best of both worlds:
+  - PAR = $1.00 (fixed, USD-denominated, simple, Sharia-friendly)
+  - Multi-currency NAV reported (EUR-NAV, CHF-NAV, Gold-NAV, etc.)
+  - Multi-numéraire purchasing power visible (transparency)
+  - Gold-relative index (GRI/GEI) shows purchasing-power strength
+  - Reserve composition is multi-currency (not USD-only)
+  - The ARCHITECTURE is neutral (diversified reserves)
+  - The SETTLEMENT UNIT is USD (practical, simple, compliant)
+
+This is the recommended path for v22:
+  - Keep PAR = $1.00
+  - Add multi-currency reporting layer
+  - Add gold-relative and multi-numéraire metrics (advisory)
+  - Study PAR-as-constitutional-unit as a future amendment
+
+=== SHADOW MODEL V10 COMPLETE ===

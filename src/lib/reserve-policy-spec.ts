@@ -569,14 +569,92 @@ export const ENHANCED_HPP_WEIGHTS = {
   SGD: 0.04, AED: 0.03, SAR: 0.03, CNY: 0.02, CAD: 0.005, AUD: 0.005,
 } as const;
 
-// v21 §3.7 — Gold-Relative Index (GRI) — Advisory Metric
-export const GRI_SPEC = {
-  /** GRI = R_a / (GoldPrice × GoldRefQty) — advisory purchasing-power metric */
-  TARGET_MIN: 5.0,       // Strong gold coverage
-  MODERATE_THRESHOLD: 3.0, // Below this = weak coverage
-  /** GRI does NOT change PAR, does NOT trigger rebalancing */
+// v22 §3.4 — Gold-Equivalent Index (GEI) — replaces v21 GRI
+// GEI = (R_a,t / G_t) / (R_a,0 / G_0) — normalized to 1.0 at base date
+export const GEI_SPEC = {
+  /** GEI is normalized to 1.0 at base date */
+  BASE_VALUE: 1.0,
+  /** GEI > 1 = reserve growing faster than gold (purchasing power increasing) */
+  TARGET_MIN: 1.0,
+  /** Below this = reserve losing ground vs gold */
+  WEAK_THRESHOLD: 0.8,
+  /** GEI is ADVISORY ONLY — does NOT change PAR, does NOT trigger rebalancing */
   ADVISORY_ONLY: true,
 } as const;
+
+// v22 §3.5 — Bullion Resilience Index (BRI)
+// BRI = (GoldVal_t/GoldVal_0)^w_g × (SilverVal_t/SilverVal_0)^w_s
+// Weights CVaR-optimized (10k correlated paths, shadow model v9)
+export const BRI_SPEC = {
+  W_GOLD: 0.85,    // CVaR-optimized gold weight
+  W_SILVER: 0.15,  // CVaR-optimized silver weight
+  BASE_VALUE: 1.0,  // Normalized to 1.0 at base date
+  ADVISORY_ONLY: true,
+} as const;
+
+// v22 §3.6 — Liquidity Coverage Index (LCI) — advisory supplement to LCR
+export const LCI_SPEC = {
+  /** LCI = HQLA / Expected Stress Outflows */
+  STRESS_REDEMPTION_RATE: 0.10, // 10% of supply as stress outflow
+  TARGET_MIN: 1.0,
+  ADVISORY_ONLY: true, // LCR remains the hard metric
+} as const;
+
+// v22 §3.7 — Multi-Numéraire Purchasing Power (reporting layer)
+export const MULTI_NUMERAIRE_SPEC = {
+  REFERENCE_NUMERAIRES: ['USD', 'EUR', 'CHF', 'JPY', 'GBP', 'SGD', 'AED', 'SAR', 'CNY', 'XAU', 'XAG'] as const,
+  /** MRR = RR (mathematically proven, shadow model v10). This is reporting only. */
+  MRR_EQUALS_RR: true,
+  REPORTING_ONLY: true,
+} as const;
+
+// v22 §3.8 — Reserve Quality Score (RQS) — dynamic per-asset scoring
+export const RQS_SPEC = {
+  FACTORS: ['Liquidity', 'Credit', 'FX', 'Duration', 'Volatility', 'Correlation', 'GeopoliticalRisk', 'Convertibility', 'CustodyRisk'] as const,
+  /** RQS informs the Dynamic Reserve Optimization Engine */
+  USED_FOR_OPTIMIZATION: true,
+  NOT_CONSTITUTIONAL: true, // RQS is an optimization input, not a constitutional metric
+} as const;
+
+// v22 §3.9 — Dynamic Reserve Optimization Engine
+export const OPTIMIZATION_SPEC = {
+  /** W* = argmax [λ₁·RR + λ₂·LCR + λ₃·GEI − λ₄·CVaR − λ₅·FXRisk − λ₆·GeoRisk − λ₇·ConcentrationRisk] */
+  LAMBDA: {
+    RR: 0.20,           // Solvency
+    LCR: 0.15,          // Liquidity
+    GEI: 0.10,          // Gold-relative strength
+    CVaR: 0.15,         // Tail risk (negative — minimize)
+    FX_RISK: 0.10,      // FX translation risk (negative)
+    GEO_RISK: 0.10,     // Geopolitical risk (negative)
+    CONCENTRATION: 0.10, // Concentration risk (negative)
+    EFFICIENCY: 0.10,   // Yield/efficiency (lowest weight)
+  } as const,
+  SUBJECT_TO_CONSTITUTIONAL_BANDS: true,
+  DOES_NOT_CHANGE_PAR: true,
+  DOES_NOT_OVERRIDE_RR: true,
+} as const;
+
+// v22 §6.5 — Stablecoin Depeg Monitoring
+export const STABLECOIN_DEPEG_SPEC = {
+  WATCH_THRESHOLD: 0.02,    // |P - 1| > 2% → WATCH
+  REDUCE_THRESHOLD: 0.05,   // |P - 1| > 5% → REDUCE
+  SUSPEND_THRESHOLD: 0.10,  // |P - 1| > 10% → SUSPEND
+  SUBSTITUTION_TARGET: 'ALTERNATIVE_ISSUER', // NOT USD cash
+} as const;
+
+// v22 §1 — Four-Layer Architecture
+export const FOUR_LAYER_SPEC = {
+  LAYER_1: 'Constitutional Solvency (RR)',
+  LAYER_2: 'Gold-Relative Strength (GEI + BRI)',
+  LAYER_3: 'Liquidity Protection (LCR + LCI)',
+  LAYER_4: 'Risk Dashboard (CQS + CRS + GCRS + SRR + CVaR + DRI + Multi-numéraire PP)',
+  /** No Layer 2-4 metric changes PAR or triggers rebalancing */
+  ONLY_LAYER_1_TRIGGERS_ACTION: true,
+} as const;
+
+// Deprecated v21 GRI (replaced by GEI in v22)
+// @deprecated Use GEI_SPEC instead
+export const GRI_SPEC = GEI_SPEC;
 
 // v21 §6.10 — Currency Quality Score (CQS) — 20-factor model
 export const CQS_SPEC = {
@@ -679,10 +757,19 @@ export const RESERVE_POLICY_SPEC = {
   RESERVE_CURRENCIES,
   SETTLEMENT_CURRENCIES,
   ENHANCED_HPP_WEIGHTS,
-  GRI: GRI_SPEC,
+  GRI: GRI_SPEC, // @deprecated v22 — use GEI
   CQS: CQS_SPEC,
   SUBSTITUTION: SUBSTITUTION_SPEC,
   VERIFICATION: VERIFICATION_SPEC,
+  // v22 additions
+  GEI: GEI_SPEC,
+  BRI: BRI_SPEC,
+  LCI: LCI_SPEC,
+  MULTI_NUMERAIRE: MULTI_NUMERAIRE_SPEC,
+  RQS: RQS_SPEC,
+  OPTIMIZATION: OPTIMIZATION_SPEC,
+  STABLECOIN_DEPEG: STABLECOIN_DEPEG_SPEC,
+  FOUR_LAYER: FOUR_LAYER_SPEC,
 } as const;
 
 export default RESERVE_POLICY_SPEC;
