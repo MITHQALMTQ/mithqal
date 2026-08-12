@@ -1,0 +1,88 @@
+=== MITHQAL SHADOW MODEL V5 — MASTER FINAL GATE ===
+
+=== 1. BASELINE METRICS ===
+
+Model       R_a          RR%      LCR    Breaches
+-----------------------------------------------------------------
+A           $    57648734  106.76%  8.68  8/38
+H++         $    63310746  117.24%  9.52  6/38
+Enhanced    $    63014838  116.69%  9.52  5/38
+Enh+EGP2%   $    62821993  116.34%  9.52  6/38
+Enh+EGP5%   $    62532726  115.80%  9.52  6/38
+
+=== 2. EGP POLICY TEST ===
+
+EGP scenario           | No EGP    | EGP 2%    | EGP 5%    | Winner
+---------------------------------------------------------------------------
+EGP -20%               | 116.69%   | 115.93%   | 114.79%   | No EGP
+EGP -40%               | 116.69%   | 115.53%   | 113.78%   | No EGP
+EGP -60%               | 116.69%   | 115.12%   | 112.77%   | No EGP
+EGP -80%               | 116.69%   | 114.72%   | 111.75%   | No EGP
+EGP -50% + Gold-30%    | 111.56%   | 110.20%   | 108.14%   | No EGP
+EGP -50% + USD+20%     | 104.46%   | 103.09%   | 101.03%   | No EGP
+
+=== 3. FAT-TAIL MONTE CARLO (Student-t df=5, 100k paths, 1yr) ===
+
+Model       P(RR<100%)  P(RR<102%)  MinRR   99VaR   CVaR99  MaxDD
+--------------------------------------------------------------------------------
+A           39.8180%    42.720%     -1078233.25%  -647.74%  -4873.99%  -1078340.01%
+H++         29.2550%    31.094%     -2798798.05%  -716.24%  -8239.64%  -2798915.29%
+Enhanced    29.4810%    31.409%     -211102.04%  -719.38%  -4848.52%  -211218.73%
+Enh+EGP2%   30.1330%    32.060%     -1271932.74%  -734.87%  -6625.22%  -1272049.08%
+Enh+EGP5%   31.6480%    33.549%     -796580.63%  -758.14%  -6843.99%  -796696.44%
+
+=== 4. NORMAL MC COMPARISON (100k paths, 1yr) ===
+
+Model       P(RR<100%)  P(RR<102%)  MinRR   99VaR   CVaR99  MaxDD
+--------------------------------------------------------------------------------
+A           8.0990%    16.245%     86.08%  -11.23%  -12.86%  -20.68%
+H++         0.0000%    0.002%     100.86%  -7.82%  -9.02%  -16.38%
+Enhanced    0.0000%    0.001%     101.92%  -7.60%  -8.73%  -14.77%
+Enh+EGP2%   0.0000%    0.001%     100.39%  -7.68%  -8.81%  -15.95%
+Enh+EGP5%   0.0000%    0.000%     102.55%  -7.65%  -8.80%  -13.25%
+
+=== 5. CRITICAL SCENARIO COMPARISON ===
+
+Scenario                                            A     H++     Enh   EGP2%
+-----------------------------------------------------------------------------
+8.USD +20%                                      104.1   103.2   103.8   103.0
+14.Gold -30%                                    101.9   112.1   111.6   111.2
+16.Gold -50%                                     98.6   108.7   108.1   107.8
+19.Gold+Silver crash                             99.8   109.3   108.8   108.4
+20.USD+20%+Gold-30%                             101.1   100.2   101.2   100.8
+21.USD+20%+Gold-35%                             100.2    99.2   100.2    99.9
+22.USD+20%+Gold-40%                              99.2    98.1    99.1    98.7
+25.10% redemption                                96.1   105.5   105.0   104.7
+26.20% redemption                                85.4    93.8    93.4    93.1
+28.50% redemption                                53.4    58.6    58.3    58.2
+32.CNY suspension                               106.8   117.2   115.1   114.7
+38.Simultaneous global crisis                    84.2    86.0    86.0    85.2
+
+=== 6. RED-TEAM: ENHANCED H++ BREAKING POINT ===
+
+Gold-30%+USD+20%                         Enh: 101.20% ✅
+Gold-35%+USD+20%                         Enh: 100.24% ✅
+Gold-40%+USD+20%                         Enh: 99.10% ❌
+Gold-40%+USD+25%                         Enh: 96.47% ❌
+Gold-30%+USD+20%+CNY sanc                Enh: 99.61% ❌
+Simultaneous global crisis               Enh: 85.96% ❌
+
+=== 7. CURRENCY QUALITY SCORE (CQS) ===
+
+Rank | Currency | CQS   | Classification
+--------------------------------------------------
+1    | CHF      | 8.16  | Core Reserve
+2    | USD      | 7.96  | Core Reserve
+3    | SGD      | 7.88  | Core Reserve
+4    | EUR      | 7.48  | Core Reserve
+5    | GBP      | 6.89  | Secondary Reserve
+6    | AED      | 6.71  | Secondary Reserve
+7    | CAD      | 6.63  | Secondary Reserve
+8    | JPY      | 6.57  | Secondary Reserve
+9    | AUD      | 6.56  | Secondary Reserve
+10   | SAR      | 6.38  | Secondary Reserve
+11   | CNY      | 4.63  | Settlement-Only
+12   | INR      | 4.20  | Settlement-Only
+13   | EGP      | 3.50  | Not Supported
+
+=== SHADOW MODEL V5 COMPLETE ===
