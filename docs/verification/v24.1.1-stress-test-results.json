@@ -1,0 +1,497 @@
+{
+  "date": "2026-08-12T21:11:37.545566Z",
+  "blueprint": "v24.1.1",
+  "totalTests": 62,
+  "passed": 21,
+  "failed": 41,
+  "passRate": "33.9%",
+  "results": [
+    {
+      "name": "PAR = $1.00",
+      "passed": true,
+      "detail": "PAR=1.0"
+    },
+    {
+      "name": "L = S \u00d7 PAR",
+      "passed": true,
+      "detail": "L=$54,000,000.0"
+    },
+    {
+      "name": "R_m = \u03a3 Q\u00d7P",
+      "passed": true,
+      "detail": "R_m=$50,197,553.46"
+    },
+    {
+      "name": "R_a = \u03a3 Q\u00d7P\u00d7(1-H)\u00d7C",
+      "passed": true,
+      "detail": "R_a=$49,194,991.63 (R_a \u2264 R_m \u2713)"
+    },
+    {
+      "name": "R_l = \u03a3 Q\u00d7P\u00d7(1-H)\u00d7C\u00d7S",
+      "passed": true,
+      "detail": "R_l=$44,419,418.94 (R_l \u2264 R_a \u2713)"
+    },
+    {
+      "name": "RR = R_a / (S \u00d7 PAR)",
+      "passed": true,
+      "detail": "RR=91.10%"
+    },
+    {
+      "name": "RR \u2265 100% (floor)",
+      "passed": false,
+      "detail": "RR=91.10%"
+    },
+    {
+      "name": "RR \u2265 105% (policy)",
+      "passed": false,
+      "detail": "RR=91.10%"
+    },
+    {
+      "name": "RR \u2265 120% (strategic)",
+      "passed": false,
+      "detail": "RR=91.10%"
+    },
+    {
+      "name": "GEI = (R_a,t/G_t)/(R_a,0/G_0)",
+      "passed": true,
+      "detail": "GEI=0.825009"
+    },
+    {
+      "name": "GEI normalized to ~1.0 at base",
+      "passed": false,
+      "detail": "GEI=0.825009"
+    },
+    {
+      "name": "BRI = (G/G\u2080)^0.90 \u00d7 (S/S\u2080)^0.10",
+      "passed": true,
+      "detail": "BRI=1.000000"
+    },
+    {
+      "name": "BRI weights sum to 1.0",
+      "passed": true,
+      "detail": "0.90 + 0.10 = 1.00 \u2713"
+    },
+    {
+      "name": "CBGRS = PRODUCT[G_i^w_i]",
+      "passed": true,
+      "detail": "CBGRS=0.965063"
+    },
+    {
+      "name": "CBGRS_arithmetic = \u03a3 w_i\u00d7G_i",
+      "passed": true,
+      "detail": "CBGRS_arith=0.965629 (diagnostic)"
+    },
+    {
+      "name": "Weights sum to 1.0",
+      "passed": true,
+      "detail": "\u03a3w_i=1.0000000000"
+    },
+    {
+      "name": "Geometric \u2260 Arithmetic",
+      "passed": true,
+      "detail": "Geometric and arithmetic differ \u2713"
+    },
+    {
+      "name": "LCR = HQLA / 30-day outflows",
+      "passed": true,
+      "detail": "LCR=6.97"
+    },
+    {
+      "name": "LCR \u2265 1.0 (floor)",
+      "passed": true,
+      "detail": "LCR=6.97"
+    },
+    {
+      "name": "LCR \u2265 1.25 (policy)",
+      "passed": true,
+      "detail": "LCR=6.97"
+    },
+    {
+      "name": "LRR = IAL / 30-day demand",
+      "passed": true,
+      "detail": "LRR=6.97"
+    },
+    {
+      "name": "LRR \u2265 1.0 (compliant)",
+      "passed": true,
+      "detail": "LRR=6.97"
+    },
+    {
+      "name": "DRQS weights sum to 1.00",
+      "passed": true,
+      "detail": "\u03a3=1.0"
+    },
+    {
+      "name": "USDC DRQS \u2265 7.5 (core threshold)",
+      "passed": true,
+      "detail": "USDC DRQS=8.75"
+    },
+    {
+      "name": "Gold -20%",
+      "passed": false,
+      "detail": "RR=87.87%"
+    },
+    {
+      "name": "Gold -30%",
+      "passed": false,
+      "detail": "RR=86.26%"
+    },
+    {
+      "name": "Gold -40%",
+      "passed": false,
+      "detail": "RR=84.64%"
+    },
+    {
+      "name": "Gold -50%",
+      "passed": false,
+      "detail": "RR=83.03%"
+    },
+    {
+      "name": "Silver -30%",
+      "passed": false,
+      "detail": "RR=89.52%"
+    },
+    {
+      "name": "Silver -50%",
+      "passed": false,
+      "detail": "RR=88.47%"
+    },
+    {
+      "name": "USD +20% (non-USD -20%)",
+      "passed": false,
+      "detail": "RR=85.95%"
+    },
+    {
+      "name": "USD +30% (non-USD -30%)",
+      "passed": false,
+      "detail": "RR=83.38%"
+    },
+    {
+      "name": "USD -20% (non-USD +20%)",
+      "passed": false,
+      "detail": "RR=96.25%"
+    },
+    {
+      "name": "USD -30% (non-USD +30%)",
+      "passed": false,
+      "detail": "RR=98.83%"
+    },
+    {
+      "name": "EUR crisis (-25%)",
+      "passed": false,
+      "detail": "RR=89.81%"
+    },
+    {
+      "name": "CNY -30%",
+      "passed": false,
+      "detail": "RR=90.95%"
+    },
+    {
+      "name": "Gulf stress",
+      "passed": false,
+      "detail": "RR=90.79%"
+    },
+    {
+      "name": "10% redemption",
+      "passed": false,
+      "detail": "RR=90.34%"
+    },
+    {
+      "name": "20% redemption",
+      "passed": false,
+      "detail": "RR=89.38%"
+    },
+    {
+      "name": "30% redemption",
+      "passed": false,
+      "detail": "RR=88.15%"
+    },
+    {
+      "name": "50% redemption",
+      "passed": false,
+      "detail": "RR=84.20%"
+    },
+    {
+      "name": "75% redemption",
+      "passed": false,
+      "detail": "RR=70.03%"
+    },
+    {
+      "name": "Stablecoin -10%",
+      "passed": false,
+      "detail": "RR=90.71%"
+    },
+    {
+      "name": "Stablecoin -50%",
+      "passed": false,
+      "detail": "RR=89.16%"
+    },
+    {
+      "name": "Stablecoin -100%",
+      "passed": false,
+      "detail": "RR=87.21%"
+    },
+    {
+      "name": "Sovereign -20%",
+      "passed": false,
+      "detail": "RR=85.90%"
+    },
+    {
+      "name": "Sovereign -40%",
+      "passed": false,
+      "detail": "RR=80.70%"
+    },
+    {
+      "name": "Custodian 10% loss",
+      "passed": false,
+      "detail": "RR=81.99%"
+    },
+    {
+      "name": "Custodian 25% loss",
+      "passed": false,
+      "detail": "RR=68.33%"
+    },
+    {
+      "name": "Custodian 30% loss",
+      "passed": false,
+      "detail": "RR=63.77%"
+    },
+    {
+      "name": "Gold-30% + 20% redeem",
+      "passed": false,
+      "detail": "RR=83.32%"
+    },
+    {
+      "name": "Gold-40% + 30% redeem",
+      "passed": false,
+      "detail": "RR=78.92%"
+    },
+    {
+      "name": "Gold-50% + 50% redeem",
+      "passed": false,
+      "detail": "RR=68.05%"
+    },
+    {
+      "name": "BlackSwan: Gold-40%+Silver-50%+FX-15%+30% redeem",
+      "passed": false,
+      "detail": "RR=69.63%"
+    },
+    {
+      "name": "Correlation\u21921: all -20%",
+      "passed": false,
+      "detail": "RR=75.69%"
+    },
+    {
+      "name": "Sovereign-20% + 20% redeem",
+      "passed": false,
+      "detail": "RR=82.88%"
+    },
+    {
+      "name": "Stablecoin-50% + 20% redeem",
+      "passed": false,
+      "detail": "RR=86.95%"
+    },
+    {
+      "name": "Gold-30% + Sovereign-20%",
+      "passed": false,
+      "detail": "RR=81.06%"
+    },
+    {
+      "name": "Global recession: Gold-20%+Silver-30%+FX-10%+Sov-15%",
+      "passed": false,
+      "detail": "RR=79.82%"
+    },
+    {
+      "name": "Post-mint RR \u2265 100%",
+      "passed": false,
+      "detail": "Post-mint RR=91.26% (minted $1,000,000)"
+    },
+    {
+      "name": "Post-redeem RR \u2265 100%",
+      "passed": false,
+      "detail": "Post-redeem RR=90.40% (redeemed $5,000,000)"
+    },
+    {
+      "name": "50% redemption covered without gold",
+      "passed": true,
+      "detail": "Liquidatable=$37,957,606 vs 50% redeem=$27,000,000"
+    }
+  ],
+  "stressScenarios": [
+    {
+      "name": "Gold -20%",
+      "rr": 87.8718502766578,
+      "passed": false
+    },
+    {
+      "name": "Gold -30%",
+      "rr": 86.25685724332445,
+      "passed": false
+    },
+    {
+      "name": "Gold -40%",
+      "rr": 84.64186420999111,
+      "passed": false
+    },
+    {
+      "name": "Gold -50%",
+      "rr": 83.02687117665778,
+      "passed": false
+    },
+    {
+      "name": "Silver -30%",
+      "rr": 89.52084316332444,
+      "passed": false
+    },
+    {
+      "name": "Silver -50%",
+      "rr": 88.46684770999113,
+      "passed": false
+    },
+    {
+      "name": "USD +20% (non-USD -20%)",
+      "rr": 85.95187855892445,
+      "passed": false
+    },
+    {
+      "name": "USD +30% (non-USD -30%)",
+      "rr": 83.37689966672444,
+      "passed": false
+    },
+    {
+      "name": "USD -20% (non-USD +20%)",
+      "rr": 96.25179412772444,
+      "passed": false
+    },
+    {
+      "name": "USD -30% (non-USD +30%)",
+      "rr": 98.82677301992445,
+      "passed": false
+    },
+    {
+      "name": "EUR crisis (-25%)",
+      "rr": 89.81434689722445,
+      "passed": false
+    },
+    {
+      "name": "CNY -30%",
+      "rr": 90.94733760979244,
+      "passed": false
+    },
+    {
+      "name": "Gulf stress",
+      "rr": 90.79283887626045,
+      "passed": false
+    },
+    {
+      "name": "10% redemption",
+      "rr": 90.33537371480494,
+      "passed": false
+    },
+    {
+      "name": "20% redemption",
+      "rr": 89.37729542915555,
+      "passed": false
+    },
+    {
+      "name": "30% redemption",
+      "rr": 88.14548049046348,
+      "passed": false
+    },
+    {
+      "name": "50% redemption",
+      "rr": 84.20367268664889,
+      "passed": false
+    },
+    {
+      "name": "75% redemption",
+      "rr": 70.03069444894223,
+      "passed": false
+    },
+    {
+      "name": "Stablecoin -10%",
+      "rr": 90.71310468688,
+      "passed": false
+    },
+    {
+      "name": "Stablecoin -50%",
+      "rr": 89.15817806110222,
+      "passed": false
+    },
+    {
+      "name": "Stablecoin -100%",
+      "rr": 87.21451977888,
+      "passed": false
+    },
+    {
+      "name": "Sovereign -20%",
+      "rr": 85.90193957434845,
+      "passed": false
+    },
+    {
+      "name": "Sovereign -40%",
+      "rr": 80.70204280537246,
+      "passed": false
+    },
+    {
+      "name": "Custodian 10% loss",
+      "rr": 81.991652708992,
+      "passed": false
+    },
+    {
+      "name": "Custodian 25% loss",
+      "rr": 68.32637725749333,
+      "passed": false
+    },
+    {
+      "name": "Custodian 30% loss",
+      "rr": 63.77128544032712,
+      "passed": false
+    },
+    {
+      "name": "Gold-30% + 20% redeem",
+      "rr": 83.32107155415555,
+      "passed": false
+    },
+    {
+      "name": "Gold-40% + 30% redeem",
+      "rr": 78.91694887141588,
+      "passed": false
+    },
+    {
+      "name": "Gold-50% + 50% redeem",
+      "rr": 68.05374235331557,
+      "passed": false
+    },
+    {
+      "name": "BlackSwan: Gold-40%+Silver-50%+FX-15%+30% redeem",
+      "rr": 69.63486748336825,
+      "passed": false
+    },
+    {
+      "name": "Correlation\u21921: all -20%",
+      "rr": 75.69053695705956,
+      "passed": false
+    },
+    {
+      "name": "Sovereign-20% + 20% redeem",
+      "rr": 82.87742446793555,
+      "passed": false
+    },
+    {
+      "name": "Stablecoin-50% + 20% redeem",
+      "rr": 86.94772257637777,
+      "passed": false
+    },
+    {
+      "name": "Gold-30% + Sovereign-20%",
+      "rr": 81.05696047434844,
+      "passed": false
+    },
+    {
+      "name": "Global recession: Gold-20%+Silver-30%+FX-10%+Sov-15%",
+      "rr": 79.81595562772578,
+      "passed": false
+    }
+  ]
+}

@@ -65,6 +65,7 @@ import {
 } from "@/components/live-timestamp";
 import { DetailModal } from "@/components/detail-modal";
 import { V23MetricsPanel } from "@/components/v23-metrics-panel";
+import { CbgrsPanel } from "@/components/cbgrs-panel";
 
 /* ============================================================
  * Types — matches /api/transparency
@@ -1742,6 +1743,9 @@ export default function TransparencyDashboard() {
 
               {/* v23 Four-Layer Advisory Metrics — GEI/BRI/LCI/DRQS/SE/SAE + stablecoin state machine */}
               <V23MetricsPanel />
+
+              {/* v24.1.1 CBGRS — Currency Basket Gold-Relative Strength (Layer 2 Advisory) */}
+              <CbgrsPanel />
 
               {/* Detailed-view-only contents (UI9 Fix 2): basket table, data
                   sources label, fee schedule. Hidden in Quick View to keep
