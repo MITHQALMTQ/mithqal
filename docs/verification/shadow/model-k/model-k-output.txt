@@ -1,0 +1,143 @@
+=== MITHQAL MODEL K — MULTI-NUMERAIRE ARCHITECTURE ===
+
+⚠️  SHADOW ONLY — NOT IN PRODUCTION PATH
+
+=== 1. BASELINE (gold=$4,398, silver=$65) ===
+
+Model A (v21):    RR = 110.79%  (USD-only measurement)
+Model H++:        RR = 110.79%  (same reserve, same RR)
+Model K:          RR = 110.79%  (MRR = RR, mathematically proven below)
+
+=== 2. MULTI-NUMERAIRE MATHEMATICAL PROOF ===
+
+Claim: RR is INVARIANT to numéraire choice when PAR is a fixed unit.
+
+Proof:
+  Let R_a = total reserve value in USD
+  Let S = MTQ supply, PAR = $1.00
+  Let FX_j = USD per 1 unit of currency j
+
+  In numéraire j:
+    R_a^(j) = R_a / FX_j    (reserve value in currency j)
+    L^(j) = S × PAR / FX_j  (liability in currency j)
+    RR_j = R_a^(j) / L^(j) = (R_a/FX_j) / (S×PAR/FX_j) = R_a / (S×PAR)
+
+  The FX_j CANCELS OUT. RR_j = RR_USD for ALL j.
+
+Verification (baseline):
+  RR in USD: 110.7900%  (identical to USD: 110.7900%)
+  RR in EUR: 110.7900%  (identical to USD: 110.7900%)
+  RR in GBP: 110.7900%  (identical to USD: 110.7900%)
+  RR in JPY: 110.7900%  (identical to USD: 110.7900%)
+  RR in CHF: 110.7900%  (identical to USD: 110.7900%)
+  RR in SGD: 110.7900%  (identical to USD: 110.7900%)
+
+⚠️  FINDING: MRR = RR for all numéraires. The multi-numeraire concept
+   does NOT produce different RR values. It is mathematically equivalent.
+   The value of multi-numeraire is in PURCHASING POWER, not in RR.
+
+=== 3. MULTI-NUMÉRAIRE PURCHASING POWER ===
+
+Instead of different RR values, Model K provides purchasing-power visibility per numéraire:
+
+Numéraire | Reserve Value (in j) | Gold-Equivalent (oz)
+-------------------------------------------------------
+USD        |             59826608 |             13603.14 oz
+EUR        |             52068415 |             15630.01 oz
+GBP        |             44480750 |             18296.22 oz
+JPY        |           9466235487 |                85.97 oz
+CHF        |             48481854 |             16786.27 oz
+SGD        |             80304172 |             10134.34 oz
+AED        |            219950766 |              3700.05 oz
+SAR        |            224069694 |              3632.04 oz
+CNY        |            430407254 |              1890.84 oz
+CAD        |             82519460 |              9862.28 oz
+AUD        |             89027691 |              9141.31 oz
+INR        |           5027446074 |               161.88 oz
+EGP        |           2890174313 |               281.58 oz
+
+✅ The purchasing power IS different per numéraire.
+   This is the REAL value of multi-numéraire: measuring strength from multiple perspectives.
+
+=== 4. USD NEUTRALITY TEST ===
+
+Scenario              | RR (USD)   | RR (EUR)   | RR (JPY)   | RR (CHF)   | Min MRR
+-------------------------------------------------------------------------------------
+USD +20%              | 104.86%   | 104.86%   | 104.86%   | 104.86%   | 104.86%
+USD -20%              | 116.40%   | 116.40%   | 116.40%   | 116.40%   | 116.40%
+EUR -20%              | 108.23%   | 108.23%   | 108.23%   | 108.23%   | 108.23%
+CNY -30%              | 110.36%   | 110.36%   | 110.36%   | 110.36%   | 110.36%
+CHF +20%              | 111.64%   | 111.64%   | 111.64%   | 111.64%   | 111.64%
+
+⚠️  All RR values are identical (proven above).
+   Multi-numéraire does NOT change the solvency measurement.
+
+=== 5. STRESS TESTS ===
+
+Scenario                    Model A Model H++   Model K
+-------------------------------------------------------
+Gold -30%                    105.6%    105.6%    105.6%
+Gold -50%                    102.1%    102.1%    102.1%
+USD +20%                     104.9%    104.9%    104.9%
+Gold-30%+USD+20%             100.0%    100.0%    100.0%
+Gold-40%+USD+20%              98.2%     98.2%     98.2%
+10% redemption               110.8%    110.8%     99.7%
+
+Model A = Model H++ = Model K for RR. The architectures are EQUIVALENT for solvency.
+Model K adds MULTI-NUMÉRAIRE PURCHASING POWER VISIBILITY, not different RR.
+
+=== 6. MONTE CARLO (100k paths, fat-tail, corr=0.5) ===
+
+P(RR<100%):     1.6110%
+P(RR<102%):     3.348%
+Min RR:         70.38%
+Mean RR:        110.79%
+99% VaR:        -12.29%
+CVaR (99%):     -16.10%
+Max Drawdown:   -40.41%
+
+Note: MC results are IDENTICAL for all models (same reserve, same RR formula).
+Model K does NOT change the MC results — it adds measurement, not architecture.
+
+=== 7. RED-TEAM: ATTEMPT TO DESTROY MODEL K ===
+
+❌ MRR = RR (mathematically proven)
+   Finding: Model K does NOT add solvency measurement
+   Impact:  Model K is NOT architecturally different from H++
+
+❌ Multi-numéraire purchasing power = same info as GRI
+   Finding: GRI already measures gold-relative purchasing power
+   Impact:  Model K adds complexity without new information
+
+❌ No new stress survival
+   Finding: Model K uses same reserve, same RR, same buffer
+   Impact:  Model K does NOT survive any scenario that H++ does not
+
+❌ Complexity increases
+   Finding: Multi-numéraire reporting adds operational overhead
+   Impact:  Institutions need ONE solvency metric, not N
+
+❌ No implementation difference
+   Finding: Model K = H++ + reporting change
+   Impact:  Model K is a REPORTING architecture, not a RESERVE architecture
+
+=== 8. CONCLUSION ===
+
+Model K is MATHEMATICALLY EQUIVALENT to Enhanced H++ for solvency.
+The multi-numéraire concept adds PURCHASING-POWER VISIBILITY but does NOT change:
+  - RR (proven invariant to numéraire)
+  - Stress survival (same reserve, same buffer)
+  - Monte Carlo results (same portfolio)
+
+Model K is a REPORTING/METRIC improvement, not a RESERVE ARCHITECTURE improvement.
+The multi-numéraire purchasing-power measurement can be ADDED to v21/H++
+without changing the reserve architecture.
+
+=== FINAL RECOMMENDATION ===
+
+RECOMMENDED MODEL: Enhanced H++ (with multi-numéraire reporting added)
+Model K is NOT a separate architecture — it is a measurement overlay.
+CONFIDENCE: 90/100
+IMPLEMENTATION AUTHORIZED: NO
+
+=== MODEL K SHADOW COMPLETE ===
