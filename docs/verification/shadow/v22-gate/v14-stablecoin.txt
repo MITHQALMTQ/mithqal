@@ -1,0 +1,173 @@
+=== MITHQAL SHADOW MODEL V14 — STABLECOIN & DIGITAL LIQUIDITY ANALYSIS ===
+
+⚠️  SHADOW ONLY — NOT IN PRODUCTION PATH
+
+=== 1. STABLECOIN CANDIDATE UNIVERSE + DRQS ===
+
+Symbol  | Type              | Peg | DRQS  | Classification
+---------------------------------------------------------------------------
+BUIDL   | tokenized-govt    | USD | 8.55| ✅ CORE DIGITAL LIQUIDITY
+USDC    | fiat-backed       | USD | 8.50| ✅ CORE DIGITAL LIQUIDITY
+USDP    | fiat-backed       | USD | 8.45| ✅ CORE DIGITAL LIQUIDITY
+OUSG    | tokenized-govt    | USD | 7.95| ✅ CORE DIGITAL LIQUIDITY
+EURC    | fiat-backed       | EUR | 7.80| ✅ CORE DIGITAL LIQUIDITY
+PYUSD   | fiat-backed       | USD | 7.45| ⚠️ CONDITIONAL
+EURS    | fiat-backed       | EUR | 6.50| ⚠️ CONDITIONAL
+DAI     | decentralized     | USD | 6.25| ⚠️ CONDITIONAL
+USDT    | fiat-backed       | USD | 6.15| ⚠️ CONDITIONAL
+LUSD    | decentralized     | USD | 6.10| ⚠️ CONDITIONAL
+crvUSD  | decentralized     | USD | 5.00| ❌ BELOW THRESHOLD
+UST-clone| algorithmic       | USD | 1.00| ❌ EXCLUDED
+
+=== 2. COO REVISED DIGITAL LIQUIDITY STRUCTURE ===
+
+COO Directive: 5% is a MAXIMUM, not a mandate. Range: 0-5%.
+
+Sub-classification:
+  Regulated fiat-backed (USD):     Target 2-3%, Max 4%
+  Regulated fiat-backed (EUR):     Target 0-1%, Max 2%
+  Tokenized government liquidity:  Target 0-1%, Max 2%
+  Decentralized (DAI, LUSD):       Target 0-0.5%, Max 1% (OPTIONAL)
+  Algorithmic:                     ❌ EXCLUDED
+
+RECOMMENDED INITIAL COMPOSITION:
+  USDC:  2.0%  (DRQS=8.35, highest regulated)
+  USDP:  0.5%  (DRQS=8.30, highest regulatory quality)
+  EURC:  0.5%  (DRQS=7.65, EUR diversification)
+  BUIDL: 0.5%  (DRQS=7.50, tokenized T-bills)
+  DAI:   0.0%  (OPTIONAL — DRQS=6.10, below core threshold)
+  Total: 3.5%  (below 5% cap — conservative)
+
+=== 3. DEPEG STRESS TEST ===
+
+Stablecoin % | Depeg -5%  | Depeg -10% | Depeg -20% | Depeg -50% | Depeg -100%
+--------------------------------------------------------------------------------
+0.0%        | 116.5%   | 116.5%   | 116.5%   | 116.5%   | 116.5%
+1.0%        | 116.4%   | 116.4%   | 116.3%   | 115.9%   | 115.3%
+2.0%        | 116.4%   | 116.2%   | 116.0%   | 115.3%   | 114.1%
+3.0%        | 116.3%   | 116.1%   | 115.8%   | 114.7%   | 112.9%
+3.5%        | 116.2%   | 116.0%   | 115.6%   | 114.4%   | 112.3%
+5.0%        | 116.1%   | 115.8%   | 115.2%   | 113.5%   | 110.5%
+
+=== 4. REVISED PILLAR BANDS (COO Directive) ===
+
+Pillar           | Target  | Min    | Max    | Notes
+----------------------------------------------------------------------
+A — Bullion      | 20%     | 15%    | 25%    | Gold 12-18%, Silver 3-8%
+B — Fiat/Sov     | 75%     | 70%    | 85%    | 11-currency universe, dynamic
+C — Digital Liq  | 3.5%    | 0%     | 5%     | MAXIMUM not mandate
+   Constraint:   | A+B+C=100%, B fills gap when C reduces
+   Buffer:       | ≥20% RR (embedded in portfolio)
+
+=== 5. DYNAMIC REALLOCATION (Stablecoins → 0%) ===
+
+Scenario: Stablecoin depeg → all stablecoins SUSPEND → allocation to 0%
+
+Reallocation target: Fiat pillar absorbs the freed allocation
+  Bullion:    stays at 20% (NOT reduced — gold is anchor)
+  Fiat:       increases from 75% to 80% (absorbs freed 5%)
+  Digital:    drops to 0%
+  Constraint: A+B+C = 20%+80%+0% = 100% ✅
+
+RR impact:
+  With 3.5% stablecoin:   RR = 116.44%
+  With 0% stablecoin:     RR = 116.53%
+  Impact: +0.08pp (RR IMPROVES — stablecoins have haircuts)
+
+=== 6. MULTI-DIMENSIONAL STABLECOIN STATE MACHINE ===
+
+State        | Price | Liquidity | Redemption | Reserve | Issuer | Regulatory
+-------------------------------------------------------------------------------------
+NORMAL       | <1%   | Healthy   | Working   | Verified| Healthy| Good
+WATCH        | >2%   | OR Deter. | OR Slow   | OR Opaq.| OR Conc.| OR Review
+REDUCE       | >5%   | OR Impair.| OR Delay  | OR Quest.| OR Distress| OR Action
+SUSPEND      | >10%  | OR Frozen | OR Failed | OR Impair.| OR Failed| OR Sanction
+SUBSTITUTE   | → Move to highest-DRQS eligible alternative
+EMERGENCY    | Immediate conversion if solvency risk material
+
+=== 7. GOLD-ADJUSTED COVERAGE RATIO (GACR) ===
+
+GACR = (R_a / G_t) / (S × PAR / G_t)
+     = R_a / (S × PAR)
+     = RR
+
+The algebra collapses to RR. This is INTENTIONAL.
+GACR is a REPORTING metric — it expresses RR in gold terms.
+
+RR = 116.70%
+Gold-equivalent coverage = 6.7544 oz/MTQ
+(Each MTQ is backed by 6.7544 oz of gold equivalent)
+
+=== 8. NON-USD STABLECOIN ANALYSIS ===
+
+COO Directive: "Check what stablecoins should be used — you only chose USD stablecoins."
+
+Candidate non-USD stablecoins:
+  EURC (Circle):   EUR-pegged, DRQS=7.65, regulated, growing liquidity
+  EURS (STASIS):   EUR-pegged, DRQS=6.40, regulated, lower liquidity
+  XSGD (Straitsx): SGD-pegged, DRQS=6.80, regulated, Singapore jurisdiction
+  TYUSD (Trust):   TRY-pegged, DRQS=4.50, high volatility, NOT recommended
+
+RECOMMENDATION:
+  Primary:  USDC (USD) — 2.0% (deepest liquidity, highest DRQS)
+  Secondary: EURC (EUR) — 0.5% (EUR diversification, regulated)
+  Tertiary:  USDP (USD) — 0.5% (highest regulatory quality, Paxos)
+  Optional:  BUIDL (USD T-bills) — 0.5% (tokenized government liquidity)
+  Total: 3.5% (conservative, below 5% cap)
+
+Why NOT EURS: Lower DRQS (6.40), less transparency, thinner liquidity than EURC.
+Why NOT XSGD: Insufficient liquidity for institutional-scale redemptions.
+Why NOT DAI: Decentralized risk architecture ≠ institutional settlement asset.
+  DAI can be OPTIONAL (0-0.5%) but should NOT be mandatory.
+
+=== 9. STRESS TEST: REVISED (3.5% stab) vs ORIGINAL (5% stab) ===
+
+Scenario              | Original (5%) | Revised (3.5%) | Diff
+-----------------------------------------------------------------
+Baseline              | 116.41%      | 116.44%       | 0.04pp
+Stablecoin -20%       | 115.23%      | 115.62%       | 0.39pp
+Stablecoin -100%      | 110.53%      | 112.33%       | 1.80pp
+Gold -30%             | 111.48%      | 111.52%       | 0.04pp
+Gold-30%+Stab-20%     | 110.31%      | 110.70%       | 0.39pp
+Gold-30%+Stab-100%    | 105.60%      | 107.40%       | 1.80pp
+
+=== 10. FINAL REVISED ARCHITECTURE ===
+
+PILLAR A — BULLION ANCHOR (20%, range 15-25%)
+  Gold:    15% (range 12-18%) — strategic anchor
+  Silver:   5% (range 3-8%)  — secondary diversifier
+
+PILLAR B — GLOBAL FIAT RESERVE (76.5%, range 70-85%)
+  USD:     27% (range 20-35%, hard cap 35%)
+  EUR:     18% (range 12-24%)
+  CHF:      6% (range 3-8%)
+  JPY:      6% (range 3-9%)
+  GBP:      5% (range 3-8%)
+  SGD:      4% (range 2-6%)
+  AED:      3% (range 1-5%)
+  SAR:      3% (range 1-5%)
+  CNY:      2% (range 1-4%)
+  CAD:     0.5% (range 0-2%)
+  AUD:     0.5% (range 0-2%)
+  Pillar B total: ~75% + 1.5% (absorbed from reduced stablecoin)
+  (Optimizer determines exact fiat distribution within bands)
+
+PILLAR C — DIGITAL LIQUIDITY (3.5%, range 0-5%)
+  USDC:    2.0%  (regulated, USD, DRQS=8.35)
+  USDP:    0.5%  (regulated, USD, DRQS=8.30, Paxos trust)
+  EURC:    0.5%  (regulated, EUR, DRQS=7.65, currency diversification)
+  BUIDL:   0.5%  (tokenized US T-bills, DRQS=7.50)
+  DAI:     0.0%  (OPTIONAL, decentralized, DRQS=6.10 — below core threshold)
+  Total:   3.5%  (below 5% cap — conservative)
+
+CONSTRAINTS:
+  A + B + C = 100%
+  RR ≥ 100% (constitutional floor)
+  RR ≥ 117% (strategic target with 20% buffer)
+  LCR ≥ 1.0
+  USD ≤ 35% (hard cap)
+  Per-stablecoin-issuer ≤ 2%
+  Digital liquidity ≤ 5% (MAXIMUM, not mandate)
+  Bullion → Stablecoin: HIGH constitutional barrier (emergency governance)
+
+=== SHADOW MODEL V14 COMPLETE ===
