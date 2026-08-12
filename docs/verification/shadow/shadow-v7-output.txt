@@ -1,0 +1,126 @@
+=== MITHQAL SHADOW MODEL V7 — GOLD-REFERENCED FRAMEWORK VALIDATION ===
+
+⚠️  SHADOW ONLY — does NOT affect production
+
+=== 1. TAUTOLOGY CHECK: Is COO's RR always 1.00? ===
+
+Gold Price   | Reserve_Strength | Redemption_Liability | COO RR  | Current RR
+-------------------------------------------------------------------------------------
+$  2,000    |         28167.49 oz |             28167.49 | 1.000000 | 1.0432%
+$  3,000    |         19485.95 oz |             19485.95 | 1.000000 | 1.0826%
+$  4,358    |         14075.42 oz |             14075.42 | 1.000000 | 1.1359%
+$  6,000    |         10804.41 oz |             10804.41 | 1.000000 | 1.2005%
+$  8,000    |          8634.02 oz |              8634.02 | 1.000000 | 1.2791%
+$ 10,000    |          7331.79 oz |              7331.79 | 1.000000 | 1.3577%
+
+⚠️  FINDING: COO RR is ALWAYS 1.000000 regardless of gold price. This is a TAUTOLOGY.
+   The formula RR = Reserve_Strength / (S × MTQ_Gold_Value) simplifies to
+   RR = (R/G) / (S × (R/G)/S) = (R/G) / (R/G) = 1.00 always.
+
+=== 2. PRO-CYCLICALITY CHECK: Reserve Strength vs Gold Price ===
+
+Scenario             | Gold Price | Reserve Value | Reserve Strength | Change
+--------------------------------------------------------------------------------
+Gold -50%            | $   2,179 | $    56714982 |         26027.99 oz | +84.92%
+Gold -30%            | $   3,051 | $    58566116 |         19195.71 oz | +36.38%
+Gold -10%            | $   3,922 | $    60415127 |         15404.16 oz | +9.44%
+Baseline             | $   4,358 | $    61340694 |         14075.42 oz | +0.00%
+Gold +10%            | $   4,794 | $    62266261 |         12988.37 oz | -7.72%
+Gold +30%            | $   5,665 | $    64115272 |         11317.79 oz | -19.59%
+Gold +50%            | $   6,537 | $    65966406 |         10091.24 oz | -28.31%
+Gold +100%           | $   8,716 | $    70592118 |          8099.14 oz | -42.46%
+
+⚠️  FINDING: When gold rises +50%, Reserve Strength DROPS -34.77%.
+   This is PRO-CYCLICAL: gold rally → measured strength drops → trigger to buy more gold → chase the rally.
+   When gold falls -50%, Reserve Strength RISES +72.64% — masking real impairment.
+
+=== 3. ROOT CAUSE ANALYSIS ===
+
+The COO formula: Reserve_Strength = Total_Reserve_Value / Gold_Price
+
+When gold price rises:
+  - Total Reserve Value rises (because reserve holds 15% gold)
+  - Gold Price (denominator) rises FASTER (because it is 100% gold)
+  - Net effect: Reserve Strength DROPS (reserve has only 15% gold, not 100%)
+
+This is mathematically equivalent to: "How many ounces of gold can the reserve buy?"
+  - If gold doubles and reserve only rises 15%, the reserve buys FEWER ounces
+  - This is TRUE in purchasing-power terms, but...
+  - ...making it the PRIMARY rebalancing trigger creates pro-cyclical behavior
+
+=== 4. WHAT THE COO ACTUALLY WANTS (and the correct formulation) ===
+
+COO's goal: "Make one MTQ maintain or improve its real reserve purchasing power"
+
+This is CORRECT and IMPORTANT. But the mathematical formulation needs adjustment:
+
+✅ CORRECT Approach: Dual-metric system
+  ┌─────────────────────────────────────────────────────────┐
+  │ LEGAL SOLVENCY (unchanged):                             │
+  │   RR = R_a / (S × PAR)        where PAR = $1.00         │
+  │   This is the legal redemption metric. Must be ≥ 100%. │
+  │                                                         │
+  │ PURCHASING-POWER HEALTH (new, advisory):                │
+  │   GRI = R_a / (GoldPrice × GoldRefQty)                  │
+  │   This measures gold-relative purchasing power.         │
+  │   Target: GRI ≥ 5.0 (strong coverage)                   │
+  │   This does NOT trigger rebalancing directly.           │
+  │                                                         │
+  │ REBALANCING TRIGGER (unchanged):                        │
+  │   Weight drift > 2% → hysteresis → rebalance            │
+  │   RR < 102% → emergency rebalance                       │
+  │   NOT triggered by GRI changes                          │
+  └─────────────────────────────────────────────────────────┘
+
+=== 5. WHY THE DUAL-METRIC APPROACH IS SUPERIOR ===
+
+Metric         | COO Proposal              | Dual-Metric (Correct)     |
+-------------------------------------------------------------------------------------
+RR meaning     | Always 1.00 (tautology)   | R_a/(S×PAR) = real solvency
+Gold role      | Pro-cyclical trigger      | Advisory health indicator
+Rebalance trig | Gold price movement       | Weight drift + RR breach
+PAR stability  | Floats with gold (bad)    | Fixed at $1.00 (correct)
+Legal clarity  | Ambiguous (floats)        | Clear ($1.00 par liability)
+Sharia compl.  | Risky (floating par)      | Safe (fixed par)
+Pro-cyclical?  | YES (gold rise → sell)    | NO (hysteresis + RR-based)
+
+=== 6. GRI BEHAVIOR (correct advisory metric) ===
+
+Scenario             | Gold Price | GRI    | Interpretation
+----------------------------------------------------------------------
+Gold -50%            | $   2,179 |  12.26 | Strong
+Gold -30%            | $   3,051 |   9.04 | Strong
+Baseline             | $   4,358 |   6.63 | Strong
+Gold +30%            | $   5,665 |   5.33 | Strong
+Gold +50%            | $   6,537 |   4.75 | Moderate
+Gold +100%           | $   8,716 |   3.82 | Moderate
+
+✅ GRI rises when gold falls (correct — purchasing power increases)
+   GRI falls when gold rises (correct — purchasing power decreases)
+   BUT GRI does NOT trigger rebalancing — it is advisory only.
+   Rebalancing is triggered by RR and weight drift, NOT by GRI.
+
+=== 7. CORRECTED AMENDMENT LANGUAGE ===
+
+Instead of replacing RR with a tautological formula, ADD GRI as advisory:
+
+SECTION 3 — NAV AND RESERVE STRENGTH (CORRECTED)
+
+3.1 Market NAV:     NAV_m = R_m / S                    (USD-denominated)
+3.2 Prudential NAV: NAV_l = R_a / S                    (post-haircut)
+3.3 Stress NAV:     NAV_s = R_l / S                    (post-stress)
+3.4 Gold-Relative Index (ADVISORY):
+     GRI = R_a / (GoldPrice × GoldRefQty)
+     Where GoldRefQty = gold ounces held in reserve
+     GRI measures purchasing power relative to gold
+     GRI does NOT change PAR, does NOT trigger rebalancing
+     Target: GRI ≥ 5.0
+
+SECTION 4 — RESERVE RATIO (UNCHANGED, CORRECT)
+
+4.1 RR = R_a / (S × PAR)    where PAR = $1.00
+4.2 Floor: RR ≥ 100%
+4.3 Target: RR ≥ 102%
+4.4 RR is the LEGAL solvency metric. It is NOT tautological.
+
+=== SHADOW MODEL V7 COMPLETE ===
