@@ -16,7 +16,7 @@
  *   $4053.50 = 4053_50000000 = 405350000000 wei
  */
 
-const MONAD_RPC = "https://testnet-rpc.monad.xyz";
+const MONAD_RPC = "https://rpc.testnet.arc.io"; // v23: Arc Network (Chain ID 5042002)
 
 // Function selectors (first 4 bytes of keccak256(signature))
 const SELECTORS = {

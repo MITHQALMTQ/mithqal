@@ -57,11 +57,11 @@ export interface ChainConfig {
 export const CHAINS = {
   monad: {
     key: "monad",
-    name: "Monad Testnet",
-    chainId: 10143,
-    rpcUrl: "https://testnet-rpc.monad.xyz",
-    explorer: "https://testnet.monadscan.com",
-    nativeCurrency: { name: "Monad", symbol: "MON", decimals: 18 },
+    name: "Monad Testnet (Arc)",
+    chainId: 5042002,
+    rpcUrl: "https://rpc.testnet.arc.io",
+    explorer: "https://testnet.arcscan.app",
+    nativeCurrency: { name: "USD Coin", symbol: "USDC", decimals: 18 },
     contracts: {
       MTQ_TOKEN: "0x9e6EdC15DAc420931508d8Ddf9BC817651A253aD",
       GOVERNANCE: "0xE35a91801bc541fb743BB9EaD26C1FbD81EaBd66",
