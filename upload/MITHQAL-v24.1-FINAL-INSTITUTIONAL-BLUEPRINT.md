@@ -81,11 +81,12 @@ The following modifications have been applied to the original v19 specification 
 
 ### Phase 3: v22 Four-Layer Measurement System
 20. Layer 1 — Constitutional Solvency (RR)
-21. Layer 2 — Gold-Relative Strength (GEI + BRI)
+21. Layer 2 — Gold-Relative Strength (GEI + CBGRS + BRI)
 22. Layer 3 — Liquidity Protection (LCR + LCI)
 23. Layer 4 — Risk Dashboard (CQS + CRS + GCRS + SRR + CVaR + DRI)
 24. GEI (normalized Gold-Equivalent Index, replaces GRI)
 25. BRI (Bullion Resilience Index, CVaR-optimized weights)
+25b. CBGRS (Currency Basket Gold-Relative Strength, weighted geometric mean — v24.1.1 additive patch)
 26. LCI (Liquidity Coverage Index, advisory stress metric)
 27. Multi-numéraire purchasing-power reporting (MRR=RR proven)
 28. RQS (Reserve Quality Score, dynamic per-asset)
@@ -256,7 +257,7 @@ The 60% general per-currency cap is retained as the constitutional maximum. A **
 
 **Four-layer measurement architecture** (risk measurement view):
 - Layer 1 — Constitutional Solvency (RR)
-- Layer 2 — Gold-Relative Strength (GEI + BRI)
+- Layer 2 — Gold-Relative Strength (GEI + CBGRS + BRI)
 - Layer 3 — Liquidity Protection (LCR + LCI)
 - Layer 4 — Risk Dashboard (CQS + CRS + GCRS + SRR + CVaR + DRI + Multi-numéraire PP)
 
@@ -268,10 +269,10 @@ The 60% general per-currency cap is retained as the constitutional maximum. A **
 RR = R_a / (S × PAR), where PAR = $1.00 (fixed)
 RR ≥ 100% (constitutional floor), RR ≥ 105% (policy target), RR ≥ 120% (strategic target = 20% excess reserve value over contractual redemption liabilities)
 ```
-RR is the SINGLE legal solvency metric. It is NOT tautological. It is NOT replaced by GRI, GEI, BRI, GACR, or MRR.
+RR is the SINGLE legal solvency metric. It is NOT tautological. It is NOT replaced by GRI, GEI, CBGRS, BRI, GACR, or MRR.
 
 ### 1.6 Gold-Referenced Measurement — RESOLVED: ADVISORY ONLY
-Gold is the constitutional monetary anchor. GEI, BRI, and GACR are ADVISORY health metrics. They do NOT change PAR. They do NOT trigger rebalancing. They do NOT replace RR.
+Gold is the constitutional monetary anchor. GEI, CBGRS, BRI, and GACR are ADVISORY health metrics. They do NOT change PAR. They do NOT trigger rebalancing. They do NOT replace RR.
 
 ### 1.7 MRR (Multi-Numéraire RR) — RESOLVED: MRR = RR
 The Multi-Numéraire Reserve Ratio is mathematically equivalent to standard RR (the FX conversion cancels in the ratio). Multi-numéraire purchasing-power reporting is a transparency layer, NOT a different solvency metric.
@@ -417,7 +418,7 @@ Policy target: RR ≥ 105%
 Strategic target: RR ≥ 120% (20% excess reserve value over contractual redemption liabilities)
 ```
 
-**RR is the SINGLE legal solvency metric.** It is NOT tautological. It is NOT replaced by GRI, GEI, BRI, GACR, or MRR. It determines minting pause, emergency mode, and redemption throttle.
+**RR is the SINGLE legal solvency metric.** It is NOT tautological. It is NOT replaced by GRI, GEI, CBGRS, BRI, GACR, or MRR. It determines minting pause, emergency mode, and redemption throttle.
 
 ### 3.4 Haircut Table
 | Asset Class | Haircut (H) |
@@ -461,6 +462,235 @@ GEI < 1.0: reserve losing ground vs gold
 
 GEI is ADVISORY ONLY. Does NOT change PAR. Does NOT trigger rebalancing.
 ```
+
+### 3.7B Currency Basket Gold-Relative Strength (CBGRS) (Layer 2 — Advisory)
+
+**Purpose:** CBGRS measures the aggregate strength of the eligible reserve-currency basket relative to gold. Gold is the constitutional strategic reference; currencies are diversified reserve instruments; CBGRS provides a single transparent basket-level view of whether the currency reserve basket is strengthening or weakening relative to the gold reference.
+
+**Classification:**
+- Layer: 2 (Gold-Relative / Monetary Strength — Advisory)
+- Classification: ADVISORY, Non-solvency, Non-PAR, Non-minting, Non-redemption-trigger, Non-trading-signal
+- CBGRS is NOT: a legal solvency metric; a replacement for RR; a replacement for GEI; a replacement for BRI; a PAR mechanism; a minting trigger; a redemption trigger; an automatic rebalancing trigger; a trading signal; an investment-return metric.
+
+**Per-currency gold-relative strength:**
+
+For each eligible reserve currency *i*, define *G_i(t)* as the normalized gold-relative strength of currency *i* at time *t*:
+
+```
+G_i(t) = [(Currency_i / Gold)_t] / [(Currency_i / Gold)_0]
+
+Therefore:
+  G_i(0) = 1.0000
+
+Interpretation:
+  G_i(t) > 1  →  Currency i has strengthened relative to gold since base period.
+  G_i(t) = 1  →  Currency i is unchanged relative to gold.
+  G_i(t) < 1  →  Currency i has weakened relative to gold.
+```
+
+The base period MUST be explicitly versioned and immutable for each published CBGRS series.
+
+**CBGRS formula (weighted geometric mean — canonical):**
+
+```
+CBGRS_t = PRODUCT[ G_i(t) ^ w_i(t) ]   for all active eligible reserve currencies i.
+
+Where:
+  w_i(t) = FINAL reserve-currency weight of currency i at time t, after:
+             Structural Weight
+             → CQS / Eligibility
+             → Momentum
+             → Mean Reversion
+             → Shock Absorber
+             → Liquidity / Risk controls
+             → Constitutional constraints
+             → Final normalization
+
+  SUM_i w_i(t) = 1.0000   (required invariant)
+
+CBGRS MUST use the final normalized reserve weights, not preliminary structural weights.
+```
+
+**Why geometric mean:** Currency changes are multiplicative rather than purely additive. The geometric formulation preserves compounding behavior across the basket and prevents offsetting percentage changes from being treated incorrectly.
+
+For auditability, the implementation MAY additionally calculate an arithmetic diagnostic:
+
+```
+CBGRS_arithmetic = SUM_i [ w_i(t) * G_i(t) ]    (DIAGNOSTIC ONLY — NOT canonical)
+```
+
+`CBGRS_arithmetic` is diagnostic only and is NOT the canonical metric. The canonical CBGRS is the weighted geometric mean.
+
+**Gold Anchor Doctrine (constitutional clarification):**
+
+> Gold is the constitutional monetary anchor and common strategic reference asset against which the relative strength of eligible reserve currencies is evaluated. CBGRS measures the aggregate relative strength of the reserve-currency basket against gold. CBGRS does not make gold a peg, does not redefine PAR, does not create a gold-denominated redemption obligation, and does not make MTQ a gold-backed token.
+
+This wording coexists with `PAR = $1.00` and MUST NOT modify PAR.
+
+**Relationship to GEI:**
+
+| Metric | Measures |
+|--------|----------|
+| GEI | adjusted reserve value relative to gold |
+| CBGRS | final reserve-currency basket strength relative to gold |
+
+GEI ≠ CBGRS. They answer different questions:
+- GEI: "How is the adjusted reserve pool performing relative to gold?"
+- CBGRS: "How is the reserve-currency basket performing relative to gold?"
+
+Neither metric replaces RR.
+
+**Relationship to BRI:**
+
+| Metric | Measures |
+|--------|----------|
+| BRI | gold + silver bullion reserve performance |
+| CBGRS | fiat reserve-currency basket performance relative to gold |
+
+BRI ≠ CBGRS. The two metrics MUST remain separate. Do NOT create a composite TRS metric. Do NOT multiply CBGRS by BRI. Do NOT exponent-weight CBGRS and BRI into another constitutional metric. The objective is clarity, not model proliferation.
+
+**Relationship to RR:**
+
+```
+RR_t = R_a,t / (S_t * PAR)     ← RR remains the SINGLE legal solvency metric.
+```
+
+CBGRS MUST NOT: replace RR; modify RR; modify liabilities; modify PAR; establish solvency; authorize minting; pause minting; guarantee redemption.
+
+A currency basket may have a strong CBGRS while the institution has weak RR. A currency basket may have a weak CBGRS while the institution remains solvent. These are intentionally different concepts.
+
+**Relationship to currency rebalancing:**
+
+CBGRS is ADVISORY ONLY. CBGRS SHALL NOT independently trigger rebalancing. Individual currency rebalancing remains governed by the existing: CQS, Structural Weight, Momentum, Mean Reversion, Shock Absorber, Liquidity, FX Risk, Geopolitical Risk, Jurisdiction Risk, Convertibility, Concentration, Stress-RR, and Constitutional constraints.
+
+The existing currency lifecycle (NORMAL → WATCH → REDUCE → SUSPEND → EXIT → REINSTATE) is unchanged. CBGRS may be used as an informational input to monitoring and risk review, but MUST NOT become a single-factor automatic exit mechanism.
+
+**Depreciation-against-gold analysis:**
+
+```
+GoldRelativeDepreciation_i(t) = 1 - G_i(t)
+
+Examples:
+  G_i = 0.95  →  5%  depreciation relative to gold
+  G_i = 0.90  →  10% depreciation relative to gold
+  G_i = 0.75  →  25% depreciation relative to gold
+```
+
+CBGRS reports aggregate basket behavior. Individual currency lifecycle decisions remain governed by the existing CQS/risk framework. Do NOT add automatic liquidation solely from CBGRS.
+
+**Dynamic weights:**
+
+CBGRS MUST use `w_i(t)` (dynamic final reserve weights), not static historical weights. When the reserve engine changes USD/EUR/CHF/JPY/GBP/SGD/AED/SAR/CNY weights dynamically, CBGRS automatically reflects the new composition.
+
+**Currency exit / reinstatement compatibility:**
+
+When a currency exits (SUSPEND or EXIT):
+1. Its active reserve weight becomes 0.
+2. It is removed from the CBGRS active set.
+3. The remaining eligible weights are renormalized so `SUM_i w_i(t) = 1.0000`.
+4. The exit event is immutably recorded.
+5. The exit reason is documented.
+6. Reserve substitution follows existing CQS and optimizer rules.
+
+When a currency is reinstated:
+1. It enters through the existing eligibility process.
+2. Its initial reserve weight MUST start below the normal target.
+3. Re-entry MUST be gradual.
+4. CBGRS MUST incorporate the new weight only after the currency becomes operationally reserve-eligible.
+
+**Numéraire invariance:**
+
+CBGRS MUST be reporting-numeraire independent. Changing the reporting currency (USD, EUR, CHF, JPY, GBP, SGD, AED, SAR, CNY, Gold, Silver) MUST NOT change: reserve composition; currency eligibility; final reserve weights; CBGRS economic value; RR; redemption rights. Only numerical representation may change.
+
+**Data and oracle requirements:**
+
+CBGRS MUST use the existing multi-oracle framework. Gold price comes from the approved gold oracle/reference hierarchy. FX rates come from approved multi-source institutional feeds. No new oracle dependency is introduced. Apply existing: quorum, outlier rejection, stale-price rules, common-mode failure controls, fallback controls, data freshness requirements. If data quality for a currency is insufficient: do not invent a value — use the existing missing-data / stale-data / fallback policy.
+
+**Calculation timing:**
+
+- Real-time / high-frequency internally where data supports it.
+- Publish/report: daily official value.
+- Maintain: monthly analytical history.
+- The base period MUST remain version-controlled.
+- Structural reserve weights continue to follow their existing governance frequency. CBGRS does NOT change structural-weight review frequency.
+
+**Stress testing requirements (mandatory):**
+
+Required deterministic tests:
+- A. One-currency -10% gold-relative shock
+- B. One-currency -20% shock
+- C. One-currency -30% shock
+- D. CNY full impairment scenario
+- E. EUR severe depreciation scenario
+- F. USD severe depreciation scenario
+- G. 20% simultaneous non-USD basket shock
+- H. Broad multi-currency + gold/silver stress
+- I. Complete stablecoin impairment
+- J. Oracle stale-data scenario
+- K. Currency exit and renormalization scenario
+- L. Currency reinstatement scenario
+
+Each stress output MUST report: CBGRS before stress; CBGRS after stress; active currency weights before stress; active currency weights after stress; exited currencies; substituted currencies; RR before stress; Stress-RR after stress; LCR after stress.
+
+CBGRS SHALL NEVER be interpreted as proof of solvency.
+
+**Audit example (deterministic):**
+
+For three illustrative currencies:
+
+```
+Currency A:  G_A = 1.10,  w_A = 0.50
+Currency B:  G_B = 0.95,  w_B = 0.30
+Currency C:  G_C = 0.85,  w_C = 0.20
+
+CBGRS = (1.10^0.50) × (0.95^0.30) × (0.85^0.20)
+      = 1.0488088482 × 0.9847298018 × 0.9680187850
+      = 0.9997633437  (approximately 0.9998)
+
+CBGRS_arithmetic (DIAGNOSTIC) = 0.50×1.10 + 0.30×0.95 + 0.20×0.85 = 0.55 + 0.285 + 0.17 = 1.005
+```
+
+The implementation MUST reproduce the exact same result from identical input values. Verification: weights sum to 1.0000 ✓; canonical = geometric mean ✓; arithmetic is diagnostic only ✓.
+
+**Reporting requirements:**
+
+Every published CBGRS report SHALL disclose:
+- base date
+- valuation timestamp
+- eligible currency universe
+- each G_i(t)
+- each final w_i(t)
+- CBGRS (canonical geometric mean)
+- CBGRS_arithmetic (diagnostic, if computed)
+- data source/version
+- oracle status
+- missing/stale inputs
+- algorithm version
+- methodology version
+
+Provide:
+- CBGRS absolute value
+- CBGRS change from base
+- CBGRS change 30D
+- CBGRS change 90D
+- CBGRS change 365D
+
+**Prohibited economic claims:**
+
+Do NOT state:
+- "CBGRS proves MTQ is stable."
+- "CBGRS guarantees MTQ appreciation."
+- "CBGRS guarantees purchasing power."
+- "Gold price increases automatically increase MTQ price."
+- "CBGRS is a solvency ratio."
+
+Correct language: *"CBGRS is an advisory measure of the aggregate gold-relative strength of the active reserve-currency basket."*
+
+**Terminology:**
+
+- Full name: "Currency Basket Gold-Relative Strength"
+- Abbreviation: "CBGRS"
+- Do NOT call it: MTQ Price Index, MTQ Solvency Index, MTQ NAV, Gold Peg, Gold Backing Ratio, or Token Price Stability Index.
 
 ### 3.8 Bullion Resilience Index (Layer 2 — Advisory)
 ```
@@ -547,7 +777,7 @@ Step 4 — FORBIDDEN OBJECTIVES:
   No optimization to maximize leverage or duration.
   No optimization that weakens redemption certainty.
 
-GEI and BRI remain reporting/advisory measures and SHALL NOT act as trading signals.
+GEI, CBGRS, and BRI remain reporting/advisory measures and SHALL NOT act as trading signals.
 
 All optimizer parameters require documented calibration methodology, version control, challenger testing, and independent validation before activation.
 ```
@@ -652,6 +882,7 @@ Gold is the **strategic monetary anchor**, NOT a peg, NOT a redemption promise, 
 - Gold is NOT the PAR anchor (PAR = $1.00 USD-equivalent)
 - Gold IS the last asset liquidated (Article X, Exhaustion Certificate)
 - Gold IS the GEI/GACR numerator (advisory purchasing-power metric)
+- Gold IS the CBGRS reference asset (advisory basket-strength metric)
 - Gold IS the constitutional strategic anchor (long-term confidence)
 
 **"Gold anchor" ≠ "gold peg" ≠ "gold redemption promise."**
@@ -1166,6 +1397,7 @@ v22, v21, v20, v19, v18, and all addenda. These remain as historical references.
 | Stress-RR constraint | §3.14 | Hard constraint for optimizer |
 | PAR clarification | §2 | USD-denominated settlement unit, NOT USD-backed identity |
 | Dynamic pillar bands | §4.4 | Pillars can adjust within constitutional ranges |
+| **CBGRS metric (v24.1.1)** | **§3.7B** | **Currency Basket Gold-Relative Strength — Layer-2 advisory, weighted geometric mean. Additive patch; no existing metric modified.** |
 
 ---
 
@@ -1225,7 +1457,7 @@ MITHQAL SHALL be described as neutral institutional settlement infrastructure in
 No mathematical result, reserve claim, regulatory classification, Sharia-compliance claim, custody claim, or institutional superiority claim becomes constitutional evidence merely because it appears in this blueprint. Each claim requires the evidence class specified by the Evidence Doctrine and the V24.1 Release Gates.
 
 ### Mandatory evidence package
-The production package SHALL contain, at minimum: independently reproduced reserve arithmetic; formal proof artifacts; reproduced Monte Carlo/CVaR/stress results; reserve custody and legal segregation evidence; jurisdiction-specific legal opinions; Sharia certification where claimed; oracle common-mode analysis; prefunded redemption-liquidity reconciliation; smart-contract security/formal verification; disaster-recovery evidence; model-risk challenger-model report; and an immutable constants registry matching production code exactly.
+The production package SHALL contain, at minimum: independently reproduced reserve arithmetic; formal proof artifacts; reproduced Monte Carlo/CVaR/stress results (including the CBGRS deterministic stress suite per §3.7B); reserve custody and legal segregation evidence; jurisdiction-specific legal opinions; Sharia certification where claimed; oracle common-mode analysis; prefunded redemption-liquidity reconciliation; smart-contract security/formal verification; disaster-recovery evidence; model-risk challenger-model report; and an immutable constants registry matching production code exactly.
 
 **No production communication may claim “central-bank approved,” “risk-free,” “economically invincible,” “zero-counterparty-risk,” or “regulator-approved” unless the competent authority has actually issued such written approval and the evidence is archived.**
 
