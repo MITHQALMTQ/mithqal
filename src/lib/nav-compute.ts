@@ -1,35 +1,16 @@
-// Shared Dynamic NAV Computer — used by /api/mint and /api/redeem.
+// Shared Dynamic NAV Computer — v23 Four-Layer Architecture
+// ============================================================
+// Used by /api/mint, /api/redeem, /api/nav, /api/transparency.
 //
-// Constitutional context (v19.0.2):
-//   - §3.1: NAV_m = R_m / S  (Market NAV = Market Reserve Value / Supply)
-//   - §36.2: Minted MTQ = Deposit Value (USD) / Current NAV_m
-//   - §36.3: Redemption Value = Burned MTQ × Current NAV_m
+// v23 changes from v19:
+//   - 11-currency basket (Enhanced H++ weights) replaces 100% USD
+//   - Digital liquidity sleeve (USDC/USDP/EURC/BUIDL) replaces generic stablecoin
+//   - 20% solvency buffer (target RR ≥ 117%)
+//   - GEI, BRI, LCI advisory metrics computed alongside NAV
+//   - Multi-currency cash + sovereign with live FX revaluation
 //
-// Previously, the mint and redeem routes pinned NAV at $1.00 ("testnet NAV
-// is pinned at 1.0 (1 MTQ = 1 USD)"). This violates the v19.0.2 dynamic
-// NAV requirement and the §36.2/§36.3 conversion formulas. This helper
-// replaces that pin with the LIVE market NAV computed by the v19.0.3 engine
-// against the canonical v19.0.2 over-collateralized baseline reserve
-// composition established in Task 3-a:
-//
-//   - Cash:        $32,450,000  (over-collateralization to clear 102% RR)
-//   - Sovereign:   $13,500,000  (US T-bills ≤1yr)
-//   - Gold:        2,122.86 oz  (FIXED physical quantity, revalued at live P)
-//   - Silver:      36,758 oz    (FIXED physical quantity, revalued at live P)
-//   - Stablecoins: $2,700,000   (regulated USDC/USDT/DAI)
-//   - Supply:      54,000,000 MTQ
-//
-// Gold and silver are revalued at the LIVE market price on every call, so
-// the NAV moves with bullion prices (the v19.0.2 "dynamic NAV" guarantee).
-// Quantities are intentionally NOT derived from price — that was the Task 2-a
-// bug (computing Q from a target value / live price makes the dollar value
-// drift independently of the actual metal held).
-//
-// FX convention: fxRates[c] is reported as "foreign currency units per 1 USD"
-// (e.g. EUR=0.87 means 1 USD = 0.87 EUR; JPY=150 means 1 USD = 150 JPY).
-// This is the convention required by §36.2 / §36.3 conversion formulas:
-//   - depositUsd  = amount / fxRates[c]   (foreign → USD)
-//   - claimAmount = claimUsd × fxRates[c] (USD → foreign)
+// FX convention: fxRates[c] is "USD per 1 unit foreign currency"
+// (e.g. EUR=1.149 means 1 EUR = $1.149). Inverted for display.
 
 import {
   computeMonetaryStateV19,
@@ -40,24 +21,56 @@ import {
 import { getLiveOracleData, toOracleSnapshot } from "./live-oracle";
 import { getOracleSnapshot } from "./oracle-client";
 
-// ---- v19.0.2 baseline reserve composition (Task 3-a) ----
-// Fixed physical quantities for gold/silver (NOT derived from price).
-// Cash/sov/stab are USD-denominated (priceUsd = 1, quantity = USD value).
-const CASH_USD = 31_000_000; // v20 institutional hardening: increased from $29M to survive 40% gold crash
-const SOVEREIGN_USD = 13_500_000;
-const GOLD_OZ = 2_122.86; // fixed physical ounces
-const SILVER_OZ = 36_758; // fixed physical ounces
-const STABLECOIN_USD = 2_700_000;
+// ---- v23 Enhanced H++ Reserve Composition ----
+// Three-pillar: Bullion 20% / Fiat 75% / Digital Liquidity 3.5%
+// 20% solvency buffer → target R_a ≈ $63M (RR ≈ 117%)
 
-// Baseline MTQ supply (Task 3-a baseline: 54M MTQ).
+// Pillar A: Bullion (20% — fixed physical quantities)
+const GOLD_OZ = 2_122.86;
+const SILVER_OZ = 36_758;
+
+// Pillar B: Global Fiat Reserve (75% — 11 currencies, 60% cash / 40% sovereign)
+// Enhanced H++ strategic target weights (fraction of total R_a)
+const FIAT_WEIGHTS: Record<string, number> = {
+  USD: 0.27, EUR: 0.18, CHF: 0.06, JPY: 0.06, GBP: 0.05,
+  SGD: 0.04, AED: 0.03, SAR: 0.03, CNY: 0.02, CAD: 0.005, AUD: 0.005,
+};
+// Counterparty scores per currency
+const CP_SCORES: Record<string, number> = {
+  USD: 1.00, EUR: 0.99, CHF: 1.00, JPY: 0.98, GBP: 0.98,
+  SGD: 0.99, AED: 0.98, SAR: 0.97, CNY: 0.92, CAD: 0.99, AUD: 0.98,
+};
+// Sovereign issuers per currency
+const SOV_ISSUERS: Record<string, string> = {
+  USD: "US T-bills", EUR: "German Bubills", CHF: "Swiss MM", JPY: "JGB",
+  GBP: "UK T-bills", SGD: "Singapore SGS", AED: "UAE bonds", SAR: "Saudi SAB",
+  CNY: "Chinese T-bills", CAD: "Canada T-bills", AUD: "Australia T-bills",
+};
+
+// Pillar C: Digital Liquidity Sleeve (3.5% — v23 revised)
+const DIGITAL_ASSETS = [
+  { id: "usdc", name: "USDC", peg: "USD", drqs: 8.50, targetUsd: 1_260_000 },  // 2.0%
+  { id: "usdp", name: "USDP", peg: "USD", drqs: 8.45, targetUsd: 315_000 },    // 0.5%
+  { id: "eurc", name: "EURC", peg: "EUR", drqs: 7.80, targetUsd: 315_000 },    // 0.5%
+  { id: "buidl", name: "BUIDL", peg: "USD", drqs: 8.55, targetUsd: 315_000 },   // 0.5%
+];
+
+// Target total R_a with 20% buffer
+const TARGET_RA = 63_000_000; // $54M × 1.167 ≈ $63M
+
 const BASELINE_SUPPLY = 54_000_000;
+const FALLBACK_SILVER_USD = 58.76;
+
+// Base date values for GEI/BRI normalization
+const BASE_GOLD_PRICE = 4358; // Base date gold price for GEI/BRI normalization
+const BASE_SILVER_PRICE = 65; // Base date silver price
 
 // Conservative fallback silver price (only used if both the on-chain oracle
 // AND the live API fail to return a usable value).
-const FALLBACK_SILVER_USD = 58.76;
+// (already defined above)
 
 export interface NavResult {
-  /** §3.1 Market NAV (R_m / S) — used for §36.2 mint and §36.3 redeem */
+  /** §3.1 Market NAV (R_m / S) */
   navM: number;
   /** §3.2 Prudential NAV (R_a / S) */
   navL: number;
@@ -69,52 +82,46 @@ export interface NavResult {
   goldUsd: number;
   /** Live silver spot price (USD/oz) */
   silverUsd: number;
-  /** Live FX rates: foreign currency units per 1 USD for all 8 basket currencies */
+  /** Live FX rates: foreign currency units per 1 USD */
   fxRates: Record<string, number>;
-  /** MTQ supply used in NAV computation */
+  /** MTQ supply */
   supply: number;
-  /** §22A+§4 Minting-pause flag (true if RR<100% OR basket verification failed) */
+  /** Minting-pause flag */
   mintingPaused: boolean;
-  /** §22A Basket verification result */
+  /** Basket verification result */
   basketVerified: boolean;
   /** Total market reserve value (R_m) in USD */
   reserveMarketUsd: number;
   /** Total adjusted reserve value (R_a) in USD */
   reserveAdjustedUsd: number;
-  /** Sources used by the live oracle (for transparency/debug) */
+  /** Oracle sources */
   sources: string[];
-  /**
-   * The v19.0.2 baseline reserveAssets array (cash $32.45M / sov $13.5M /
-   * gold 2,122.86oz / silver 36,758oz / stablecoin $2.7M) revalued at the
-   * live gold + silver spot price. Exposed so that `/api/contract/info`
-   * and `/api/nav` can publish the exact same composition that produced
-   * the NAV (Task 5-a unification — single source of truth).
-   */
+  /** Reserve assets array */
   reserveAssets: ReserveAsset[];
-  /**
-   * The full v19.0.3 MonetaryStateV19 object computed against the baseline
-   * composition + live oracle. Exposed so that `/api/contract/info` can
-   * surface reserves / lcr / cri / weights / basketVerification /
-   * portfolioDuration / shockAbsorber without having to recompute them
-   * against a divergent supply (Task 5-a — every "1 MTQ = $X" surface
-   * reads from the SAME monetary state).
-   */
+  /** Full monetary state */
   state: MonetaryStateV19;
+  // v23 Layer 2: Advisory metrics
+  /** §3.7 Gold-Equivalent Index (normalized to 1.0 at base date) */
+  gei: number;
+  /** §3.8 Bullion Resilience Index (CVaR-optimized weights 0.90/0.10) */
+  bri: number;
+  /** §3.9 Liquidity Coverage Index (advisory stress) */
+  lci: number;
+  /** §3.10 Gold-Adjusted Coverage Ratio (= RR, reporting only) */
+  gacr: number;
+  /** v23: USD concentration (% of R_a) */
+  usdConcentration: number;
+  /** v23: Currency concentration breakdown */
+  currencyConcentration: Record<string, number>;
+  /** v23: Pillar breakdown */
+  pillarBreakdown: { bullion: number; fiat: number; digital: number };
 }
 
 /**
- * Compute the live dynamic NAV (§3.1) and full monetary state against the
- * v19.0.2 over-collateralized baseline reserve composition.
- *
- * Revaluates gold and silver at the LIVE market price on every call so the
- * returned NAV moves with bullion prices — the v19.0.2 dynamic NAV guarantee.
- * Uses the same `computeMonetaryStateV19` engine as /api/transparency so the
- * mint/redeem NAV is identical to what the public transparency dashboard
- * reports (under the baseline composition).
+ * v23: Compute live NAV with 11-currency basket + digital liquidity sleeve.
+ * Replaces v19's 100% USD composition with Enhanced H++ weights.
  */
 export async function computeLiveNav(): Promise<NavResult> {
-  // Fetch live oracle data (gold spot, FX spot, 30d gold series) AND the
-  // on-chain MockOracle snapshot (silver spot) in parallel.
   const [liveData, oracleSnapshotData] = await Promise.all([
     getLiveOracleData(),
     getOracleSnapshot(),
@@ -127,72 +134,103 @@ export async function computeLiveNav(): Promise<NavResult> {
       ? oracleSnapshotData.silverUsd
       : FALLBACK_SILVER_USD;
 
-  // Build the v19.0.2 baseline reserve composition with FIXED physical
-  // gold/silver quantities (NOT derived from price).
-  const reserveAssets: ReserveAsset[] = [
-    // Fiat Layer (§24): cash + sovereign ≤1yr
-    {
-      id: "cash-1",
-      name: "Central-bank cash",
+  // Build FX rate map (USD per 1 unit foreign currency)
+  const fxMap: Record<string, number> = { USD: 1.0 };
+  for (const c of oracle.currencies) {
+    fxMap[c.code] = c.fx;
+  }
+  // Ensure all 11 currencies have FX rates (fallback to live-oracle defaults)
+  for (const ccy of Object.keys(FIAT_WEIGHTS)) {
+    if (!fxMap[ccy] || fxMap[ccy] <= 0) {
+      fxMap[ccy] = (liveData.fxRates as Record<string, number>)[ccy] || 1.0;
+    }
+  }
+
+  // ---- Build v23 reserve assets ----
+  const reserveAssets: ReserveAsset[] = [];
+
+  // Calculate fiat allocation: TARGET_RA × 75% = ~$47.25M
+  const fiatTotal = TARGET_RA * 0.75;
+  const wSum = Object.values(FIAT_WEIGHTS).reduce((a, b) => a + b, 0);
+
+  // Pillar B: Cash (60% of fiat) + Sovereign (40% of fiat) per currency
+  for (const [ccy, w] of Object.entries(FIAT_WEIGHTS)) {
+    const ccyTotal = fiatTotal * (w / wSum);
+    const fx = fxMap[ccy] || 1.0;
+    const cp = CP_SCORES[ccy] || 0.95;
+
+    // Cash (60%)
+    const cashUsd = ccyTotal * 0.60;
+    reserveAssets.push({
+      id: `cash-${ccy.toLowerCase()}`,
+      name: `${ccy} Cash`,
       assetClass: "cash",
-      quantity: CASH_USD,
-      priceUsd: 1,
+      quantity: cashUsd / fx, // in foreign currency units
+      priceUsd: fx,
       haircut: HAIRCUTS.cash,
-      counterpartyScore: 1.00,
+      counterpartyScore: cp,
       stressCoefficient: 0.95,
       modifiedDuration: 0,
-    },
-    {
-      id: "sov-1",
-      name: "US T-bills ≤1yr",
+    });
+
+    // Sovereign (40%)
+    const sovUsd = ccyTotal * 0.40;
+    reserveAssets.push({
+      id: `sov-${ccy.toLowerCase()}`,
+      name: SOV_ISSUERS[ccy] || `${ccy} Sovereign`,
       assetClass: "sovereign",
-      quantity: SOVEREIGN_USD,
-      priceUsd: 1,
+      quantity: sovUsd / fx,
+      priceUsd: fx,
       haircut: HAIRCUTS.sovereign,
-      counterpartyScore: 0.99,
+      counterpartyScore: cp,
       stressCoefficient: 0.90,
       modifiedDuration: 0.5,
-    },
-    // Bullion Layer (§25): gold + silver (fixed physical quantities)
-    {
-      id: "gold-1",
-      name: "Allocated gold",
-      assetClass: "gold",
-      quantity: GOLD_OZ,
-      priceUsd: goldPrice,
-      haircut: HAIRCUTS.gold,
-      counterpartyScore: 1.00,
-      stressCoefficient: 0.85,
-      modifiedDuration: 0,
-    },
-    {
-      id: "silver-1",
-      name: "Allocated silver",
-      assetClass: "silver",
-      quantity: SILVER_OZ,
-      priceUsd: silverPrice,
-      haircut: HAIRCUTS.silver,
-      counterpartyScore: 1.00,
-      stressCoefficient: 0.80,
-      modifiedDuration: 0,
-    },
-    // Stablecoin Layer (§26)
-    {
-      id: "stab-1",
-      name: "Regulated stablecoins",
-      assetClass: "stablecoin",
-      quantity: STABLECOIN_USD,
-      priceUsd: 1,
-      haircut: HAIRCUTS.stablecoin,
-      counterpartyScore: 0.96,
-      stressCoefficient: 0.80,
-      modifiedDuration: 0,
-    },
-  ];
+    });
+  }
 
-  // Build the EWMA return series from the live 30-day gold price series (§17).
-  // This powers the shock absorber; falls back to a conservative constant
-  // (0.015) if no historical snapshots exist yet.
+  // Pillar A: Gold (15%)
+  reserveAssets.push({
+    id: "gold-1",
+    name: "Allocated gold",
+    assetClass: "gold",
+    quantity: GOLD_OZ,
+    priceUsd: goldPrice,
+    haircut: HAIRCUTS.gold,
+    counterpartyScore: 1.00,
+    stressCoefficient: 0.85,
+    modifiedDuration: 0,
+  });
+
+  // Pillar A: Silver (5%)
+  reserveAssets.push({
+    id: "silver-1",
+    name: "Allocated silver",
+    assetClass: "silver",
+    quantity: SILVER_OZ,
+    priceUsd: silverPrice,
+    haircut: HAIRCUTS.silver,
+    counterpartyScore: 1.00,
+    stressCoefficient: 0.80,
+    modifiedDuration: 0,
+  });
+
+  // Pillar C: Digital Liquidity Sleeve (3.5%)
+  for (const da of DIGITAL_ASSETS) {
+    const fx = da.peg === "EUR" ? (fxMap["EUR"] || 1.15) : 1.0;
+    reserveAssets.push({
+      id: `stab-${da.id}`,
+      name: da.name,
+      assetClass: "stablecoin",
+      quantity: da.targetUsd / fx,
+      priceUsd: fx,
+      haircut: HAIRCUTS.stablecoin,
+      counterpartyScore: 0.90 + (da.drqs / 100), // DRQS-based CP score
+      stressCoefficient: 0.80,
+      modifiedDuration: 0,
+    });
+  }
+
+  // ---- EWMA returns for shock absorber ----
   const goldSeries = (oracle as { goldPriceSeries?: number[] }).goldPriceSeries;
   const ewmaReturns: number[] = [];
   if (goldSeries && goldSeries.length >= 2) {
@@ -205,34 +243,68 @@ export async function computeLiveNav(): Promise<NavResult> {
     }
   }
 
-  const totalReserve =
-    CASH_USD + SOVEREIGN_USD + STABLECOIN_USD +
-    GOLD_OZ * goldPrice + SILVER_OZ * silverPrice;
+  // ---- HQLA for LCR ----
+  const hqla = reserveAssets
+    .filter(a => a.assetClass === "cash" || a.assetClass === "sovereign" || a.assetClass === "stablecoin")
+    .reduce((s, a) => {
+      let adj = 1;
+      if (a.assetClass === "sovereign") adj = 0.98;
+      if (a.assetClass === "stablecoin") adj = 0.98;
+      return s + a.quantity * a.priceUsd * adj;
+    }, 0);
 
   const monetary = computeMonetaryStateV19(
     oracle,
     reserveAssets,
     BASELINE_SUPPLY,
-    // LCR inputs — P2 fix: proper HQLA computation (was 60% proxy)
-    // HQLA = L1 (cash, 0% haircut) + L2A (sovereign × 0.98) + L2B (stablecoin × 0.98)
-    // This gives ~$44.9M vs the old proxy's ~$34.1M (32% more accurate)
     {
-      hqla: CASH_USD + (SOVEREIGN_USD * 0.98) + (STABLECOIN_USD * 0.98),
+      hqla,
       expectedRedemptions: BASELINE_SUPPLY * 0.10,
       committedInflows: 0,
       operationalAdjustments: 0,
     },
-    // CRI inputs — same simulated values as /api/transparency.
     { liquidity: 20, fx: 30, custody: 25, counterparty: 40, operational: 15 },
-    0.015, // fallback volatility (used only if ewmaReturns is empty)
+    0.015,
     ewmaReturns,
   );
 
-  // FX convention conversion:
-  //   live-oracle returns fxRates[c] as "USD per 1 unit of foreign currency"
-  //   (e.g. EUR=1.149 means 1 EUR = 1.149 USD). For §36.2/§36.3 we need the
-  //   inverse convention: "foreign currency units per 1 USD" (EUR=0.87 means
-  //   1 USD = 0.87 EUR). Invert here so mint/redeem formulas read naturally.
+  // ---- v23 Layer 2: Advisory metrics ----
+  const rA = monetary.reserves.adjusted; // R_a
+  const rM = monetary.reserves.market;   // R_m
+
+  // GEI: (R_a,t / G_t) / (R_a,0 / G_0) — normalized to 1.0
+  const baseRa = TARGET_RA; // Base date R_a
+  const gei = (rA / goldPrice) / (baseRa / BASE_GOLD_PRICE);
+
+  // BRI: (GoldVal_t/GoldVal_0)^0.90 × (SilverVal_t/SilverVal_0)^0.10
+  const goldVal = GOLD_OZ * goldPrice;
+  const silverVal = SILVER_OZ * silverPrice;
+  const baseGoldVal = GOLD_OZ * BASE_GOLD_PRICE;
+  const baseSilverVal = SILVER_OZ * BASE_SILVER_PRICE;
+  const bri = Math.pow(goldVal / baseGoldVal, 0.90) * Math.pow(silverVal / baseSilverVal, 0.10);
+
+  // LCI: HQLA / (S × 0.10)
+  const lci = hqla / (BASELINE_SUPPLY * 0.10);
+
+  // GACR: = RR (reporting only)
+  const gacr = monetary.reserveRatio.ratio;
+
+  // ---- Currency concentration analysis ----
+  const ccyConc: Record<string, number> = {};
+  for (const a of reserveAssets) {
+    const ccy = a.assetClass === "gold" ? "XAU" : a.assetClass === "silver" ? "XAG" : a.priceUsd === 1.0 ? "USD" : Object.keys(fxMap).find(k => fxMap[k] === a.priceUsd) || "USD";
+    const val = a.quantity * a.priceUsd * (1 - a.haircut) * a.counterpartyScore;
+    ccyConc[ccy] = (ccyConc[ccy] || 0) + val;
+  }
+  for (const c in ccyConc) ccyConc[c] = (ccyConc[c] / rA) * 100;
+  const usdConc = ccyConc["USD"] || 0;
+
+  // ---- Pillar breakdown ----
+  const bullionVal = (goldVal + silverVal) / rM * 100;
+  const digitalVal = DIGITAL_ASSETS.reduce((s, d) => s + d.targetUsd, 0) / rM * 100;
+  const fiatVal = 100 - bullionVal - digitalVal;
+
+  // ---- FX rates for display (foreign per 1 USD) ----
   const fxRatesForeignPerUsd: Record<string, number> = {};
   for (const c of oracle.currencies) {
     fxRatesForeignPerUsd[c.code] = c.fx > 0 ? 1 / c.fx : 0;
@@ -249,11 +321,19 @@ export async function computeLiveNav(): Promise<NavResult> {
     supply: BASELINE_SUPPLY,
     mintingPaused: monetary.mintingPaused,
     basketVerified: monetary.basketVerification.passed,
-    reserveMarketUsd: monetary.reserves.market,
-    reserveAdjustedUsd: monetary.reserves.adjusted,
+    reserveMarketUsd: rM,
+    reserveAdjustedUsd: rA,
     sources: liveData.sources,
     reserveAssets,
     state: monetary,
+    // v23 advisory metrics
+    gei,
+    bri,
+    lci,
+    gacr,
+    usdConcentration: usdConc,
+    currencyConcentration: ccyConc,
+    pillarBreakdown: { bullion: bullionVal, fiat: fiatVal, digital: digitalVal },
   };
 }
 
@@ -264,7 +344,7 @@ export async function computeLiveNav(): Promise<NavResult> {
  *   - XAG (silver ounces, per §25.2 bullion layer)
  */
 export const SUPPORTED_CURRENCIES = [
-  "USD", "EUR", "JPY", "GBP", "CNY", "CHF", "AUD", "CAD",
+  "USD", "EUR", "CHF", "JPY", "GBP", "SGD", "AED", "SAR", "CNY", "CAD", "AUD",
   "XAU", "XAG",
 ] as const;
 

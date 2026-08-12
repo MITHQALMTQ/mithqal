@@ -28,11 +28,11 @@ const fraunces = Fraunces({
 export const metadata: Metadata = {
   metadataBase: new URL("https://mithqal.vercel.app"),
   title: {
-    default: "Mithqal — Constitutional Settlement Institution v19.0.3",
+    default: "Mithqal — Constitutional Settlement Institution v23",
     template: "%s · Mithqal",
   },
   description:
-    "Mithqal — a constitutional, fully-reserved, neutral settlement institution for international trade. Built on the v19.0.3 specification. 100%+ reserves, verifiable operations, constitutionally non-platform.",
+    "Mithqal — a gold-anchored, globally diversified, reserve-backed constitutional monetary institution. Built on the v23 specification. Four-layer architecture, 11-currency basket, digital liquidity sleeve. 100%+ reserves, constitutionally non-platform.",
   keywords: [
     "Mithqal",
     "MTQ",
