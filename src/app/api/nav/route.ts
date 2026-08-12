@@ -64,7 +64,16 @@ export async function GET() {
       reserveAdjustedUsd: nav.reserveAdjustedUsd,
       sources: nav.sources,
       timestamp: new Date().toISOString(),
-      source: "live-oracle-v19.0.2",
+      source: "live-oracle-v23",
+      // v23 Layer 2: Advisory metrics
+      gei: nav.gei,
+      bri: nav.bri,
+      lci: nav.lci,
+      gacr: nav.gacr,
+      // v23: Concentration analysis
+      usdConcentration: nav.usdConcentration,
+      currencyConcentration: nav.currencyConcentration,
+      pillarBreakdown: nav.pillarBreakdown,
     });
   } catch (err) {
     return NextResponse.json(
