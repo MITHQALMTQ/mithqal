@@ -1,0 +1,1889 @@
+# ============================================================
+# MITHQAL v24.1.1 — INSTITUTIONAL DYNAMIC RESERVE REBALANCING
+# + CAPITAL-EFFICIENCY + GOLD-ANCHOR STRESS REMEDIATION
+# MASTER IMPLEMENTATION PROMPT
+# ============================================================
+
+ROLE
+============================================================
+
+You are the Lead CTO + COO + Chief Quant Engineer + Monetary Systems Architect + Risk Manager + Project Manager for MITHQAL.
+
+You are modifying an already implemented MITHQAL v24.1.1 architecture.
+
+DO NOT redesign MITHQAL from scratch.
+
+DO NOT create v24.2.
+
+DO NOT remove existing validated architecture.
+
+DO NOT weaken any constitutional invariant.
+
+Your task is to implement the next institutional hardening layer:
+
+1. Full dynamic reserve rebalancing.
+2. Gold-anchored currency defense.
+3. Multi-dimensional reserve optimization.
+4. Custody/jurisdiction rebalancing.
+5. Stress-aware allocation.
+6. Capital-efficient risk protection.
+7. Dynamic issuance-capacity control as a secondary defense.
+8. Full mathematical/stress-test integration.
+9. Production dashboard transparency.
+10. Blueprint synchronization.
+
+The governing objective is:
+
+> PRESERVE SOLVENCY AND LIQUIDITY WITH THE MINIMUM NECESSARY CAPITAL BURDEN.
+
+Do NOT solve every stress failure by simply increasing reserve ratios.
+
+The system MUST first attempt:
+
+1. Reserve rebalancing
+2. Liquidity optimization
+3. Custody diversification
+4. Jurisdiction diversification
+5. Currency substitution
+6. Digital-liquidity reduction
+7. Controlled issuance restriction
+8. Only then additional capital requirement if still mathematically necessary
+
+============================================================
+1. CURRENT CANONICAL PRINCIPLES — PRESERVE
+============================================================
+
+The following remain authoritative:
+
+Gold = constitutional strategic monetary anchor.
+
+PAR = $1.00 USD-denominated settlement/accounting reference.
+
+RR = single legal solvency metric.
+
+RR formula:
+
+    RR_t = R_a,t / (S_t × PAR)
+
+Constitutional solvency floor:
+
+    RR >= 100%
+
+Existing policy target:
+
+    RR >= 105%
+
+Existing strategic target:
+
+    RR >= 120%
+
+IMPORTANT:
+
+DO NOT permanently change the 120% strategic target yet.
+
+The current implementation has not yet demonstrated sufficient evidence to justify permanently increasing the target.
+
+Instead, implement dynamic risk controls and re-run the full stress suite.
+
+Only after the new rebalancing engine is validated may a future governance process consider changing the strategic RR target.
+
+============================================================
+2. CORE RESERVE CONSERVATION
+============================================================
+
+The total reserve must ALWAYS equal:
+
+    B_t + F_t + D_t = 100%
+
+Where:
+
+    B_t = Bullion
+    F_t = Fiat + Sovereign
+    D_t = Digital Liquidity
+
+Therefore:
+
+    F_t = 100% - B_t - D_t
+
+Constitutional ranges:
+
+    15% <= B_t <= 25%
+
+    70% <= F_t <= 85%
+
+    0% <= D_t <= 5%
+
+Normal policy target:
+
+    Bullion = 20%
+    Fiat/Sovereign = 76.5%
+    Digital = 3.5%
+
+The target is NOT a static portfolio.
+
+It is the normal operating state.
+
+============================================================
+3. DYNAMIC RESERVE STATES
+============================================================
+
+Implement a Reserve State Engine.
+
+States:
+
+    NORMAL
+    ELEVATED
+    HIGH_STRESS
+    CRISIS
+    RECOVERY
+
+Recommended operating corridors:
+
+NORMAL:
+    Bullion: 18–22%
+    Fiat:    75–79%
+    Digital: 2–4%
+
+ELEVATED:
+    Bullion: 20–23%
+    Fiat:    75–78%
+    Digital: 1–3%
+
+HIGH_STRESS:
+    Bullion: 22–24%
+    Fiat:    74–78%
+    Digital: 0–2%
+
+CRISIS:
+    Bullion: 24–25%
+    Fiat:    75–76%
+    Digital: 0%
+
+RECOVERY:
+    Gradually move toward NORMAL bands.
+
+IMPORTANT:
+These are state corridors, not simultaneous entitlements.
+
+The optimizer MUST determine the exact allocation inside the applicable corridor.
+
+============================================================
+4. GOLD ANCHOR
+============================================================
+
+Gold is NOT another currency.
+
+Gold is the strategic monetary anchor/reference asset.
+
+Maintain:
+
+    GoldAnchor = TRUE
+
+Gold must remain the common reference for measuring currency resilience.
+
+Do NOT convert MITHQAL into a gold peg.
+
+Do NOT redefine PAR.
+
+Do NOT create gold-denominated redemption.
+
+Correct interpretation:
+
+    Gold = strategic reference and reserve anchor
+    Fiat = diversified reserve instruments
+    Silver = secondary bullion reserve asset
+    Stablecoins = digital liquidity instruments
+
+============================================================
+5. GOLD-RELATIVE CURRENCY STRENGTH
+============================================================
+
+For every active reserve currency i, calculate:
+
+    G_i(t)
+    =
+    [(Currency_i / Gold)_t]
+    /
+    [(Currency_i / Gold)_0]
+
+Therefore:
+
+    G_i(0) = 1.0
+
+Interpretation:
+
+    G_i > 1
+        currency strengthened relative to gold
+
+    G_i = 1
+        unchanged
+
+    G_i < 1
+        currency weakened relative to gold
+
+Calculate:
+
+    D_i(t) = 1 - G_i(t)
+
+as gold-relative depreciation.
+
+Use:
+
+    30-day
+    90-day
+    365-day
+
+measurements.
+
+DO NOT use a one-day movement as an automatic reserve-exit trigger.
+
+============================================================
+6. CBGRS — PRESERVE EXISTING IMPLEMENTATION
+============================================================
+
+CBGRS already exists and is canonical.
+
+DO NOT recreate it.
+
+Canonical formula:
+
+    CBGRS_t
+    =
+    PRODUCT[
+        G_i(t) ^ w_i(t)
+    ]
+
+where:
+
+    SUM(w_i) = 1
+
+and w_i are FINAL reserve weights after all eligibility/risk/constraint processing.
+
+CBGRS remains:
+
+    Layer 2
+    Advisory only
+
+CBGRS MUST NOT:
+
+    replace RR
+    alter PAR
+    automatically trigger minting
+    automatically trigger redemption
+    independently trigger exit
+    be treated as a trading signal
+
+Use CBGRS as an informational basket-level signal within the rebalancing/risk system.
+
+============================================================
+7. BULLION ARCHITECTURE
+============================================================
+
+Normal bullion target:
+
+    20%
+
+Recommended internal normal target:
+
+    Gold = 17%
+    Silver = 3%
+
+Define:
+
+    phi_t = Gold_t / Bullion_t
+
+Recommended:
+
+    75% <= phi_t <= 90%
+
+Normal:
+
+    phi_target = 85%
+
+Therefore:
+
+    Gold_t = Bullion_t × phi_t
+
+    Silver_t = Bullion_t × (1 - phi_t)
+
+Gold MUST remain strategically dominant.
+
+Bullion MAY rise toward 25% during appropriate stress.
+
+Bullion MUST NOT rise simply because a single currency depreciates.
+
+Bullion increases require:
+
+    adequate LCR
+    adequate Stress-RR
+    sufficient liquid reserves
+    no redemption shortfall
+
+Liquidity has priority over bullion accumulation during an acute liquidity crisis.
+
+============================================================
+8. RESERVE CURRENCY UNIVERSE
+============================================================
+
+Core reserve currencies:
+
+    USD
+    EUR
+    CHF
+    JPY
+    GBP
+    SGD
+    AED
+    SAR
+    CNY
+
+Conditional reserve candidates:
+
+    CAD
+    AUD
+
+Settlement-only universe may include:
+
+    EGP
+    INR
+    KRW
+    HKD
+    NOK
+    SEK
+    DKK
+    NZD
+    PLN
+    CZK
+    HUF
+    TRY
+    BRL
+    MXN
+    ZAR
+    IDR
+    MYR
+    THB
+    PHP
+    VND
+    NGN
+    KES
+    COP
+    CLP
+
+Settlement-only currencies DO NOT need strategic reserve allocation.
+
+They must instead satisfy:
+
+    legal eligibility
+    FX liquidity
+    payment-rail accessibility
+    sanctions/AML requirements
+    convertibility requirements
+    settlement-finality requirements
+
+============================================================
+9. NORMAL FIAT TARGETS
+============================================================
+
+Normal target:
+
+    USD  = 27.0%
+    EUR  = 19.5%
+    CHF  =  6.5%
+    JPY  =  6.5%
+    GBP  =  5.0%
+    SGD  =  4.0%
+    AED  =  3.0%
+    SAR  =  3.0%
+    CNY  =  2.0%
+
+Total:
+
+    76.5%
+
+Recommended dynamic corridors:
+
+    USD: 22–35%
+    EUR: 15–24%
+    CHF:  4–9%
+    JPY:  4–9%
+    GBP:  3–7%
+    SGD:  2–6%
+    AED:  1–5%
+    SAR:  1–5%
+    CNY:  1–4%
+
+IMPORTANT:
+
+These are dynamic control bands.
+
+They are NOT independent allocations.
+
+The final fiat weights MUST normalize to:
+
+    SUM(W_fiat) = F_t
+
+and remain within all constitutional limits.
+
+============================================================
+10. STRUCTURAL WEIGHT ENGINE
+============================================================
+
+Keep the v24.1.1 structural model:
+
+    Structural_i
+    =
+    0.45 × ReserveImportance_i
+    +
+    0.35 × SettlementImportance_i
+    +
+    0.20 × LiquidityDepth_i
+
+Normalize each data family before combining.
+
+Then:
+
+    W_structural_i
+    =
+    Structural_i
+    /
+    SUM(Structural_j)
+
+The 45/35/20 weights are policy calibration parameters.
+
+They are NOT mathematical truths.
+
+The calibration remains subject to:
+
+    backtesting
+    sensitivity analysis
+    out-of-sample testing
+    challenger models
+    regime-break testing
+    procyclicality testing
+    independent validation
+
+============================================================
+11. DYNAMIC CURRENCY TARGET WEIGHT
+============================================================
+
+For every eligible reserve currency calculate:
+
+    W_target_i
+
+using:
+
+    StructuralWeight
+    × CQS
+    × GoldRelativeStrength
+    × Liquidity
+    × FXRisk
+    × JurisdictionRisk
+    × GeopoliticalRisk
+    × CounterpartyRisk
+    × StressContribution
+
+DO NOT simply sell the worst-performing currency.
+
+A currency with temporary depreciation may still be an excellent diversifier.
+
+A currency with stable price performance may still have dangerous tail-risk contribution.
+
+Optimize for:
+
+    risk contribution
+
+not merely:
+
+    recent return
+
+============================================================
+12. MARGINAL RESERVE RISK CONTRIBUTION
+============================================================
+
+Add:
+
+    MRRC_i
+
+= Marginal Reserve Risk Contribution.
+
+Conceptually:
+
+    MRRC_i
+    =
+    CVaR(W)
+    -
+    CVaR(W with marginal reduction in currency i)
+
+Use a robust finite-difference implementation if required.
+
+The rebalancer SHOULD reduce currencies or assets with excessive marginal contribution to portfolio tail risk.
+
+This is more important than reducing assets merely because they depreciated.
+
+============================================================
+13. FULL MULTI-DIMENSIONAL REBALANCING
+============================================================
+
+Do NOT limit rebalancing to currency weights.
+
+The rebalancing engine MUST optimize four dimensions:
+
+1. Asset/Currency
+2. Asset Class
+3. Custodian
+4. Jurisdiction
+
+The effective allocation structure is:
+
+    W(asset, currency, custodian, jurisdiction)
+
+Optimize:
+
+    currency concentration
+    asset-class concentration
+    custodian concentration
+    jurisdiction concentration
+    correlated exposure
+    liquidity concentration
+    counterparty concentration
+
+The purpose is to prevent one failure from causing a disproportionate reserve impairment.
+
+============================================================
+14. CUSTODY REBALANCING
+============================================================
+
+The previous stress suite showed a severe custodian-loss scenario.
+
+Therefore implement:
+
+    CustodianRiskScore
+
+    CustodianConcentration
+
+    CustodianStressContribution
+
+Dynamic custody rebalancing MUST be possible.
+
+Example:
+
+Instead of:
+
+    Custodian A = 25%
+
+the optimizer may determine:
+
+    A = 15%
+    B = 15%
+    C = 15%
+    D = 15%
+
+subject to legal, custody, cost, and liquidity constraints.
+
+The optimizer MUST account for common-mode dependencies.
+
+Two custodians using:
+
+    same cloud
+    same bank
+    same jurisdiction
+    same legal entity
+    same infrastructure
+
+must NOT be treated as fully independent.
+
+============================================================
+15. JURISDICTION REBALANCING
+============================================================
+
+Add:
+
+    JurisdictionRiskScore
+
+    JurisdictionConcentration
+
+    JurisdictionStressContribution
+
+Dynamic reallocation MUST account for:
+
+    capital controls
+    sanctions
+    convertibility
+    sovereign/legal risk
+    custody law
+    banking restrictions
+    seizure risk
+    payment-rail accessibility
+
+Political preference MUST NOT be used.
+
+Objective risk MUST be used.
+
+Principle:
+
+    Political neutrality ≠ risk neutrality
+
+============================================================
+16. GOLD-RELATIVE CURRENCY LIFECYCLE
+============================================================
+
+For every reserve currency:
+
+    NORMAL
+    WATCH
+    REDUCE
+    SUSPEND
+    EXIT
+    REINSTATE
+
+Suggested initial monitoring thresholds:
+
+NORMAL:
+    gold-relative depreciation <5%
+
+WATCH:
+    5–10%
+
+REDUCE:
+    10–15% with confirmation
+
+SUSPEND:
+    15–25% plus risk confirmation
+
+EXIT:
+    >25% plus fundamental failure/risk threshold
+
+Fundamental failures include:
+
+    severe convertibility restriction
+    prolonged capital controls
+    settlement failure
+    severe sanctions
+    custody failure
+    persistent market illiquidity
+    currency restructuring/redenomination
+    CQS critical failure
+
+IMPORTANT:
+
+Depreciation alone MUST NOT automatically remove a currency.
+
+Fundamental failure + persistent deterioration MAY trigger EXIT.
+
+============================================================
+17. GRADUAL REBALANCING / ANTI-WHIPSAW
+============================================================
+
+When currency i is reduced:
+
+    do NOT liquidate entire position immediately
+
+unless an emergency EXIT condition exists.
+
+Use:
+
+    hysteresis
+    execution bands
+    minimum review periods
+    maximum monthly adjustment
+    transaction-cost threshold
+    liquidity-aware execution
+
+Example:
+
+    6%
+    ->
+    5.5%
+    ->
+    5.0%
+    ->
+    4.5%
+
+rather than:
+
+    6%
+    ->
+    0%
+
+unless hard failure exists.
+
+The existing momentum bounds MUST remain respected.
+
+============================================================
+18. CURRENCY EXIT / REPLACEMENT
+============================================================
+
+When:
+
+    State = EXIT
+
+then:
+
+1. New allocation = 0
+2. Remove currency from active CBGRS universe
+3. Renormalize remaining eligible currencies
+4. Calculate replacement portfolio using CQS + risk + liquidity
+5. Execute gradually unless emergency exit
+6. Record immutable event
+7. Recalculate CBGRS
+8. Recalculate Stress-RR
+9. Recalculate LCR
+
+Replacement priority:
+
+1. Other eligible reserve currencies
+2. Cash / short-duration sovereign liquidity
+3. Bullion if liquidity conditions permit
+
+DO NOT automatically replace the currency with USD.
+
+============================================================
+19. CURRENCY REINSTATEMENT
+============================================================
+
+A currency in EXIT state may only return through:
+
+    REINSTATE
+
+Requirements:
+
+    CQS > approved threshold
+    CRIS/risk score > approved threshold
+    convertibility restored
+    settlement reliability restored
+    market liquidity restored
+    custody/legal conditions restored
+    sustained confirmation period
+
+Re-entry MUST be gradual:
+
+    0%
+    ->
+    0.5%
+    ->
+    1%
+    ->
+    approved target
+
+No instant return to previous weight.
+
+============================================================
+20. DIGITAL LIQUIDITY REBALANCING
+============================================================
+
+Digital liquidity remains:
+
+    0–5%
+
+Normal:
+
+    3.5%
+
+Normal desired split:
+
+    Stablecoins = 2.0%
+    Tokenized government liquidity = 1.5%
+
+Stablecoin targets:
+
+    USDC = 1.0%
+    USDP = 0.5%
+    EURC = 0.5%
+
+USDT:
+
+    0% core target
+
+DAI:
+
+    0% core target / conditional only
+
+The digital sleeve MUST be reduced when:
+
+    DRQS deteriorates
+    depeg probability rises
+    redemption latency rises
+    issuer risk rises
+    custody risk rises
+    regulatory risk rises
+    Stress-RR deteriorates
+
+The released allocation should primarily move toward:
+
+    cash
+    short-duration sovereigns
+
+not automatically into bullion.
+
+============================================================
+21. CASH / SOVEREIGN INTERNAL REBALANCING
+============================================================
+
+Within the fiat/sovereign sleeve:
+
+NORMAL:
+
+    Cash = 60%
+    Sovereign = 40%
+
+ELEVATED:
+
+    Cash = 65%
+    Sovereign = 35%
+
+HIGH_STRESS:
+
+    Cash = 75%
+    Sovereign = 25%
+
+CRISIS:
+
+    Cash = 80%
+    Sovereign = 20%
+
+This is dynamic within the fiat sleeve.
+
+The system MUST continue to comply with all eligible sovereign-duration, counterparty, custody, and liquidity requirements.
+
+============================================================
+22. REBALANCING ALGORITHM
+============================================================
+
+Implement:
+
+    CurrentAllocation W_current
+
+    TargetAllocation W_target
+
+    Difference:
+
+        DeltaW_i = W_target_i - W_current_i
+
+Trade only when:
+
+    abs(DeltaW_i) > RebalanceThreshold_i
+
+RebalanceThreshold MUST account for:
+
+    liquidity
+    transaction cost
+    market impact
+    operational cost
+    risk urgency
+
+Suggested minimum threshold:
+
+    max(0.50%, k × ExecutionCost)
+
+but thresholds MUST be parameterized rather than hard-coded where possible.
+
+============================================================
+23. STRESS-AWARE TARGET PORTFOLIO
+============================================================
+
+Do NOT optimize only today's portfolio.
+
+Calculate:
+
+    W_normal
+
+and:
+
+    W_stress
+
+Then calculate a robust target:
+
+    W_robust
+    =
+    lambda × W_normal
+    +
+    (1-lambda) × W_stress
+
+where:
+
+    0 <= lambda <= 1
+
+Initial policy calibration:
+
+    lambda = 0.70
+
+This means:
+
+    70% normal-state optimization
+    30% stress-aware positioning
+
+The 0.70/0.30 value MUST be calibration-controlled and subject to model validation.
+
+============================================================
+24. CVaR-FIRST RESERVE REBALANCING
+============================================================
+
+The rebalancing engine SHALL seek to minimize:
+
+    CVaR_alpha(PortfolioLoss)
+
+subject to:
+
+    SUM reserve weights = 100%
+
+    RR >= 100%
+
+    Stress-RR >= 100%
+
+    LCR >= minimum
+
+    USD <= 35%
+
+    Bullion in constitutional range
+
+    Digital <= 5%
+
+    per-currency limits
+
+    per-custodian limits
+
+    per-jurisdiction limits
+
+    all CQS eligibility requirements
+
+    all legal/custody constraints
+
+DO NOT optimize for token price appreciation.
+
+DO NOT optimize for speculative return.
+
+============================================================
+25. CAPITAL EFFICIENCY
+============================================================
+
+DO NOT automatically increase the strategic reserve ratio because a stress scenario fails.
+
+First calculate:
+
+    RiskReductionFromRebalancing
+
+    RiskReductionFromCustodyDiversification
+
+    RiskReductionFromJurisdictionDiversification
+
+    RiskReductionFromLiquidityIncrease
+
+    RiskReductionFromDigitalReduction
+
+    RiskReductionFromIssuanceRestriction
+
+Only if the residual stress condition remains below the constitutional threshold should additional capital requirements be considered.
+
+============================================================
+26. CALM — CAPITAL-ADAPTIVE LIABILITY MANAGEMENT
+============================================================
+
+Implement CALM as a SECONDARY defense.
+
+Purpose:
+
+Prevent the liability side from expanding beyond current reserve risk capacity.
+
+Formula:
+
+    S_max,t
+    =
+    R_a,t
+    /
+    (RR_target,t × PAR)
+
+Supply headroom:
+
+    Headroom_t
+    =
+    S_max,t - S_t
+
+If:
+
+    Headroom > threshold
+
+normal minting capacity may continue.
+
+If headroom becomes constrained:
+
+    reduce discretionary minting
+
+If:
+
+    RR < 105%
+
+activate enhanced issuance restrictions.
+
+If:
+
+    RR < 100%
+
+minting MUST be disabled.
+
+CALM does NOT replace RR.
+
+CALM does NOT permit undercollateralization.
+
+============================================================
+27. RISK-PRICED RESILIENCE CONTRIBUTION
+============================================================
+
+Implement an optional risk-sensitive resilience contribution mechanism.
+
+It MUST NOT be counted as reserves until actually collected and invested in eligible reserve assets.
+
+Define:
+
+    StabilizationFee_t
+
+based on:
+
+    base fee
+    +
+    risk premium
+    +
+    stress contribution
+
+The formula must be bounded and governed.
+
+Example policy bands:
+
+NORMAL:
+    0.05%
+
+ELEVATED:
+    0.10–0.20%
+
+HIGH:
+    0.25–0.50%
+
+CRISIS:
+    minting disabled
+
+All collected resilience fees MUST be segregated according to the constitutional reserve/capital framework.
+
+Do NOT count expected future fees in R_a.
+
+============================================================
+28. SOLVENCY TARGET — DO NOT CHANGE PERMANENTLY YET
+============================================================
+
+Keep:
+
+    RR floor = 100%
+    RR policy = 105%
+    RR strategic = 120%
+
+Do NOT automatically replace 120% with 125%, 130%, or 132%.
+
+Instead implement a diagnostic:
+
+    RR_required_scenario
+    =
+    1 / (1 - scenario_loss)
+
+for simplified fixed-liability tests.
+
+Example:
+
+20% loss:
+
+    RR_required = 1 / 0.80 = 125%
+
+30% loss:
+
+    RR_required = 1 / 0.70 = 142.857%
+
+This is diagnostic only.
+
+The purpose is to distinguish:
+
+    capital problem
+from:
+    asset allocation problem
+from:
+    custody problem
+from:
+    liquidity problem
+from:
+    model problem
+
+============================================================
+29. REQUIRED FAILURE DIAGNOSIS
+============================================================
+
+Every failed stress scenario MUST identify:
+
+    starting RR
+    ending RR
+    required RR
+    portfolio loss
+    gold loss
+    silver loss
+    FX loss
+    sovereign loss
+    stablecoin loss
+    tokenized-government loss
+    custody loss
+    jurisdiction loss
+    correlation assumption
+    haircut changes
+    liquidity assumptions
+    liability changes
+    contribution from each failure source
+
+Do NOT merely report:
+
+    PASS / FAIL
+
+============================================================
+30. SPECIAL TEST — GOLD SHOCK
+============================================================
+
+Run:
+
+    gold -10%
+    gold -20%
+    gold -30%
+    gold -40%
+
+For each test explicitly distinguish:
+
+    standalone gold shock
+
+from:
+
+    composite gold + FX + liquidity shock
+
+DO NOT label a composite scenario as a "gold-only" test.
+
+The system MUST explain why RR changes.
+
+============================================================
+31. SPECIAL TEST — CUSTODY FAILURE
+============================================================
+
+Run:
+
+    single custodian -5%
+    single custodian -10%
+    single custodian -20%
+    single custodian -30%
+
+Then:
+
+    two-custodian correlated failure
+
+Then:
+
+    custodian + bank + payment rail failure
+
+For each scenario calculate:
+
+    RR
+    Stress-RR
+    LCR
+    recovery time
+    required substitution
+
+The target is to substantially reduce the previously observed extreme RR deterioration through structural custody diversification and legal segregation.
+
+============================================================
+32. SPECIAL TEST — CORRELATION BREAK
+============================================================
+
+Run:
+
+    normal correlations
+
+    rho +25%
+
+    rho +50%
+
+    rho +75%
+
+    rho -> 1
+
+Do NOT assume low correlations remain during stress.
+
+The optimizer must calculate whether the reserve architecture still meets:
+
+    Stress-RR >= 100%
+
+and:
+
+    LCR >= minimum
+
+============================================================
+33. SPECIAL TEST — STABLECOIN FAILURE
+============================================================
+
+Run:
+
+    one stablecoin -10%
+    one stablecoin -25%
+    one stablecoin -50%
+    one stablecoin -100%
+    entire stablecoin sleeve -100%
+
+Verify:
+
+    digital sleeve can be reduced to 0%
+
+and:
+
+    fiat absorbs released allocation
+
+and:
+
+    bullion is not automatically sold to replace digital exposure
+
+unless an independent bullion-increase decision is justified by the reserve state.
+
+============================================================
+34. SPECIAL TEST — CURRENCY COLLAPSE
+============================================================
+
+For each reserve currency:
+
+    -10%
+    -20%
+    -30%
+    -50%
+    -75%
+    -100%
+
+relative to gold.
+
+Run:
+
+    NORMAL -> WATCH -> REDUCE -> SUSPEND -> EXIT
+
+where applicable.
+
+Verify:
+
+    final active reserve weights = 100%
+
+after renormalization.
+
+Verify:
+
+    exited currency = 0%
+
+Verify:
+
+    CBGRS recalculates correctly.
+
+Verify:
+
+    reserve substitution does not automatically increase USD beyond 35%.
+
+============================================================
+35. SPECIAL TEST — 30% REDEMPTION SHOCK
+============================================================
+
+Run:
+
+    30% circulating MTQ supply
+    redeemed within 48 hours
+
+Combined with:
+
+    FX deterioration
+    gold volatility
+    stablecoin depeg
+    banking delay
+    oracle degradation
+
+Verify:
+
+    LCR
+    LRR
+    Stress-RR
+    prefunded liquidity
+    redemption waterfall
+    reserve conservation
+
+The system MUST distinguish:
+
+    on-chain finality
+    reserve release
+    bank settlement
+    participant receipt
+
+============================================================
+36. SPECIAL TEST — EXTREME BLACK SWAN
+============================================================
+
+Keep the existing Black Swan scenario.
+
+Do NOT force it to pass.
+
+If it fails:
+
+    classify the failure
+
+and calculate:
+
+    required reserve
+    required rebalancing
+    required issuance restriction
+    required liquidity
+    residual unrecoverable risk
+
+The test is successful if the system correctly detects and responds to the scenario.
+
+A scenario is NOT a "test failure" merely because it is beyond the system's approved design envelope.
+
+But it MUST be clearly labeled:
+
+    Beyond Design Limit
+
+rather than silently called "PASS."
+
+============================================================
+37. TEST-REPORTING STANDARD
+============================================================
+
+Separate:
+
+    Mathematical Tests
+    Unit Tests
+    Integration Tests
+    Stress Scenarios
+    Beyond-Design-Limit Scenarios
+
+Do NOT mix them into one PASS/FAIL denominator.
+
+Example reporting:
+
+    22 mathematical/unit tests
+    40 stress scenarios
+    X integration tests
+    Y beyond-design-limit scenarios
+
+Always report exact totals.
+
+Never use ambiguous statements such as:
+
+    "62 tests, 40 scenarios, 21 pass, 41 fail"
+
+without explaining the populations.
+
+============================================================
+38. CBGRS TEST REQUIREMENTS
+============================================================
+
+Keep the existing CBGRS implementation.
+
+Verify:
+
+    weights sum = 1.0
+
+    geometric CBGRS is canonical
+
+    arithmetic CBGRS is diagnostic
+
+Test:
+
+    single currency shocks
+    multi-currency shocks
+    currency exit
+    currency re-entry
+    missing-data conditions
+    stale oracle
+    numeraire changes
+
+CBGRS stress results MUST NOT be labeled as solvency tests.
+
+============================================================
+39. RESERVE REBALANCING DASHBOARD
+============================================================
+
+Create/update a production dashboard showing:
+
+TOP LEVEL:
+
+    Total Reserve = 100%
+
+    Bullion %
+    Fiat %
+    Digital %
+
+SOLVENCY:
+
+    RR
+    Policy RR
+    Strategic RR
+    Stress-RR
+    Required RR
+
+LIQUIDITY:
+
+    LCR
+    LRR
+    Prefunded Redemption Liquidity
+
+CURRENCY:
+
+    Current weight
+    Target weight
+    Range
+    CQS
+    Gold-relative strength
+    CBGRS
+    MRRC
+    Lifecycle state
+
+BULLION:
+
+    Gold %
+    Silver %
+    Bullion %
+    BRI
+
+DIGITAL:
+
+    USDC
+    USDP
+    EURC
+    Tokenized government liquidity
+    DRQS
+    Depeg state
+
+CUSTODY:
+
+    Custodian concentration
+    Jurisdiction concentration
+    Common-mode dependency score
+
+REBALANCING:
+
+    Current allocation
+    Target allocation
+    Delta
+    Proposed trade
+    Estimated cost
+    Estimated slippage
+    Risk reduction
+    Approval state
+
+============================================================
+40. EXPLAINABILITY
+============================================================
+
+Every automated rebalance MUST generate a human-readable reason.
+
+Example:
+
+    EUR reduced:
+        19.5% -> 17.8%
+
+Reason:
+    Gold-relative depreciation = 13.4%
+    CQS decreased
+    MRRC elevated
+    EUR concentration above robust target
+    Stress-CVaR contribution increased
+
+Replacement:
+    CHF +0.6%
+    JPY +0.4%
+    Cash +0.7%
+
+Expected effect:
+    CVaR -1.2%
+    Stress-RR +2.8%
+    LCR +0.4
+
+Do NOT execute unexplained automatic reserve movements.
+
+============================================================
+41. GOVERNANCE / APPROVAL
+============================================================
+
+Classify rebalances:
+
+LEVEL 1:
+    normal within-band rebalance
+
+LEVEL 2:
+    material risk-reduction rebalance
+
+LEVEL 3:
+    currency suspension
+
+LEVEL 4:
+    currency exit
+
+LEVEL 5:
+    emergency reserve state
+
+For each level define:
+
+    automated authority
+    human approval requirements
+    logging
+    rollback
+    disclosure
+
+Emergency actions must remain bounded by constitutional rules.
+
+============================================================
+42. EXECUTION SAFETY
+============================================================
+
+Before every rebalance:
+
+    simulate before/after
+
+Verify:
+
+    RR_before
+    RR_after
+    LCR_before
+    LCR_after
+    Stress-RR_before
+    Stress-RR_after
+    concentration_before
+    concentration_after
+    custody_before
+    custody_after
+
+Reject any rebalance that:
+
+    decreases constitutional safety
+
+unless it is an explicitly authorized emergency procedure that still preserves hard invariants.
+
+============================================================
+43. COST-AWARE REBALANCING
+============================================================
+
+The optimizer MUST account for:
+
+    bid/ask spread
+    market impact
+    fees
+    slippage
+    transfer costs
+    custody costs
+    FX costs
+    tax/legal execution costs where applicable
+
+Define:
+
+    NetRiskReduction
+    =
+    GrossRiskReduction
+    -
+    ExecutionCost
+
+Do not execute a rebalance merely because the theoretical risk improves.
+
+Execute when:
+
+    NetRiskReduction > required threshold
+
+============================================================
+44. NO PRO-CYCLICAL SELLING
+============================================================
+
+The system must not create a reflexive death spiral:
+
+    price falls
+    ->
+    forced sale
+    ->
+    price falls more
+    ->
+    forced sale
+
+Use:
+
+    hysteresis
+    gradual reductions
+    liquidity-aware execution
+    execution bands
+    minimum review intervals
+    scenario-aware liquidation
+
+Emergency EXIT is allowed only for genuine fundamental failure.
+
+============================================================
+45. FULL RESERVE REBALANCING OBJECTIVE
+============================================================
+
+The master objective should be:
+
+    minimize:
+        CVaR
+        + liquidity risk
+        + concentration risk
+        + custody risk
+        + jurisdiction risk
+        + execution cost
+        + unnecessary reserve capital
+
+subject to:
+
+    RR >= 100%
+
+    Stress-RR >= 100%
+
+    LCR >= minimum
+
+    reserve total = 100%
+
+    all constitutional ranges
+
+    all currency eligibility rules
+
+    all custody/jurisdiction limits
+
+This is the institutional reserve-engine objective.
+
+============================================================
+46. CAPITAL EFFICIENCY OBJECTIVE
+============================================================
+
+DO NOT maximize reserves simply to achieve a higher headline RR.
+
+Optimize:
+
+    Resilience / Capital Cost
+
+or equivalently:
+
+    Minimize excess reserve cost
+    subject to required resilience.
+
+The system should use:
+
+    rebalancing
+    diversification
+    liquidity
+    custody optimization
+    issuance controls
+
+before additional capital.
+
+============================================================
+47. PRODUCTION RELEASE CRITERIA
+============================================================
+
+Do NOT declare production-ready merely because:
+
+    API = 200
+    tests execute
+    lint passes
+    deployment succeeds
+
+Production readiness requires:
+
+1. Full reserve arithmetic verification
+2. Full RR verification
+3. Stress-RR verification
+4. Dynamic rebalancing simulation
+5. Currency exit/re-entry verification
+6. Custody failure testing
+7. Jurisdiction failure testing
+8. Correlation break testing
+9. Stablecoin depeg testing
+10. 30% redemption stress testing
+11. Oracle common-mode testing
+12. Disaster recovery testing
+13. Smart-contract/formal verification
+14. Independent model review
+15. Independent reserve verification
+16. Legal/custody evidence
+17. Sharia certification if claimed
+18. Immutable constants registry
+19. Reproducible stress-test package
+
+============================================================
+48. BLUEPRINT SYNCHRONIZATION
+============================================================
+
+Update the GitHub canonical blueprint ONLY after implementation and verification.
+
+Update all references to:
+
+    dynamic reserve rebalancing
+    currency lifecycle
+    CBGRS
+    reserve-state engine
+    custody rebalancing
+    jurisdiction rebalancing
+    MRRC
+    robust target allocation
+    CALM
+    stress tests
+    capital-efficiency objective
+
+Do NOT create contradictory duplicate formulas.
+
+One canonical constants registry.
+
+One canonical reserve conservation equation:
+
+    B + F + D = 100%
+
+One canonical solvency equation:
+
+    RR = R_a / (S × PAR)
+
+One canonical CBGRS equation.
+
+One canonical dynamic reserve-state model.
+
+============================================================
+49. REQUIRED GITHUB / CODE AUDIT AFTER IMPLEMENTATION
+============================================================
+
+Inspect:
+
+    src/lib/
+    src/app/
+    src/components/
+    scripts/
+    tests/
+    docs/
+
+Search for:
+
+    duplicate reserve formulas
+    stale 120% assumptions
+    conflicting reserve percentages
+    hardcoded currency weights
+    hardcoded static digital allocations
+    hidden USD concentration assumptions
+    direct price-based rebalancing
+    unsupported stablecoin assumptions
+    unsupported "risk-free" claims
+
+Verify all production APIs use the canonical constants registry.
+
+============================================================
+50. REQUIRED FINAL REPORT
+============================================================
+
+At completion provide a detailed report containing:
+
+A. Files changed.
+B. Blueprint sections changed.
+C. New dynamic reserve engine architecture.
+D. Rebalancing algorithm.
+E. Currency lifecycle logic.
+F. Custody rebalancing.
+G. Jurisdiction rebalancing.
+H. Gold-anchor implementation.
+I. CBGRS integration.
+J. MRRC methodology.
+K. CALM implementation.
+L. Stress tests run.
+M. Number of tests by category.
+N. PASS / FAIL / BEYOND DESIGN LIMIT totals.
+O. Before vs after RR.
+P. Before vs after Stress-RR.
+Q. Before vs after LCR.
+R. Before vs after CVaR.
+S. Before vs after concentration risk.
+T. Before vs after custody concentration.
+U. Before vs after jurisdiction concentration.
+V. Transaction cost impact.
+W. Reserve capital cost impact.
+X. Any scenarios still failing.
+Y. Why they fail.
+Z. Whether they are:
+       - fixable by rebalancing
+       - fixable by diversification
+       - fixable by liquidity
+       - fixable by issuance restriction
+       - requiring additional capital
+       - beyond-design-limit
+
+============================================================
+51. FINAL NON-NEGOTIABLE PRINCIPLE
+============================================================
+
+The system must follow this defense hierarchy:
+
+    1. Detect risk
+    2. Rebalance reserves
+    3. Improve liquidity
+    4. Diversify custody
+    5. Diversify jurisdictions
+    6. Reduce digital risk
+    7. Substitute failing currencies
+    8. Restrict new issuance
+    9. Apply resilience contributions where approved
+    10. Only then consider additional reserve capitalization
+
+NEVER solve every risk by simply increasing permanent reserve requirements.
+
+NEVER compromise the 100% legal solvency floor.
+
+NEVER create artificial test passes.
+
+NEVER hide failed stress scenarios.
+
+NEVER use future revenue or expected fees as current reserves.
+
+NEVER allow gold to become a redemption peg.
+
+NEVER allow one currency to become the permanent monetary authority of MITHQAL.
+
+NEVER allow the optimizer to weaken constitutional invariants.
+
+============================================================
+52. FINAL SUCCESS DEFINITION
+============================================================
+
+The implementation is successful when:
+
+    Total Reserve = 100% at all times
+
+    RR >= 100%
+
+    Stress-RR >= 100%
+    for all scenarios inside the approved design envelope
+
+    LCR >= required minimum
+
+    currency weights dynamically adapt
+
+    failing currencies can be suspended/exited
+
+    recovered currencies can be reinstated
+
+    custody concentration can be dynamically reduced
+
+    jurisdiction concentration can be dynamically reduced
+
+    stablecoin exposure can fall to zero
+
+    bullion can rise dynamically when justified
+
+    fiat liquidity can rise dynamically when needed
+
+    CBGRS updates deterministically
+
+    RR remains separate from advisory metrics
+
+    no single risk event automatically destroys reserve integrity
+
+    unnecessary additional reserve capital is minimized
+
+    all results are reproducible
+
+    all automated decisions are explainable
+
+    all constitutional invariants remain intact
+
+FINAL STATUS MUST BE:
+
+    "IMPLEMENTED — PENDING INDEPENDENT INSTITUTIONAL VALIDATION"
+
+unless every release gate has actual independent evidence.
