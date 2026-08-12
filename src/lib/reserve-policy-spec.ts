@@ -586,8 +586,8 @@ export const GEI_SPEC = {
 // BRI = (GoldVal_t/GoldVal_0)^w_g × (SilverVal_t/SilverVal_0)^w_s
 // Weights CVaR-optimized (10k correlated paths, shadow model v9)
 export const BRI_SPEC = {
-  W_GOLD: 0.85,    // CVaR-optimized gold weight
-  W_SILVER: 0.15,  // CVaR-optimized silver weight
+  W_GOLD: 0.90,    // v23: CVaR-optimized (updated from 0.85, independently verified)
+  W_SILVER: 0.10,  // v23: CVaR-optimized (updated from 0.15)
   BASE_VALUE: 1.0,  // Normalized to 1.0 at base date
   ADVISORY_ONLY: true,
 } as const;
@@ -634,12 +634,81 @@ export const OPTIMIZATION_SPEC = {
   DOES_NOT_OVERRIDE_RR: true,
 } as const;
 
-// v22 §6.5 — Stablecoin Depeg Monitoring
-export const STABLECOIN_DEPEG_SPEC = {
-  WATCH_THRESHOLD: 0.02,    // |P - 1| > 2% → WATCH
-  REDUCE_THRESHOLD: 0.05,   // |P - 1| > 5% → REDUCE
-  SUSPEND_THRESHOLD: 0.10,  // |P - 1| > 10% → SUSPEND
-  SUBSTITUTION_TARGET: 'ALTERNATIVE_ISSUER', // NOT USD cash
+// v23 §7 — Digital Liquidity Sleeve (replaces v22 Stablecoin Depeg)
+export const DIGITAL_LIQUIDITY_SPEC = {
+  // Constitutional maximum (NOT mandate — can go to 0%)
+  MAX_TOTAL: 0.05,
+  TARGET: 0.035,  // Conservative target (below cap)
+  MIN: 0.00,      // Can be 0% during stress
+  MAX_PER_ISSUER: 0.02,
+  MIN_ISSUERS: 3,  // When allocation > 0%
+  // DRQS threshold for core digital liquidity
+  DRQS_CORE_THRESHOLD: 7.5,
+  DRQS_CONDITIONAL_THRESHOLD: 6.0,
+  // Algorithmic stablecoins EXCLUDED
+  ALGORITHMIC_EXCLUDED: true,
+  // Bullion → Digital requires emergency governance
+  BULLION_TO_DIGITAL_BARRIER: 'EMERGENCY_GOVERNANCE',
+} as const;
+
+// v23 §7.3 — Digital Reserve Quality Score (DRQS)
+export const DRQS_SPEC = {
+  WEIGHTS: {
+    ISSUER: 0.20,
+    RESERVE: 0.15,
+    REDEMPTION: 0.15,
+    DEPEG: 0.15,
+    JURISDICTION: 0.10,
+    CUSTODY: 0.10,
+    OPERATIONAL: 0.10,
+    LIQUIDITY: 0.05,
+  } as const,
+  CORE_THRESHOLD: 7.5,
+  CONDITIONAL_THRESHOLD: 6.0,
+} as const;
+
+// v23 §7.4 — Approved Digital Liquidity Assets
+export const APPROVED_DIGITAL_ASSETS = {
+  USDC: { type: 'fiat-backed', peg: 'USD', drqs: 8.50, target: 0.020 },
+  USDP: { type: 'fiat-backed', peg: 'USD', drqs: 8.45, target: 0.005 },
+  EURC: { type: 'fiat-backed', peg: 'EUR', drqs: 7.80, target: 0.005 },
+  BUIDL: { type: 'tokenized-govt', peg: 'USD', drqs: 8.55, target: 0.005 },
+  DAI: { type: 'decentralized', peg: 'USD', drqs: 6.25, target: 0.000, optional: true },
+} as const;
+
+// v23 §7.6 — Multi-Dimensional Stablecoin State Machine
+export const STABLECOIN_STATE_MACHINE = {
+  NORMAL: { priceDev: 0.01, liquidity: 'healthy', redemption: 'working', reserve: 'verified', issuer: 'healthy', regulatory: 'good' },
+  WATCH: { priceDev: 0.02, anyDimension: true },
+  REDUCE: { priceDev: 0.05, anyDimension: true },
+  SUSPEND: { priceDev: 0.10, anyDimension: true },
+  SUBSTITUTE: 'Move to highest-DRQS eligible alternative',
+  EMERGENCY_EXIT: 'Immediate conversion if solvency risk material',
+} as const;
+
+// v23 §7.5 — Stablecoin Exposure Metrics
+export const STABLECOIN_EXPOSURE_SPEC = {
+  // SE = Σ Stablecoin Value / R_a (nominal)
+  // SAE = Σ (Stablecoin Value × DRQS_i^-1 × StressFactor) / R_a (risk-adjusted)
+  FORMULA_SE: 'Σ Stablecoin Value / R_a',
+  FORMULA_SAE: 'Σ (Stablecoin Value × DRQS^-1 × StressFactor) / R_a',
+} as const;
+
+// v23 §3.10 — Gold-Adjusted Coverage Ratio (GACR)
+export const GACR_SPEC = {
+  // GACR = (R_a / G_t) / (S × PAR / G_t) = R_a / (S × PAR) = RR
+  // The algebra collapses to RR. This is INTENTIONAL — reporting metric only.
+  EQUALS_RR: true,
+  REPORTING_ONLY: true,
+} as const;
+
+// v23 §3.14 — Stress-RR (hard constraint for optimizer)
+export const STRESS_RR_SPEC = {
+  // RR_stress(s) = R_a(s) / (S(s) × PAR) — for every defined scenario s
+  // Must be ≥ 100% for optimizer to permit the portfolio
+  MINIMUM: 1.00,
+  IS_HARD_CONSTRAINT: true,
+  NOT_LEGAL_METRIC: true, // Forward-looking planning, not legal solvency
 } as const;
 
 // v22 §1 — Four-Layer Architecture
@@ -768,8 +837,16 @@ export const RESERVE_POLICY_SPEC = {
   MULTI_NUMERAIRE: MULTI_NUMERAIRE_SPEC,
   RQS: RQS_SPEC,
   OPTIMIZATION: OPTIMIZATION_SPEC,
-  STABLECOIN_DEPEG: STABLECOIN_DEPEG_SPEC,
+  STABLECOIN_DEPEG: DIGITAL_LIQUIDITY_SPEC, // v23: renamed to DIGITAL_LIQUIDITY
   FOUR_LAYER: FOUR_LAYER_SPEC,
+  // v23 additions
+  DIGITAL_LIQUIDITY: DIGITAL_LIQUIDITY_SPEC,
+  DRQS: DRQS_SPEC,
+  APPROVED_DIGITAL_ASSETS,
+  STABLECOIN_STATE_MACHINE,
+  STABLECOIN_EXPOSURE: STABLECOIN_EXPOSURE_SPEC,
+  GACR: GACR_SPEC,
+  STRESS_RR: STRESS_RR_SPEC,
 } as const;
 
 export default RESERVE_POLICY_SPEC;
