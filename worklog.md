@@ -545,3 +545,48 @@ Stage Summary:
 - No smart contracts redeployed
 - No secrets leaked
 - Lint: clean (exit 0)
+
+---
+Task ID: three-network-separation
+Agent: main (Super Z) — Crypto Networks & Testnet Expert
+Task: Correct the network model — Monad Testnet, Arc Network Testnet, and Solana Devnet are THREE SEPARATE networks. User clarified they are not aliases.
+
+Work Log:
+- User correction: Monad Testnet (Chain ID 10143) and Arc Network Testnet (Chain ID 5042002) are DIFFERENT networks. In the previous session I incorrectly treated them as the same network (both pointed to https://rpc.testnet.arc.io).
+- Verified all three networks independently via eth_getCode:
+  * Monad Testnet (https://testnet-rpc.monad.xyz, chain 10143): ALL 9/9 contracts deployed (MTQ=13364 chars, Governance=51640, Safe=344, Algorithm=5094, Reserve=11408, Mint=11290, Redeem=12342, Oracle=10548, Takaful=12088)
+  * Arc Network Testnet (https://rpc.testnet.arc.io, chain 5042002): ALL 9/9 contracts deployed (MTQ=6950, Governance=26260, Safe=344, Algorithm=2476, Reserve=5796, Mint=5696, Redeem=6076, Oracle=6010, Takaful=6068)
+  * Solana Devnet (https://api.devnet.solana.com): MTQ SPL token exists, slot 483199735, 18.45 UI supply
+- Read on-chain state via cast (foundry):
+  * Monad MTQ: name=MITHQAL, symbol=MTQ, decimals=18, totalSupply=310.95 MTQ, deployer holds 310.95 MTQ + 1.6070 MON
+  * Arc MTQ: name=MITHQAL, symbol=MTQ, decimals=18, totalSupply=1000.00 MTQ (minted previous session), deployer holds 1000.00 MTQ + 19.5090 USDC
+  * Monad Oracle (0xDfcA...): all function calls revert — bytecode does NOT match our Oracle.sol source
+  * Arc Oracle (0xbcA4..., fresh deployment from previous session): goldPrice()=$4,432.40, silverPrice()=$66.56 — working correctly
+- Fixed src/lib/chains.ts:
+  * monad entry: RPC=https://testnet-rpc.monad.xyz, chainId=10143, explorer=https://testnet.monadscan.com, native=MON, Monad addresses (0x9e6E...)
+  * arc entry: RPC=https://rpc.testnet.arc.io, chainId=5042002, explorer=https://testnet.arcscan.app, native=USDC, Arc addresses (0x237c...)
+  * Header comment documents all 4 networks (3 EVM + Solana) as distinct
+- Fixed src/lib/oracle-client.ts: renamed MONAD_RPC → ORACLE_RPC (reads from Arc Network where the fresh Oracle works). The Monad Oracle bytecode doesn't match our source — Arc is the on-chain price source.
+- Fixed src/app/api/status/route.ts: now reports Solana networks alongside EVM chains. Version v19.0.3 → v23. Documents 3 separate networks.
+- Fixed next.config.ts CSP: added https://rpc.testnet.arc.io, https://api.metals.dev, https://api.devnet.solana.com to connect-src allowlist.
+- Updated arc-testnet-addresses.json + monad-testnet-addresses.json with per-network metadata.
+- Lint passes clean (exit 0).
+- Committed cf54494, pushed to GitHub, Vercel auto-deployed (READY).
+- Production verification:
+  * /api/status: Primary=Monad Testnet (10143), lists Arc Network (5042002) + Local Anvil + Solana Devnet
+  * /api/onchain-test?network=monad: 15/15 PASS (10.0/10) — 310.95 MTQ
+  * /api/onchain-test?network=arc: 15/15 PASS (10.0/10) — 1000.00 MTQ
+  * /api/health: Monad RPC ✓, Arc RPC ✓, Oracle ✓, DB ✓, SMTP ✓
+  * /api/solana/balance: Solana Devnet ✓, token exists, slot 483199735
+- Agent Browser: Audit page shows "On-chain verification: 15 of 15 tests passed". No errors.
+
+Stage Summary:
+- THREE SEPARATE NETWORKS correctly modeled:
+  1. Monad Testnet (10143) — 9/9 contracts, 310.95 MTQ
+  2. Arc Network Testnet (5042002) — 9/9 contracts, 1000.00 MTQ, fresh Oracle
+  3. Solana Devnet — MTQ SPL token, 18.45 UI supply
+- Both EVM networks: 15/15 on-chain tests PASS (10.0/10)
+- GitHub commit cf54494 pushed, Vercel deployed (READY)
+- Production live at https://my-project-tonsy.vercel.app
+- No private keys committed
+- No constitutional monetary logic modified
