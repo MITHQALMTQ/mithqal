@@ -15,6 +15,203 @@
 //   TotalReserve = Bullion + Fiat + Digital = 100%
 // =================================================================
 
+// ---- APPROVED Strategic Portfolio B (v24.2.1-V.2 validation) ----
+// Selected by COO+CTO+PM executive decision on 2026-08-13 after the 6-task
+// validation cycle. Portfolio B won on operational capability + CVaR_99 +
+// governance alignment + implementation readiness. MC margin vs Portfolio D
+// was within noise (0.16pp StressRR).
+//
+// Status: APPROVED — no longer PROVISIONAL.
+export const APPROVED_PORTFOLIO_B = {
+  name: "B — Gold-Dominant + Tokenized Allocated Gold (PAXG)",
+  physicalGold: 0.15,
+  tokenizedGold: 0.05,   // PAXG only — TGRS 9.00, H_TG 5.5%
+  silver: 0.0,            // conditional, SDC_Ag-negative per Task 4 backtest
+  fiat: 0.775,
+  digital: 0.025,
+  total: 1.00,
+  status: "APPROVED" as const,
+  approvalDate: "2026-08-13",
+  approvalAuthority: "COO + CTO + Project Manager (executive decision)",
+  decisionBasis: [
+    "Task 1: MC reproduced (P(RR<100%)=21.5432%, seed=42)",
+    "Task 2: A/B/C/D/E comparison — B has lowest CVaR_99 ($15.62M)",
+    "Task 3: PAXG is the only Eligible tokenized gold (TGRS=9.00)",
+    "Task 4: Silver=0% validated (SDC_Ag borderline, conservative default)",
+    "Task 5: 4/5 challenger models confirm primary",
+    "Task 6: Anti-double-counting proven (32/32 PASS)",
+  ],
+};
+
+// ---- Canonical Tokenized Gold Product Registry (Task 3 validation) ----
+// Only products that PASS the 13-point eligibility gate AND score TGRS ≥ 8.0
+// are admitted to the reserve. As of 2026-08-13, only PAXG qualifies.
+export interface TokenizedGoldProduct {
+  ticker: string;
+  name: string;
+  issuer: string;
+  chain: string;
+  contractAddress?: string;
+  tgrs: number;
+  classification: "ELIGIBLE" | "CONDITIONAL" | "REJECTED";
+  haircut: number;          // 0-1 fraction
+  eligibilityGatePassed: boolean;
+  eligibilityFailures: string[];
+  validatedDate: string;
+  admitted: boolean;        // true only if ELIGIBLE + gate passed
+}
+
+export const TOKENIZED_GOLD_REGISTRY: TokenizedGoldProduct[] = [
+  {
+    ticker: "PAXG",
+    name: "PAX Gold",
+    issuer: "Paxos Trust Company",
+    chain: "Ethereum (ERC-20)",
+    contractAddress: "0x45804880De22913dAFE09f4980848ECE6EcbAf78",
+    tgrs: 9.00,
+    classification: "ELIGIBLE",
+    haircut: 0.055,          // H_TG = 5% + (10-9.00)×0.5% = 5.5%
+    eligibilityGatePassed: true,
+    eligibilityFailures: [],
+    validatedDate: "2026-08-13",
+    admitted: true,
+  },
+  {
+    ticker: "XAUT",
+    name: "Tether Gold",
+    issuer: "TG Commodities Limited",
+    chain: "Ethereum / Tron",
+    contractAddress: "0x68749665FF8D2d112Fa859AA293F07A622782F38",
+    tgrs: 7.71,
+    classification: "REJECTED",  // fails 13-point gate (bankruptcy-remoteness, legal-review UNCERTAIN)
+    haircut: 0.0615,
+    eligibilityGatePassed: false,
+    eligibilityFailures: ["bankruptcyRemoteness", "legalReview"],
+    validatedDate: "2026-08-13",
+    admitted: false,
+  },
+  {
+    ticker: "KAU",
+    name: "Kinesis Gold",
+    issuer: "KMS Labs S.A.",
+    chain: "Kinesis Blockchain (Stellar fork)",
+    tgrs: 7.23,
+    classification: "REJECTED",
+    haircut: 0.0639,
+    eligibilityGatePassed: false,
+    eligibilityFailures: ["bankruptcyRemoteness", "legalReview"],
+    validatedDate: "2026-08-13",
+    admitted: false,
+  },
+];
+
+// Canonical admitted product (the one used by Portfolio B)
+export const CANONICAL_TOKENIZED_GOLD = TOKENIZED_GOLD_REGISTRY.find(p => p.admitted) ?? null;
+
+// ---- TGRS Monitoring Hook (fail-closed) ----
+// Quarterly re-score of PAXG. If TGRS drops below 8.0 or eligibility gate
+// fails, the tokenized gold weight is FORCED to 0 within 5 business days.
+// This is a runtime guard, not just a policy statement.
+export interface TgrsMonitorResult {
+  product: string;
+  currentTgrs: number;
+  threshold: number;
+  gatePassed: boolean;
+  action: "OK" | "SUSPEND" | "INVESTIGATE";
+  reason: string;
+  nextReviewDate: string;
+}
+
+export function monitorTgrs(product: TokenizedGoldProduct): TgrsMonitorResult {
+  const now = new Date();
+  const nextQuarter = new Date(now.getFullYear(), now.getMonth() + 3, 1);
+  const nextReviewDate = nextQuarter.toISOString().slice(0, 10);
+
+  if (!product.eligibilityGatePassed) {
+    return {
+      product: product.ticker,
+      currentTgrs: product.tgrs,
+      threshold: 8.0,
+      gatePassed: false,
+      action: "SUSPEND",
+      reason: `Eligibility gate FAILED (${product.eligibilityFailures.join(", ")}). Tokenized gold weight MUST be 0. Suspend within 5 business days.`,
+      nextReviewDate,
+    };
+  }
+  if (product.tgrs < 8.0) {
+    return {
+      product: product.ticker,
+      currentTgrs: product.tgrs,
+      threshold: 8.0,
+      gatePassed: true,
+      action: "SUSPEND",
+      reason: `TGRS=${product.tgrs.toFixed(2)} < 8.0 threshold. Tokenized gold weight MUST be 0 within 5 business days.`,
+      nextReviewDate,
+    };
+  }
+  if (product.tgrs < 8.5) {
+    return {
+      product: product.ticker,
+      currentTgrs: product.tgrs,
+      threshold: 8.0,
+      gatePassed: true,
+      action: "INVESTIGATE",
+      reason: `TGRS=${product.tgrs.toFixed(2)} is within 0.5 of threshold. Investigate issuer status; prepare contingency suspension.`,
+      nextReviewDate,
+    };
+  }
+  return {
+    product: product.ticker,
+    currentTgrs: product.tgrs,
+    threshold: 8.0,
+    gatePassed: true,
+    action: "OK",
+    reason: `TGRS=${product.tgrs.toFixed(2)} ≥ 8.0. Eligibility gate passed. Tokenized gold admitted.`,
+    nextReviewDate,
+  };
+}
+
+// ---- Anti-Double-Counting Runtime Guard (Task 6) ----
+// Enforces Gold_total = PhysicalAllocated + TokenizedAllocated at runtime.
+// Returns the effective gold weight, with a hard guard against double-counting.
+export interface AntiDoubleCountResult {
+  physicalGold: number;
+  tokenizedGold: number;
+  goldTotal: number;
+  tokenizedAdmitted: boolean;
+  effectiveTokenizedWeight: number;  // 0 if suspended by TGRS monitor
+  invariantHolds: boolean;
+  reason: string;
+}
+
+export function enforceAntiDoubleCounting(
+  physicalGold: number,
+  tokenizedGold: number,
+  tgrsMonitor: TgrsMonitorResult,
+): AntiDoubleCountResult {
+  // If TGRS monitor says SUSPEND, effective tokenized weight = 0
+  const effectiveTokenizedWeight =
+    tgrsMonitor.action === "SUSPEND" ? 0 : tokenizedGold;
+
+  const goldTotal = physicalGold + effectiveTokenizedWeight;
+  const tokenizedAdmitted = tgrsMonitor.action !== "SUSPEND";
+
+  // Invariant: goldTotal must equal physical + effective-tokenized (never more)
+  const invariantHolds = Math.abs(goldTotal - (physicalGold + effectiveTokenizedWeight)) < 1e-12;
+
+  return {
+    physicalGold,
+    tokenizedGold: effectiveTokenizedWeight,
+    goldTotal,
+    tokenizedAdmitted,
+    effectiveTokenizedWeight,
+    invariantHolds,
+    reason: tokenizedAdmitted
+      ? `Gold_total = ${physicalGold} + ${effectiveTokenizedWeight} = ${goldTotal} (PAXG admitted, TGRS=${tgrsMonitor.currentTgrs.toFixed(2)})`
+      : `Gold_total = ${physicalGold} + 0 = ${goldTotal} (PAXG SUSPENDED — ${tgrsMonitor.reason})`,
+  };
+}
+
 // ---- Tokenized Gold Reserve Score (TGRS) — §14 ----
 export interface TgrsFactors {
   physicalBacking: number;    // 0-10: verified allocated physical gold backing

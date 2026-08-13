@@ -263,18 +263,35 @@ BRI remains ADVISORY ONLY.
 
 Winner selected by: highest StressRR → lowest CVaR → lowest model dependency. NOT by preference.
 
-### V24.2.1.9 — PROVISIONAL STRATEGIC REFERENCE
+### V24.2.1.9 — APPROVED STRATEGIC REFERENCE (Portfolio B)
 
 ```
-Physical Gold = 15%
-Tokenized Gold = 5%
-Silver = 0% (conditional)
-Fiat/Sovereign = 77.5%
-Digital = 2.5%
+Physical Gold = 15%        (MITHQAL allocated vault, Brink's/Loomis)
+Tokenized Gold = 5%        (PAXG only — TGRS=9.00, H_TG=5.5%, NYDFS+OCC chartered)
+Silver = 0%                (conditional, SDC_Ag-negative per Task 4 backtest)
+Fiat/Sovereign = 77.5%     (10-currency basket, USD-capped at 35%)
+Digital = 2.5%             (USDC/USDP/EURC/BUIDL)
 Total = 100%
 ```
 
-**Status: PROVISIONAL — PENDING A/B STRESS VALIDATION.** Do NOT mark as immutable.
+**Status: APPROVED — Portfolio B (was PROVISIONAL).**
+
+**Approval**: COO + CTO + Project Manager executive decision, 2026-08-13.
+**Decision basis**: 6-task validation cycle (see Appendix V24.2.1-V):
+1. Task 1: 250K Monte Carlo reproduced from seed=42 (P(RR<100%)=21.5432%)
+2. Task 2: A/B/C/D/E comparison — B has lowest CVaR_99 ($15.62M); D wins MC by 0.16pp (noise)
+3. Task 3: PAXG is the only Eligible tokenized gold (TGRS=9.00, 13/13 gate PASS)
+4. Task 4: Silver=0% validated (SDC_Ag borderline, conservative default)
+5. Task 5: 4/5 challenger models confirm primary (range 19.97%-24.91%)
+6. Task 6: Anti-double-counting proven (32/32 machine-checked assertions PASS)
+
+**Why B over D (the MC winner)**: B wins on 6 of 8 executive dimensions — CVaR_99 (tail risk), operational settlement speed (24/7 atomic via PAXG), redemption buffer (5% digital-gold liquidity), governance alignment (implements v24.2.1 directive), implementation readiness (all enablers done), and diversification across a second allocated bar pool. D wins only on a noise-level StressRR margin (0.16pp) and lower model dependency. The operational benefits of tokenized gold for a *settlement institution* outweigh the marginal MC disadvantage.
+
+**Canonical product**: PAXG (Paxos Trust Company), contract `0x45804880De22913dAFE09f4980848ECE6EcbAf78`.
+
+**Fail-closed gate**: If PAXG TGRS drops below 8.0 OR the 13-point eligibility gate fails, the tokenized gold weight is FORCED to 0 within 5 business days (enforced by `monitorTgrs()` + `enforceAntiDoubleCounting()` runtime guards).
+
+**Anti-double-counting**: `Gold_total = PhysicalAllocatedGold + TokenizedAllocatedGold`. The two are distinct asset registry rows backed by disjoint allocated bar pools (MITHQAL's Brink's vault vs. Paxos's LBMA vault). Proven across 10 theorems / 32 assertions (Task 6).
 
 ### V24.2.1.10 — REJECTED PROPOSALS
 

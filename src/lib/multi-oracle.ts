@@ -143,7 +143,40 @@ async function fetchCoinGeckoGold(): Promise<number | null> {
   }
 }
 
-/** Source 3: goldprice.org free JSON endpoint. Returns the LBMA gold
+/** Source 3: CoinGecko (pax-gold / PAXG). PAX Gold is the canonical
+ *  tokenized allocated gold product admitted to the MITHQAL reserve
+ *  (TGRS=9.00, Eligible). 1 PAXG = 1 troy oz of LBMA gold held in
+ *  Brink's allocated vaults by Paxos Trust Company (NYDFS chartered).
+ *  Its USD market price tracks spot gold within ~0.1%.
+ *
+ *  This source is INDEPENDENT from gold-api.com (different upstream)
+ *  and from the XAUt source (different issuer, different vault, though
+ *  both ultimately reference LBMA spot). It also serves as the canonical
+ *  price for the MITHQAL tokenized-gold-balance reporting. */
+async function fetchCoinGeckoPaxg(): Promise<number | null> {
+  try {
+    const res = await fetch(
+      "https://api.coingecko.com/api/v3/simple/price?ids=pax-gold&vs_currencies=usd",
+      {
+        signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+        headers: { Accept: "application/json" },
+      }
+    );
+    if (!res.ok) return null;
+    const data: any = await res.json();
+    const price = data?.["pax-gold"]?.usd;
+    if (typeof price !== "number" || !isFinite(price) || price <= 0) return null;
+    return price;
+  } catch (err) {
+    console.warn(
+      "[multi-oracle] CoinGecko (pax-gold) fetch failed:",
+      err instanceof Error ? err.message : err
+    );
+    return null;
+  }
+}
+
+/** Source 4: goldprice.org free JSON endpoint. Returns the LBMA gold
  *  benchmark in USD per troy ounce. Independent of both gold-api.com
  *  and CoinGecko. Response shape:
  *    { items: [{ curr: "USD", xauPrice: 4076.5, xagPrice: 58.76, ... }] } */
@@ -491,16 +524,20 @@ export async function getMultiOracleGoldPrice(): Promise<MultiOracleResult> {
     return cachedResult.result;
   }
 
-  // 2. Fetch all 3 primary sources in parallel (each with 5s timeout)
-  const [goldApi, coinGecko, goldPriceOrg] = await Promise.all([
+  // 2. Fetch all 4 primary sources in parallel (each with 5s timeout)
+  //    v24.2.1: added PAXG (pax-gold) as Source 3 — the canonical tokenized
+  //    allocated gold product admitted to the MITHQAL reserve (TGRS=9.00).
+  const [goldApi, coinGecko, paxg, goldPriceOrg] = await Promise.all([
     fetchGoldApiCom(),
     fetchCoinGeckoGold(),
+    fetchCoinGeckoPaxg(),
     fetchGoldPriceOrg(),
   ]);
 
   const fetched: FetchedSource[] = [
     { name: "gold-api.com", price: goldApi },
     { name: "CoinGecko-XAUt", price: coinGecko },
+    { name: "CoinGecko-PAXG", price: paxg },
     { name: "goldprice.org", price: goldPriceOrg },
   ];
 
@@ -828,5 +865,59 @@ export function _inspectMultiOracleCache(): {
           ageMs: Date.now() - lastKnownGood.timestamp,
         }
       : null,
+  };
+}
+
+// ============================================================
+// v24.2.1 — Tokenized Gold (PAXG) price + supply
+// ============================================================
+
+/**
+ * Get the canonical PAXG (PAX Gold) price in USD per token.
+ * 1 PAXG = 1 troy oz allocated gold. Used for the MITHQAL tokenized-gold
+ * reserve balance reporting (§V24.2.1.2).
+ *
+ * Returns the CoinGecko pax-gold USD price with a 60s cache. Falls back
+ * to the multi-oracle consensus gold price (which now includes PAXG as
+ * one of its 4 sources) if the dedicated PAXG fetch fails.
+ */
+let cachedPaxgPrice: { price: number; timestamp: number } | null = null;
+const PAXG_CACHE_TTL_MS = 60_000;
+
+export async function getTokenizedGoldPrice(): Promise<{
+  price: number;
+  source: string;
+  timestamp: number;
+  paxgContractAddress: string;
+}> {
+  // Cache hit
+  if (cachedPaxgPrice && Date.now() - cachedPaxgPrice.timestamp < PAXG_CACHE_TTL_MS) {
+    return {
+      price: cachedPaxgPrice.price,
+      source: "CoinGecko-PAXG (cached)",
+      timestamp: cachedPaxgPrice.timestamp,
+      paxgContractAddress: "0x45804880De22913dAFE09f4980848ECE6EcbAf78",
+    };
+  }
+
+  // Fresh fetch
+  const paxg = await fetchCoinGeckoPaxg();
+  if (paxg !== null) {
+    cachedPaxgPrice = { price: paxg, timestamp: Date.now() };
+    return {
+      price: paxg,
+      source: "CoinGecko-PAXG",
+      timestamp: Date.now(),
+      paxgContractAddress: "0x45804880De22913dAFE09f4980848ECE6EcbAf78",
+    };
+  }
+
+  // Fallback: use multi-oracle consensus (includes PAXG as a source)
+  const consensus = await getMultiOracleGoldPrice();
+  return {
+    price: consensus.consensusPrice,
+    source: `multi-oracle consensus (${consensus.method}, PAXG fetch failed)`,
+    timestamp: consensus.timestamp,
+    paxgContractAddress: "0x45804880De22913dAFE09f4980848ECE6EcbAf78",
   };
 }
