@@ -41,16 +41,19 @@ export interface CalmResult {
 }
 
 // State-dependent RR targets and stabilization fees
+// v24.1.2 CORRECTION: Risk↑ → RR_target↑ → MintCapacity↓
+// (previously HIGH_STRESS/CRISIS had LOWER RR targets which allowed MORE minting — WRONG)
+// Now: higher risk → HIGHER RR target → LESS headroom → LESS minting
 const STATE_CONFIG: Record<ReserveState, {
   rrTarget: number;
   feeBps: number;
   feeRange: string;
 }> = {
-  NORMAL:     { rrTarget: 1.20, feeBps: 5,   feeRange: "0.05%" },
+  NORMAL:     { rrTarget: 1.15, feeBps: 5,   feeRange: "0.05%" },
   ELEVATED:   { rrTarget: 1.20, feeBps: 15,  feeRange: "0.10–0.20%" },
-  HIGH_STRESS:{ rrTarget: 1.15, feeBps: 37,  feeRange: "0.25–0.50%" },
-  CRISIS:     { rrTarget: 1.10, feeBps: 0,   feeRange: "minting disabled" },
-  RECOVERY:   { rrTarget: 1.18, feeBps: 10,  feeRange: "0.05–0.10%" },
+  HIGH_STRESS:{ rrTarget: 1.25, feeBps: 37,  feeRange: "0.25–0.50%" },
+  CRISIS:     { rrTarget: 1.30, feeBps: 0,   feeRange: "minting disabled" },
+  RECOVERY:   { rrTarget: 1.22, feeBps: 10,  feeRange: "0.05–0.10%" },
 };
 
 export function computeCalm(input: CalmInput): CalmResult {
