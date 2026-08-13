@@ -65,10 +65,11 @@ interface V2421Data {
     attestation: {
       issuer: string;
       auditor: string;
-      regulator: string;
+      regulatoryFramework: string;
       formalVerification: string;
       custody: string;
       barSerials: string;
+      disclaimer: string;
     };
   };
   conditionalSilver: {
@@ -94,6 +95,7 @@ function StatusIcon({ ok, size = 16 }: { ok: boolean; size?: number }) {
 
 export function PortfolioBPanel() {
   const [data, setData] = useState<V2421Data | null>(null);
+  const [tgbs, setTgbs] = useState<{ spreadPct: number; state: string; reason: string } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -101,12 +103,25 @@ export function PortfolioBPanel() {
     let cancelled = false;
     async function load() {
       try {
-        const res = await fetch("/api/v24.2.1");
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const json = await res.json();
+        const [v2421Res, tgbsRes] = await Promise.all([
+          fetch("/api/v24.2.1"),
+          fetch("/api/v24.2.1/tgbs"),
+        ]);
+        if (!v2421Res.ok) throw new Error(`HTTP ${v2421Res.status}`);
+        const json = await v2421Res.json();
         if (!cancelled) {
           setData(json);
           setError(null);
+        }
+        if (tgbsRes.ok) {
+          const tgbsJson = await tgbsRes.json();
+          if (!cancelled) {
+            setTgbs({
+              spreadPct: tgbsJson.spreadPct,
+              state: tgbsJson.state,
+              reason: tgbsJson.reason,
+            });
+          }
         }
       } catch (e) {
         if (!cancelled) setError(e instanceof Error ? e.message : "Failed to load");
@@ -159,9 +174,9 @@ export function PortfolioBPanel() {
             APPROVED {portfolio.approvalDate} · {portfolio.approvalAuthority}
           </p>
         </div>
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-3 py-1 text-xs font-medium text-emerald-700">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-700">
           <ShieldCheck size={14} />
-          {data.productionDecision}
+          APPROVED CANDIDATE
         </span>
       </header>
 
@@ -280,11 +295,49 @@ export function PortfolioBPanel() {
         </div>
       </div>
 
+      {/* TGBS — Tokenized Gold Basis Spread (§18) */}
+      {tgbs && (
+        <div className="mt-4 rounded-lg border border-line bg-ink-card/30 p-4">
+          <h4 className="flex items-center gap-2 text-sm font-semibold text-fg">
+            <AlertTriangle size={15} className="text-indigo-600" />
+            TGBS — Tokenized Gold Basis Spread (§18)
+          </h4>
+          <div className="mt-3 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs">
+            <div>
+              <span className="text-fg-muted">Spread: </span>
+              <span className={`font-mono font-medium ${
+                tgbs.state === "NORMAL" ? "text-emerald-600"
+                : tgbs.state === "ELEVATED" ? "text-amber-600"
+                : tgbs.state === "SEVERE" ? "text-rose-600"
+                : "text-slate-500"
+              }`}>
+                {tgbs.spreadPct.toFixed(3)}%
+              </span>
+            </div>
+            <div>
+              <span className="text-fg-muted">State: </span>
+              <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-medium ${
+                tgbs.state === "NORMAL" ? "bg-emerald-100 text-emerald-700"
+                : tgbs.state === "ELEVATED" ? "bg-amber-100 text-amber-700"
+                : tgbs.state === "SEVERE" ? "bg-rose-100 text-rose-700"
+                : "bg-slate-100 text-slate-700"
+              }`}>
+                {tgbs.state}
+              </span>
+            </div>
+          </div>
+          <p className="mt-2 text-xs italic text-fg-muted">{tgbs.reason}</p>
+          <p className="mt-1 text-[10px] text-fg-muted">
+            TGBS = (P_PAXG − P_GoldNAV) / P_GoldNAV · §21 separated oracle · reserve uses GoldNAV, not PAXG market
+          </p>
+        </div>
+      )}
+
       {/* PAXG attestation */}
       <div className="mt-4 rounded-lg border border-line bg-ink-card/30 p-4">
         <h4 className="flex items-center gap-2 text-sm font-semibold text-fg">
           <FileCheck size={15} className="text-indigo-600" />
-          PAXG Attestation Chain
+          PAXG Eligibility Evidence
         </h4>
         <div className="mt-3 grid gap-3 text-xs sm:grid-cols-2 lg:grid-cols-3">
           <div>
@@ -301,9 +354,9 @@ export function PortfolioBPanel() {
           </div>
           <div>
             <div className="flex items-center gap-1.5 text-fg-muted">
-              <ShieldCheck size={12} /> Regulator
+              <ShieldCheck size={12} /> Regulatory framework
             </div>
-            <div className="font-medium text-fg">{tg.attestation.regulator}</div>
+            <div className="text-fg">{tg.attestation.regulatoryFramework}</div>
           </div>
           <div>
             <div className="flex items-center gap-1.5 text-fg-muted">
@@ -315,13 +368,13 @@ export function PortfolioBPanel() {
             <div className="flex items-center gap-1.5 text-fg-muted">
               <Coins size={12} /> Custody
             </div>
-            <div className="font-medium text-fg">{tg.attestation.custody}</div>
+            <div className="text-fg">{tg.attestation.custody}</div>
           </div>
           <div>
             <div className="flex items-center gap-1.5 text-fg-muted">
               <ShieldAlert size={12} /> Bar serials
             </div>
-            <div className="font-medium text-fg">{tg.attestation.barSerials}</div>
+            <div className="text-fg">{tg.attestation.barSerials}</div>
           </div>
         </div>
         {tg.canonicalProduct && (
@@ -332,6 +385,9 @@ export function PortfolioBPanel() {
             <span className="font-mono text-fg">{(tg.canonicalProduct.haircut * 100).toFixed(2)}%</span>
           </div>
         )}
+        <p className="mt-3 border-t border-line pt-2 text-[10px] italic text-fg-muted">
+          {tg.attestation.disclaimer}
+        </p>
       </div>
 
       {/* Silver conditional */}

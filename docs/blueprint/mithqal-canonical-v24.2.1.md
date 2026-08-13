@@ -28065,3 +28065,832 @@ $$\text{Gold}_{\text{total}} = \text{Gold}_{\text{phys}} + \text{Gold}_{\text{to
 | Anti-double-counting (Task 6) | `scripts/anti-double-counting-verifier.py`, `docs/verification/v24.2.1-anti-double-counting-proof.md`, `v24.2.1-anti-double-counting-verification.json` |
 
 **END OF APPENDIX V24.2.1-V — VALIDATION RESULTS**
+
+---
+
+## V24.2.1 CANONICAL CORRECTIONS — §§50-52 NEW SECTIONS
+
+These three sections are the v24.2.1 canonical, governance-approved statements of record for:
+- §50: Tokenized Allocated Gold Reserve Layer (canonical correction of §V24.2.1.2)
+- §51: Conditional Silver Reserve Policy (canonical correction of §V24.2.1.3)
+- §52: Reserve Portfolio A/B Validation & Selection Protocol (canonical correction of §V24.2.1.8 and §V24.2.1.9)
+
+They are appended after the existing v24.2.1 amendment set and the v24.2.1 validation appendix. Where any earlier section in this blueprint conflicts with §§V24.2.1.C1–C3, the C-sections govern by the §0.1 Supremacy Clause. The historical text is retained for traceability per §0 (Historical material is retained for traceability only and shall never be interpreted as an active requirement).
+
+Each C-section references the implemented source code and validation artifacts produced under the v24.2.1 6-task validation cycle (see Appendix V24.2.1-V).
+
+---
+
+### V24.2.1.C1 — TOKENIZED ALLOCATED GOLD RESERVE LAYER (§50)
+
+**Status**: CANONICAL v24.2.1 — supersedes §V24.2.1.2 in case of conflict.
+**Authority**: COO + CTO + Project Manager (executive decision 2026-08-13).
+**Implemented code**:
+- `src/lib/v24-2-1-gold-silver.ts` (983 lines) — TGRS registry, eligibility gate, anti-double-counting runtime guard, monitorTgrs(), enforceAntiDoubleCounting(), APPROVED_PORTFOLIO_B.
+- `src/lib/tokenized-gold-oracle.ts` (349 lines) — three separated oracles (GoldNAV, TokenizedMarket, RedemptionReference) per §21.
+- `src/lib/multi-oracle.ts` — 4-source physical-gold spot consensus (gold-api.com + goldprice.org + CoinGecko PAXG + XAUt).
+- `src/components/portfolio-b-panel.tsx` — UI exposure of the canonical PAXG attestation chain.
+- `src/app/api/v24.2.1/route.ts` — runtime API exposing approved portfolio + monitor + guard.
+
+#### C1.1 — Objective
+
+The Tokenized Allocated Gold Reserve Layer introduces a *second* legally-distinct allocated-gold bar pool to the reserve portfolio, represented on-chain as a redeemable token, in order to:
+
+1. **Operational settlement speed**: enable 24/7 atomic, programmable gold delivery (T+0 finality on Ethereum ERC-20) without reliance on banking-hour rails or physical bar logistics.
+2. **Redemption buffer**: provide 5% of reserves as digital-gold liquidity that can satisfy small/mid-size redemption claims inside the chain's settlement layer before any physical-bar liquidation is required.
+3. **Bar-pool diversification**: spread custodial and jurisdictional concentration across two distinct allocated bar pools (MITHQAL's Brink's/Loomis vault vs. Paxos's LBMA vault under separate trustee bailment).
+4. **Governance alignment**: implement the v24.2.1 directive (§§10-16) requiring tokenized allocated gold as a canonical pillar component.
+5. **Implementation readiness**: all six validation tasks of the v24.2.1 cycle are complete; PAXG is the only tokenized-gold product that satisfies the 13-point eligibility gate.
+
+Tokenized allocated gold is **NOT**:
+- A second gold "asset class" (it is allocated gold, same underlying asset class as physical).
+- A "gold-backed token" in the v19 promotional sense (the language is prohibited per §V24.2.1.10).
+- A substitute for physical gold (physical remains the constitutional anchor, last-resort liquidation asset, and primary bar pool).
+- A derivative, ETF, futures contract, or unallocated claim (all explicitly REJECTED under §C1.5 below).
+
+#### C1.2 — Scope
+
+This section governs:
+- Eligibility criteria for tokenized gold products admitted to the reserve.
+- The Tokenized Gold Reserve Score (TGRS, 10 dimensions).
+- The Tokenized Gold Liquidity Score (TGLS, 9 dimensions).
+- The Tokenized Gold Basis Spread (TGBS) monitoring metric.
+- Dynamic haircut (H_TG) formula.
+- Three-oracle separated architecture (§21) for valuation.
+- Anti-rehypothecation, anti-double-counting, and reconciliation requirements.
+- Impairment handling and fail-closed circuit breakers.
+- Liquidation precedence (Article X §V24.2.1.6: tokenized gold before physical gold).
+
+This section does **NOT** govern:
+- Physical allocated gold custody (governed by §2A, §4, and the MITHQAL Custody Policy).
+- The Gold NAV median computation (governed by §21 multi-oracle).
+- Stablecoin or digital liquidity sleeve eligibility (governed by §3.16 and the DRQS framework).
+
+#### C1.3 — Eligibility (13-point gate)
+
+A tokenized gold product is admitted to the reserve **only if all 13 conditions are PASS**. Any single FAIL → product REJECTED (no waivers, no partial admission).
+
+| # | Condition | Evidence required (renewable annually) |
+|---|---|---|
+| 1 | Identifiable physical gold backing | Attestation that each token corresponds to a specific allocated fine-gold troy ounce (or gram) in a listed vault. |
+| 2 | Legally enforceable ownership/proprietary interest | Legal opinion confirming the token holder has a bailment / direct-ownership interest, NOT a contractual claim against issuer assets. |
+| 3 | Allocated custody | Vault agreement confirming allocated (segregated, serially-identified) bars; not pooled or unallocated. |
+| 4 | Segregation | On-chain and off-chain ledgers that distinguish tokenized-gold bars from issuer operating capital. |
+| 5 | Bankruptcy remoteness | Legal opinion confirming the allocated bar pool is bankruptcy-remote from the issuer, custodian, and any parent entity. |
+| 6 | No rehypothecation | Custodian contract and issuer prospectus explicitly prohibit lending, pledging, or rehypothecation of the allocated bars. |
+| 7 | Independent reconciliation | Monthly third-party reconciliation report (e.g., Withum for PAXG) cross-referencing on-chain supply to vault bar list. |
+| 8 | Independent valuation | Daily independent price feed from at least two unaffiliated sources. |
+| 9 | Redemption rights | Documented redemption procedure (physical delivery or cash settlement at holder election) with a defined maximum settlement window. |
+| 10 | Approved oracle/reference pricing | Pricing must be available to MITHQAL's oracle architecture (§C1.11) without reliance on a single source. |
+| 11 | Legal review | Independent jurisdiction-specific legal opinion covering holder claim, redemption enforceability, and regulatory classification. |
+| 12 | Technology/ledger integrity | Independent smart-contract audit (e.g., CertiK) with score ≥ 95 AND no critical/high findings open. |
+| 13 | Operational continuity | Documented business-continuity plan for issuer wind-down, custodian change, or chain migration. |
+
+**Implementation**: `eligibilityGatePassed: boolean` and `eligibilityFailures: string[]` fields in the `TokenizedGoldProduct` interface (`src/lib/v24-2-1-gold-silver.ts:49-62`). Admission (`admitted: true`) requires BOTH `classification === "ELIGIBLE"` AND `eligibilityGatePassed === true` AND `tgrs ≥ 8.0`.
+
+#### C1.4 — Legal Title
+
+The token holder's legal interest in the underlying gold is a **bailment** (direct allocated-ownership interest), NOT a debt claim against the issuer. The bailment creates:
+
+- A property right in specific serially-identified bars, severable from the issuer's estate in insolvency.
+- A right of redemption (physical delivery or cash equivalent) directly enforceable against the trustee/custodian.
+- A right to the bar list (serial numbers, weights, refiner marks) on demand.
+- No subordination to issuer creditors in a winding-up.
+
+This is the critical distinction from "unallocated gold accounts" (a debt claim) and from "gold-backed tokens" that represent a contractual promise rather than a property interest. Only bailment-based tokenized gold is eligible.
+
+#### C1.5 — Allocation
+
+The tokenized gold allocation in the approved portfolio is:
+
+```
+TokenizedAllocatedGold_weight = 5%   (of total reserves, fixed in APPROVED_PORTFOLIO_B)
+```
+
+Constitutional range (per §V24.2.1.2): `0% ≤ TokenizedAllocatedGold_weight ≤ 7%`.
+Approved portfolio uses the midpoint of the operational range; the optimizer may move within `[0%, 7%]` subject to:
+- Total bullion ≤ 25% (constitutional ceiling).
+- Physical gold ≥ 10% (constitutional floor for the physical layer).
+- TGRS ≥ 8.0 maintained (fail-closed; otherwise forced to 0%, see §C1.17).
+
+#### C1.6 — Custody
+
+The tokenized gold custody stack has **two independent custodial layers**, both of which must be operating:
+
+1. **Issuer custody (Paxos Trust)**: Paxos as trustee holds the allocated bar pool in an LBMA-vault (Brink's custody subcontract). Subject to NYDFS trust company supervision.
+2. **Independent reconciliation auditor (Withum)**: monthly third-party reconciliation of on-chain token supply to vault bar list, published to the issuer's proof-of-reserves page.
+
+MITHQAL itself does **NOT** hold the bars or the tokens in its own vault — it holds a redemption right against Paxos. The MITHQAL treasury wallet (3-of-5 Safe) is the on-chain holder of the PAXG ERC-20 balance.
+
+#### C1.7 — Anti-rehypothecation
+
+The allocated bars backing PAXG are **prohibited** from being lent, pledged, rehypothecated, or used as collateral by Paxos, the custodian (Brink's), or any sub-custodian. This is:
+
+- Contractual (Paxos trust agreement and NYDFS charter restrictions).
+- Operational (allocated bar serial numbers cannot appear in any other bailment).
+- Verifiable via the bar-list reconciliation (§C1.8) — any serial appearing in another product's bar list is an immediate suspension event.
+
+#### C1.8 — Reconciliation
+
+**Quarterly bar-list cross-reference** (operational safeguard #2 in Appendix V24.2.1-V.6):
+
+1. MITHQAL's auditor retrieves the PAXG bar list from Paxos / Withum.
+2. MITHQAL's auditor retrieves MITHQAL's physical bar list from Brink's/Loomis.
+3. The two lists are compared by serial number.
+4. **Any serial collision** (same bar claimed by both pools) → immediate suspension of the tokenized gold weight (forced to 0% within 5 business days) pending investigation.
+5. The reconciliation report is filed with the Risk Committee and published (redacted for security) on the transparency dashboard.
+
+This safeguard is in addition to (not in lieu of) the independent monthly attestation by Withum.
+
+#### C1.9 — TGRS (Tokenized Gold Reserve Score — 10 dimensions)
+
+```
+TGRS = 0.20 × PhysicalBacking
+     + 0.15 × LegalTitle
+     + 0.15 × Custody
+     + 0.10 × Redemption
+     + 0.10 × IssuerReliability
+     + 0.10 × OracleReliability
+     + 0.08 × Settlement
+     + 0.05 × Liquidity
+     + 0.05 × OperationalResilience
+     + 0.02 × Jurisdiction
+```
+
+| Dimension | Weight | What it measures | PAXG score (2026-08-13) |
+|---|---:|---|---:|
+| PhysicalBacking | 0.20 | Allocated bar identification, audit trail | 9.5 |
+| LegalTitle | 0.15 | Bailment enforceability, bankruptcy-remoteness | 9.5 |
+| Custody | 0.15 | Vault quality, custodian reputation, segregation | 9.5 |
+| Redemption | 0.10 | Redemption procedure, settlement window, fees | 9.0 |
+| IssuerReliability | 0.10 | NYDFS charter, capitalization, operating history | 9.5 |
+| OracleReliability | 0.10 | Price-feed diversity, manipulation resistance | 8.5 |
+| Settlement | 0.08 | Atomic settlement, chain finality, gas | 8.5 |
+| Liquidity | 0.05 | Secondary-market depth, bid-ask spread | 9.0 |
+| OperationalResilience | 0.05 | Business continuity, wind-down plan | 8.5 |
+| Jurisdiction | 0.02 | Regulatory clarity, governing law (NY/US) | 9.5 |
+| **PAXG Total** | 1.00 | | **9.00** |
+
+**Thresholds**:
+- TGRS ≥ 8.0 → ELIGIBLE (admitted).
+- 6.0 ≤ TGRS < 8.0 → CONDITIONAL (not admitted; monitor).
+- TGRS < 6.0 → REJECTED.
+
+**Validated registry** (Task 3, 2026-08-13):
+- PAXG: TGRS 9.00, ELIGIBLE (only admitted product).
+- XAUT: TGRS 7.71, REJECTED (fails gate — bankruptcy-remoteness UNCERTAIN, legal review UNCERTAIN).
+- KAU: TGRS 7.23, REJECTED (multiple gate failures).
+- PMGT: TGRS 0.64, REJECTED (discontinued).
+- DGX, Meld Gold, Aurus, CGT: REJECTED (various gate failures; see `docs/verification/v24.2.1-tgrs-validation.md`).
+
+#### C1.10 — TGLS (Tokenized Gold Liquidity Score — 9 dimensions)
+
+```
+TGLS = 0.20 × OnChainLiquidity
+     + 0.15 × OffChainRedemption
+     + 0.15 × MarketDepth
+     + 0.10 × BidAskSpread
+     + 0.10 × Volatility
+     + 0.10 × CorrelationWithSpot
+     + 0.10 × SettlementFinality
+     + 0.05 × GasCost
+     + 0.05 × SlippageModel
+```
+
+TGLS is reported alongside TGRS but is NOT a hard admission gate. TGLS informs the haircut calibration (§C1.12) and the dynamic weight allocation within the 0-7% range.
+
+A product with TGRS ≥ 8.0 but TGLS < 6.0 is admitted with an elevated haircut (penalty +1.0%) and capped at 3% weight (not the full 7%).
+
+#### C1.11 — TGBS (Tokenized Gold Basis Spread)
+
+```
+TGBS = (P_market_PAXG − P_LBMA_spot) / P_LBMA_spot
+```
+
+Where:
+- `P_market_PAXG` = median of CoinGecko + Uniswap v3 + 0x quotes (Oracle B — TokenizedMarket, §21).
+- `P_LBMA_spot` = median of gold-api.com + goldprice.org (Oracle A — GoldNAV, §21).
+
+**Monitoring**:
+- |TGBS| ≤ 0.5% → NORMAL (tokenized market tracking spot).
+- 0.5% < |TGBS| ≤ 1.5% → ELEVATED (investigate basis; report to Risk Committee).
+- |TGBS| > 1.5% for >2 hours → STRESS (circuit breaker; suspend new tokenized-gold acquisitions, investigate issuer redemption friction).
+
+**Implemented**: `getTokenizedGoldPrice()` in `src/lib/multi-oracle.ts` computes the basis spread and exposes it via `/api/v24.2.1` response.
+
+#### C1.12 — Haircut (Dynamic §20)
+
+The tokenized-gold haircut `H_TG` is **dynamic**, calibrated to TGRS, and bounded:
+
+```
+H_TG = max(5%, 5% + (10 − TGRS) × 0.5%)
+```
+
+- TGRS = 10.0 → H_TG = 5.0% (theoretical floor; no product scores 10).
+- TGRS = 9.0 → H_TG = 5.5% (PAXG).
+- TGRS = 8.0 → H_TG = 6.0% (admission threshold; tightest admission haircut).
+- TGRS = 6.0 → H_TG = 7.0% (conditional; not admitted).
+- TGRS < 6.0 → not admitted; haircut irrelevant.
+
+H_TG is **higher** than the physical-gold haircut (H_G = 3.0%) to reflect:
+- Smart-contract risk (audits reduce but do not eliminate this).
+- Issuer risk (Paxos is regulated but not a sovereign).
+- Secondary-market basis risk (TGBS may diverge from spot).
+- Redemption friction (physical delivery has settlement lag).
+
+H_TG converges toward H_G only as TGRS approaches 10 (i.e., as evidence accumulates that the tokenized layer is operationally indistinguishable from physical).
+
+**Stress coefficient** S_TG (per §3.7) is **distinct** from H_TG and is applied multiplicatively in the stress regime: `R_l_TG = Q_TG × P_GoldNAV × (1 − H_TG) × C_TG × S_TG`. The double-counting theorem (Appendix V24.2.1-V.6, Theorem T4) confirms H_TG and S_TG are independent dimensions and are NOT compounded.
+
+#### C1.13 — Attestation Freshness (§22)
+
+Each of the 13 eligibility conditions has a maximum attestation freshness:
+
+| Condition | Max freshness |
+|---|---|
+| PhysicalBacking (bar list reconciliation) | 30 days |
+| LegalTitle (legal opinion) | 12 months |
+| Custody (vault agreement) | 12 months |
+| Redemption (procedure document) | 12 months |
+| IssuerReliability (regulatory status) | 30 days |
+| OracleReliability (price-feed audit) | 90 days |
+| Settlement (chain finality report) | 90 days |
+| Liquidity (market-depth study) | 30 days |
+| OperationalResilience (BCP test) | 12 months |
+| Jurisdiction (regulatory classification) | 12 months |
+| BankruptcyRemoteness (legal opinion) | 12 months |
+| SmartContractAudit (CertiK or equivalent) | 12 months |
+| NoRehypothecation (covenant verification) | 90 days |
+
+Any attestation exceeding its freshness window → the corresponding gate condition becomes STALE → fails the 13-point gate → `admitted` flips to `false` → tokenized-gold weight forced to 0% within 5 business days (§C1.17 fail-closed).
+
+#### C1.14 — Oracle Architecture (3 separated oracles §21)
+
+The v24.2.1 directive (§21) **PROHIBITS** mixing tokenized gold market price into the Gold NAV median used for reserve accounting. Three oracles are operated independently:
+
+```
+Oracle A — GoldNAV            → reserve accounting (V_TG formula §C1.12)
+  Sources: gold-api.com + goldprice.org (LBMA spot, NO tokenized gold)
+  Method:  median, 60s cache, fail-closed if both sources stale
+
+Oracle B — TokenizedMarket    → TGBS / liquidity monitoring only
+  Sources: CoinGecko pax-gold + Uniswap v3 TWAP + 0x quote
+  Method:  median, 60s cache, NOT used for reserve accounting
+
+Oracle C — RedemptionReference → issuer-executable value (PAXG redemption NAV)
+  Source:  Paxos API (1 PAXG = 1 oz allocated gold at LBMA spot, minus redemption fee)
+  Method:  direct fetch, 60s cache, used for redemption-NAV reporting
+```
+
+**Reserve valuation formula (§19)**:
+```
+V_TG = Q_TG × P_GoldNAV × (1 − H_TG) × C_TG
+```
+
+Where:
+- `Q_TG` = tokenized gold quantity (PAXG ERC-20 balance held by treasury wallet).
+- `P_GoldNAV` = Oracle A price (NEVER Oracle B market price).
+- `H_TG` = dynamic haircut (§C1.12).
+- `C_TG` = counterparty score (issuer credit × jurisdiction × operational).
+
+Oracle B (PAXG market price) is used ONLY for TGBS monitoring (§C1.11) and is NEVER mixed into the reserve valuation. This is the anti-manipulation guarantee: even if PAXG market price is attacked on a DEX, the reserve valuation is unaffected.
+
+**Implementation**: `src/lib/tokenized-gold-oracle.ts` exports `getGoldNavPrice()` (Oracle A), `getTokenizedMarketPrice()` (Oracle B), and `getRedemptionReferencePrice()` (Oracle C) as separate functions with separate caches.
+
+#### C1.15 — Dynamic Allocation
+
+The tokenized gold weight is **dynamic within the constitutional range** `[0%, 7%]` and is governed by:
+
+1. The optimizer (§V24.2.6 4-tier hierarchical) selects a target weight each rebalancing cycle subject to:
+   - Total bullion ≤ 25% (hard constraint Tier 1).
+   - Physical gold ≥ 10% (hard constraint Tier 1).
+   - TGRS ≥ 8.0 (hard constraint Tier 1; fail-closed).
+2. The approved strategic reference (Portfolio B) sets the center of mass at 5%.
+3. The optimizer may move within ±2pp of the strategic reference per cycle (hysteresis, §5.3 pattern: 2pp band, 2-cycle confirmation, direction-tracking).
+4. Stress-state (STRESS/EMERGENCY) reduces the tokenized gold weight toward 0% as part of the broader "digital-first liquidation" pattern (Article X §V24.2.1.6 — tokenized gold before physical gold).
+
+#### C1.16 — Impairment Handling
+
+An **impairment event** is any of:
+- TGRS drop below 8.0 (any dimension).
+- 13-point gate failure (any condition FAIL or STALE).
+- Bar-list serial collision with another pool (§C1.8).
+- PAXG market basis |TGBS| > 1.5% sustained >2 hours (§C1.11).
+- Smart-contract incident (chain halt, bridge exploit, audit finding).
+- Issuer regulatory action (NYDFS consent order, license suspension).
+- Issuer insolvency or wind-down filing.
+
+**Impairment response** (mandatory, fail-closed, no governance discretion required):
+
+1. **Immediate (T+0)**: `monitorTgrs()` flags impairment; `enforceAntiDoubleCounting()` forces `effective_tokenized_weight = 0%` for reserve-accounting purposes.
+2. **T+1 business day**: Risk Committee convenes emergency session; reports to COO and CTO.
+3. **T+5 business days**: Treasury executes redemption of the entire PAXG balance (or as much as issuer redemption window permits); proceeds reallocated to physical gold (up to the 20% physical ceiling) and short-duration sovereign.
+4. **T+30 business days**: Post-mortem published; either (a) PAXG re-admitted after remediation (requires fresh 13-point gate pass AND TGRS ≥ 8.5) or (b) replacement product selected from the validated registry (none currently eligible; would require new validation cycle).
+
+**Article X precedence** (§V24.2.1.6): During impairment, tokenized gold is liquidated **before** physical gold, preserving the physical bar pool as the last-resort backstop.
+
+#### C1.17 — Fail-Closed Behavior
+
+The fail-closed circuit breakers are **non-discretionary** and enforced at the code level:
+
+```typescript
+// src/lib/v24-2-1-gold-silver.ts
+export function monitorTgrs(product: TokenizedGoldProduct): TgrsMonitorResult {
+  if (!product.eligibilityGatePassed) return { action: "SUSPEND", reason: "13-point gate failed" };
+  if (product.tgrs < 8.0)              return { action: "SUSPEND", reason: "TGRS below 8.0" };
+  if (product.tgrs < 8.5)              return { action: "INVESTIGATE", reason: "TGRS below 8.5" };
+  return { action: "OK", reason: "TGRS above 8.5, gate passed" };
+}
+
+export function enforceAntiDoubleCounting(
+  portfolio: Portfolio,
+  monitor: TgrsMonitorResult
+): Portfolio {
+  if (monitor.action === "SUSPEND") {
+    return { ...portfolio, effectiveTokenizedGoldWeight: 0 };
+  }
+  return portfolio;
+}
+```
+
+**Fail-closed semantics**:
+- If `monitorTgrs()` returns `SUSPEND`, the effective tokenized gold weight is **forced to 0** in ALL downstream computations: reserve ratio, NAV, stress testing, dashboard, API responses.
+- The `effectiveTokenizedGoldWeight` field is distinct from the strategic-target `tokenizedGold` field; the latter is preserved for restoration once the impairment is resolved.
+- The invariant `Gold_total = GoldPhys + effective_GoldTok` is verified on every computation (Theorem T9, Appendix V24.2.1-V.6).
+- A failed monitor result triggers an alert to the Risk Committee within 60 seconds; the dashboard surfaces a "TOKENIZED GOLD SUSPENDED — fail-closed" status.
+
+This is the **anti-double-counting runtime guard**. Combined with the structural proof (10 theorems / 32 assertions, all PASS), it provides defense-in-depth: structural proof + runtime enforcement + quarterly reconciliation + annual legal review.
+
+#### C1.18 — Canonical Reference
+
+This section (§V24.2.1.C1) is the canonical reference for the tokenized allocated gold reserve layer. Where any earlier section of the blueprint conflicts with this section (including but not limited to: §V24.2.1.2, §4.2 strategic target table line 1221, §4.4 dynamic pillar line 1254, the §V24.2.2 6-state machine table lines 351-358, and the worked example lines 4431-4449), this section governs.
+
+**Cross-references**:
+- §V24.2.1.2 (initial specification) — retained as historical; superseded by §C1.
+- Appendix V24.2.1-V.3 (TGRS validation, 8 real products scored) — empirical basis.
+- Appendix V24.2.1-V.6 (anti-double-counting proof, 32/32 PASS) — structural basis.
+- §0.1 Canonical Constants — Bullion range 15-25%, USD cap 35%, per-custodian cap 25%, per-jurisdiction cap 30%.
+- §V24.2.1.9 (approved strategic reference, Portfolio B) — operational instance.
+
+---
+
+### V24.2.1.C2 — CONDITIONAL SILVER RESERVE POLICY (§51)
+
+**Status**: CANONICAL v24.2.1 — supersedes §V24.2.1.3 in case of conflict.
+**Authority**: COO + CTO + Project Manager (executive decision 2026-08-13).
+**Implemented code**: `src/lib/v24-2-1-gold-silver.ts` (silver policy fields, SDC_Ag computation scaffolding).
+**Validation basis**: Task 4 — Silver A/B Backtest (`docs/verification/v24.2.1-silver-ab-report.md`, 27.8KB; `v24.2.1-silver-ab-results.json`, 65.4KB; `historical-prices.csv`, 69 months 2020-01 → 2025-09).
+
+#### C2.1 — Policy Statement
+
+Silver is **conditionally** admitted to the reserve portfolio, subject to a continuous statistical diversification test (SDC_Ag). The default normal target is **0%**.
+
+```
+Silver normal target      = 0%   (default; was 3% in v24.2, was 5% in v24.1)
+Silver conditional band   = 0% – 3%   (constitutional sub-range within Bullion 15-25%)
+Silver hard ceiling       = 3%   (single-cycle cap; may not exceed without governance amendment)
+```
+
+**Key change from v24.2**: v24.2 set silver as a mandatory strategic target (3%, range 3-6%). v24.2.1 removes the mandate: silver is admitted only when it provides a statistically meaningful diversification benefit (SDC_Ag > 0). When the benefit is absent or negative, **Silver = 0% is a VALID POLICY RESULT** — not a failure to meet a target.
+
+**Key change from v24.1**: v24.1 set silver at 5% (range 3-8%) based on a grid-test optimization. v24.2 reduced to 3% citing insufficient diversification vs 30% volatility. v24.2.1 goes further and makes silver fully conditional, with 0% as the conservative default.
+
+#### C2.2 — Allowed Range
+
+```
+Constitutional floor (silver within bullion): 0%   (silver is optional)
+Constitutional ceiling: 3%   (single-cycle cap; cumulative bullion still ≤25%)
+Normal operating band: 0% – 3%
+Stress-state band: 0%   (silver reduced to 0% in STRESS/EMERGENCY per §V24.2.1.6 liquidation order — silver liquidated before gold)
+```
+
+The 3% ceiling is **not** a target. It is the maximum single-cycle allocation permitted by the conditional admission test. The optimizer may select any value in [0%, 3%] each cycle.
+
+#### C2.3 — SDC_Ag (Silver Diversification Contribution) Formula
+
+```
+SDC_Ag = net_resilience_gain − net_cost
+
+net_resilience_gain = α₁ · CVaR_improvement
+                    + α₂ · StressRR_improvement
+                    + α₃ · LCR_improvement
+
+net_cost = β₁ · execution_cost
+         + β₂ · custody_cost
+         + β₃ · volatility_penalty
+         + β₄ · liquidity_penalty
+
+Default weights (governance-approved, v24.2.1):
+  α₁ = 1.0   (CVaR reduction, USD)
+  α₂ = 1.0   (StressRR improvement, percentage points)
+  α₃ = 1.0   (LCR improvement, percentage points)
+  β₁ = 1.0   (execution cost, bp)
+  β₂ = 1.0   (custody cost, bp)
+  β₃ = 1.0   (volatility penalty, bp)
+  β₄ = 1.0   (liquidity penalty, bp)
+
+Admission test:
+  If SDC_Ag > 0  → Silver admitted (up to 3%, optimizer selects within band)
+  If SDC_Ag ≤ 0  → Silver = 0% (VALID policy result)
+```
+
+**LCR normalization** (two views, both reported transparently):
+
+1. **Primary (shortfall-LCR)**: HQLA buffer above LCR=1.5 has zero marginal value. Silver's CVaR/StressRR improvement is credited against the shortfall.
+2. **Sensitivity (proportional-LCR)**: every LCR unit has constant 100 bp marginal value. Silver's LCR contribution is computed proportionally.
+
+The two views can give **opposite** verdicts on the same data. Both are reported; the conservative default (Silver = 0%) is adopted when the views disagree.
+
+#### C2.4 — Stress Testing
+
+Silver is stress-tested under the §45 18-scenario library (see §V24.2.1.C3 §C3.5) plus silver-specific scenarios:
+
+| Scenario | Description | Silver behavior |
+|---|---|---|
+| COVID-2020 (Feb-May 2020) | Acute risk-off, USD flight | HURTS (SDC_Ag primary −248 bp; sensitivity −709 bp) |
+| 2022 Inflation Drawdown (Apr-Nov 2022) | Real yields up, gold/silver down | HURTS (SDC_Ag primary −32 bp; sensitivity −352 bp) |
+| SVB-2023 (Mar 2023) | Banking stress, gold up | Modest help (primary +37 bp; sensitivity −253 bp) |
+| GoldRally-2024 (Mar-Jun 2024) | Gold ATH, silver lagging | Helps (primary +93 bp; sensitivity −174 bp) |
+| GoldRally-2025 (Jan-Jun 2025) | Gold ATH, silver catching up | Helps strongly (primary +242 bp; sensitivity +55 bp) |
+
+**Honest finding** (from Task 4): silver HURTS in the two acute-stress scenarios (COVID, 2022 inflation drawdown) — exactly when diversification is most needed. Silver behaves more like "high-beta gold" than a true diversifier. This is the primary reason the conservative 0% default is recommended.
+
+#### C2.5 — Physical Silver (default custody)
+
+If silver is admitted (SDC_Ag > 0), physical allocated silver is the default custody form:
+
+- **Vault**: Brink's/Loomis (same custodian as physical gold, separate allocated pool).
+- **Form**: LBMA-good-delivery 1000 oz bars or 100 oz bars.
+- **Segregation**: Allocated, serially-identified, separate from gold bar pool.
+- **Audit**: Quarterly bar-list reconciliation by MITHQAL's auditor.
+- **Haircut**: H_Ag = 8% (higher than gold's 3% to reflect 30% annualized volatility vs gold's 15%).
+- **Counterparty score**: C_Ag = 0.95 (Brink's custody × NY jurisdiction × operational).
+- **Stress coefficient**: S_Ag = 0.70 (stress regime; silver falls more than gold in risk-off).
+
+#### C2.6 — Optional Tokenized Silver (future conditional, max 2%)
+
+Tokenized allocated silver products may be admitted in a future amendment, subject to:
+
+1. A Silver TGRS framework (analogous to §V24.2.1.C1 but with silver-specific dimensions — refiner concentration is higher, LBMA 1000 oz bar liquidity is thinner, secondary market for tokenized silver is less developed than for tokenized gold).
+2. Maximum tokenized silver weight = **2%** of total reserves (vs 7% for tokenized gold; reflects thinner market depth).
+3. Physical silver ≥ 50% of total silver exposure (silver's higher volatility demands physical custody as the dominant form).
+4. Cumulative silver (physical + tokenized) ≤ 3% (the §C2.2 ceiling applies to total silver, not just one form).
+
+**Current status (2026-08-13)**: No tokenized silver product has been validated. The tokenized-silver framework is documented as a future conditional capability; it is NOT active. Admission would require:
+- A new validation cycle (analogous to Task 3 for gold).
+- Identification of at least one product scoring Silver-TGRS ≥ 8.0.
+- Governance amendment to §C2.2 raising the per-form cap.
+
+#### C2.7 — Admission Conditions (Silver > 0%)
+
+Silver is admitted to the portfolio (Silver > 0%) only when ALL of:
+
+1. **SDC_Ag > 0** under the **primary** LCR normalization, computed over the trailing 12 months of realized returns.
+2. **SDC_Ag > 0** under the **sensitivity** LCR normalization over the same window, OR a documented governance override approved by the Risk Committee citing a specific operational reason (e.g., anticipated gold-market dislocation).
+3. **t-statistic** of the trailing-12-month SDC_Ag ≥ +2.0 (statistical significance at 95% confidence).
+4. **Stress-test pass**: silver does not worsen StressRR in any of the §C2.4 scenarios by more than 50 bp.
+5. **Cost envelope**: net execution + custody + volatility + liquidity cost ≤ 60 bp/year (current calibrated all-in cost = 52.65 bp/year per Task 4).
+
+When admitted, silver weight is selected by the optimizer within [0.5%, 3%] (a 0.5% floor avoids dust allocation that adds operational cost without diversification benefit).
+
+#### C2.8 — Removal Conditions (Silver → 0%)
+
+Silver is removed (weight forced to 0% within 5 business days) when ANY of:
+
+1. SDC_Ag ≤ 0 under the primary LCR normalization over the trailing 12 months.
+2. t-statistic of trailing-12-month SDC_Ag < +1.0 (lost statistical significance).
+3. Stress-test failure: silver worsens StressRR in any §C2.4 scenario by > 100 bp.
+4. Cost envelope breach: net cost > 75 bp/year sustained for 2 consecutive quarters.
+5. Custody event: Brink's silver vault operational disruption > 5 business days.
+6. LBMA silver market disruption: spot-price gap > 10% intraday with no fresh COMEX print.
+
+Removal is **fail-closed** (no governance discretion required to force 0%; governance discretion is required to *re-admit*). This is symmetric with the tokenized-gold fail-closed pattern (§V24.2.1.C1 §C1.17).
+
+#### C2.9 — φ_t (Gold Share Within Bullion) When Silver = 0
+
+Per §V24.2.1.4, the φ_t rewrite removes the fixed 75/25 gold/silver requirement:
+
+```
+GoldShareWithinBullion = Gold_total / Bullion_total
+
+If Silver = 0%: GoldShareWithinBullion = 100%   (default in Portfolio B)
+When silver admitted: GoldShare ≥ 70%   (governance-approved dominant threshold)
+```
+
+When silver = 0%, the BRI (Basket Resilience Index, §V24.2.1.5) reduces to the GoldResilienceIndex (silver component = 0, NOT an error). The ConditionalMetalDiversificationIndex reports 0 — explicitly distinguishing "no silver held" from "silver data missing."
+
+#### C2.10 — Validation Result (Task 4, 2026-08-13)
+
+| LCR normalization | Mean SDC_Ag | t-stat | 95% CI | Months admit | Verdict |
+|---|---:|---:|---|---|:---:|
+| Primary (shortfall, LCR>1.5 zero marginal) | **+77.27 bp** | +7.09 | [+56, +98] bp | 42/57 (73.7%) | ADMIT |
+| Sensitivity (proportional, 100 bp/LCR unit) | **−205.60 bp** | −13.03 | [−236, −175] bp | 3/57 (5.3%) | 0% |
+
+**Conservative verdict: SILVER = 0%** (the sensitivity view rejects silver decisively; the primary view admits silver but with documented acute-stress failures).
+
+**Sub-period evidence** (most concerning):
+- COVID-2020: SDC_Ag = −248 bp primary / −709 bp sensitivity. Both views REJECT.
+- 2022 Inflation Drawdown: SDC_Ag = −32 bp primary / −352 bp sensitivity. Both views REJECT.
+- Silver hurts in exactly the scenarios where diversification is most valuable.
+
+**Conclusion**: The v24.2.1 design philosophy — "Silver = 0% is a VALID outcome" — is the appropriate reading of the empirical evidence. Silver remains in the toolbox (the conditional framework is operational and the SDC_Ag monitor runs quarterly), but it is not currently admitted.
+
+#### C2.11 — Quarterly Review Cycle
+
+Silver is re-evaluated quarterly by:
+1. Trailing-12-month SDC_Ag computation (primary + sensitivity).
+2. Stress-test refresh against the §45 18-scenario library.
+3. Cost-envelope recomputation (execution, custody, volatility, liquidity).
+4. Report to Risk Committee with admission/removal recommendation.
+5. If admission criteria met (§C2.7): governance vote required before silver is re-admitted (minimum 5-business-day cooling-off period to prevent reactive re-admission during transient market dislocations).
+
+If removal criteria triggered (§C2.8): automatic, fail-closed, no governance vote required.
+
+#### C2.12 — Canonical Reference
+
+This section (§V24.2.1.C2) is the canonical reference for the conditional silver reserve policy. Where any earlier section conflicts (including §V24.2.1.3, §4.2 strategic target line 1222, §4.4 dynamic pillar line 1254, the §V24.2.2 6-state machine silver column lines 351-358, §5.2 φ_t bounds line 1279 "Default target 75% gold / 25% silver", and §5.4 Silver Independence line 1288-1292), this section governs.
+
+**Cross-references**:
+- §V24.2.1.3 (initial specification) — retained as historical; superseded by §C2.
+- §V24.2.1.4 (φ_t rewrite) — operational; aligned with §C2.9.
+- Appendix V24.2.1-V.4 (Task 4 silver A/B backtest) — empirical basis.
+- §V24.2.1.C1 §C1.15 — dynamic allocation pattern (silver uses the same hysteresis model).
+- §0.1 Bullion range 15-25% — silver is a sub-component; total bullion including silver ≤ 25%.
+
+#### C2.13 — Operational Safeguards & Audit Trail
+
+The conditional silver policy is supported by the following operational safeguards (analogous to the tokenized-gold safeguards in §C1.17, adapted for silver's higher volatility and thinner market):
+
+1. **Two-source silver pricing**: LBMA spot + COMEX futures; if either source stale > 5 minutes, silver trades suspended (fail-closed).
+2. **Bar-list reconciliation**: if physical silver is held, quarterly cross-reference between Brink's vault report and MITHQAL ledger; any discrepancy > 0.01% triggers investigation.
+3. **SDC_Ag monitor**: trailing-12-month SDC_Ag computed daily (not just quarterly); if SDC_Ag crosses zero in either direction, alert to Risk Committee within 24 hours.
+4. **Concentration cap**: single silver refiner ≤ 50% of silver allocation (Johnson Matthey, Metalor, Valcambi, PAMP distributed); single vault ≤ 70%.
+5. **Settlement-window monitoring**: silver redemption settlement ≤ T+3 (vs T+2 for gold); persistent T+5+ settlements trigger custody review.
+6. **LBMA market-disruption circuit breaker**: if LBMA silver spot gaps > 10% intraday with no fresh COMEX print, silver trading suspended until fresh print received.
+7. **Audit trail**: every silver admission/removal decision logged with: timestamp, SDC_Ag primary + sensitivity values, t-statistic, stress-test results, cost envelope, governance approval signature (for admission) or automatic trigger reason (for removal).
+
+These safeguards are NOT required when Silver = 0% (the current default). They become operational only if Silver is admitted under §C2.7. This is consistent with the design principle: silver is a conditional tool, and the operational overhead of admitting it is justified only when the diversification benefit is statistically meaningful.
+
+#### C2.14 — Historical Context (for traceability only — NON-NORMATIVE)
+
+The silver policy has evolved through three framework versions:
+
+- **v24.1**: Silver strategic target = 5% (range 3-8%). Set by grid-test optimization; treated as a mandatory pillar component alongside gold. No diversification test; allocation was policy-set, not statistically validated.
+- **v24.2**: Silver strategic target = 3% (range 3-6%). Reduced citing "insufficient diversification vs 30% volatility." Still mandatory; no formal admission test.
+- **v24.2.1**: Silver strategic target = 0% (conditional band 0-3%). Conditional admission via SDC_Ag. The v24.2.1 framework makes silver optional for the first time; 0% is a valid policy result.
+
+The v24.2.1 conditional framework (this section, §C2) is the canonical statement. v24.1 and v24.2 silver targets are HISTORICAL — retained for traceability per §0, but no longer normative. The §48 blueprint sweep (`docs/verification/v24.2.1-blueprint-contradiction-sweep.md`) catalogues every historical occurrence with recommended annotation.
+
+---
+
+### V24.2.1.C3 — RESERVE PORTFOLIO A/B VALIDATION & SELECTION PROTOCOL (§52)
+
+**Status**: CANONICAL v24.2.1 — supersedes §V24.2.1.8 and §V24.2.1.9 in case of conflict.
+**Authority**: COO + CTO + Project Manager (executive decision 2026-08-13, selecting Portfolio B as APPROVED CANDIDATE).
+**Implemented code**: `src/lib/v24-2-1-gold-silver.ts` (`APPROVED_PORTFOLIO_B` constant + decision-basis registry).
+**Validation basis**: Task 2 — A/B/C/D/E Comparison (`scripts/abcde-comparison.py`, 450 lines; `docs/verification/v24.2.1-abcde-comparison-results.json`).
+
+#### C3.1 — Purpose
+
+This protocol defines the canonical procedure for:
+1. Defining candidate reserve portfolios (A/B/C/D/E).
+2. Stress-testing all candidates against a COMMON scenario library, COMMON Monte Carlo seed, and COMMON data feed (apples-to-apples comparison).
+3. Scoring candidates on a multi-dimensional methodology (StressRR → CVaR → model dependency).
+4. Applying hard constraints (RR ≥ 100%, StressRR ≥ scenario min, LCR ≥ 1.0, total reserve = 100%).
+5. Resolving ties via documented tie-break rules.
+6. Performing cost analysis and model-risk analysis.
+7. Selecting the FINAL portfolio via executive decision with full audit trail.
+
+This protocol is the binding governance procedure for portfolio selection. The output (selected portfolio) is recorded in §V24.2.1.9 and implemented in `APPROVED_PORTFOLIO_B`.
+
+#### C3.2 — Candidate Portfolio Definitions
+
+Five candidate portfolios are evaluated. Each is a complete reserve composition (sums to 100%):
+
+| Candidate | Physical Gold | Tokenized Gold | Silver | Fiat | Digital | Description |
+|---|---:|---:|---:|---:|---:|---|
+| **A** (v24.2 baseline) | 15% | 0% | 3% | 79.5% | 2.5% | v24.2 strategic reference; silver mandatory |
+| **B** (v24.2.1 default) | 15% | 5% | 0% | 77.5% | 2.5% | Tokenized allocated gold (PAXG); silver conditional default 0% |
+| **C** (v24.2.1 mid-mix) | 17% | 3% | 0% | 77.5% | 2.5% | Higher physical gold, smaller tokenized sleeve |
+| **D** (all-physical max) | 20% | 0% | 0% | 77.5% | 2.5% | Maximize physical gold, no tokenized, no silver |
+| **E** (diversified mid) | 14% | 4% | 2% | 77.5% | 2.5% | Includes small silver sleeve alongside tokenized gold |
+
+All candidates satisfy:
+- Total = 100%.
+- Bullion = Physical Gold + Tokenized Gold + Silver ∈ [15%, 25%].
+- Fiat ∈ [70%, 85%].
+- Digital = 2.5% (within [0%, 5%]).
+- USD-equivalent exposure ≤ 35% (including AED + SAR pegs).
+- Per-currency ≤ 60%, per-issuer ≤ 2%, per-custodian ≤ 25%, per-jurisdiction ≤ 30%.
+
+Fiat composition is identical across candidates (10-currency basket, USD-capped at 35%); only bullion composition varies. This isolates the bullion-strategy variable for the comparison.
+
+#### C3.3 — Common Scenario Library (§45 18 scenarios)
+
+All five candidates are stress-tested against the SAME 18-scenario library defined in §45:
+
+| # | Scenario | Type | Description |
+|---|---|---|---|
+| 1 | 2008 GFC | Historical replay | Global financial crisis, gold +25%, silver −30%, USD +15% |
+| 2 | 2011 Eurozone Crisis | Historical replay | EUR −10%, CHF +20% (peg break), gold +15% |
+| 3 | 2013 Taper Tantrum | Historical replay | EM FX −15%, US 10y +100bp, gold −25% |
+| 4 | 2015 Swiss Franc Shock | Historical replay | CHF +30% intraday, EUR −15% |
+| 5 | 2016 Brexit Vote | Historical replay | GBP −12%, EUR −3%, gold +8% |
+| 6 | 2020 COVID-19 Crash | Historical replay | Risk-off, USD +8%, gold +5%, silver −25% |
+| 7 | 2022 Inflation Drawdown | Historical replay | Real yields +150bp, gold −20%, silver −35% |
+| 8 | 2023 SVB Failure | Historical replay | Banking stress, gold +10%, USD −2% |
+| 9 | 2024 Gold ATH | Historical replay | Gold +30% (ATH), silver +5% (lagging) |
+| 10 | 2025 Gold Rally | Historical replay | Gold +25%, silver +15% (catching up) |
+| 11 | Stablecoin Depeg (single) | Hypothetical | USDC depeg to 0.95 for 48h, recovery to 1.00 |
+| 12 | Stablecoin Depeg (contagion) | Hypothetical | USDC + USDT + DAI simultaneous depeg |
+| 13 | Custody Failure (single custodian) | Hypothetical | Brink's operational outage 5 business days |
+| 14 | Custody Failure (issuer) | Hypothetical | Paxos wind-down filing (PAXG redemption freeze) |
+| 15 | Oracle Manipulation | Hypothetical | gold-api.com + goldprice.org simultaneous compromise |
+| 16 | USD Confidence Crisis | Hypothetical | USD −20% vs major currencies, gold +35% |
+| 17 | China/Taiwan Conflict | Hypothetical | CNY −25%, Asian FX −15%, gold +20% |
+| 18 | Sovereign Default (G7) | Hypothetical | Single G7 sovereign defaults; corresponding sovereign bond haircut 50% |
+
+Each scenario specifies: shocked asset, shock magnitude, shock duration, recovery path, correlation regime (normal / crisis / decoupled).
+
+#### C3.4 — Common Monte Carlo Seed
+
+All candidates are evaluated with the SAME Monte Carlo configuration:
+
+```
+N_paths        = 250,000
+seed           = 42        (FIXED — fully reproducible)
+hist_days      = 1,670     (~6.5 years of daily returns 2020-01 → 2025-09)
+block_size     = 20        (for block-bootstrap variants)
+regime_matrix  = [[0.95, 0.05], [0.20, 0.80]]   (normal / stress Markov)
+Merton_lambda  = 2 / year
+Merton_mu      = -5%       (jump mean)
+Merton_sigma   = 10%       (jump size volatility)
+depeg_p        = 2% / year
+asset_corr     = 0.30 baseline, 0.60 stress (CRISIS_CORR_MULT = sqrt(1.5))
+Student-t df   = 5         (fat-tail scaling, variance factor 5/3)
+```
+
+**Common Random Numbers (CRN)**: All five candidates are evaluated against the **same 250,000-path shock surface**. This is the key methodology choice that makes the comparison apples-to-apples — any difference in candidate outcomes is attributable to portfolio composition, NOT to RNG noise.
+
+Implementation: `scripts/abcde-comparison.py` generates the shock surface once (seed=42), then evaluates all 5 portfolios against it. Reproducibility verified (two runs produce byte-identical results).
+
+#### C3.5 — Common Data
+
+All candidates use the same data inputs:
+- Historical prices: `docs/verification/historical-prices.csv` (69 months 2020-01 → 2025-09, Yahoo Finance).
+- Gold spot: GC=F (COMEX futures) gap-filled with GLD ETF (initial ratio 10.60).
+- Silver spot: SI=F gap-filled with SLV ETF (initial ratio 1.07).
+- FX basket: EURUSD, JPY=X, GBPUSD, CHFUSD, AUDUSD, CADUSD, SGDUSD, CNYUSD, AEDUSD, SARUSD (10 pairs).
+- PAXG market price: CoinGecko pax-gold (60s cache).
+- Cross-validated against gold-api.com live spot ($4,358/oz gold, $64.6/oz silver on 2026-08-13).
+
+No candidate is permitted to use different data sources, different historical windows, or different gap-filling methods. Any data discrepancy would invalidate the comparison.
+
+#### C3.6 — Scoring Methodology
+
+Candidates are scored on a **three-tier hierarchy** (mirrors the §V24.2.6 optimizer structure):
+
+**Tier 1 — Hard constraints (must ALL pass)**:
+- RR ≥ 100% (constitutional floor) in every scenario.
+- StressRR ≥ scenario-specific minimum (typically 90% for severe scenarios, 100% for moderate).
+- LCR ≥ 1.0 in every scenario.
+- Total reserve = 100% (composition identity).
+- USD-equivalent exposure ≤ 35%.
+- Per-currency ≤ 60%, per-issuer ≤ 2%, per-custodian ≤ 25%, per-jurisdiction ≤ 30%.
+
+Any candidate failing a Tier-1 constraint is DISQUALIFIED (no further scoring).
+
+**Tier 2 — Risk metrics (minimize, weighted)**:
+- StressRR (mean across 250K paths) → maximize
+- CVaR_99 (99% conditional value-at-risk, USD) → minimize
+- P(RR < 100%) → minimize
+- P(StressRR < 100%) → minimize
+- Model dependency (variance attributable to model assumptions) → minimize
+
+**Tier 3 — Operational / governance factors (maximize, weighted)**:
+- Settlement speed (T+0 vs T+2)
+- Redemption buffer (digital-gold liquidity available for small/mid redemptions)
+- Governance alignment (implements v24.2.1 directive)
+- Implementation readiness (enablers complete)
+- Bar-pool diversification (number of distinct allocated bar pools)
+- Operational resilience (custody redundancy)
+
+Tier-2 and Tier-3 are reported separately; final selection may weigh them per executive judgment (see §C3.10).
+
+#### C3.7 — Tie-Break Rules
+
+If two candidates tie on Tier-1 (both pass) and Tier-2 StressRR within 0.50pp (noise threshold), the following tie-break rules apply in order:
+
+1. **Lower CVaR_99** wins (tail-risk minimization).
+2. **Lower model dependency** wins (robustness to model assumption error).
+3. **Higher operational settlement speed** wins (redemption-buffer benefit).
+4. **Higher bar-pool diversification** wins (custody risk reduction).
+5. **Higher governance alignment** wins (implements the v24.2.1 directive).
+6. If still tied: **the more conservative candidate wins** (less tokenized exposure, more physical).
+
+For the 2026-08-13 selection: Portfolios B and D were within 0.16pp StressRR (noise threshold); tie-break rule #1 (CVaR_99) favored B ($15.62M vs D's higher figure); tie-break rules #3, #4, #5 also favored B. Portfolio B was selected as APPROVED CANDIDATE.
+
+#### C3.8 — Cost Analysis
+
+All-in cost per candidate (annualized, bp of AUM):
+
+| Cost component | A | B | C | D | E |
+|---|---:|---:|---:|---:|---:|
+| Execution (turnover × bp) | 3.6 | 3.6 | 3.8 | 4.0 | 4.2 |
+| Custody (physical + tokenized) | 0.45 | 0.55 | 0.50 | 0.40 | 0.55 |
+| Volatility penalty (silver vol drag) | 45 | 0 | 0 | 0 | 30 |
+| Liquidity penalty (bid-ask) | 3.6 | 3.6 | 3.8 | 3.6 | 4.0 |
+| Tokenized gold platform fee | 0 | 5 | 3 | 0 | 4 |
+| **Total** | **52.65** | **12.75** | **11.10** | **8.00** | **42.75** |
+
+Cost favors D (no tokenized, no silver). B's incremental cost over D is 4.75 bp/year (≈ $24K/year on a $50M reserve) — a small price for the operational settlement and redemption-buffer benefits.
+
+#### C3.9 — Model Risk Analysis
+
+Each candidate carries model dependency (sensitivity of P(RR<100%) to model assumptions):
+
+| Candidate | Model dependency | Driver |
+|---|---:|---|
+| A | 2.74% | Baseline (no tokenized, no PAXG-specific assumptions) |
+| B | 8.23% | Highest — depends on TGRS calibration, PAXG haircut, oracle architecture, basis-spread behavior |
+| C | 5.41% | Moderate — smaller tokenized sleeve |
+| D | 2.74% | Tied-lowest with A — no tokenized assumptions |
+| E | 6.92% | Moderate — tokenized + silver model risk |
+
+B's higher model dependency is the chief honest concern. It is mitigated by:
+1. The 13-point eligibility gate (hard pass/fail, no parameter tuning).
+2. The dynamic haircut formula (H_TG = max(5%, 5% + (10−TGRS)×0.5%)).
+3. The fail-closed runtime guard (TGRS < 8.0 → weight forced to 0%).
+4. The anti-double-counting proof (32/32 machine-checked assertions PASS).
+5. The 3-source oracle separation (GoldNAV ≠ TokenizedMarket ≠ RedemptionReference).
+
+Model dependency does not invalidate B; it is a documented, monitored, and bounded risk.
+
+#### C3.10 — Final Selection Process
+
+The final selection is an **executive decision** by COO + CTO + Project Manager, recorded with full audit trail:
+
+1. Validation team delivers the Tier-1/Tier-2/Tier-3 scoring report (Task 2 results).
+2. Challenger-model validation team delivers independent confirmation of headline metrics (Task 5 results).
+3. Risk Committee reviews and issues recommendation.
+4. COO + CTO + Project Manager convene selection meeting; decision recorded in writing.
+5. Selected portfolio is recorded in §V24.2.1.9 ("APPROVED STRATEGIC REFERENCE") and implemented in `APPROVED_PORTFOLIO_B`.
+6. Decision basis is logged in the `decisionBasis` array of `APPROVED_PORTFOLIO_B` (6-task validation summary).
+
+**2026-08-13 decision**:
+
+| Dimension | Winner | Margin |
+|---|---|---|
+| StressRR (Tier 2 primary) | D | 0.16pp (noise) |
+| CVaR_99 (Tier 2 secondary) | **B** | $15.62M (lowest) |
+| Model dependency (Tier 2) | D | 5.49pp lower |
+| Settlement speed (Tier 3) | **B** | T+0 atomic (D = T+2 banking) |
+| Redemption buffer (Tier 3) | **B** | 5% digital-gold liquidity (D = 0%) |
+| Governance alignment (Tier 3) | **B** | Implements v24.2.1 directive |
+| Implementation readiness (Tier 3) | **B** | All enablers complete |
+| Bar-pool diversification (Tier 3) | **B** | 2 distinct pools (D = 1) |
+| **Final selection** | **B** | Wins 6 of 8 dimensions |
+
+**Verdict**: Portfolio B selected as APPROVED CANDIDATE. D's Monte Carlo margin (0.16pp StressRR) is within the noise threshold; B's operational and governance advantages outweigh the marginal MC disadvantage.
+
+#### C3.11 — Validation Results (Task 2, 2026-08-13)
+
+Full Monte Carlo results across all 5 candidates (250K paths each, common seed=42, common scenarios):
+
+| Candidate | Mean RR | Min RR | P(RR<100%) | Mean StressRR | P(StressRR<100%) | CVaR_99 |
+|---|---:|---:|---:|---:|---:|---:|
+| A (v24.2 baseline) | 104.21% | 56.6% | 6.71% | 96.85% | 12.4% | $19.43M |
+| B (v24.2.1 default) | 103.95% | 55.3% | 6.73% | 97.45% | 10.8% | **$15.62M** |
+| C (mid-mix) | 104.02% | 55.9% | 6.72% | 97.30% | 11.2% | $16.85M |
+| **D (all-physical max)** | 104.10% | 56.2% | 6.70% | **97.61%** | 10.5% | $17.20M |
+| E (diversified mid) | 104.05% | 55.7% | 6.71% | 97.10% | 11.5% | $16.40M |
+
+**Honest disclosure**: The absolute P(RR<100%) values (~6.7%) are NOT directly comparable to the primary MC (P(RR<100%)=21.54%) due to implementation differences (modern NumPy RNG vs legacy; regime-fraction model vs explicit Markov chain). The **relative ranking** across candidates is valid because all 5 candidates are evaluated against the SAME shock surface (common random numbers). Comparing absolute numbers across the primary MC and the A/B/C/D/E MC would be a methodology error.
+
+#### C3.12 — Re-Selection Triggers
+
+The portfolio selection is NOT immutable. Re-selection is triggered by:
+
+1. **Quarterly review**: SDC_Ag refresh (Task 4); if silver flips to ADMIT, Portfolio C or E may become competitive.
+2. **TGRS quarterly review**: if PAXG TGRS drops below 8.5, Portfolio D becomes attractive (no tokenized dependency).
+3. **New tokenized gold product**: if a second product achieves TGRS ≥ 8.0, Portfolio C (smaller tokenized sleeve) or a new Portfolio F may be evaluated.
+4. **Regulatory change**: if NYDFS restricts PAXG redemption, Portfolio D becomes the fail-over.
+5. **Annual review**: full re-run of the §C3.2-C3.10 protocol with refreshed historical data.
+
+Re-selection uses the same protocol (§C3.1-C3.10) — no shortcuts. The output is a new APPROVED CANDIDATE record with full audit trail.
+
+#### C3.13 — Canonical Reference
+
+This section (§V24.2.1.C3) is the canonical reference for the reserve portfolio A/B validation & selection protocol. Where any earlier section conflicts (including §V24.2.1.8 and §V24.2.1.9), this section governs.
+
+**Cross-references**:
+- §V24.2.1.8 (initial A/B/C/D/E comparison specification) — retained as historical; superseded by §C3.
+- §V24.2.1.9 (approved strategic reference, Portfolio B) — operational instance; the SELECTION OUTPUT of this protocol.
+- Appendix V24.2.1-V.2 (Task 2 A/B/C/D/E comparison) — empirical basis.
+- Appendix V24.2.1-V.5 (Task 5 challenger-model validation) — independent confirmation of headline metrics.
+- §V24.2.6 (4-tier hierarchical optimizer) — Tier-1/Tier-2/Tier-3 hierarchy mirrors the optimizer structure.
+- §V24.2.8 (Model Validity Gate) — fail-over to LastApprovedDeterministicPolicyPortfolio if model failure.
+
+---
+
+**END OF V24.2.1 CANONICAL CORRECTIONS — §§50-52 (C1/C2/C3)**

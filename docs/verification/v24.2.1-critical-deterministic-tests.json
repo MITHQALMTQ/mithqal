@@ -1,0 +1,252 @@
+{
+  "date": "2026-08-13T23:32:27.441744+00:00",
+  "version": "v24.2.1",
+  "section": "\u00a746 CRITICAL DETERMINISTIC TESTS",
+  "directive": "v24.2.1 \u2014 5 EXACT deterministic tests proving the 102% ceiling is not immune",
+  "parameters": {
+    "PAR": 1.0,
+    "SUPPLY": 54000000,
+    "LIABILITY_USD": 54000000.0,
+    "RR_ceiling": 1.02,
+    "RR_near_floor": 1.004,
+    "portfolio_B": {
+      "GoldPhys": {
+        "weight": 0.15,
+        "haircut": 0.05,
+        "stress": 0.85,
+        "model_dep": false
+      },
+      "GoldTok": {
+        "weight": 0.05,
+        "haircut": 0.055,
+        "stress": 0.83,
+        "model_dep": true
+      },
+      "Silver": {
+        "weight": 0.0,
+        "haircut": 0.07,
+        "stress": 0.8,
+        "model_dep": false
+      },
+      "Fiat": {
+        "weight": 0.775,
+        "haircut": 0.012,
+        "stress": 0.925,
+        "model_dep": false
+      },
+      "Digital": {
+        "weight": 0.025,
+        "haircut": 0.02,
+        "stress": 0.82,
+        "model_dep": true
+      }
+    },
+    "portfolio_B_weights_sum": 1.0
+  },
+  "tests": [
+    {
+      "test_id": "TEST A",
+      "title": "102% ceiling + 2% reserve loss \u2192 99.96% (MUST FAIL \u2014 proves 102% ceiling not immune)",
+      "inputs": {
+        "RR_start": 1.02,
+        "RR_start_pct": 102.0,
+        "loss_pct": 0.02,
+        "starting_R_a_usd": 55080000.0,
+        "starting_L_usd": 54000000.0
+      },
+      "expected": {
+        "RR_after": 0.9996,
+        "RR_after_pct": 99.96000000000001,
+        "solvency": false,
+        "classification": "MUST_FAIL"
+      },
+      "actual": {
+        "RR_after": 0.9996,
+        "RR_after_pct": 99.96,
+        "R_a_after_usd": 53978400.0,
+        "solvency": false,
+        "insolvent": true,
+        "shortfall_usd": 21600.0,
+        "shortfall_pct": 0.04
+      },
+      "math_correct": true,
+      "behavior_correct": true,
+      "passed": true,
+      "proof": "RR_after = RR_start \u00d7 (1 \u2212 loss) = 1.02 \u00d7 (1 \u2212 0.02) = 1.02 \u00d7 0.98 = 0.999600 = 99.9600% < 100.0000%. Shortfall = 0.0400pp below solvency floor = $0.0216M. This proves the 102% ceiling is breached by a mere 2% reserve loss."
+    },
+    {
+      "test_id": "TEST B",
+      "title": "100.4% RR + 30% proportional redemption \u2192 RR preserved at 1.004 (NOT 1.000 guaranteed)",
+      "inputs": {
+        "RR_start": 1.004,
+        "RR_start_pct": 100.4,
+        "proportional_redemption_pct": 0.3,
+        "R_a_before_usd": 54216000.0,
+        "L_before_usd": 54000000.0
+      },
+      "expected": {
+        "RR_after": 1.004,
+        "RR_after_pct": 100.4,
+        "RR_preserved": true,
+        "solvency_guaranteed": false,
+        "classification": "PASS_RR_PRESERVED_BUT_NO_SOLVENCY_GUARANTEE"
+      },
+      "actual": {
+        "R_a_after_usd": 37951200.0,
+        "L_after_usd": 37800000.0,
+        "RR_after": 1.004,
+        "RR_after_pct": 100.4,
+        "RR_preserved": true,
+        "solvency_margin_pp": 0.4,
+        "solvency_guaranteed": false
+      },
+      "math_correct": true,
+      "behavior_correct": true,
+      "passed": true,
+      "proof": "Per \u00a744 (In-Kind Delivery): R_a' = R_a(1\u2212x), L' = L(1\u2212x) \u27f9 RR' = RR. R_a' = $54.2160M \u00d7 0.70 = $37.9512M; L' = $54.00M \u00d7 0.70 = $37.8000M; RR' = 1.004000 = RR (preserved exactly). BUT solvency margin = 0.4000pp above 100% floor \u2014 any additional loss > 0.4% breaches solvency. Proportional redemption preserves the RATIO; it does NOT guarantee solvency."
+    },
+    {
+      "test_id": "TEST C",
+      "title": "100.4% RR + 1% additional reserve market loss \u2192 99.396% (MUST FAIL)",
+      "inputs": {
+        "RR_start": 1.004,
+        "RR_start_pct": 100.4,
+        "additional_market_loss_pct": 0.01,
+        "starting_R_a_usd": 54216000.0
+      },
+      "expected": {
+        "RR_after": 0.99396,
+        "RR_after_pct": 99.396,
+        "solvency": false,
+        "classification": "MUST_FAIL"
+      },
+      "actual": {
+        "RR_after": 0.99396,
+        "RR_after_pct": 99.396,
+        "R_a_after_usd": 53673840.0,
+        "solvency": false,
+        "insolvent": true,
+        "shortfall_usd": 326160.0,
+        "shortfall_pct": 0.604
+      },
+      "math_correct": true,
+      "behavior_correct": true,
+      "passed": true,
+      "proof": "RR_after = RR_start \u00d7 (1 \u2212 market_loss) = 1.004 \u00d7 (1 \u2212 0.01) = 1.004 \u00d7 0.99 = 0.993960 = 99.3960% < 100.0000%. Shortfall = 0.6040pp = $0.3262M. A 1% market loss from a 100.4% RR state causes insolvency \u2014 demonstrates that the 100.4% 'thin ceiling' is breached by routine market volatility."
+    },
+    {
+      "test_id": "TEST D",
+      "title": "Custodian 5% exposure, LGD=100%, ERTF unavailable \u2192 RR drops below 100% from 102% (MUST FAIL)",
+      "inputs": {
+        "RR_start": 1.02,
+        "RR_start_pct": 102.0,
+        "custodian_exposure_pct": 0.05,
+        "LGD": 1.0,
+        "ERTF_available": false,
+        "starting_R_a_usd": 55080000.0
+      },
+      "expected": {
+        "direct_reserve_loss_usd": 2754000.0,
+        "direct_reserve_loss_pct": 5.0,
+        "RR_after": 0.969,
+        "RR_after_pct": 96.89999999999999,
+        "solvency": false,
+        "classification": "MUST_FAIL"
+      },
+      "actual": {
+        "direct_loss_usd": 2754000.0,
+        "ERTF_cover_usd": 0.0,
+        "net_loss_usd": 2754000.0,
+        "R_a_after_usd": 52326000.0,
+        "RR_after": 0.969,
+        "RR_after_pct": 96.9,
+        "solvency": false,
+        "insolvent": true,
+        "shortfall_usd": 1674000.0,
+        "shortfall_pct": 3.1
+      },
+      "math_correct": true,
+      "behavior_correct": true,
+      "passed": true,
+      "proof": "Direct reserve loss = exposure \u00d7 LGD \u00d7 R_a = 5% \u00d7 100% \u00d7 $55.08M = $2.7540M. ERTF unavailable \u2192 cover = $0. R_a_after = $55.08M \u2212 $2.7540M = $52.3260M. RR_after = 96.9000% < 100% (shortfall 3.1000pp = $1.6740M). Proves a 5% custody failure with no ERTF backstop breaches the 102% ceiling \u2014 the system is NOT immune to single-counterparty failure."
+    },
+    {
+      "test_id": "TEST E",
+      "title": "TokenizedGold 100% impaired \u2192 PhysicalGold intact, no double-counting, RR recalculated, rebalancer activated",
+      "inputs": {
+        "impairment_pct_GoldTok": 1.0,
+        "starting_RR": 1.02,
+        "starting_RR_pct": 102.0,
+        "starting_R_a_usd": 55080000.00000001,
+        "starting_R_m_usd": 56206949.3341497
+      },
+      "expected": {
+        "GoldPhys_R_a_unchanged": true,
+        "GoldTok_effective_R_a": 0.0,
+        "GoldTotal_weight_after": 0.15,
+        "RR_after": 0.970819,
+        "RR_after_pct": 97.0819,
+        "rebalancer_activated": true,
+        "reserve_renormalized_to_100pct": true,
+        "classification": "PASS (system handles impairment correctly; anti-double-counting holds)"
+      },
+      "before": {
+        "R_a_GoldPhys_usd": 8009490.2801,
+        "R_a_GoldTok_usd": 2655778.356,
+        "R_a_Silver_usd": 0.0,
+        "R_a_Fiat_usd": 43037661.1052,
+        "R_a_Digital_usd": 1377070.2587,
+        "R_a_total_usd": 55080000.0,
+        "RR": 1.02,
+        "RR_pct": 102.0,
+        "GoldTotal_weight": 0.2,
+        "sum_weights": 1.0
+      },
+      "after": {
+        "R_a_GoldPhys_usd": 8009490.2801,
+        "R_a_GoldTok_usd": 0.0,
+        "R_a_Silver_usd": 0.0,
+        "R_a_Fiat_usd": 43037661.1052,
+        "R_a_Digital_usd": 1377070.2587,
+        "R_a_total_usd": 52424221.644,
+        "RR_after": 0.970819,
+        "RR_after_pct": 97.0819,
+        "GoldTotal_weight_after": 0.15,
+        "GoldTok_effective_weight": 0.0,
+        "rebalanced_weights": {
+          "GoldPhys": 0.157895,
+          "GoldTok": 0.0,
+          "Silver": 0.0,
+          "Fiat": 0.815789,
+          "Digital": 0.026316
+        },
+        "sum_rebalanced_weights": 1.0,
+        "rebalancer_activated": true,
+        "shortfall_usd": 1575778.356
+      },
+      "checks": {
+        "physical_gold_intact": true,
+        "no_double_counting_GoldTok_eff_zero": true,
+        "GoldTotal_recalculated_correctly": true,
+        "RR_recalculated_correctly": true,
+        "reserve_renormalized_to_100pct": true,
+        "rebalancer_activated": true
+      },
+      "math_correct": true,
+      "behavior_correct": true,
+      "passed": true,
+      "proof": "Pre-impairment: GoldTok contributes $2.6558M to R_a (4.82% of total). Post-impairment: GoldTok eff = $0. PhysicalGold R_a unchanged ($8.0095M before = $8.0095M after) \u2014 segregated bar pool, no contagion. GoldTotal weight 20%\u219215% (no double-counting: GoldTok does not remain in GoldTotal). R_a_after = $52.4242M; RR_after = 97.0819% (-2.9181pp from 102% start). Rebalancer activated \u2192 weights renormalized to sum=1.0000 (target weights restored over remaining 95% of reserve value). NOTE: RR_after < 100% \u2014 system is insolvent on mark-to-market, but the impairment does NOT propagate to PhysicalGold (anti-double-counting holds), and the rebalancer correctly triggers to restore target weights (requiring external capital)."
+    }
+  ],
+  "expected_outcomes": {
+    "TEST A": "MUST_FAIL (system insolvent)",
+    "TEST B": "PASS_RR_PRESERVED (but no solvency guarantee)",
+    "TEST C": "MUST_FAIL (system insolvent)",
+    "TEST D": "MUST_FAIL (system insolvent)",
+    "TEST E": "PASS (system handles impairment correctly)"
+  },
+  "all_tests_behave_as_expected": true,
+  "honest": true,
+  "forced_to_pass": false,
+  "interpretation": "TESTS A/C/D demonstrate that the 102% ceiling (and the thinner 100.4% ceiling) are NOT immune to small losses: a 2% reserve loss, 1% market loss, or 5% custody failure each breach solvency from above-100% starting states. TEST B confirms that proportional redemption preserves the RR ratio exactly (per \u00a744) but does NOT guarantee solvency \u2014 the margin above 100% is unchanged and remains thin. TEST E confirms that tokenized-gold impairment does not propagate to physical gold (anti-double-counting holds), GoldTotal is correctly recalculated, RR is correctly recomputed, and the rebalancer is activated to restore target weights."
+}

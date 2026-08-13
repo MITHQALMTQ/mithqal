@@ -12,6 +12,12 @@ import {
   computeGlobalState,
   monitorTgrs,
   enforceAntiDoubleCounting,
+  computeTgls,
+  computeDynamicHaircut,
+  computeAttestationFreshness,
+  runAllTokenizedGoldStress,
+  PAXG_TGLS_FACTORS,
+  PAXG_ATTESTATION_FRESHNESS,
   CANDIDATE_PORTFOLIOS,
   LIQUIDATION_ORDER_V2421,
   APPROVED_PORTFOLIO_B,
@@ -21,6 +27,7 @@ import {
   type TokenizedGoldEligibility,
   type SilverAdmissionInput,
 } from "@/lib/v24-2-1-gold-silver";
+import { computeTgbs, computeVtg } from "@/lib/tokenized-gold-oracle";
 
 /**
  * GET /api/v24.2.1
@@ -114,6 +121,40 @@ export async function GET() {
         )
       : null;
 
+    // §17 — TGLS (Tokenized Gold Liquidity Score) — PAXG validated factors
+    const tgls = computeTgls(PAXG_TGLS_FACTORS);
+
+    // §18 — TGBS (Tokenized Gold Basis Spread) — live computation
+    const tgbs = await computeTgbs();
+
+    // §19 — V_TG valuation (Q_TG = effective tokenized weight × R_a / goldNav)
+    // For reporting: assume R_a = $64.8M, tokenized weight = 5% → Q_TG ≈ 0.05 × 64.8M / goldNav
+    const effectiveTokWeight = antiDoubleCount?.effectiveTokenizedWeight ?? APPROVED_PORTFOLIO_B.tokenizedGold;
+    const qTg = (ra * effectiveTokWeight) / tgbs.goldNavPrice; // approximate oz
+    const vtg = await computeVtg({
+      quantity: qTg,
+      haircut: CANONICAL_TOKENIZED_GOLD?.haircut ?? 0.055,
+      confidenceFactor: PAXG_ATTESTATION_FRESHNESS().confidenceFactor,
+    });
+
+    // §20 — Dynamic haircut (using current risk inputs)
+    const dynamicHaircut = computeDynamicHaircut({
+      oracleRisk: tgbs.state === "NORMAL" ? 0.1 : tgbs.state === "ELEVATED" ? 0.3 : 0.6,
+      custodyRisk: 0.1,        // PAXG custody = Brink's allocated (low)
+      legalRisk: 0.05,         // NYDFS chartered (low)
+      redemptionRisk: 0.1,     // 1 oz min, T+1-T+2 (low-moderate)
+      liquidityRisk: Math.max(0, (8.0 - tgls.score) / 4), // inverse of TGLS
+      issuerRisk: 0.1,         // Paxos Trust Company (low)
+      technologyRisk: 0.05,    // CertiK 98% (low)
+      basisRisk: Math.min(1, Math.abs(tgbs.spread) / 0.05), // normalized to 5% = full
+    });
+
+    // §22 — Attestation freshness
+    const attestationFreshness = PAXG_ATTESTATION_FRESHNESS();
+
+    // §23 — Tokenized gold stress suite (16 scenarios)
+    const tgStressResults = runAllTokenizedGoldStress(rr, effectiveTokWeight);
+
     // Silver Admission Test
     const silverInput: SilverAdmissionInput = {
       cvarWithSilver: 0.134, cvarWithoutSilver: 0.132,
@@ -187,22 +228,92 @@ export async function GET() {
         identity: "Gold_total = PhysicalAllocatedGold + TokenizedAllocatedGold (NO double-counting)",
         tgrs,
         eligibility: tgEligibilityResult,
-        haircutFormula: "H_TG = max(5%, 5% + (10 - TGRS) × 0.5%)",
+        haircutFormula: "H_TG = max(5%, 5% + (10 - TGRS) × 0.5%) — static; §20 dynamic haircut computed separately",
         recommendedHaircut: tgrs.haircutRecommendation,
         dynamicRange: "Physical 10-20%, Tokenized 0-7%, Total bullion ≤25%",
         rejected: ["Unallocated claims", "Synthetic gold", "ETFs", "Derivatives", "Futures"],
-        approvedTarget: "Physical 15% + Tokenized 5% (PAXG) = Gold_total 20% — APPROVED",
+        approvedTarget: "Physical 15% + Tokenized 5% (PAXG) = Gold_total 20% — APPROVED CANDIDATE",
         canonicalProduct: CANONICAL_TOKENIZED_GOLD,
         productRegistry: TOKENIZED_GOLD_REGISTRY,
         tgrsMonitor,
         antiDoubleCountGuard: antiDoubleCount,
+        // §17 — TGLS (Tokenized Gold Liquidity Score)
+        tgls: {
+          score: tgls.score,
+          classification: tgls.classification,
+          recommendation: tgls.recommendation,
+          factors: tgls.factors,
+          note: "TGLS measures executable liquidity. TGRS measures reserve integrity. Separate scores — never combined.",
+        },
+        // §18 — TGBS (Tokenized Gold Basis Spread)
+        tgbs: {
+          spreadPct: tgbs.spreadPct,
+          state: tgbs.state,
+          reason: tgbs.reason,
+          goldNavPrice: tgbs.goldNavPrice,
+          paxgMarketPrice: tgbs.paxgMarketPrice,
+          paxgAvailable: tgbs.paxgAvailable,
+          formula: "TGBS = (P_PAXGMarket − P_GoldNAV) / P_GoldNAV",
+          oracleArchitecture: "§21 separated: Oracle A (GoldNAV) for reserve accounting, Oracle B (PAXG market) for TGBS only",
+        },
+        // §19 — V_TG valuation
+        vtg: {
+          value: vtg.value,
+          formula: vtg.formula,
+          quantity: vtg.quantity,
+          goldNavPrice: vtg.goldNavPrice,
+          haircut: vtg.haircut,
+          confidenceFactor: vtg.confidenceFactor,
+          note: "Reserve uses GoldNAV (Oracle A), NOT PAXG market price. Prevents market dislocation from inflating reserve.",
+        },
+        // §20 — Dynamic haircut
+        dynamicHaircut: {
+          haircut: dynamicHaircut.haircut,
+          formula: dynamicHaircut.formula,
+          components: dynamicHaircut.components,
+          h0: dynamicHaircut.h0,
+          hMax: dynamicHaircut.hMax,
+          note: "H_TG(t) = Clamp(H0 + α·Oracle + β·Custody + γ·Legal + δ·Redemption + ε·Liquidity + ζ·Issuer + η·Tech + θ·Basis, 0, H_max). All inputs normalized [0,1].",
+        },
+        // §22 — Attestation freshness
+        attestationFreshness: {
+          ageDays: attestationFreshness.ageDays,
+          state: attestationFreshness.state,
+          confidenceFactor: attestationFreshness.confidenceFactor,
+          tgrsPenalty: attestationFreshness.tgrsPenalty,
+          weightLimit: attestationFreshness.weightLimit,
+          reason: attestationFreshness.reason,
+          note: "TGRS declines as attestation becomes stale. SEVERELY_STALE → fail-closed (weight=0).",
+        },
+        // §23 — Tokenized gold stress suite
+        stressSuite: {
+          scenarios: tgStressResults.map(r => ({
+            name: r.scenario.name,
+            category: r.scenario.category,
+            impairmentPct: r.scenario.impairmentPct,
+            expectedAction: r.scenario.expectedAction,
+            rrAfter: r.rrAfter,
+            classification: r.classification,
+            passed: r.passed,
+            reason: r.reason,
+            physicalGoldIntact: r.physicalGoldIntact,
+            noDoubleCounting: r.noDoubleCounting,
+          })),
+          summary: {
+            total: tgStressResults.length,
+            pass: tgStressResults.filter(r => r.classification === "PASS").length,
+            fail: tgStressResults.filter(r => r.classification === "FAIL").length,
+            bdl: tgStressResults.filter(r => r.classification === "BDL").length,
+          },
+        },
         attestation: {
           issuer: "Paxos Trust Company",
           auditor: "Withum (monthly attestation)",
-          regulator: "NYDFS (trust charter #25379) + OCC",
-          formalVerification: "CertiK 98%",
-          custody: "Brink's allocated LBMA vaults",
-          barSerials: "Published (cross-verifiable against MITHQAL bar list)",
+          regulatoryFramework: "PAXG eligibility evidence evaluated under MITHQAL's independent reserve eligibility framework. Paxos holds NYDFS trust charter #25379 and OCC federal trust charter — these are PAXG issuer credentials, NOT MITHQAL regulatory approvals.",
+          formalVerification: "CertiK 98% (PAXG smart contract audit, independent of MITHQAL)",
+          custody: "Brink's allocated LBMA vaults (PAXG issuer custody, NOT MITHQAL custody)",
+          barSerials: "Published by Paxos (cross-verifiable against MITHQAL bar list for anti-double-counting)",
+          disclaimer: "MITHQAL is NOT regulator-approved, NOT central-bank-approved, NOT risk-free. PAXG inclusion is based on MITHQAL's independent eligibility assessment and may be suspended if TGRS drops below threshold.",
         },
       },
 
@@ -278,10 +389,10 @@ export async function GET() {
         silverUsd: nav.silverUsd,
       },
 
-      // Status
-      status: "APPROVED — Portfolio B implemented and validated",
-      productionDecision: "GO",
-      decisionReason: "v24.2.1 Portfolio B APPROVED by COO+CTO+PM executive decision (2026-08-13). 6-task validation complete: MC reproduced, A/B/C/D/E compared, PAXG TGRS=9.00 validated, silver=0% confirmed, 4/5 challengers confirm primary, anti-double-counting 32/32 PASS. PAXG admitted as canonical tokenized gold. All operational safeguards active.",
+      // Status — §53/§59 governance wording (NOT "approved" / NOT "GO")
+      status: "APPROVED CANDIDATE — PENDING INDEPENDENT PORTFOLIO VALIDATION",
+      productionDecision: "IMPLEMENTED + PROVISIONALLY VALIDATED + PENDING INDEPENDENT INSTITUTIONAL VALIDATION",
+      decisionReason: "v24.2.1 Portfolio B is the APPROVED CANDIDATE (COO+CTO+PM executive decision, 2026-08-13). 6-task validation complete: MC reproduced, A/B/C/D/E compared, PAXG TGRS=9.00 validated, silver=0% confirmed, 4/5 challengers confirm primary, anti-double-counting 32/32 PASS. GO/NO-GO is a deployment decision; economic optimality requires comparative validation. NOT production-certified, NOT regulator-approved, NOT central-bank-approved, NOT Sharia-certified, NOT risk-free, NOT guaranteed-solvency.",
 
       // What's NOT changed
       preserved: [

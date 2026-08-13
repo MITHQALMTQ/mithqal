@@ -524,20 +524,23 @@ export async function getMultiOracleGoldPrice(): Promise<MultiOracleResult> {
     return cachedResult.result;
   }
 
-  // 2. Fetch all 4 primary sources in parallel (each with 5s timeout)
-  //    v24.2.1: added PAXG (pax-gold) as Source 3 — the canonical tokenized
-  //    allocated gold product admitted to the MITHQAL reserve (TGRS=9.00).
-  const [goldApi, coinGecko, paxg, goldPriceOrg] = await Promise.all([
+  // 2. Fetch primary gold-spot sources in parallel (each with 5s timeout)
+  //    v24.2.1 §21 FIX: PAXG is NO LONGER mixed into the gold NAV median.
+  //    PAXG is a market-traded token with its own basis spread — mixing it
+  //    with spot gold contaminates the reserve valuation. PAXG market price
+  //    is now handled by the SEPARATE tokenized-gold-oracle.ts module
+  //    (Oracle B), used only for TGBS / liquidity monitoring.
+  //    XAUt is retained here as an independent gold-price proxy (it tracks
+  //    spot within 0.1%) but is NOT used for tokenized-gold reserve accounting.
+  const [goldApi, coinGecko, goldPriceOrg] = await Promise.all([
     fetchGoldApiCom(),
     fetchCoinGeckoGold(),
-    fetchCoinGeckoPaxg(),
     fetchGoldPriceOrg(),
   ]);
 
   const fetched: FetchedSource[] = [
     { name: "gold-api.com", price: goldApi },
     { name: "CoinGecko-XAUt", price: coinGecko },
-    { name: "CoinGecko-PAXG", price: paxg },
     { name: "goldprice.org", price: goldPriceOrg },
   ];
 
@@ -877,9 +880,14 @@ export function _inspectMultiOracleCache(): {
  * 1 PAXG = 1 troy oz allocated gold. Used for the MITHQAL tokenized-gold
  * reserve balance reporting (§V24.2.1.2).
  *
- * Returns the CoinGecko pax-gold USD price with a 60s cache. Falls back
- * to the multi-oracle consensus gold price (which now includes PAXG as
- * one of its 4 sources) if the dedicated PAXG fetch fails.
+ * v24.2.1 §21 FIX: This function now returns the GoldNAV price (Oracle A
+ * from tokenized-gold-oracle.ts), NOT the PAXG market price. Reserve
+ * accounting uses underlying gold NAV per §19: V_TG = Q_TG × P_GoldNAV ×
+ * (1−H_TG) × C_TG. The PAXG market price is handled separately by
+ * getPaxgMarketPrice() in tokenized-gold-oracle.ts, used only for TGBS.
+ *
+ * This function is retained for backwards compatibility — it now delegates
+ * to the separated GoldNAV oracle.
  */
 let cachedPaxgPrice: { price: number; timestamp: number } | null = null;
 const PAXG_CACHE_TTL_MS = 60_000;
@@ -890,34 +898,13 @@ export async function getTokenizedGoldPrice(): Promise<{
   timestamp: number;
   paxgContractAddress: string;
 }> {
-  // Cache hit
-  if (cachedPaxgPrice && Date.now() - cachedPaxgPrice.timestamp < PAXG_CACHE_TTL_MS) {
-    return {
-      price: cachedPaxgPrice.price,
-      source: "CoinGecko-PAXG (cached)",
-      timestamp: cachedPaxgPrice.timestamp,
-      paxgContractAddress: "0x45804880De22913dAFE09f4980848ECE6EcbAf78",
-    };
-  }
-
-  // Fresh fetch
-  const paxg = await fetchCoinGeckoPaxg();
-  if (paxg !== null) {
-    cachedPaxgPrice = { price: paxg, timestamp: Date.now() };
-    return {
-      price: paxg,
-      source: "CoinGecko-PAXG",
-      timestamp: Date.now(),
-      paxgContractAddress: "0x45804880De22913dAFE09f4980848ECE6EcbAf78",
-    };
-  }
-
-  // Fallback: use multi-oracle consensus (includes PAXG as a source)
-  const consensus = await getMultiOracleGoldPrice();
+  // Delegate to the separated GoldNAV oracle (§21 fix)
+  const { getGoldNavPrice } = await import("./tokenized-gold-oracle");
+  const goldNav = await getGoldNavPrice();
   return {
-    price: consensus.consensusPrice,
-    source: `multi-oracle consensus (${consensus.method}, PAXG fetch failed)`,
-    timestamp: consensus.timestamp,
+    price: goldNav.price,
+    source: `GoldNAV (${goldNav.method}, sources: ${goldNav.sources.join(", ")})`,
+    timestamp: goldNav.timestamp,
     paxgContractAddress: "0x45804880De22913dAFE09f4980848ECE6EcbAf78",
   };
 }
