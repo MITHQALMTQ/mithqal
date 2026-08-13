@@ -1,0 +1,1699 @@
+# MITHQAL v24.2 — Modular Implementation Prompt Set
+
+**Use these prompts sequentially.**  
+Each prompt is a self-contained work order, but later prompts assume earlier canonical definitions are locked. Do not skip prompts. For each prompt, the developer must return:
+
+- Specification changes
+- Code/config changes
+- Unit and integration tests
+- Validation evidence
+- Remaining blockers
+
+If a requirement conflicts with a previous prompt, the earlier canonical definition wins unless the later prompt explicitly requires a governance-approved amendment.
+
+---
+
+## GLOBAL NON-NEGOTIABLES — APPLY TO ALL PROMPTS
+
+- You are modifying **MITHQAL CANONICAL BLUEPRINT v24.1** and its implemented monetary/risk engine.
+- Do **not** redesign MITHQAL from zero.
+- Do **not** remove the constitutional framework.
+- Do **not** optimize for speculative MTQ appreciation.
+- Do **not** weaken reserve safety to reduce capital requirements.
+- Do **not** manipulate stress assumptions to produce passing results.
+- Preserve identity: MITHQAL = regulated-neutral, reserve-backed, globally diversified settlement infrastructure with PAR, dynamic reserves, institutional liquidity, jurisdictional compliance, constitutional governance, and elastic issuance capacity.
+- Priority order:
+  - Constitutional safety
+  - Legal eligibility
+  - Solvency
+  - Liquidity
+  - Stress resilience
+  - Risk optimization
+  - Execution cost
+  - Execution
+  - Reconciliation
+
+No optimizer, AI model, market signal, governance action, trading decision, or operational convenience may override a constitutional invariant.
+
+---
+
+# PROMPT 1 — Canonical Monetary Identity, Solvency, and Stress-RR
+
+**Scope:** Resolve all conflicting reserve-ratio and liability definitions. Lock the canonical monetary identity.
+
+## 1.1 Canonical PAR and Liability
+
+The canonical monetary identity shall be:
+
+- **PAR = $1.00** fixed USD-denominated settlement/accounting reference unit.
+- Contractual redemption liability:
+  \[
+  L_t = S_t \times PAR
+  \]
+  where \(S_t\) is circulating MTQ supply.
+
+Do **not** use:
+\[
+L = S \times NAV_m
+\]
+for the canonical contractual liability.
+
+Market NAV may remain an accounting/reference metric only. It must not redefine contractual liability.
+
+## 1.2 Canonical Solvency Ratio
+
+\[
+RR_t = \frac{R_{a,t}}{S_t \times PAR}
+\]
+
+Where:
+
+- \(R_{a,t}\) = prudential adjusted reserve value
+- \(S_t\) = circulating MTQ supply
+- \(PAR = 1.00\)
+
+Required thresholds:
+
+| Threshold | Value | Meaning |
+|---|---:|---|
+| \(RR_{floor}\) | 100% | Hard solvency floor |
+| \(RR_{policy}\) | 105% | Policy operating floor |
+| \(RR_{strategic\ target}\) | 120% | Strategic planning target |
+
+Document these as separate concepts. A 120% target means adjusted reserve value equals 120% of contractual redemption liabilities. It does **not** mean a 20% market decline can automatically be survived.
+
+## 1.3 Stress-RR Definition
+
+\[
+StressRR_t(s) = \frac{R_{stress,t}(s)}{S_t(s) \times PAR}
+\]
+
+Where:
+
+\[
+R_{stress,t}(s) =
+\sum_a \left[
+Q_{a,t} \times P_{a,t}(s) \times (1-H_a) \times C_{a,t}(s) \times S_a(s)
+\right]
+\]
+
+Definitions:
+
+- \(Q_{a,t}\) = quantity of asset \(a\)
+- \(P_{a,t}(s)\) = stressed price of asset \(a\) under scenario \(s\)
+- \(H_a\) = haircut for asset \(a\)
+- \(C_{a,t}(s)\) = counterparty/credit factor under scenario \(s\)
+- \(S_a(s)\) = scenario-specific survival/eligibility factor; default to 1 if not specified
+
+Stress-RR is a planning/risk metric, not a second legal solvency ratio.
+
+Every mandatory scenario must satisfy:
+\[
+StressRR(s) \ge approved\ minimum
+\]
+
+Default hard stress floor:
+\[
+StressRR(s) \ge 100\%
+\]
+unless a future independently validated constitutional amendment explicitly defines a different floor.
+
+## 1.4 Deliverables
+
+- Updated canonical specification for \(L_t\), \(RR_t\), \(StressRR_t(s)\)
+- Full list of legacy definitions to deprecate
+- Search/regression test proving no legacy liability formula remains active
+- Documentation of \(R_{a,t}\) composition: eligible assets, market value, haircuts, counterparty factors
+- Test suite covering PAR, liability, solvency, and stress-RR calculations
+
+## 1.5 Completion Criteria
+
+- No conflicting RR/liability definition remains
+- \(L_t = S_t \times PAR\) is enforced everywhere
+- \(RR_t\) and \(StressRR_t(s)\) use the canonical formulas
+- Thresholds 100/105/120 are separately documented and enforced
+
+---
+
+# PROMPT 2 — Constitutional Reserve Allocation, Dynamic Reserve Engine, and Reserve State Machine
+
+**Scope:** Keep constitutional bands, implement dynamic allocation, and define reserve operating states.
+
+## 2.1 Constitutional Allocation Corridors
+
+Maintain:
+
+| Pillar | Constitutional Range |
+|---|---:|
+| Bullion \(B_t\) | 15% – 25% |
+| Fiat \(F_t\) | 70% – 85% |
+| Digital Liquidity \(D_t\) | 0% – 5% |
+
+Always:
+\[
+B_t + F_t + D_t = 100\%
+\]
+
+These are constitutional ranges, not fixed portfolio targets.
+
+## 2.2 Starting Strategic Reference Portfolio
+
+Use as initial strategic reference, not immutable weights:
+
+- Gold ≈ 15%
+- Silver ≈ 3%
+- Fiat ≈ 79.5%
+- Digital Liquidity ≈ 2.5%
+
+Total = 100%.
+
+The optimizer may move these weights dynamically within constitutional limits. Do not permanently lock the strategic reference percentages.
+
+## 2.3 Dynamic / Elastic Reserve Engine
+
+All reserve pillars shall be dynamic. No pillar is a permanently fixed percentage.
+
+The reserve engine must calculate:
+
+- \(TargetWeight_t\)
+- \(CurrentWeight_t\)
+- \(MinimumWeight_t\)
+- \(MaximumWeight_t\)
+- \(StressWeight_t\)
+- \(ExecutionCost\)
+- \(LiquidityNeed\)
+- \(RiskContribution\)
+
+The optimizer shall choose final allocation inside constitutional boundaries.
+
+Do **not** rebalance merely because an asset price moved.
+
+Required process:
+
+```
+DRIFT
+→ VALIDATE
+→ COST ESTIMATE
+→ STRESS TEST
+→ CONFIRM
+→ PROPOSE
+→ APPROVE
+→ EXECUTE
+→ RECONCILE
+```
+
+## 2.4 Reserve State Machine
+
+Create reserve states:
+
+- NORMAL
+- CAUTION
+- DEFENSIVE
+- STRESS
+- EMERGENCY
+- RECOVERY
+
+Every state must define:
+
+- Reserve allocation ranges
+- Stablecoin ceiling
+- Gold target
+- Cash minimum
+- LCR requirement
+- Minting permission
+- Rebalancing permission
+- Governance approvals
+- Redemption processing rules
+- Reporting frequency
+
+State transitions must be rule-based and documented. Emergency state must not allow risk expansion.
+
+## 2.5 Deliverables
+
+- Reserve allocation engine specification
+- Constitutional corridor enforcement logic
+- Strategic reference portfolio configuration
+- Dynamic rebalancing process implementation
+- Reserve state machine table and transition rules
+- Tests proving all allocations remain inside constitutional ranges
+
+## 2.6 Completion Criteria
+
+- Bullion, fiat, digital corridors are enforced
+- Dynamic engine calculates all required weights/costs/risk contributions
+- State machine implements all listed states and controls
+- No static reserve allocation remains where dynamic allocation is required
+
+---
+
+# PROMPT 3 — Gold and Silver Engine
+
+**Scope:** Implement gold and silver as separate reserve components with cost-aware rebalancing and liquidity protection.
+
+## 3.1 Gold Engine
+
+Gold remains the primary strategic reserve anchor.
+
+Gold is **not**:
+
+- a peg
+- a fixed redemption promise
+- a fixed MTQ-to-gold conversion
+- an appreciation guarantee
+
+Gold is:
+
+- a long-term monetary reserve anchor
+- a diversification asset
+- a stress-resilience asset
+- a last-resort reserve asset
+
+Recommended dynamic gold range:
+\[
+12\% \le Gold \le 20\%
+\]
+
+Absolute constitutional bullion limits remain authoritative.
+
+Gold shall have slower turnover than fiat and digital liquidity.
+
+Gold shall normally increase when monetary/currency/systemic deterioration increases, subject to constitutional caps.
+
+Gold shall normally move more slowly than silver.
+
+## 3.2 Silver Engine
+
+Silver remains secondary to gold.
+
+Recommended strategic starting allocation:
+\[
+Silver \approx 3\%
+\]
+
+Recommended dynamic range:
+\[
+3\% \le Silver \le 6\%
+\]
+
+Silver shall be more elastic than gold.
+
+Silver shall absorb a greater portion of normal bullion rebalancing before gold is moved.
+
+Silver stress model must independently model:
+
+- volatility
+- liquidity
+- market depth
+- execution costs
+- industrial-demand risk
+- correlation with gold
+- crisis correlation changes
+
+## 3.3 Cost-Aware Gold/Silver Rebalancing
+
+Before any bullion transaction, calculate:
+
+- spot price
+- bid/ask
+- broker/dealer fee
+- market impact
+- slippage
+- storage
+- insurance
+- transport
+- settlement
+- custody
+- assay/refinery costs where applicable
+- tax/duty where applicable
+
+Use the resulting all-in cost in the optimizer.
+
+## 3.4 HQLA Rule
+
+Gold and silver shall **not** automatically count as immediate High-Quality Liquid Assets.
+
+Only count them if independently validated to be realizable inside the defined stress horizon.
+
+Keep bullion protected from ordinary liquidity calls.
+
+## 3.5 Liquidation Waterfall
+
+Maintain:
+
+1. Eligible stablecoins
+2. Cash
+3. Short sovereign
+4. Non-USD FX
+5. Silver
+6. Gold last
+
+Gold liquidation requires enhanced constitutional authorization and exhaustion evidence.
+
+## 3.6 Deliverables
+
+- Gold engine logic
+- Silver engine logic
+- Bullion rebalancing cost module
+- Silver independent stress model
+- HQLA eligibility logic
+- Liquidation waterfall enforcement
+- Tests for gold/silver dynamic ranges and cost calculation
+
+## 3.7 Completion Criteria
+
+- Gold and silver are not treated as pegs or fixed redemption promises
+- Silver is more elastic than gold
+- All bullion costs are included before execution
+- Gold/silver do not automatically count as immediate HQLA
+- Liquidation order is enforced
+
+---
+
+# PROMPT 4 — Fiat Reserve and Multi-Currency Engine
+
+**Scope:** Implement dynamic fiat/currency allocation, eligibility, quality, exit logic, conditional CNY, and Effective USD Exposure.
+
+## 4.1 Fiat Reserve Engine
+
+Fiat remains the core reserve and settlement/liquidity layer.
+
+All currency weights shall be dynamic.
+
+Do not copy COFER only. Do not copy FX turnover only. Do not copy SWIFT only.
+
+Use an institutional composite.
+
+Canonical weighted composite:
+
+\[
+Base_i =
+0.35 \cdot COFER_i
++ 0.25 \cdot FXTurnover_i
++ 0.20 \cdot TradeSettlement_i
++ 0.20 \cdot InstitutionalQuality_i
+\]
+
+All sub-indices must be normalized to 0–1. If the prior implementation used multiplication or a different aggregation, replace it with this weighted-sum specification and record the correction.
+
+Then:
+
+\[
+RawWeight_i =
+Base_i
+\times Quality_i
+\times DiversificationBenefit_i
+\times LiquidityFactor_i
+\times VolatilityFactor_i
+\times GeopoliticalFactor_i
+\times ConvertibilityFactor_i
+\]
+
+Final weight is normalized after all hard constraints.
+
+## 4.2 Currency Eligibility Gate
+
+Before a currency receives any weight:
+
+\[
+Eligibility_{i,j} =
+Legal_{i,j}
+\times Convertibility_i
+\times Liquidity_i
+\times Custody_i
+\times Settlement_i
+\times Regulatory_{i,j}
+\]
+
+For jurisdiction \(j\):
+
+If \(Eligibility_{i,j} = 0\), the currency must not be used in that jurisdiction-specific settlement route.
+
+## 4.3 Currency Quality
+
+Maintain the existing CQS concept, but separate:
+
+- Eligibility
+- Quality Score
+
+A currency may be:
+
+- globally eligible
+- conditionally eligible
+- jurisdictionally restricted
+- suspended
+- exited
+
+Do not permit a currency to remain in a supposedly normal reserve state solely because its numerical score is still above a minimum.
+
+## 4.4 Currency Exit Engine
+
+Maintain:
+
+```
+NORMAL
+→ WATCH
+→ REDUCE
+→ SUSPEND
+→ SUBSTITUTE
+→ REINSTATE
+```
+
+Add four independent dimensions:
+
+- Credit Risk
+- Liquidity Risk
+- Convertibility Risk
+- Geopolitical/Legal Risk
+
+Also track:
+
+- Gold-Relative Depreciation
+- FX Volatility
+- Reserve Correlation
+- Execution Cost
+
+A severe negative event shall accelerate reduction.
+
+Positive performance alone shall not justify aggressive increase.
+
+Do not chase currencies after large appreciation.
+
+## 4.5 Conditional CNY Class
+
+CNY must be classified as a conditional strategic reserve currency when its current legal/risk score does not satisfy normal reserve eligibility.
+
+Do not represent CNY as equivalent to fully eligible reserve currencies if the quality gate is below threshold.
+
+If CNY remains below the normal CQS threshold:
+
+- maintain reduced conditional exposure
+- continuously monitor convertibility and legal conditions
+- permit automatic suspension
+- require explicit re-entry testing
+- do not automatically substitute CNY with USD
+
+## 4.6 Effective USD Exposure
+
+The current USD line-item cap is insufficient.
+
+Create:
+\[
+EffectiveUSDExposure_t
+\]
+
+Include:
+
+- Direct USD cash
+- Direct USD sovereign assets
+- USD stablecoins
+- USD tokenized sovereign liquidity
+- Economically USD-linked reserve currencies such as pegged AED/SAR, where appropriate
+
+Define:
+\[
+EffectiveUSDExposure =
+\sum economically\ USD\text{-}linked\ reserve\ exposure
+\]
+
+Normal target:
+\[
+EffectiveUSDExposure \le 30\%
+\]
+
+Absolute ceiling:
+\[
+EffectiveUSDExposure \le 35\%
+\]
+
+The exact economic-equivalence factors for pegged currencies must be independently documented and validated.
+
+## 4.7 Cost-Aware FX Rebalancing
+
+Calculate:
+
+- mid-market rate
+- bid/ask
+- dealer spread
+- transaction fee
+- liquidity cost
+- market impact
+- settlement cost
+- custody cost
+- cross-border cost
+- tax if legally applicable
+
+Do not treat quoted FX price as executable net value.
+
+## 4.8 Deliverables
+
+- Fiat/currency engine
+- Currency eligibility matrix
+- Currency quality score and exit state machine
+- Conditional CNY logic
+- Effective USD exposure calculator
+- FX rebalancing cost module
+- Tests for all currency states and Effective USD Exposure
+
+## 4.9 Completion Criteria
+
+- Currency weights are dynamic
+- Eligibility and quality are separated
+- CNY conditional class is enforced
+- Effective USD exposure includes all economically USD-linked exposure
+- FX costs use executable net value
+- No hidden USD anchor remains
+
+---
+
+# PROMPT 5 — Stablecoin and Digital Liquidity Engine
+
+**Scope:** Implement controlled stablecoin/digital liquidity capability, eligibility, scoring, dynamic allocation, depeg state machine, and jurisdiction-specific stablecoin rules.
+
+## 5.1 Digital Liquidity Constitutional Position
+
+Stablecoins are required as an institutional digital-liquidity capability.
+
+They remain a controlled reserve/liquidity sleeve, not the dominant reserve pillar.
+
+Constitutional maximum:
+\[
+DigitalLiquidity \le 5\%
+\]
+
+Normal operating target:
+\[
+2\% \le DigitalLiquidity \le 3.5\%
+\]
+
+Stress target:
+\[
+0\% \le DigitalLiquidity \le 2\%
+\]
+
+Emergency:
+\[
+DigitalLiquidity = 0\%
+\]
+
+## 5.2 Digital Asset Classification
+
+Separate digital liquidity into:
+
+- **S1** = regulated payment stablecoins
+- **S2** = tokenized sovereign/government liquidity
+- **S3** = exceptional institutionally approved digital liquidity
+
+Do not label every tokenized Treasury instrument a stablecoin.
+
+Algorithmic stablecoins remain excluded.
+
+Privacy-enhancing payment instruments that create unacceptable regulatory/AML risk remain excluded.
+
+## 5.3 Stablecoin Eligibility
+
+Before score calculation, require:
+
+- Legal Eligibility
+- Issuer Authorization
+- Reserve Transparency
+- Redemption Rights
+- Custody Quality
+- Settlement Availability
+- AML/KYC Compatibility
+- Sanctions Compatibility
+
+If any critical requirement fails:
+\[
+AssetWeight = 0
+\]
+
+## 5.4 Stablecoin DRQS
+
+Retain DRQS as an eight-dimensional quality framework:
+
+\[
+DRQS_i =
+0.20 \cdot Issuer
++ 0.15 \cdot Reserve
++ 0.15 \cdot Redemption
++ 0.15 \cdot Peg/Depeg
++ 0.10 \cdot Jurisdiction
++ 0.10 \cdot Custody
++ 0.10 \cdot Operational
++ 0.05 \cdot Liquidity
+\]
+
+Then calculate:
+\[
+StressDRQS_i
+\]
+
+which must incorporate:
+
+- CounterpartyStress
+- LiquidityStress
+- DepegShock
+- RedemptionStress
+- JurisdictionStress
+
+The optimizer shall use **StressDRQS**, not only headline DRQS.
+
+## 5.5 Stablecoin Weight Formula
+
+For each eligible stablecoin:
+
+\[
+RawStableWeight_i =
+LiquidityNeed_i
+\times DRQS_i
+\times StressDRQS_i
+\times DiversificationBenefit_i
+\times JurisdictionCoverage_i
+\times SettlementUtility_i
+\]
+
+Then apply:
+
+- PerIssuerCap \(\le 2\%\)
+- TotalDigitalLiquidity \(\le 5\%\)
+
+No issuer should become dominant through hidden correlation.
+
+## 5.6 Stablecoin Dynamic Target
+
+The system shall dynamically determine digital allocation.
+
+Example operating states:
+
+| State | Digital Target |
+|---|---:|
+| NORMAL | 2% – 3.5% |
+| HIGH DIGITAL LIQUIDITY NEED | up to 5% |
+| MARKET STRESS | 0% – 2% |
+| STABLECOIN STRESS | reduce affected issuer |
+| SYSTEMIC DIGITAL STRESS | 0% |
+
+Do not permanently require any stablecoin allocation.
+
+Do not permanently prohibit stablecoin allocation.
+
+## 5.7 Stablecoin Depeg State Machine
+
+Maintain:
+
+```
+NORMAL
+→ WATCH
+→ REDUCE
+→ SUSPEND
+→ SUBSTITUTE
+→ EMERGENCY EXIT
+```
+
+Use price, liquidity, redemption, reserve, issuer, and regulatory dimensions.
+
+Do not rely only on price deviation.
+
+## 5.8 Jurisdictional Stablecoin Engine
+
+Every supported jurisdiction shall have an independent stablecoin eligibility matrix.
+
+Required dimensions:
+
+- United States
+- European Union/EEA
+- United Kingdom where applicable
+- UAE/GCC
+- Singapore
+- Hong Kong
+- Japan
+- Australia
+- South America
+- Latin America
+- China
+- Other approved jurisdictions
+
+The engine must support jurisdiction-level:
+
+- Allowed
+- Conditionally Allowed
+- Restricted
+- Prohibited
+- Unknown → conservative block
+
+Do not assume legal equivalence between countries.
+
+## 5.9 Stablecoin Jurisdiction Rule
+
+A stablecoin may be used only when:
+
+- IssuerLegalStatus = Approved
+- CustodyLegalStatus = Approved
+- DistributionLegalStatus = Approved
+- SettlementLegalStatus = Approved
+
+Otherwise:
+\[
+Weight = 0
+\]
+for that jurisdiction.
+
+## 5.10 Cost-Aware Stablecoin Rebalancing
+
+Calculate:
+
+- issuer/on-ramp fee
+- exchange fee
+- spread
+- slippage
+- network fee
+- bridge fee
+- custody cost
+- redemption fee if applicable
+- banking/off-ramp cost
+- settlement delay cost
+- counterparty risk adjustment
+
+Use effective net liquidity rather than token count.
+
+## 5.11 Deliverables
+
+- Stablecoin eligibility engine
+- DRQS and StressDRQS calculators
+- Stablecoin weight module
+- Depeg state machine
+- Jurisdiction-specific stablecoin matrix
+- Stablecoin cost model
+- Tests for eligibility, caps, depeg transitions, and jurisdiction blocking
+
+## 5.12 Completion Criteria
+
+- Stablecoins remain capped at 5%
+- Per-issuer cap of 2% enforced
+- StressDRQS is used by optimizer
+- Algorithmic stablecoins are excluded
+- Jurisdiction-specific stablecoin rules are enforced
+- Depeg state machine uses multiple dimensions, not only price
+
+---
+
+# PROMPT 6 — Jurisdictional Regulatory Compliance Engine and China Geo-Fence
+
+**Scope:** Implement the general regulatory matrix, jurisdiction-specific rules, and China geo-fence.
+
+## 6.1 Jurisdictional Regulatory Engine
+
+Create a version-controlled matrix for:
+
+- United States
+- EU/EEA
+- UAE/GCC
+- Singapore
+- Hong Kong
+- Japan
+- Australia
+- South America
+- Latin America
+- China
+- UK where applicable
+- Other approved jurisdictions
+
+Do not encode legal conclusions as permanent truths.
+
+Each jurisdiction record must have:
+
+- effective date
+- source authority
+- legal status
+- license requirement
+- stablecoin eligibility
+- MTQ status
+- custody status
+- redemption status
+- AML/CFT requirements
+- sanctions requirements
+- tax treatment
+- data requirements
+- review date
+- legal-owner approval
+
+## 6.2 Currency Eligibility Gate
+
+Before a currency receives any weight:
+
+\[
+Eligibility_{i,j} =
+Legal_{i,j}
+\times Convertibility_i
+\times Liquidity_i
+\times Custody_i
+\times Settlement_i
+\times Regulatory_{i,j}
+\]
+
+For jurisdiction \(j\):
+
+If \(Eligibility_{i,j} = 0\), the currency must not be used in that jurisdiction-specific settlement route.
+
+## 6.3 Stablecoin Jurisdiction Rule
+
+A stablecoin may be used only when:
+
+- IssuerLegalStatus = Approved
+- CustodyLegalStatus = Approved
+- DistributionLegalStatus = Approved
+- SettlementLegalStatus = Approved
+
+Otherwise:
+\[
+Weight = 0
+\]
+for that jurisdiction.
+
+## 6.4 Jurisdiction-Level Stablecoin Matrix
+
+Each jurisdiction must support:
+
+- Allowed
+- Conditionally Allowed
+- Restricted
+- Prohibited
+- Unknown → conservative block
+
+## 6.5 China Geo-Fence
+
+Where applicable law prohibits virtual currency/stablecoin activity:
+
+- Direct MTQ crypto/stablecoin service access must be blocked.
+- Do not circumvent the restriction through technological routing.
+- Maintain jurisdictional compliance rather than attempting universal availability.
+
+China and any other jurisdiction prohibiting the relevant activity must be geo-fenced and must not be bypassed.
+
+## 6.6 Deliverables
+
+- Version-controlled regulatory matrix
+- Jurisdiction engine
+- Currency eligibility gate integration
+- Stablecoin jurisdiction rule enforcement
+- Geo-fence module
+- Tests proving prohibited jurisdictions cannot be bypassed
+
+## 6.7 Completion Criteria
+
+- All supported jurisdictions have structured records
+- Unknown jurisdiction is conservatively blocked
+- China geo-fence is enforced
+- No legal equivalence between countries is assumed
+- Stablecoin/currency eligibility is jurisdiction-specific
+
+---
+
+# PROMPT 7 — Elastic Supply, Issuance, Liquidity, and Capital Efficiency
+
+**Scope:** Implement elastic issuance capacity, supply contraction, LCR, prefunded redemption liquidity, liquidation waterfall, and capital planning.
+
+## 7.1 Elastic Reserve Supply
+
+Make MTQ issuance capacity explicitly elastic to verified prudential reserves.
+
+\[
+S_{max,t} = \frac{R_{a,t}}{RR_{target} \times PAR}
+\]
+
+For:
+\[
+RR_{target} = 1.20,\quad PAR = 1.00
+\]
+
+\[
+S_{max,t} = \frac{R_{a,t}}{1.20}
+\]
+
+Only verified/eligible reserves may support this calculation.
+
+Modeled reserves must **not** be represented as verified reserves.
+
+## 7.2 Issuance Rule
+
+New MTQ issuance must satisfy:
+
+- \(PostMintRR \ge RR_{target}\)
+- \(PostMintStressRR(s) \ge approved\ stress\ floor\)
+- \(PostMintLCR \ge approved\ liquidity\ floor\)
+- All concentration constraints
+
+If not:
+\[
+Mint = BLOCKED
+\]
+
+## 7.3 Elastic Supply Contraction
+
+When reserve capacity declines:
+
+1. Stop new minting.
+2. Prevent reserve-risk expansion.
+3. Activate liquidity preservation.
+4. Reduce unstable assets.
+5. Rebuild reserve capacity.
+6. Maintain legal redemption claims.
+7. Resume issuance only after safety thresholds are restored.
+
+Do **not** arbitrarily confiscate or forcibly burn circulating MTQ merely to make the spreadsheet pass.
+
+Any supply-reduction mechanism must be separately supported by the final legal holder-claim design.
+
+## 7.4 Liquidity Engine
+
+Use:
+
+\[
+LCR = \frac{HQLA}{Stress30DayNetRedemptionOutflow}
+\]
+
+Maintain:
+\[
+LCR \ge 1.00
+\]
+hard floor.
+
+Prefer:
+\[
+LCR \ge 1.20
+\]
+normal strategic target.
+
+Do not treat 1.20 as a constitutional invariant without independent validation.
+
+Stress liquidity shall include:
+
+- redemption surge
+- bank failure
+- custodian failure
+- stablecoin impairment
+- market spread expansion
+- settlement delay
+- oracle outage
+- FX market disruption
+
+## 7.5 HQLA Rule
+
+Gold and silver shall not automatically count as immediate HQLA.
+
+Only count them if independently validated to be realizable inside the defined stress horizon.
+
+Keep bullion protected from ordinary liquidity calls.
+
+## 7.6 Prefunded Redemption Liquidity
+
+Maintain legally segregated prefunded institutional redemption facilities.
+
+Separate:
+
+- on-chain burn finality
+- reserve release
+- bank execution
+- participant receipt
+
+Never promise “instant fiat redemption” unless the infrastructure can actually perform it.
+
+## 7.7 Liquidation Waterfall
+
+Maintain:
+
+1. Eligible stablecoins
+2. Cash
+3. Short sovereign
+4. Non-USD FX
+5. Silver
+6. Gold last
+
+Gold liquidation requires enhanced constitutional authorization and exhaustion evidence.
+
+## 7.8 Reserve Quality Capital Efficiency
+
+Do not solve risk by simply increasing capital indefinitely.
+
+Maximize:
+
+\[
+PrudentialReserveEfficiency = \frac{AdjustedReserve}{GrossReserve}
+\]
+
+Where:
+
+\[
+AdjustedReserve = \sum MarketValue \times (1-Haircut) \times CounterpartyFactor
+\]
+
+Improve capital efficiency through:
+
+- higher-quality counterparties
+- shorter duration
+- better custody
+- bank diversification
+- legal segregation
+- bankruptcy remoteness
+- liquid instruments
+- lower execution cost
+- lower concentration
+- better proof of reserves
+
+## 7.9 Capital Requirement Equation
+
+\[
+GrossReserveRequired =
+\frac{TargetRR \times Liabilities}
+{\sum_i \left[ Weight_i \times (1-H_i) \times C_i \right]}
+\]
+
+This is the canonical capital-planning equation.
+
+Do not assume a generic “20% excess” independently determines gross reserve requirements.
+
+## 7.10 Final Capital-Efficiency Target
+
+The goal is **not** maximum reserves.
+
+The goal is:
+
+\[
+SafetyAdjustedReserveEfficiency = \frac{StressResilience}{CapitalRequired}
+\]
+
+subject to all constitutional and legal constraints.
+
+Never reduce safety merely to improve this ratio.
+
+## 7.11 Deliverables
+
+- Elastic supply module
+- Issuance permission logic
+- Supply contraction state logic
+- LCR engine
+- HQLA validation logic
+- Prefunded redemption flow
+- Liquidation waterfall enforcement
+- Capital requirement calculator
+- Capital efficiency dashboard
+
+## 7.12 Completion Criteria
+
+- Minting is blocked unless post-mint conditions pass
+- Only verified reserves support elastic issuance
+- LCR hard floor is enforced
+- Gold/silver HQLA treatment is validated
+- Capital equation is canonical
+- Safety is never reduced for efficiency
+
+---
+
+# PROMPT 8 — Cost-Aware Rebalancing, Turnover Control, and Multi-Objective Optimizer
+
+**Scope:** Implement trade cost modeling, net rebalance benefit, do-nothing option, turnover limits, and optimizer constraints.
+
+## 8.1 All Rebalancing Costs Must Be Modeled
+
+For every proposed trade, calculate:
+
+\[
+TotalTradeCost =
+BrokerFee
++ ExchangeFee
++ SpreadCost
++ SlippageCost
++ MarketImpactCost
++ FXConversionCost
++ CustodyCost
++ TransferCost
++ Network/GasCost
++ SettlementCost
++ StorageCost
++ InsuranceCost
++ Tax/DutyCost
++ OpportunityCost
++ OtherLegallyApplicableCost
+\]
+
+Where a cost does not apply, set it to zero explicitly. Never silently omit costs.
+
+## 8.2 Effective Execution Price
+
+For purchases:
+
+\[
+EffectivePurchasePrice =
+MarketPrice + \frac{TotalTradeCost}{QuantityPurchased}
+\]
+
+For sales:
+
+\[
+EffectiveSalePrice =
+MarketPrice - \frac{TotalTradeCost}{QuantitySold}
+\]
+
+The optimizer must use effective executable value.
+
+## 8.3 Net Rebalance Benefit
+
+\[
+NetRebalanceBenefit =
+RiskReduction
++ LiquidityImprovement
++ DiversificationBenefit
++ RegulatoryResilienceImprovement
++ StressRRImprovement
+- TotalTradeCost
+\]
+
+Normal trade permitted only when:
+
+\[
+NetRebalanceBenefit > RequiredDecisionThreshold
+\]
+
+Emergency trades may override the threshold only when required to preserve constitutional safety.
+
+## 8.4 Do-Nothing Option
+
+Every optimizer cycle must evaluate:
+
+- Portfolio A = current portfolio
+- Portfolio B = proposed rebalance
+- Portfolio C = no trade
+
+The optimizer shall be allowed to select:
+\[
+NO\ TRADE
+\]
+when the proposed transaction does not justify its total cost.
+
+## 8.5 Turnover Control
+
+Maintain:
+
+- daily turnover limit
+- weekly turnover limit
+- monthly turnover limit
+- asset-specific limits
+
+Allow emergency override only for:
+
+- RR breach
+- StressRR breach
+- LCR breach
+- concentration breach
+- stablecoin impairment
+- sanctions
+- custody failure
+- oracle failure
+- legal prohibition
+- systemic market event
+
+Every override must be cryptographically recorded.
+
+## 8.6 Rebalance Cost Report
+
+Every trade proposal must display:
+
+- current weight
+- proposed weight
+- trade size
+- expected benefit
+- gross expected risk reduction
+- all-in execution cost
+- percentage cost
+- post-trade RR
+- post-trade StressRR
+- post-trade LCR
+- post-trade concentration
+- post-trade EffectiveUSDExposure
+- post-trade digital exposure
+- decision: TRADE / DEFER / NO TRADE / EMERGENCY
+
+## 8.7 No-Trade Safety
+
+The system must prefer NO TRADE when:
+
+- risk benefit is insignificant
+- execution cost is excessive
+- stress metrics are unchanged
+- turnover adds no meaningful resilience
+- the trade would create unnecessary tax or legal burden
+- the portfolio remains comfortably within constitutional ranges
+
+## 8.8 Multi-Objective Optimizer
+
+Use:
+
+\[
+\min \Big[
+\lambda_1 CVaR
++ \lambda_2 StressLoss
++ \lambda_3 FXRisk
++ \lambda_4 ConcentrationRisk
++ \lambda_5 LiquidityRisk
++ \lambda_6 CounterpartyRisk
++ \lambda_7 GeoRisk
++ \lambda_8 ExecutionCost
++ \lambda_9 TurnoverCost
++ \lambda_{10} ModelRisk
+\Big]
+\]
+
+Subject to:
+
+- \(RR \ge 100\%\)
+- \(LCR \ge 1.00\)
+- \(StressRR(s) \ge approved\ floor\)
+- \(USD \le 35\%\)
+- \(EffectiveUSDExposure \le 35\%\)
+- \(PerCurrency \le constitutional\ cap\)
+- Bullion within constitutional range
+- Gold within approved range
+- Silver within approved range
+- Digital \(\le 5\%\)
+- PerStablecoinIssuer \(\le 2\%\)
+- PerCustodian \(\le constitutional\ limit\)
+- PerJurisdiction \(\le constitutional\ limit\)
+- All legal eligibility gates pass
+
+## 8.9 Stability Tie-Breaker
+
+Where two portfolios have sufficiently similar risk, select the portfolio with:
+
+- higher StressRR
+- higher LCR
+- lower turnover
+- lower transaction cost
+- lower counterparty concentration
+- lower jurisdictional risk
+- lower model dependency
+- greater reserve transparency
+
+Do **not** select the portfolio for higher speculative return.
+
+## 8.10 Deliverables
+
+- Total trade cost module
+- Effective execution price calculator
+- Net rebalance benefit engine
+- Do-nothing optimizer option
+- Turnover limit and override logger
+- Rebalance cost report generator
+- Multi-objective optimizer with constraints
+- Stability tie-breaker logic
+
+## 8.11 Completion Criteria
+
+- No trade ignores execution costs
+- Optimizer uses effective executable value
+- NO TRADE is allowed
+- Turnover overrides are cryptographically recorded
+- Optimizer cannot violate constitutional limits
+- Tie-breaker does not optimize speculative return
+
+---
+
+# PROMPT 9 — Stress Testing, Reverse Stress, Monte Carlo, and Model Validation
+
+**Scope:** Implement honest stress testing, reproducible Monte Carlo, reverse stress, and model validation.
+
+## 9.1 No Pass Engineering
+
+The AI/platform must **not** alter assumptions merely to make MITHQAL pass.
+
+Stress tests must be independent from optimizer calibration where feasible.
+
+Every release must include:
+
+- historical replay
+- deterministic scenarios
+- Monte Carlo
+- reverse stress
+- sensitivity testing
+- liquidity stress
+- oracle stress
+- counterparty stress
+- custody stress
+- jurisdictional stress
+- stablecoin impairment
+- correlation-break stress
+- market-impact stress
+- execution-cost stress
+
+## 9.2 Correlated Stress Scenarios
+
+Mandatory scenarios shall include:
+
+- USD -10%, -20%, -30%, -40%
+- EUR severe depreciation
+- JPY severe depreciation
+- GBP severe depreciation
+- CNY impairment
+- multiple non-USD currencies simultaneously impaired
+- gold decline
+- silver decline
+- gold + silver simultaneous decline
+- fiat + bullion simultaneous decline
+- stablecoin total impairment
+- bank/custodian failure
+- oracle stale data
+- oracle manipulation
+- FX liquidity collapse
+- redemption surge
+- market spread expansion
+- execution-cost explosion
+- counterparty deterioration
+- jurisdiction/sanctions event
+- combined macro crisis
+
+## 9.3 Reverse Stress
+
+Determine the minimum:
+
+- FX shock
+- bullion shock
+- liquidity shock
+- counterparty deterioration
+- redemption surge
+- minimum combination of correlated shocks
+
+required to cause:
+
+- \(RR < 100\%\)
+- \(StressRR < 100\%\)
+- \(LCR < 1.00\)
+- concentration breach
+- legal reserve breach
+- settlement continuity failure
+
+Report the exact boundary.
+
+## 9.4 Monte Carlo Must Be Reproducible
+
+Define and version:
+
+- historical calibration period
+- distributions
+- correlation matrix
+- tail model
+- jump process
+- volatility process
+- regime process
+- liquidity process
+- redemption-demand process
+- stablecoin-depeg process
+- counterparty migration process
+- oracle-failure model
+- execution-cost model
+- simulation horizon
+- number of paths
+- random seed policy
+- confidence intervals
+- CVaR confidence level
+
+Do not state “Monte Carlo implemented” unless these parameters exist and can be independently reproduced.
+
+## 9.5 Model Validation
+
+Every production model must have:
+
+- independent challenger model
+- parameter sensitivity
+- out-of-sample testing
+- regime-break testing
+- correlation-break testing
+- procyclicality testing
+- deterministic reproduction
+- version control
+- independent validation
+
+If model output becomes unavailable or unreliable:
+
+- fallback to the last approved deterministic safe portfolio.
+
+## 9.6 Honest Stress Result Requirement
+
+The platform must report:
+
+- PASS
+- FAIL
+- CONDITIONAL
+- UNKNOWN / INSUFFICIENT EVIDENCE
+
+Do not convert UNKNOWN into PASS.
+
+Do not change assumptions merely because a scenario fails.
+
+Every failure must produce:
+
+- root cause
+- severity
+- affected invariant
+- capital impact
+- liquidity impact
+- recommended remediation
+- whether remediation requires more capital
+- whether remediation can be achieved through allocation/architecture changes
+
+## 9.7 Deliverables
+
+- Stress engine configuration
+- Scenario library
+- Reverse stress module
+- Reproducible Monte Carlo specification
+- Model validation framework
+- Fallback safe portfolio logic
+- Honest result reporting
+
+## 9.8 Completion Criteria
+
+- No stress-test manipulation
+- All mandatory correlated scenarios are included
+- Reverse stress boundaries are reported
+- Monte Carlo is fully parameterized and reproducible
+- Failures are reported honestly with root cause
+- Model failure triggers fallback safe portfolio
+
+---
+
+# PROMPT 10 — Proof of Reserves, Reporting, Explainability, Regression, and Completion
+
+**Scope:** Integrate proof-of-reserves separation, dashboard, explainability, regression protection, and final completion standard.
+
+## 10.1 Proof of Reserves
+
+Maintain separate:
+
+- Modeled NAV
+- System NAV
+- Custodian-Attested NAV
+- Audited NAV
+- Cryptographically Verified NAV
+
+Never merge the labels.
+
+Only verified eligible reserves may support elastic issuance.
+
+## 10.2 Daily Institutional Dashboard
+
+Dashboard must show:
+
+- Reserve Market Value
+- Adjusted Reserve
+- Stress Reserve
+- RR
+- StressRR
+- LCR
+- NAV
+- Gold allocation
+- Silver allocation
+- Fiat allocation
+- Digital allocation
+- Stablecoin exposure
+- Effective USD exposure
+- largest bank exposure
+- largest custodian exposure
+- largest sovereign issuer exposure
+- stablecoin issuer exposure
+- currency CQS
+- stablecoin DRQS
+- CVaR
+- execution costs
+- turnover
+- realized/unrealized reserve changes
+- legal eligibility status
+- oracle status
+- reserve verification level
+
+## 10.3 Explainability
+
+Every automatic reserve decision must produce a machine-readable explanation:
+
+- why weight changed
+- which risk factor changed
+- which threshold triggered
+- which cost was estimated
+- which scenario was evaluated
+- why the trade was or was not executed
+- what the post-trade reserve state became
+
+## 10.4 Reserve State Machine Integration
+
+Ensure the reserve state machine from Prompt 2 is integrated with:
+
+- reporting frequency
+- rebalancing permission
+- minting permission
+- stablecoin ceiling
+- redemption processing
+
+Each state must be visible in dashboard and explainability logs.
+
+## 10.5 Critical Implementation Rule
+
+The AI developer must **not** merely modify display percentages.
+
+It must update:
+
+- mathematical specifications
+- reserve calculation engine
+- currency engine
+- stablecoin engine
+- jurisdiction engine
+- rebalancing engine
+- execution-cost engine
+- issuance engine
+- liquidity engine
+- stress engine
+- reverse-stress engine
+- Monte Carlo engine
+- proof-of-reserves engine
+- reporting layer
+- governance triggers
+- tests
+- formal verification
+- documentation
+
+All implementation values must derive from one canonical versioned specification.
+
+## 10.6 Regression Protection
+
+Run complete regression tests before declaring completion.
+
+Verify:
+
+- no legacy RR formula remains active
+- no conflicting PAR definition remains active
+- no conflicting LCR definition remains active
+- no conflicting reserve ranges remain active
+- no hidden USD anchor remains
+- no static stablecoin allocation is enforced
+- no static reserve allocation is enforced where dynamic allocation is required
+- no trade ignores execution costs
+- no jurisdictional restriction can be bypassed
+- no model failure expands risk
+- no optimizer can violate constitutional limits
+- no mint can exceed verified reserve capacity
+
+## 10.7 Completion Standard
+
+Do not declare MITHQAL v24.2 institutionally ready merely because code compiles.
+
+Completion requires:
+
+- mathematical reconciliation
+- deterministic test reproduction
+- economic stress testing
+- reverse stress testing
+- execution-cost validation
+- jurisdictional matrix validation
+- stablecoin eligibility validation
+- oracle failure testing
+- custody testing
+- proof-of-reserves testing
+- issuance-cap validation
+- liquidity testing
+- independent challenger review
+- formal verification
+- full regression testing
+- independent audit readiness
+
+Final state must honestly identify any remaining blocker.
+
+## 10.8 Final Design Objective
+
+The final MITHQAL system shall target:
+
+- global interoperability
+- jurisdictional legality
+- dynamic reserves
+- elastic supply
+- controlled stablecoin liquidity
+- gold-disciplined resilience
+- multi-currency diversification
+- cost-aware rebalancing
+- high liquidity
+- low turnover
+- auditability
+- model resilience
+- capital efficiency
+
+While explicitly rejecting:
+
+- speculative optimization
+- leverage optimization
+- yield chasing
+- automatic USD concentration
+- uncontrolled stablecoin concentration
+- algorithmic stablecoins
+- hidden counterparty concentration
+- uncontrolled jurisdictional expansion
+- trade execution without cost analysis
+- stress-test manipulation
+- unsupported institutional claims
+
+The final implementation must preserve MITHQAL’s constitutional identity while making its reserve system dynamic, elastic, jurisdiction-aware, stablecoin-compatible, cost-aware, and independently stress-testable.
+
+## 10.9 Deliverables
+
+- Unified canonical specification
+- Proof-of-reserves separation
+- Institutional dashboard
+- Explainability log
+- Regression test suite
+- Formal verification evidence
+- Audit readiness report
+- Remaining blocker list
+
+## 10.10 Completion Criteria
+
+- All prior prompts are implemented
+- No legacy/conflicting logic remains
+- Dashboard shows all required fields
+- Every automatic decision is explainable
+- Full regression passes
+- Honest blockers are reported
+- System targets safety, legality, resilience, and capital efficiency
+
+---
+
+# Coverage Map
+
+| Prompt | Covers Original Sections |
+|---|---:|
+| Prompt 1 | 1, 2, 3 |
+| Prompt 2 | 4, 5, 6, 45 |
+| Prompt 3 | 7, 8, 33, 35, 49 |
+| Prompt 4 | 9, 10, 11, 12, 13, 14, 50 |
+| Prompt 5 | 15, 16, 17, 18, 19, 20, 21, 22, 51 |
+| Prompt 6 | 22, 23, 46, 47 |
+| Prompt 7 | 29, 30, 31, 32, 33, 34, 35, 36, 37, 56 |
+| Prompt 8 | 24, 25, 26, 27, 28, 38, 39, 51, 52, 53 |
+| Prompt 9 | 40, 41, 42, 43, 44, 59 |
+| Prompt 10 | 45, 48, 54, 55, 57, 58, 60, 61 |
+
+This modular set preserves all non-negotiable principles and makes implementation auditable, testable, and compliant.
