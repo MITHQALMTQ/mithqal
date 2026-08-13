@@ -1,0 +1,61 @@
+{
+  "code": 200,
+  "data": {
+    "description": "Tether Gold - The World’s Leading Gold Token",
+    "external": {
+      "apple-touch-icon": {
+        "https://gold.tether.to/apple-touch-icon.png": {}
+      },
+      "icon": {
+        "https://gold.tether.to/favicon-96x96.png": {
+          "sizes": "96x96",
+          "type": "image/png"
+        },
+        "https://gold.tether.to/favicon.ico": {
+          "type": "image/x-icon"
+        },
+        "https://gold.tether.to/favicon.svg": {
+          "type": "image/svg+xml"
+        }
+      },
+      "manifest": {
+        "https://gold.tether.to/manifest.json": {
+          "crossorigin": "use-credentials"
+        }
+      }
+    },
+    "html": "<html lang=\"en\"><head>\n  <meta charset=\"utf-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no\">\n  <meta name=\"theme-color\" content=\"#000000\">\n  <meta name=\"description\" content=\"Tether Gold - The World’s Leading Gold Token\">\n  <meta name=\"keywords\" content=\"tether, gold, lookup, token\">\n  <link href=\"https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700;800;900&amp;display=swap\" rel=\"stylesheet\">\n\n  <meta property=\"og:url\" content=\"https://gold.tether.to\">\n  <meta property=\"og:site_name\" content=\"Tether\">\n  <meta property=\"og:locale\" content=\"en_US\">\n  <meta property=\"og:type\" content=\"website\">\n  <meta property=\"og:title\" content=\"Tether Gold | XAUt token | Digital Token Backed by Physical Gold\">\n  <meta property=\"og:description\" content=\"Tether Gold (XAUt) is a digital token backed by physical gold. It’s transferable to any on-chain address and redeemable to physical gold.\">\n  <meta property=\"og:image\" content=\"https://gold.tether.to/images/og-image-2.png\">\n\n  <meta name=\"twitter:card\" content=\"summary_large_image\">\n  <meta name=\"twitter:site\" content=\"@tethergold\">\n  <meta name=\"twitter:title\" content=\"Tether Gold | XAUt token | Digital Token Backed by Physical Gold\">\n  <meta name=\"twitter:description\" content=\"Tether Gold (XAUt) is a digital token backed by physical gold. It’s transferable to any on-chain address and redeemable to physical gold.\">\n  <meta name=\"twitter:image\" content=\"https://gold.tether.to/images/og-image-2.png\">\n  <link rel=\"icon\" type=\"image/png\" href=\"/favicon-96x96.png\" sizes=\"96x96\">\n  <link rel=\"icon\" type=\"image/svg+xml\" href=\"/favicon.svg\">\n  <link rel=\"shortcut icon\" type=\"image/x-icon\" href=\"/favicon.ico\">\n  <link rel=\"apple-touch-icon\" href=\"/apple-touch-icon.png\">\n  <!--\n      manifest.json provides metadata used when your web app is installed on a\n      user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/\n    -->\n  <link rel=\"manifest\" crossorigin=\"use-credentials\" href=\"/manifest.json\">\n  <title>Tether Gold (XAUt) - digital token backed by physical gold</title>\n  <script type=\"module\" crossorigin=\"\" src=\"/assets/index-CzdxJ7of.js\"></script>\n  <link rel=\"stylesheet\" crossorigin=\"\" href=\"/assets/index-BhZJ2fgt.css\">\n</head>\n\n<body>\n  <noscript>You need to enable JavaScript to run this app.</noscript>\n  <div id=\"root\"></div>\n  <div id=\"modal-root\"></div>\n  <!--\n      This HTML file is a template.\n      If you open it directly in the browser, you will see an empty page.\n\n      You can add webfonts, meta tags, or analytics to this file.\n      The build step will place the bundled scripts into the <body> tag.\n\n      To begin the development, run `npm start` or `yarn start`.\n      To create a production bundle, use `npm run build` or `yarn build`.\n    -->\n<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML=\"window.__CF$cv$params={r:'a2ab2f8acf24baf2',t:'MTc4NjY2MDQ1MQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);\";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><iframe height=\"1\" width=\"1\" style=\"position: absolute; top: 0px; left: 0px; border-width: medium; border-style: none; border-color: currentcolor; border-image: none; visibility: hidden;\"></iframe>\n\n</body></html>",
+    "httpStatus": 200,
+    "httpStatusText": "OK",
+    "metadata": {
+      "description": "Tether Gold - The World’s Leading Gold Token",
+      "keywords": "tether, gold, lookup, token",
+      "lang": "en",
+      "og:description": "Tether Gold (XAUt) is a digital token backed by physical gold. It’s transferable to any on-chain address and redeemable to physical gold.",
+      "og:image": "https://gold.tether.to/images/og-image-2.png",
+      "og:locale": "en_US",
+      "og:site_name": "Tether",
+      "og:title": "Tether Gold | XAUt token | Digital Token Backed by Physical Gold",
+      "og:type": "website",
+      "og:url": "https://gold.tether.to",
+      "theme-color": "#000000",
+      "twitter:card": "summary_large_image",
+      "twitter:description": "Tether Gold (XAUt) is a digital token backed by physical gold. It’s transferable to any on-chain address and redeemable to physical gold.",
+      "twitter:image": "https://gold.tether.to/images/og-image-2.png",
+      "twitter:site": "@tethergold",
+      "twitter:title": "Tether Gold | XAUt token | Digital Token Backed by Physical Gold",
+      "viewport": "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    },
+    "title": "Tether Gold (XAUt) - digital token backed by physical gold",
+    "url": "https://gold.tether.to/faq",
+    "usage": {
+      "tokens": 1059
+    }
+  },
+  "meta": {
+    "usage": {
+      "tokens": 1059
+    }
+  },
+  "status": 200
+}

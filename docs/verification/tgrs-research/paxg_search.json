@@ -1,0 +1,83 @@
+[
+  {
+    "url": "https://www.paxos.com/paxg-transparency",
+    "name": "Pax Gold (PAXG) Transparency Reports",
+    "snippet": "We publish monthly reserve reports on Paxos -issued digital assets to ensure full transparency and reliability of our financial data.",
+    "host_name": "www.paxos.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.paxos.com/blog/pax-gold-the-safest-way-to-own-gold-today",
+    "name": "PAX Gold: The Safest Way to Own Gold Today",
+    "snippet": "May 8, 2020 — Paxos also works with Withum , a top-ranked auditing firm to independently verify that the entire supply of PAX Gold tokens corresponds 1:1 with ...",
+    "host_name": "www.paxos.com",
+    "rank": 1,
+    "date": "May 8, 2020",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.paxos.com/pax-gold",
+    "name": "Pax Gold (PAXG)",
+    "snippet": "The allocated gold that backs PAXG is custodied in LBMA vaults and audited monthly. Paxos publishes Pax Gold attestation reports each month. Every PAXG token ...",
+    "host_name": "www.paxos.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.prnewswire.com/news-releases/paxos-launches-pax-gold-physical-gold-on-the-blockchain-300911979.html",
+    "name": "Paxos Launches PAX Gold: Physical Gold on the Blockchain",
+    "snippet": "Sep 5, 2019 — Paxos has engaged Withum , a nationally top-ranking auditing firm, Withum performs specific month-end attestation procedures. These monthly  ...",
+    "host_name": "www.prnewswire.com",
+    "rank": 3,
+    "date": "Sep 5, 2019",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.findas.org/tokenomics-review/coins/the-tokenomics-of-pax-gold-paxg/r/DkQD4fkKHifuCmc6G6yqZw",
+    "name": "PAX Gold (PAXG) Tokenomics: Supply, Fees, and Utility",
+    "snippet": "Legally and operationally, Paxos treats PAXG as ownership rights in allocated gold , not a governance or revenue-bearing crypto asset. The PAXG terms describe ... Read more",
+    "host_name": "www.findas.org",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/paxosglobal/paxos-gold-contract",
+    "name": "paxosglobal/paxos-gold-contract",
+    "snippet": "This repository contains the V1 contracts and historical audit reports . See the Audits section above for V1 and V2 audit reports . an ERC20 token … accredited  ...",
+    "host_name": "github.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://blog.kryll.io/gold-breaks-all-records-pax-gold-paxg-xray-audit",
+    "name": "Gold Breaks All Records: X-Ray Audit of Pax Gold $PAXG",
+    "snippet": "Oct 17, 2025 — Historic record: gold at $4300, global rush in stores. Analysis of the phenomenon + complete audit of Pax Gold , the gold -backed token.",
+    "host_name": "blog.kryll.io",
+    "rank": 6,
+    "date": "Oct 17, 2025",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.reddit.com/r/CryptoCurrency/comments/mhzls4/paxos_gold_paxg_supply_doesnt_match_their",
+    "name": "Paxos Gold (PAXG) supply doesn't match their Chainlink",
+    "snippet": "PAXG also has monthly “ attestation ” reports that they often release only >= 1 month after the report date. These reports are useless because the ... Read more",
+    "host_name": "www.reddit.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.certik.com/blog/paxos-paxg-formally-verified-by-certik",
+    "name": "Paxos PAXG Formally Verified by CertiK",
+    "snippet": "PAXG received an exceptional 98% on its audit report . CertiK would like to congratulate the Paxos team for passing the rigorous verification process of PAXG ... Read more",
+    "host_name": "www.certik.com",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  }
+]

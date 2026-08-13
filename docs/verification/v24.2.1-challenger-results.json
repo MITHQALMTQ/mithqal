@@ -1,0 +1,463 @@
+{
+  "date": "2026-08-13T22:42:42.870240Z",
+  "version": "v24.2.1",
+  "task_id": "5",
+  "agent": "Challenger Model Validation Agent",
+  "primary_baseline_seed42_250k": {
+    "Mean_RR": 100.0362,
+    "Min_RR": 36.6873,
+    "P5_RR": 77.1654,
+    "P1_RR": 74.4122,
+    "P_RR_below_100_pct": 21.5432,
+    "P_RR_below_120_pct": 99.992,
+    "StressRR_mean": 89.051,
+    "P_StressRR_below_100_pct": 99.3404,
+    "CVaR_99_M": 25.5244
+  },
+  "primary_source": "/home/z/my-project/docs/verification/v24.2-monte-carlo-results.json",
+  "validity_gate": {
+    "rule": "P(RR<100%) within \u00b15pp of primary (21.5432%)",
+    "tolerance_pp": 5.0
+  },
+  "challengers": {
+    "C1_block_bootstrap": {
+      "metrics": {
+        "Mean_RR": 100.68232254495251,
+        "Min_RR": 72.72148408968971,
+        "P5_RR": 78.19037535243294,
+        "P1_RR": 76.54106125468536,
+        "P_RR_below_100_pct": 19.974800000000002,
+        "P_RR_below_120_pct": 100.0,
+        "StressRR_mean": 89.62230441600569,
+        "P_StressRR_below_100_pct": 99.9372,
+        "CVaR_99_M": 23.835049117172005
+      },
+      "deviations": {
+        "Mean_RR": {
+          "challenger": 100.68232254495251,
+          "primary": 100.0362,
+          "abs_dev": 0.6461225449525188,
+          "rel_dev_pct": 0.6458887332310892
+        },
+        "Min_RR": {
+          "challenger": 72.72148408968971,
+          "primary": 36.6873,
+          "abs_dev": 36.03418408968971,
+          "rel_dev_pct": 98.21977657033825
+        },
+        "P5_RR": {
+          "challenger": 78.19037535243294,
+          "primary": 77.1654,
+          "abs_dev": 1.0249753524329321,
+          "rel_dev_pct": 1.3282835991687103
+        },
+        "P1_RR": {
+          "challenger": 76.54106125468536,
+          "primary": 74.4122,
+          "abs_dev": 2.1288612546853614,
+          "rel_dev_pct": 2.8609035274932895
+        },
+        "P_RR_below_100_pct": {
+          "challenger": 19.974800000000002,
+          "primary": 21.5432,
+          "abs_dev": -1.568399999999997,
+          "rel_dev_pct": -7.2802554866500655
+        },
+        "P_RR_below_120_pct": {
+          "challenger": 100.0,
+          "primary": 99.992,
+          "abs_dev": 0.007999999999995566,
+          "rel_dev_pct": 0.008000640051199662
+        },
+        "StressRR_mean": {
+          "challenger": 89.62230441600569,
+          "primary": 89.051,
+          "abs_dev": 0.5713044160056882,
+          "rel_dev_pct": 0.6415474458520265
+        },
+        "P_StressRR_below_100_pct": {
+          "challenger": 99.9372,
+          "primary": 99.3404,
+          "abs_dev": 0.5968000000000018,
+          "rel_dev_pct": 0.6007626303095234
+        },
+        "CVaR_99_M": {
+          "challenger": 23.835049117172005,
+          "primary": 25.5244,
+          "abs_dev": -1.6893508828279948,
+          "rel_dev_pct": -6.618572357540216
+        }
+      },
+      "validity_gate": {
+        "metric": "P_RR_below_100_pct",
+        "challenger_value": 19.974800000000002,
+        "primary_value": 21.5432,
+        "abs_diff_percentage_points": 1.568399999999997,
+        "tolerance_pp": 5.0,
+        "verdict": "CONFIRM"
+      }
+    },
+    "C2_gaussian_thin_tailed": {
+      "metrics": {
+        "Mean_RR": 100.09131596301489,
+        "Min_RR": 70.09897298949265,
+        "P5_RR": 77.45644277210431,
+        "P1_RR": 75.32426131528644,
+        "P_RR_below_100_pct": 20.185200000000002,
+        "P_RR_below_120_pct": 100.0,
+        "StressRR_mean": 89.10255820452002,
+        "P_StressRR_below_100_pct": 99.96199999999999,
+        "CVaR_99_M": 24.611301926632624
+      },
+      "deviations": {
+        "Mean_RR": {
+          "challenger": 100.09131596301489,
+          "primary": 100.0362,
+          "abs_dev": 0.05511596301489874,
+          "rel_dev_pct": 0.055096018256289965
+        },
+        "Min_RR": {
+          "challenger": 70.09897298949265,
+          "primary": 36.6873,
+          "abs_dev": 33.41167298949265,
+          "rel_dev_pct": 91.07149610217337
+        },
+        "P5_RR": {
+          "challenger": 77.45644277210431,
+          "primary": 77.1654,
+          "abs_dev": 0.29104277210430496,
+          "rel_dev_pct": 0.3771674508319855
+        },
+        "P1_RR": {
+          "challenger": 75.32426131528644,
+          "primary": 74.4122,
+          "abs_dev": 0.9120613152864365,
+          "rel_dev_pct": 1.225687878179165
+        },
+        "P_RR_below_100_pct": {
+          "challenger": 20.185200000000002,
+          "primary": 21.5432,
+          "abs_dev": -1.357999999999997,
+          "rel_dev_pct": -6.303613205094866
+        },
+        "P_RR_below_120_pct": {
+          "challenger": 100.0,
+          "primary": 99.992,
+          "abs_dev": 0.007999999999995566,
+          "rel_dev_pct": 0.008000640051199662
+        },
+        "StressRR_mean": {
+          "challenger": 89.10255820452002,
+          "primary": 89.051,
+          "abs_dev": 0.05155820452002047,
+          "rel_dev_pct": 0.05789738972052023
+        },
+        "P_StressRR_below_100_pct": {
+          "challenger": 99.96199999999999,
+          "primary": 99.3404,
+          "abs_dev": 0.6215999999999866,
+          "rel_dev_pct": 0.6257272972526652
+        },
+        "CVaR_99_M": {
+          "challenger": 24.611301926632624,
+          "primary": 25.5244,
+          "abs_dev": -0.9130980733673759,
+          "rel_dev_pct": -3.5773537218010056
+        }
+      },
+      "validity_gate": {
+        "metric": "P_RR_below_100_pct",
+        "challenger_value": 20.185200000000002,
+        "primary_value": 21.5432,
+        "abs_diff_percentage_points": 1.357999999999997,
+        "tolerance_pp": 5.0,
+        "verdict": "CONFIRM"
+      }
+    },
+    "C3_cornish_fisher": {
+      "metrics": {
+        "Mean_RR": 100.0569129982992,
+        "Min_RR": 68.61732671649538,
+        "P5_RR": 77.81141577133279,
+        "P1_RR": 76.30527395949049,
+        "P_RR_below_100_pct": 24.012239752087584,
+        "P_RR_below_120_pct": 99.99996304814434,
+        "StressRR_mean": 89.07188051101379,
+        "P_StressRR_below_100_pct": 96.96491505972912,
+        "CVaR_99_M": 34.118444262892034,
+        "_diagnostic": {
+          "mu_normal_ra": 56888413.01908156,
+          "sig_normal_ra": 1336102.1310795622,
+          "mu_stress_ra": 42600013.01908156,
+          "sig_stress_ra": 1521629.9240373713,
+          "skew_normal": -1.4368412050395086e-05,
+          "exk_normal": 5.994199776763784,
+          "skew_stress": -9.727486187968525e-06,
+          "exk_stress": 5.99552759349346,
+          "p_stress_regime": 0.2,
+          "p_jump_per_asset": 0.1643835616438356,
+          "mu_D_ra": 104351.14285714286,
+          "mu_J_ra": -13138.123775570642,
+          "var_D_normal": 1784305733280.6853,
+          "var_D_stress": 2314494454331.314,
+          "var_J_ra": 863171394.6620547,
+          "redemption_normal_M": 1.5876,
+          "redemption_stress_M": 15.876
+        }
+      },
+      "deviations": {
+        "Mean_RR": {
+          "challenger": 100.0569129982992,
+          "primary": 100.0362,
+          "abs_dev": 0.020712998299202923,
+          "rel_dev_pct": 0.020705502907150536
+        },
+        "Min_RR": {
+          "challenger": 68.61732671649538,
+          "primary": 36.6873,
+          "abs_dev": 31.930026716495384,
+          "rel_dev_pct": 87.0329152499513
+        },
+        "P5_RR": {
+          "challenger": 77.81141577133279,
+          "primary": 77.1654,
+          "abs_dev": 0.6460157713327845,
+          "rel_dev_pct": 0.8371832081901792
+        },
+        "P1_RR": {
+          "challenger": 76.30527395949049,
+          "primary": 74.4122,
+          "abs_dev": 1.8930739594904935,
+          "rel_dev_pct": 2.544037079256484
+        },
+        "P_RR_below_100_pct": {
+          "challenger": 24.012239752087584,
+          "primary": 21.5432,
+          "abs_dev": 2.4690397520875855,
+          "rel_dev_pct": 11.46087745593777
+        },
+        "P_RR_below_120_pct": {
+          "challenger": 99.99996304814434,
+          "primary": 99.992,
+          "abs_dev": 0.007963048144333129,
+          "rel_dev_pct": 0.00796368523915226
+        },
+        "StressRR_mean": {
+          "challenger": 89.07188051101379,
+          "primary": 89.051,
+          "abs_dev": 0.020880511013785963,
+          "rel_dev_pct": 0.023447811943477292
+        },
+        "P_StressRR_below_100_pct": {
+          "challenger": 96.96491505972912,
+          "primary": 99.3404,
+          "abs_dev": -2.37548494027088,
+          "rel_dev_pct": -2.391257675901124
+        },
+        "CVaR_99_M": {
+          "challenger": 34.118444262892034,
+          "primary": 25.5244,
+          "abs_dev": 8.594044262892034,
+          "rel_dev_pct": 33.66991687519407
+        }
+      },
+      "validity_gate": {
+        "metric": "P_RR_below_100_pct",
+        "challenger_value": 24.012239752087584,
+        "primary_value": 21.5432,
+        "abs_diff_percentage_points": 2.4690397520875855,
+        "tolerance_pp": 5.0,
+        "verdict": "CONFIRM"
+      }
+    },
+    "C4_historical_scenarios": {
+      "metrics": {
+        "Mean_RR": 76.50408,
+        "Min_RR": 74.4654,
+        "P5_RR": 74.4654,
+        "P1_RR": 74.4654,
+        "P_RR_below_100_pct": 100.0,
+        "P_RR_below_120_pct": 100.0,
+        "StressRR_mean": 65.9042115,
+        "P_StressRR_below_100_pct": 100.0,
+        "CVaR_99_M": 24.588684,
+        "_scenarios": {
+          "2008_GFC": {
+            "RR": 74.4654,
+            "StressRR": 64.1643,
+            "Loss_M": 24.588684
+          },
+          "2020_COVID": {
+            "RR": 77.19564,
+            "StressRR": 66.56100600000002,
+            "Loss_M": 23.1143544
+          },
+          "2022_Inflation": {
+            "RR": 74.49455999999999,
+            "StressRR": 64.156632,
+            "Loss_M": 24.572937600000003
+          },
+          "2023_SVB": {
+            "RR": 79.86072,
+            "StressRR": 68.73490800000002,
+            "Loss_M": 21.675211200000003
+          }
+        }
+      },
+      "deviations": {
+        "Mean_RR": {
+          "challenger": 76.50408,
+          "primary": 100.0362,
+          "abs_dev": -23.532119999999992,
+          "rel_dev_pct": -23.523604455187215
+        },
+        "Min_RR": {
+          "challenger": 74.4654,
+          "primary": 36.6873,
+          "abs_dev": 37.7781,
+          "rel_dev_pct": 102.97323596994055
+        },
+        "P5_RR": {
+          "challenger": 74.4654,
+          "primary": 77.1654,
+          "abs_dev": -2.700000000000003,
+          "rel_dev_pct": -3.498977521013307
+        },
+        "P1_RR": {
+          "challenger": 74.4654,
+          "primary": 74.4122,
+          "abs_dev": 0.05320000000000391,
+          "rel_dev_pct": 0.07149365292250989
+        },
+        "P_RR_below_100_pct": {
+          "challenger": 100.0,
+          "primary": 21.5432,
+          "abs_dev": 78.4568,
+          "rel_dev_pct": 364.1835938950574
+        },
+        "P_RR_below_120_pct": {
+          "challenger": 100.0,
+          "primary": 99.992,
+          "abs_dev": 0.007999999999995566,
+          "rel_dev_pct": 0.008000640051199662
+        },
+        "StressRR_mean": {
+          "challenger": 65.9042115,
+          "primary": 89.051,
+          "abs_dev": -23.1467885,
+          "rel_dev_pct": -25.99273281602677
+        },
+        "P_StressRR_below_100_pct": {
+          "challenger": 100.0,
+          "primary": 99.3404,
+          "abs_dev": 0.6595999999999975,
+          "rel_dev_pct": 0.6639796095042878
+        },
+        "CVaR_99_M": {
+          "challenger": 24.588684,
+          "primary": 25.5244,
+          "abs_dev": -0.9357159999999993,
+          "rel_dev_pct": -3.6659666828603195
+        }
+      },
+      "validity_gate": {
+        "metric": "P_RR_below_100_pct",
+        "challenger_value": 100.0,
+        "primary_value": 21.5432,
+        "abs_diff_percentage_points": 78.4568,
+        "tolerance_pp": 5.0,
+        "verdict": "DISSENT"
+      }
+    },
+    "C5_copula": {
+      "metrics": {
+        "Mean_RR": 99.1670697654859,
+        "Min_RR": 56.61102140619464,
+        "P5_RR": 76.39634342122638,
+        "P1_RR": 73.10744470827197,
+        "P_RR_below_100_pct": 24.906,
+        "P_RR_below_120_pct": 99.99759999999999,
+        "StressRR_mean": 88.26956919970455,
+        "P_StressRR_below_100_pct": 99.58399999999999,
+        "CVaR_99_M": 26.297472445408598
+      },
+      "deviations": {
+        "Mean_RR": {
+          "challenger": 99.1670697654859,
+          "primary": 100.0362,
+          "abs_dev": -0.8691302345140883,
+          "rel_dev_pct": -0.868815723222282
+        },
+        "Min_RR": {
+          "challenger": 56.61102140619464,
+          "primary": 36.6873,
+          "abs_dev": 19.923721406194637,
+          "rel_dev_pct": 54.306862064514526
+        },
+        "P5_RR": {
+          "challenger": 76.39634342122638,
+          "primary": 77.1654,
+          "abs_dev": -0.769056578773629,
+          "rel_dev_pct": -0.9966339561171574
+        },
+        "P1_RR": {
+          "challenger": 73.10744470827197,
+          "primary": 74.4122,
+          "abs_dev": -1.3047552917280285,
+          "rel_dev_pct": -1.753415826609116
+        },
+        "P_RR_below_100_pct": {
+          "challenger": 24.906,
+          "primary": 21.5432,
+          "abs_dev": 3.3628,
+          "rel_dev_pct": 15.60956589550299
+        },
+        "P_RR_below_120_pct": {
+          "challenger": 99.99759999999999,
+          "primary": 99.992,
+          "abs_dev": 0.005599999999986949,
+          "rel_dev_pct": 0.005600448035829815
+        },
+        "StressRR_mean": {
+          "challenger": 88.26956919970455,
+          "primary": 89.051,
+          "abs_dev": -0.7814308002954533,
+          "rel_dev_pct": -0.8775092927597145
+        },
+        "P_StressRR_below_100_pct": {
+          "challenger": 99.58399999999999,
+          "primary": 99.3404,
+          "abs_dev": 0.2435999999999865,
+          "rel_dev_pct": 0.24521745432873887
+        },
+        "CVaR_99_M": {
+          "challenger": 26.297472445408598,
+          "primary": 25.5244,
+          "abs_dev": 0.773072445408598,
+          "rel_dev_pct": 3.028758542448003
+        }
+      },
+      "validity_gate": {
+        "metric": "P_RR_below_100_pct",
+        "challenger_value": 24.906,
+        "primary_value": 21.5432,
+        "abs_diff_percentage_points": 3.3628,
+        "tolerance_pp": 5.0,
+        "verdict": "CONFIRM"
+      }
+    }
+  },
+  "overall": {
+    "verdict": "SPLIT_VERDICT",
+    "confirmed_count": 4,
+    "dissented_count": 1,
+    "total_challengers": 5,
+    "p_below_100_range": {
+      "min": 19.974800000000002,
+      "max": 100.0
+    },
+    "p_below_100_primary": 21.5432
+  },
+  "honest": true,
+  "forced_to_pass": false
+}

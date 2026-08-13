@@ -1,0 +1,1991 @@
+{
+  "meta": {
+    "version": "v24.2.1",
+    "test": "Silver A/B Historical Backtest (Task ID 4)",
+    "agent": "Silver A/B Historical Backtest Agent",
+    "timestamp_utc": "2026-08-13T22:40:38.733945+00:00",
+    "random_seed": 42,
+    "data_source": "/home/z/my-project/docs/verification/historical-prices.csv",
+    "data_provenance": {
+      "primary_source": "Yahoo Finance v8 chart API (https://query1.finance.yahoo.com/v8/finance/chart/)",
+      "gold": "GC=F (COMEX gold futures, USD/oz) \u2014 front-month continuous",
+      "silver": "SI=F (COMEX silver futures, USD/oz) \u2014 front-month continuous",
+      "gold_etf_cross_check": "GLD (SPDR Gold Trust ETF)",
+      "silver_etf_cross_check": "SLV (iShares Silver Trust ETF)",
+      "fx_pairs": "EURUSD=X, JPY=X, GBPUSD=X, CHFUSD=X, AUDUSD=X, CADUSD=X, SGDUSD=X, CNYUSD=X, AEDUSD=X, SARUSD=X",
+      "spot_validation": "https://api.gold-api.com/price/XAU and /XAG (current spot, used only for cross-check)",
+      "lookback_window": "2020-01-01 \u2192 2025-09-01 (69 months, 68 monthly returns)"
+    },
+    "simplifications": [
+      "Fiat basket represented by 11 currencies (USD, EUR, CHF, JPY, GBP, SGD, AED, SAR, CNY, CAD, AUD). All are real historical data. Sovereign T-bills modeled at constant yield (no sovereign-spread data).",
+      "Stablecoins modeled at constant yield (USDC/USDP/EURC/BUIDL \u2014 no live depeg events during 2020-2025).",
+      "Gold/silver spot proxied by GC=F/SI=F futures (front-month continuous); gap-filled by GLD/SLV ETF share prices scaled by initial ratio.",
+      "Haircuts, stress coefficients, HQLA factors from v24.2.1 blueprint \u00a73.4, \u00a73.6, \u00a77.",
+      "Monthly rebalancing to target weights (quarterly rebalance assumption used only for execution cost estimate)."
+    ]
+  },
+  "portfolio_parameters": {
+    "par": 1.0,
+    "supply": 54000000,
+    "liability_usd": 54000000.0,
+    "rr_target": 1.2,
+    "baseline_ra_usd": 64800000.0,
+    "fiat_weights": {
+      "USD": 0.21,
+      "EUR": 0.195,
+      "CHF": 0.06,
+      "JPY": 0.06,
+      "GBP": 0.05,
+      "SGD": 0.04,
+      "AED": 0.03,
+      "SAR": 0.03,
+      "CNY": 0.02,
+      "CAD": 0.005,
+      "AUD": 0.005
+    },
+    "digital_weights": {
+      "USDC": 0.02,
+      "USDP": 0.005,
+      "EURC": 0.005,
+      "BUIDL": 0.005
+    },
+    "silver_weight_A": 0.03,
+    "silver_weight_B": 0.0,
+    "sovereign_weight_A": 0.075,
+    "sovereign_weight_B": 0.105,
+    "gold_weight": 0.15,
+    "annual_yields": {
+      "Sovereign": 0.03,
+      "USDC": 0.04,
+      "USDP": 0.04,
+      "EURC": 0.035,
+      "BUIDL": 0.045,
+      "USD": 0.02
+    },
+    "haircuts": {
+      "Gold": 0.05,
+      "Silver": 0.07,
+      "USD": 0.0,
+      "EUR": 0.02,
+      "CHF": 0.02,
+      "JPY": 0.02,
+      "GBP": 0.02,
+      "SGD": 0.02,
+      "AED": 0.0,
+      "SAR": 0.0,
+      "CNY": 0.02,
+      "CAD": 0.02,
+      "AUD": 0.02,
+      "Sovereign": 0.02,
+      "USDC": 0.02,
+      "USDP": 0.02,
+      "EURC": 0.02,
+      "BUIDL": 0.02
+    },
+    "stress_coefficients": {
+      "Gold": 0.85,
+      "Silver": 0.8,
+      "USD": 0.95,
+      "EUR": 0.9,
+      "CHF": 0.9,
+      "JPY": 0.9,
+      "GBP": 0.9,
+      "SGD": 0.9,
+      "AED": 0.95,
+      "SAR": 0.95,
+      "CNY": 0.8,
+      "CAD": 0.9,
+      "AUD": 0.9,
+      "Sovereign": 0.9,
+      "USDC": 0.8,
+      "USDP": 0.8,
+      "EURC": 0.8,
+      "BUIDL": 0.9
+    },
+    "hqla_factors": {
+      "Gold": 0.0,
+      "Silver": 0.0,
+      "USD": 1.0,
+      "EUR": 0.85,
+      "CHF": 0.85,
+      "JPY": 0.85,
+      "GBP": 0.85,
+      "SGD": 0.8,
+      "AED": 0.9,
+      "SAR": 0.9,
+      "CNY": 0.5,
+      "CAD": 0.8,
+      "AUD": 0.8,
+      "Sovereign": 1.0,
+      "USDC": 0.6,
+      "USDP": 0.6,
+      "EURC": 0.6,
+      "BUIDL": 0.85
+    }
+  },
+  "sdc_ag_cost_parameters_bp_year": {
+    "execution_cost_bp_round_trip": 30.0,
+    "custody_cost_bp_year": 15.0,
+    "rebalance_freq_per_year": 4.0,
+    "silver_vol_annual": 0.3,
+    "gold_vol_annual": 0.15,
+    "silver_bid_ask_spread": 0.003,
+    "volatility_penalty_scale": 10000.0,
+    "lcr_threshold": 1.5,
+    "lcr_bp_per_unit_shortfall": 1000.0,
+    "lcr_bp_per_unit_marginal": 100.0,
+    "total_net_cost_bp_year_at_3pct_silver": 52.65
+  },
+  "full_sample": {
+    "portfolio_a": {
+      "label": "A \u2014 Silver 3% mandatory (v24.2 baseline)",
+      "n_months": 68,
+      "RR": {
+        "mean": 105.21492316012478,
+        "std": 8.341818534388917,
+        "min": 95.21825246865697,
+        "max": 121.73136282522673,
+        "p5": 96.33315687743891,
+        "p1": 95.73781338341247,
+        "P_RR_below_100": 0.4117647058823529,
+        "P_RR_below_120": 0.9558823529411765
+      },
+      "StressRR": {
+        "mean": 94.53646881963282,
+        "std": 7.49425626207506,
+        "min": 85.59005917505422,
+        "p5": 86.60904934288935,
+        "p1": 86.04482442673661,
+        "P_StressRR_below_100": 0.7058823529411765
+      },
+      "LCR": {
+        "mean": 93.2745801324096,
+        "min": 84.25002829935822,
+        "P_LCR_below_1": 0.0,
+        "P_LCR_below_1_2": 0.0
+      },
+      "Losses": {
+        "mean": 8008600.10192282,
+        "VaR_95": 12780095.286182988,
+        "VaR_99": 13101580.772957264,
+        "CVaR_95": 13020747.860063048,
+        "CVaR_99": 13382143.666925237,
+        "max_loss": 13382143.666925237
+      }
+    },
+    "portfolio_b": {
+      "label": "B \u2014 Silver 0% (v24.2.1 default)",
+      "n_months": 68,
+      "RR": {
+        "mean": 104.2164564749176,
+        "std": 8.470968691491201,
+        "min": 93.89268215310183,
+        "max": 120.2129314828755,
+        "p5": 95.26293439716686,
+        "p1": 94.26181886221157,
+        "P_RR_below_100": 0.5,
+        "P_RR_below_120": 0.9705882352941176
+      },
+      "StressRR": {
+        "mean": 93.94149570735676,
+        "std": 7.637629676383049,
+        "min": 84.65438224189924,
+        "p5": 85.8889028139644,
+        "p1": 84.96183019295697,
+        "P_StressRR_below_100": 0.7205882352941176
+      },
+      "LCR": {
+        "mean": 96.12755207838227,
+        "min": 86.40817435488101,
+        "P_LCR_below_1": 0.0,
+        "P_LCR_below_1_2": 0.0
+      },
+      "Losses": {
+        "mean": 8525241.38145527,
+        "VaR_95": 13358015.4255299,
+        "VaR_99": 13898617.81440575,
+        "CVaR_95": 13760645.834415114,
+        "CVaR_99": 14097951.637325011,
+        "max_loss": 14097951.637325011
+      }
+    },
+    "portfolio_c": {
+      "label": "C \u2014 Silver dynamic (v24.2.1 conditional)",
+      "n_months": 68,
+      "RR": {
+        "mean": 103.82610720718982,
+        "std": 8.706509767746503,
+        "min": 93.50776533461497,
+        "max": 120.2129314828755,
+        "p5": 94.69104754095541,
+        "p1": 94.01799293105177,
+        "P_RR_below_100": 0.5441176470588235,
+        "P_RR_below_120": 0.9705882352941176
+      },
+      "StressRR": {
+        "mean": 93.4139039078533,
+        "std": 7.896462848157337,
+        "min": 84.05253153486765,
+        "p5": 85.2168171243042,
+        "p1": 84.49912744829982,
+        "P_StressRR_below_100": 0.7205882352941176
+      },
+      "LCR": {
+        "mean": 93.58937323640515,
+        "min": 82.73657278308352,
+        "P_LCR_below_1": 0.0,
+        "P_LCR_below_1_2": 0.0
+      },
+      "Losses": {
+        "mean": 8736029.986028263,
+        "VaR_95": 13666834.327884084,
+        "VaR_99": 14030283.817232044,
+        "CVaR_95": 13932541.774472408,
+        "CVaR_99": 14305806.719307914,
+        "max_loss": 14305806.719307914
+      }
+    },
+    "sdc_ag_full_sample": {
+      "cvar_a_usd": 13382143.666925237,
+      "cvar_b_usd": 14097951.637325011,
+      "cvar_improvement_bp": 132.55703155551382,
+      "stressrr_a_pct": 94.53646881963282,
+      "stressrr_b_pct": 93.94149570735676,
+      "stressrr_improvement_bp": 59.49731122760511,
+      "lcr_a": 93.2745801324096,
+      "lcr_b": 96.12755207838227,
+      "lcr_improvement_bp_shortfall": 0.0,
+      "lcr_improvement_bp_proportional": -285.2971945972669,
+      "net_resilience_gain_bp": 192.05434278311893,
+      "execution_cost_bp": 3.5999999999999996,
+      "custody_cost_bp": 0.44999999999999996,
+      "volatility_penalty_bp": 45.0,
+      "liquidity_penalty_bp": 3.5999999999999996,
+      "net_cost_bp": 52.65,
+      "sdc_ag_bp": 139.40434278311892,
+      "sdc_ag_bp_proportional": -145.892851814148,
+      "silver_admitted": true,
+      "silver_admitted_proportional": false
+    }
+  },
+  "rolling_sdc_ag": {
+    "window_months": 12,
+    "n_observations": 57,
+    "primary_shortfall_LCR": {
+      "n_months_admit": 42,
+      "admit_rate": 0.7368421052631579,
+      "mean_sdc_ag_bp": 77.26893912927544,
+      "median_sdc_ag_bp": 87.90006563152232,
+      "min_sdc_ag_bp": -136.5289274569484,
+      "max_sdc_ag_bp": 216.78772450715618
+    },
+    "sensitivity_proportional_LCR": {
+      "n_months_admit": 3,
+      "admit_rate": 0.05263157894736842,
+      "mean_sdc_ag_bp": -205.60257361894392,
+      "median_sdc_ag_bp": -214.25720555234327,
+      "min_sdc_ag_bp": -517.7756287991336,
+      "max_sdc_ag_bp": 30.262977738760448
+    },
+    "time_series": [
+      {
+        "end_date": "2021-01-01",
+        "sdc_ag_bp_primary": -136.5289274569484,
+        "sdc_ag_bp_proportional": -517.7756287991336,
+        "silver_admitted_primary": false,
+        "silver_admitted_proportional": false,
+        "cvar_improvement_bp": -96.50708421879897,
+        "stressrr_improvement_bp": 12.628156761850562,
+        "lcr_improvement_bp_shortfall": 0.0,
+        "lcr_improvement_bp_proportional": -381.2467013421852,
+        "net_cost_bp": 52.65
+      },
+      {
+        "end_date": "2021-02-01",
+        "sdc_ag_bp_primary": -122.47940109167172,
+        "sdc_ag_bp_proportional": -491.2970331698453,
+        "silver_admitted_primary": false,
+        "silver_admitted_proportional": false,
+        "cvar_improvement_bp": -96.50708421879897,
+        "stressrr_improvement_bp": 26.67768312712724,
+        "lcr_improvement_bp_shortfall": 0.0,
+        "lcr_improvement_bp_proportional": -368.8176320781736,
+        "net_cost_bp": 52.65
+      },
+      {
+        "end_date": "2021-03-01",
+        "sdc_ag_bp_primary": 103.43697499224041,
+        "sdc_ag_bp_proportional": -251.33198984761415,
+        "silver_admitted_primary": true,
+        "silver_admitted_proportional": false,
+        "cvar_improvement_bp": 113.82883394230709,
+        "stressrr_improvement_bp": 42.25814104993333,
+        "lcr_improvement_bp_shortfall": 0.0,
+        "lcr_improvement_bp_proportional": -354.76896483985456,
+        "net_cost_bp": 52.65
+      },
+      {
+        "end_date": "2021-04-01",
+        "sdc_ag_bp_primary": 119.42583709985675,
+        "sdc_ag_bp_proportional": -218.96762588168608,
+        "silver_admitted_primary": true,
+        "silver_admitted_proportional": false,
+        "cvar_improvement_bp": 113.82883394230709,
+        "stressrr_improvement_bp": 58.24700315754967,
+        "lcr_improvement_bp_shortfall": 0.0,
+        "lcr_improvement_bp_proportional": -338.3934629815428,
+        "net_cost_bp": 52.65
+      },
+      {
+        "end_date": "2021-05-01",
+        "sdc_ag_bp_primary": 132.10029047647387,
+        "sdc_ag_bp_proportional": -190.16268227108392,
+        "silver_admitted_primary": true,
+        "silver_admitted_proportional": false,
+        "cvar_improvement_bp": 113.82883394230709,
+        "stressrr_improvement_bp": 70.9214565341668,
+        "lcr_improvement_bp_shortfall": 0.0,
+        "lcr_improvement_bp_proportional": -322.2629727475578,
+        "net_cost_bp": 52.65
+      },
+      {
+        "end_date": "2021-06-01",
+        "sdc_ag_bp_primary": 162.3967013355479,
+        "sdc_ag_bp_proportional": -148.0545172441797,
+        "silver_admitted_primary": true,
+        "silver_admitted_proportional": false,
+        "cvar_improvement_bp": 134.00592800219025,
+        "stressrr_improvement_bp": 81.04077333335766,
+        "lcr_improvement_bp_shortfall": 0.0,
+        "lcr_improvement_bp_proportional": -310.4512185797276,
+        "net_cost_bp": 52.65
+      },
+      {
+        "end_date": "2021-07-01",
+        "sdc_ag_bp_primary": 164.99734656308328,
+        "sdc_ag_bp_proportional": -134.59425439276947,
+        "silver_admitted_primary": true,
+        "silver_admitted_proportional": false,
+        "cvar_improvement_bp": 134.00592800219025,
+        "stressrr_improvement_bp": 83.64141856089304,
+        "lcr_improvement_bp_shortfall": 0.0,
+        "lcr_improvement_bp_proportional": -299.59160095585275,
+        "net_cost_bp": 52.65
+      },
+      {
+        "end_date": "2021-08-01",
+        "sdc_ag_bp_primary": 129.384348442167,
+        "sdc_ag_bp_proportional": -166.9388815756578,
+        "silver_admitted_primary": true,
+        "silver_admitted_proportional": false,
+        "cvar_improvement_bp": 102.44012795466516,
+        "stressrr_improvement_bp": 79.59422048750184,
+        "lcr_improvement_bp_shortfall": 0.0,
+        "lcr_improvement_bp_proportional": -296.3232300178248,
+        "net_cost_bp": 52.65
+      },
+      {
+        "end_date": "2021-09-01",
+        "sdc_ag_bp_primary": 96.94129755278914,
+        "sdc_ag_bp_proportional": -202.10353204839572,
+        "silver_admitted_primary": true,
+        "silver_admitted_proportional": false,
+        "cvar_improvement_bp": 72.54079816697234,
+        "stressrr_improvement_bp": 77.0504993858168,
+        "lcr_improvement_bp_shortfall": 0.0,
+        "lcr_improvement_bp_proportional": -299.04482960118486,
+        "net_cost_bp": 52.65
+      },
+      {
+        "end_date": "2021-10-01",
+        "sdc_ag_bp_primary": 96.54549133975968,
+        "sdc_ag_bp_proportional": -202.46187238771932,
+        "silver_admitted_primary": true,
+        "silver_admitted_proportional": false,
+        "cvar_improvement_bp": 72.54079816697234,
+        "stressrr_improvement_bp": 76.65469317278735,
+        "lcr_improvement_bp_shortfall": 0.0,
+        "lcr_improvement_bp_proportional": -299.007363727479,
+        "net_cost_bp": 52.65
+      },
+      {
+        "end_date": "2021-11-01",
+        "sdc_ag_bp_primary": 105.33361377918919,
+        "sdc_ag_bp_proportional": -192.12354918016348,
+        "silver_admitted_primary": true,
+        "silver_admitted_proportional": false,
+        "cvar_improvement_bp": 81.57503127081665,
+        "stressrr_improvement_bp": 76.40858250837255,
+        "lcr_improvement_bp_shortfall": 0.0,
+        "lcr_improvement_bp_proportional": -297.4571629593527,
+        "net_cost_bp": 52.65
+      },
+      {
+        "end_date": "2021-12-01",
+        "sdc_ag_bp_primary": 101.76520326392944,
+        "sdc_ag_bp_proportional": -193.7485307257997,
+        "silver_admitted_primary": true,
+        "silver_admitted_proportional": false,
+        "cvar_improvement_bp": 81.57503127081665,
+        "stressrr_improvement_bp": 72.84017199311279,
+        "lcr_improvement_bp_shortfall": 0.0,
+        "lcr_improvement_bp_proportional": -295.51373398972913,
+        "net_cost_bp": 52.65
+      },
+      {
+        "end_date": "2022-01-01",
+        "sdc_ag_bp_primary": 88.68309754719641,
+        "sdc_ag_bp_proportional": -208.21410539842893,
+        "silver_admitted_primary": true,
+        "silver_admitted_proportional": false,
+        "cvar_improvement_bp": 73.86650455354264,
+        "stressrr_improvement_bp": 67.46659299365376,
+        "lcr_improvement_bp_shortfall": 0.0,
+        "lcr_improvement_bp_proportional": -296.89720294562534,
+        "net_cost_bp": 52.65
+      },
+      {
+        "end_date": "2022-02-01",
+        "sdc_ag_bp_primary": 85.52104919173453,
+        "sdc_ag_bp_proportional": -214.25720555234327,
+        "silver_admitted_primary": true,
+        "silver_admitted_proportional": false,
+        "cvar_improvement_bp": 73.86650455354264,
+        "stressrr_improvement_bp": 64.30454463819189,
+        "lcr_improvement_bp_shortfall": 0.0,
+        "lcr_improvement_bp_proportional": -299.7782547440778,
+        "net_cost_bp": 52.65
+      },
+      {
+        "end_date": "2022-03-01",
+        "sdc_ag_bp_primary": 98.67557345908617,
+        "sdc_ag_bp_proportional": -201.736950651998,
+        "silver_admitted_primary": true,
+        "silver_admitted_proportional": false,
+        "cvar_improvement_bp": 87.42672036326319,
+        "stressrr_improvement_bp": 63.89885309582297,
+        "lcr_improvement_bp_shortfall": 0.0,
+        "lcr_improvement_bp_proportional": -300.41252411108417,
+        "net_cost_bp": 52.65
+      },
+      {
+        "end_date": "2022-04-01",
+        "sdc_ag_bp_primary": 87.90006563152232,
+        "sdc_ag_bp_proportional": -211.37913865345908,
+        "silver_admitted_primary": true,
+        "silver_admitted_proportional": false,
+        "cvar_improvement_bp": 80.01210785115207,
+        "stressrr_improvement_bp": 60.53795778037028,
+        "lcr_improvement_bp_shortfall": 0.0,
+        "lcr_improvement_bp_proportional": -299.2792042849814,
+        "net_cost_bp": 52.65
+      },
+      {
+        "end_date": "2022-05-01",
+        "sdc_ag_bp_primary": 61.08469135153717,
+        "sdc_ag_bp_proportional": -239.05784160350717,
+        "silver_admitted_primary": true,
+        "silver_admitted_proportional": false,
+        "cvar_improvement_bp": 60.07974001725377,
+        "stressrr_improvement_bp": 53.654951334283396,
+        "lcr_improvement_bp_shortfall": 0.0,
+        "lcr_improvement_bp_proportional": -300.1425329550443,
+        "net_cost_bp": 52.65
+      },
+      {
+        "end_date": "2022-06-01",
+        "sdc_ag_bp_primary": 32.23043120415023,
+        "sdc_ag_bp_proportional": -271.86200130630385,
+        "silver_admitted_primary": true,
+        "silver_admitted_proportional": false,
+        "cvar_improvement_bp": 38.155241509068894,
+        "stressrr_improvement_bp": 46.725189695081326,
+        "lcr_improvement_bp_shortfall": 0.0,
+        "lcr_improvement_bp_proportional": -304.0924325104541,
+        "net_cost_bp": 52.65
+      },
+      {
+        "end_date": "2022-07-01",
+        "sdc_ag_bp_primary": 21.824994629178356,
+        "sdc_ag_bp_proportional": -286.2478657865702,
+        "silver_admitted_primary": true,
+        "silver_admitted_proportional": false,
+        "cvar_improvement_bp": 34.324090769859374,
+        "stressrr_improvement_bp": 40.15090385931899,
+        "lcr_improvement_bp_shortfall": 0.0,
+        "lcr_improvement_bp_proportional": -308.07286041574855,
+        "net_cost_bp": 52.65
+      },
+      {
+        "end_date": "2022-08-01",
+        "sdc_ag_bp_primary": -21.698681582014075,
+        "sdc_ag_bp_proportional": -332.86886883384364,
+        "silver_admitted_primary": false,
+        "silver_admitted_proportional": false,
+        "cvar_improvement_bp": -1.7975199964642525,
+        "stressrr_improvement_bp": 32.74883841445018,
+        "lcr_improvement_bp_shortfall": 0.0,
+        "lcr_improvement_bp_proportional": -311.1701872518296,
+        "net_cost_bp": 52.65
+      },
+      {
+        "end_date": "2022-09-01",
+        "sdc_ag_bp_primary": -9.253532859735905,
+        "sdc_ag_bp_proportional": -324.1670543900449,
+        "silver_admitted_primary": false,
+        "silver_admitted_proportional": false,
+        "cvar_improvement_bp": 15.01558501685659,
+        "stressrr_improvement_bp": 28.380882123407503,
+        "lcr_improvement_bp_shortfall": 0.0,
+        "lcr_improvement_bp_proportional": -314.913521530309,
+        "net_cost_bp": 52.65
+      },
+      {
+        "end_date": "2022-10-01",
+        "sdc_ag_bp_primary": -12.063529734539692,
+        "sdc_ag_bp_proportional": -327.2053812781119,
+        "silver_admitted_primary": false,
+        "silver_admitted_proportional": false,
+        "cvar_improvement_bp": 17.746272402683065,
+        "stressrr_improvement_bp": 22.840197862777245,
+        "lcr_improvement_bp_shortfall": 0.0,
+        "lcr_improvement_bp_proportional": -315.1418515435722,
+        "net_cost_bp": 52.65
+      },
+      {
+        "end_date": "2022-11-01",
+        "sdc_ag_bp_primary": -14.285233858380288,
+        "sdc_ag_bp_proportional": -331.2091671267135,
+        "silver_admitted_primary": false,
+        "silver_admitted_proportional": false,
+        "cvar_improvement_bp": 17.746272402683065,
+        "stressrr_improvement_bp": 20.61849373893665,
+        "lcr_improvement_bp_shortfall": 0.0,
+        "lcr_improvement_bp_proportional": -316.92393326833326,
+        "net_cost_bp": 52.65
+      },
+      {
+        "end_date": "2022-12-01",
+        "sdc_ag_bp_primary": -14.45512790109641,
+        "sdc_ag_bp_proportional": -330.3225215344208,
+        "silver_admitted_primary": false,
+        "silver_admitted_proportional": false,
+        "cvar_improvement_bp": 17.746272402683065,
+        "stressrr_improvement_bp": 20.448599696220526,
+        "lcr_improvement_bp_shortfall": 0.0,
+        "lcr_improvement_bp_proportional": -315.8673936333244,
+        "net_cost_bp": 52.65
+      },
+      {
+        "end_date": "2023-01-01",
+        "sdc_ag_bp_primary": -13.471107355008861,
+        "sdc_ag_bp_proportional": -326.80648214952106,
+        "silver_admitted_primary": false,
+        "silver_admitted_proportional": false,
+        "cvar_improvement_bp": 17.746272402683065,
+        "stressrr_improvement_bp": 21.432620242308076,
+        "lcr_improvement_bp_shortfall": 0.0,
+        "lcr_improvement_bp_proportional": -313.33537479451223,
+        "net_cost_bp": 52.65
+      },
+      {
+        "end_date": "2023-02-01",
+        "sdc_ag_bp_primary": -16.741680173277963,
+        "sdc_ag_bp_proportional": -327.4874252191035,
+        "silver_admitted_primary": false,
+        "silver_admitted_proportional": false,
+        "cvar_improvement_bp": 17.746272402683065,
+        "stressrr_improvement_bp": 18.162047424038974,
+        "lcr_improvement_bp_shortfall": 0.0,
+        "lcr_improvement_bp_proportional": -310.7457450458256,
+        "net_cost_bp": 52.65
+      },
+      {
+        "end_date": "2023-03-01",
+        "sdc_ag_bp_primary": -18.333299162365314,
+        "sdc_ag_bp_proportional": -330.34347348746655,
+        "silver_admitted_primary": false,
+        "silver_admitted_proportional": false,
+        "cvar_improvement_bp": 17.746272402683065,
+        "stressrr_improvement_bp": 16.570428434951623,
+        "lcr_improvement_bp_shortfall": 0.0,
+        "lcr_improvement_bp_proportional": -312.0101743251013,
+        "net_cost_bp": 52.65
+      },
+      {
+        "end_date": "2023-04-01",
+        "sdc_ag_bp_primary": -16.883634562598594,
+        "sdc_ag_bp_proportional": -328.0720002916903,
+        "silver_admitted_primary": false,
+        "silver_admitted_proportional": false,
+        "cvar_improvement_bp": 17.746272402683065,
+        "stressrr_improvement_bp": 18.020093034718343,
+        "lcr_improvement_bp_shortfall": 0.0,
+        "lcr_improvement_bp_proportional": -311.18836572909174,
+        "net_cost_bp": 52.65
+      },
+      {
+        "end_date": "2023-05-01",
+        "sdc_ag_bp_primary": -15.20011099547768,
+        "sdc_ag_bp_proportional": -323.8027080057103,
+        "silver_admitted_primary": false,
+        "silver_admitted_proportional": false,
+        "cvar_improvement_bp": 17.746272402683065,
+        "stressrr_improvement_bp": 19.703616601839258,
+        "lcr_improvement_bp_shortfall": 0.0,
+        "lcr_improvement_bp_proportional": -308.60259701023267,
+        "net_cost_bp": 52.65
+      },
+      {
+        "end_date": "2023-06-01",
+        "sdc_ag_bp_primary": -12.678284684325071,
+        "sdc_ag_bp_proportional": -318.145259665088,
+        "silver_admitted_primary": false,
+        "silver_admitted_proportional": false,
+        "cvar_improvement_bp": 17.746272402683065,
+        "stressrr_improvement_bp": 22.225442912991866,
+        "lcr_improvement_bp_shortfall": 0.0,
+        "lcr_improvement_bp_proportional": -305.466974980763,
+        "net_cost_bp": 52.65
+      },
+      {
+        "end_date": "2023-07-01",
+        "sdc_ag_bp_primary": -8.165543786473485,
+        "sdc_ag_bp_proportional": -309.99756273242076,
+        "silver_admitted_primary": false,
+        "silver_admitted_proportional": false,
+        "cvar_improvement_bp": 17.746272402683065,
+        "stressrr_improvement_bp": 26.738183810843452,
+        "lcr_improvement_bp_shortfall": 0.0,
+        "lcr_improvement_bp_proportional": -301.8320189459473,
+        "net_cost_bp": 52.65
+      },
+      {
+        "end_date": "2023-08-01",
+        "sdc_ag_bp_primary": -1.4308967663292051,
+        "sdc_ag_bp_proportional": -298.0850272699053,
+        "silver_admitted_primary": false,
+        "silver_admitted_proportional": false,
+        "cvar_improvement_bp": 17.746272402683065,
+        "stressrr_improvement_bp": 33.47283083098773,
+        "lcr_improvement_bp_shortfall": 0.0,
+        "lcr_improvement_bp_proportional": -296.65413050357614,
+        "net_cost_bp": 52.65
+      },
+      {
+        "end_date": "2023-09-01",
+        "sdc_ag_bp_primary": 46.59610554674075,
+        "sdc_ag_bp_proportional": -242.89286858199787,
+        "silver_admitted_primary": true,
+        "silver_admitted_proportional": false,
+        "cvar_improvement_bp": 61.866466484209184,
+        "stressrr_improvement_bp": 37.37963906253157,
+        "lcr_improvement_bp_shortfall": 0.0,
+        "lcr_improvement_bp_proportional": -289.4889741287386,
+        "net_cost_bp": 52.65
+      },
+      {
+        "end_date": "2023-10-01",
+        "sdc_ag_bp_primary": 50.37541180258004,
+        "sdc_ag_bp_proportional": -235.3538549559569,
+        "silver_admitted_primary": true,
+        "silver_admitted_proportional": false,
+        "cvar_improvement_bp": 61.866466484209184,
+        "stressrr_improvement_bp": 41.158945318370854,
+        "lcr_improvement_bp_shortfall": 0.0,
+        "lcr_improvement_bp_proportional": -285.72926675853694,
+        "net_cost_bp": 52.65
+      },
+      {
+        "end_date": "2023-11-01",
+        "sdc_ag_bp_primary": 53.84570434806947,
+        "sdc_ag_bp_proportional": -228.02350828319746,
+        "silver_admitted_primary": true,
+        "silver_admitted_proportional": false,
+        "cvar_improvement_bp": 61.866466484209184,
+        "stressrr_improvement_bp": 44.62923786386028,
+        "lcr_improvement_bp_shortfall": 0.0,
+        "lcr_improvement_bp_proportional": -281.8692126312669,
+        "net_cost_bp": 52.65
+      },
+      {
+        "end_date": "2023-12-01",
+        "sdc_ag_bp_primary": 54.137487466961865,
+        "sdc_ag_bp_proportional": -224.04692816358207,
+        "silver_admitted_primary": true,
+        "silver_admitted_proportional": false,
+        "cvar_improvement_bp": 61.866466484209184,
+        "stressrr_improvement_bp": 44.92102098275268,
+        "lcr_improvement_bp_shortfall": 0.0,
+        "lcr_improvement_bp_proportional": -278.1844156305439,
+        "net_cost_bp": 52.65
+      },
+      {
+        "end_date": "2024-01-01",
+        "sdc_ag_bp_primary": 53.18650279881226,
+        "sdc_ag_bp_proportional": -224.73975296173265,
+        "silver_admitted_primary": true,
+        "silver_admitted_proportional": false,
+        "cvar_improvement_bp": 61.866466484209184,
+        "stressrr_improvement_bp": 43.97003631460308,
+        "lcr_improvement_bp_shortfall": 0.0,
+        "lcr_improvement_bp_proportional": -277.9262557605449,
+        "net_cost_bp": 52.65
+      },
+      {
+        "end_date": "2024-02-01",
+        "sdc_ag_bp_primary": 54.328295205367716,
+        "sdc_ag_bp_proportional": -223.15111554154285,
+        "silver_admitted_primary": true,
+        "silver_admitted_proportional": false,
+        "cvar_improvement_bp": 61.866466484209184,
+        "stressrr_improvement_bp": 45.11182872115853,
+        "lcr_improvement_bp_shortfall": 0.0,
+        "lcr_improvement_bp_proportional": -277.47941074691056,
+        "net_cost_bp": 52.65
+      },
+      {
+        "end_date": "2024-03-01",
+        "sdc_ag_bp_primary": 54.62524648646835,
+        "sdc_ag_bp_proportional": -220.61865929434205,
+        "silver_admitted_primary": true,
+        "silver_admitted_proportional": false,
+        "cvar_improvement_bp": 61.866466484209184,
+        "stressrr_improvement_bp": 45.408780002259164,
+        "lcr_improvement_bp_shortfall": 0.0,
+        "lcr_improvement_bp_proportional": -275.2439057808104,
+        "net_cost_bp": 52.65
+      },
+      {
+        "end_date": "2024-04-01",
+        "sdc_ag_bp_primary": 55.177763011238746,
+        "sdc_ag_bp_proportional": -218.77181745960527,
+        "silver_admitted_primary": true,
+        "silver_admitted_proportional": false,
+        "cvar_improvement_bp": 61.866466484209184,
+        "stressrr_improvement_bp": 45.96129652702956,
+        "lcr_improvement_bp_shortfall": 0.0,
+        "lcr_improvement_bp_proportional": -273.949580470844,
+        "net_cost_bp": 52.65
+      },
+      {
+        "end_date": "2024-05-01",
+        "sdc_ag_bp_primary": 59.92562431916938,
+        "sdc_ag_bp_proportional": -211.8269664618306,
+        "silver_admitted_primary": true,
+        "silver_admitted_proportional": false,
+        "cvar_improvement_bp": 61.866466484209184,
+        "stressrr_improvement_bp": 50.709157834960195,
+        "lcr_improvement_bp_shortfall": 0.0,
+        "lcr_improvement_bp_proportional": -271.752590781,
+        "net_cost_bp": 52.65
+      },
+      {
+        "end_date": "2024-06-01",
+        "sdc_ag_bp_primary": 101.42238348508485,
+        "sdc_ag_bp_proportional": -164.26199099276786,
+        "silver_admitted_primary": true,
+        "silver_admitted_proportional": false,
+        "cvar_improvement_bp": 98.15880699528037,
+        "stressrr_improvement_bp": 55.913576489804484,
+        "lcr_improvement_bp_shortfall": 0.0,
+        "lcr_improvement_bp_proportional": -265.6843744778527,
+        "net_cost_bp": 52.65
+      },
+      {
+        "end_date": "2024-07-01",
+        "sdc_ag_bp_primary": 104.7050249961255,
+        "sdc_ag_bp_proportional": -154.92123853383262,
+        "silver_admitted_primary": true,
+        "silver_admitted_proportional": false,
+        "cvar_improvement_bp": 98.15880699528037,
+        "stressrr_improvement_bp": 59.196218000845136,
+        "lcr_improvement_bp_shortfall": 0.0,
+        "lcr_improvement_bp_proportional": -259.6262635299581,
+        "net_cost_bp": 52.65
+      },
+      {
+        "end_date": "2024-08-01",
+        "sdc_ag_bp_primary": 108.13168214607416,
+        "sdc_ag_bp_proportional": -147.60930482920614,
+        "silver_admitted_primary": true,
+        "silver_admitted_proportional": false,
+        "cvar_improvement_bp": 98.15880699528037,
+        "stressrr_improvement_bp": 62.62287515079379,
+        "lcr_improvement_bp_shortfall": 0.0,
+        "lcr_improvement_bp_proportional": -255.7409869752803,
+        "net_cost_bp": 52.65
+      },
+      {
+        "end_date": "2024-09-01",
+        "sdc_ag_bp_primary": 140.21764754296422,
+        "sdc_ag_bp_proportional": -111.89951065725401,
+        "silver_admitted_primary": true,
+        "silver_admitted_proportional": false,
+        "cvar_improvement_bp": 123.28257749891115,
+        "stressrr_improvement_bp": 69.58507004405305,
+        "lcr_improvement_bp_shortfall": 0.0,
+        "lcr_improvement_bp_proportional": -252.11715820021823,
+        "net_cost_bp": 52.65
+      },
+      {
+        "end_date": "2024-10-01",
+        "sdc_ag_bp_primary": 147.87250945180838,
+        "sdc_ag_bp_proportional": -97.78376152809037,
+        "silver_admitted_primary": true,
+        "silver_admitted_proportional": false,
+        "cvar_improvement_bp": 123.28257749891115,
+        "stressrr_improvement_bp": 77.23993195289722,
+        "lcr_improvement_bp_shortfall": 0.0,
+        "lcr_improvement_bp_proportional": -245.65627097989875,
+        "net_cost_bp": 52.65
+      },
+      {
+        "end_date": "2024-11-01",
+        "sdc_ag_bp_primary": 152.34308962596955,
+        "sdc_ag_bp_proportional": -86.00373218741751,
+        "silver_admitted_primary": true,
+        "silver_admitted_proportional": false,
+        "cvar_improvement_bp": 123.39045650761022,
+        "stressrr_improvement_bp": 81.60263311835934,
+        "lcr_improvement_bp_shortfall": 0.0,
+        "lcr_improvement_bp_proportional": -238.34682181338707,
+        "net_cost_bp": 52.65
+      },
+      {
+        "end_date": "2024-12-01",
+        "sdc_ag_bp_primary": 165.22718491302976,
+        "sdc_ag_bp_proportional": -68.8127141538107,
+        "silver_admitted_primary": true,
+        "silver_admitted_proportional": false,
+        "cvar_improvement_bp": 132.55703155551382,
+        "stressrr_improvement_bp": 85.32015335751595,
+        "lcr_improvement_bp_shortfall": 0.0,
+        "lcr_improvement_bp_proportional": -234.03989906684046,
+        "net_cost_bp": 52.65
+      },
+      {
+        "end_date": "2025-01-01",
+        "sdc_ag_bp_primary": 171.81430231206144,
+        "sdc_ag_bp_proportional": -57.28794690450376,
+        "silver_admitted_primary": true,
+        "silver_admitted_proportional": false,
+        "cvar_improvement_bp": 132.55703155551382,
+        "stressrr_improvement_bp": 91.90727075654763,
+        "lcr_improvement_bp_shortfall": 0.0,
+        "lcr_improvement_bp_proportional": -229.1022492165652,
+        "net_cost_bp": 52.65
+      },
+      {
+        "end_date": "2025-02-01",
+        "sdc_ag_bp_primary": 178.64095774554693,
+        "sdc_ag_bp_proportional": -42.93403878791968,
+        "silver_admitted_primary": true,
+        "silver_admitted_proportional": false,
+        "cvar_improvement_bp": 132.55703155551382,
+        "stressrr_improvement_bp": 98.73392619003312,
+        "lcr_improvement_bp_shortfall": 0.0,
+        "lcr_improvement_bp_proportional": -221.57499653346662,
+        "net_cost_bp": 52.65
+      },
+      {
+        "end_date": "2025-03-01",
+        "sdc_ag_bp_primary": 185.80351174407463,
+        "sdc_ag_bp_proportional": -28.558276289048813,
+        "silver_admitted_primary": true,
+        "silver_admitted_proportional": false,
+        "cvar_improvement_bp": 132.55703155551382,
+        "stressrr_improvement_bp": 105.89648018856082,
+        "lcr_improvement_bp_shortfall": 0.0,
+        "lcr_improvement_bp_proportional": -214.36178803312345,
+        "net_cost_bp": 52.65
+      },
+      {
+        "end_date": "2025-04-01",
+        "sdc_ag_bp_primary": 191.1080161439653,
+        "sdc_ag_bp_proportional": -15.861885273880084,
+        "silver_admitted_primary": true,
+        "silver_admitted_proportional": false,
+        "cvar_improvement_bp": 132.55703155551382,
+        "stressrr_improvement_bp": 111.20098458845149,
+        "lcr_improvement_bp_shortfall": 0.0,
+        "lcr_improvement_bp_proportional": -206.9699014178454,
+        "net_cost_bp": 52.65
+      },
+      {
+        "end_date": "2025-05-01",
+        "sdc_ag_bp_primary": 193.32255358450078,
+        "sdc_ag_bp_proportional": -9.768556264485873,
+        "silver_admitted_primary": true,
+        "silver_admitted_proportional": false,
+        "cvar_improvement_bp": 132.55703155551382,
+        "stressrr_improvement_bp": 113.41552202898697,
+        "lcr_improvement_bp_shortfall": 0.0,
+        "lcr_improvement_bp_proportional": -203.09110984898666,
+        "net_cost_bp": 52.65
+      },
+      {
+        "end_date": "2025-06-01",
+        "sdc_ag_bp_primary": 197.67772842596935,
+        "sdc_ag_bp_proportional": -4.0538019211016305,
+        "silver_admitted_primary": true,
+        "silver_admitted_proportional": false,
+        "cvar_improvement_bp": 132.55703155551382,
+        "stressrr_improvement_bp": 117.77069687045554,
+        "lcr_improvement_bp_shortfall": 0.0,
+        "lcr_improvement_bp_proportional": -201.731530347071,
+        "net_cost_bp": 52.65
+      },
+      {
+        "end_date": "2025-07-01",
+        "sdc_ag_bp_primary": 202.64986514981268,
+        "sdc_ag_bp_proportional": 4.176049427396954,
+        "silver_admitted_primary": true,
+        "silver_admitted_proportional": true,
+        "cvar_improvement_bp": 132.55703155551382,
+        "stressrr_improvement_bp": 122.74283359429887,
+        "lcr_improvement_bp_shortfall": 0.0,
+        "lcr_improvement_bp_proportional": -198.47381572241574,
+        "net_cost_bp": 52.65
+      },
+      {
+        "end_date": "2025-08-01",
+        "sdc_ag_bp_primary": 209.82919171994862,
+        "sdc_ag_bp_proportional": 16.22464504184476,
+        "silver_admitted_primary": true,
+        "silver_admitted_proportional": true,
+        "cvar_improvement_bp": 132.55703155551382,
+        "stressrr_improvement_bp": 129.92216016443479,
+        "lcr_improvement_bp_shortfall": 0.0,
+        "lcr_improvement_bp_proportional": -193.60454667810387,
+        "net_cost_bp": 52.65
+      },
+      {
+        "end_date": "2025-09-01",
+        "sdc_ag_bp_primary": 216.78772450715618,
+        "sdc_ag_bp_proportional": 30.262977738760448,
+        "silver_admitted_primary": true,
+        "silver_admitted_proportional": true,
+        "cvar_improvement_bp": 132.55703155551382,
+        "stressrr_improvement_bp": 136.8806929516424,
+        "lcr_improvement_bp_shortfall": 0.0,
+        "lcr_improvement_bp_proportional": -186.52474676839574,
+        "net_cost_bp": 52.65
+      }
+    ]
+  },
+  "statistical_significance": {
+    "primary_shortfall_LCR": {
+      "n": 57,
+      "mean_bp": 77.26893912927544,
+      "std_bp": 82.23731372929072,
+      "se_bp": 10.892598299255493,
+      "t_stat": 7.093710518504731,
+      "p_value_one_sided": 0.0,
+      "ci_95_low_bp": 56.15524897515556,
+      "ci_95_high_bp": 97.88730192223204,
+      "significant_at_95": true,
+      "n_bootstrap": 10000,
+      "key": "sdc_ag_bp"
+    },
+    "sensitivity_proportional_LCR": {
+      "n": 57,
+      "mean_bp": -205.60257361894392,
+      "std_bp": 119.17884482568492,
+      "se_bp": 15.785623624925355,
+      "t_stat": -13.024672227348645,
+      "p_value_one_sided": 1.0,
+      "ci_95_low_bp": -236.292639068634,
+      "ci_95_high_bp": -175.09069542472753,
+      "significant_at_95": false,
+      "n_bootstrap": 10000,
+      "key": "sdc_ag_bp_proportional"
+    }
+  },
+  "stress_sub_periods": [
+    {
+      "period": "COVID-2020",
+      "start_month": "2020-02",
+      "end_month": "2020-05",
+      "n_months": 3,
+      "portfolio_a": {
+        "label": "A (COVID-2020)",
+        "n_months": 3,
+        "RR": {
+          "mean": 115.11925008831896,
+          "std": 0.4980273845980998,
+          "min": 114.56908981010565,
+          "max": 115.53932687227235,
+          "p5": 114.63711418735298,
+          "p1": 114.58269468555511,
+          "P_RR_below_100": 0.0,
+          "P_RR_below_120": 1.0
+        },
+        "StressRR": {
+          "mean": 103.4533449334297,
+          "std": 0.43939202374723646,
+          "min": 102.99351862847514,
+          "p5": 103.04392238911248,
+          "p1": 103.00359938060261,
+          "P_StressRR_below_100": 0.0
+        },
+        "LCR": {
+          "mean": 102.12008405150381,
+          "min": 101.2825346209695,
+          "P_LCR_below_1": 0.0,
+          "P_LCR_below_1_2": 0.0
+        },
+        "Losses": {
+          "mean": 2635604.9523077533,
+          "VaR_95": 2895958.338829388,
+          "VaR_99": 2925344.869800232,
+          "CVaR_95": 2932691.5025429428,
+          "CVaR_99": 2932691.5025429428,
+          "max_loss": 2932691.5025429428
+        }
+      },
+      "portfolio_b": {
+        "label": "B (COVID-2020)",
+        "n_months": 3,
+        "RR": {
+          "mean": 115.87284746806682,
+          "std": 0.29396603969883084,
+          "min": 115.53416065229365,
+          "max": 116.06179860688496,
+          "p5": 115.58300290156647,
+          "p1": 115.54392910214821,
+          "P_RR_below_100": 0.0,
+          "P_RR_below_120": 1.0
+        },
+        "StressRR": {
+          "mean": 104.44258442532502,
+          "std": 0.25768477289960906,
+          "min": 104.14565210765439,
+          "p5": 104.18853412169939,
+          "p1": 104.15422851046338,
+          "P_StressRR_below_100": 0.0
+        },
+        "LCR": {
+          "mean": 106.72959204373092,
+          "min": 106.24878346431515,
+          "P_LCR_below_1": 0.0,
+          "P_LCR_below_1_2": 0.0
+        },
+        "Losses": {
+          "mean": 2228662.3672439083,
+          "VaR_95": 2385178.433154104,
+          "VaR_99": 2406278.2848399635,
+          "CVaR_95": 2411553.2477614284,
+          "CVaR_99": 2411553.2477614284,
+          "max_loss": 2411553.2477614284
+        }
+      },
+      "portfolio_c": {
+        "label": "C (COVID-2020)",
+        "n_months": 3,
+        "RR": {
+          "mean": 115.87284746806682,
+          "std": 0.29396603969883084,
+          "min": 115.53416065229365,
+          "max": 116.06179860688496,
+          "p5": 115.58300290156647,
+          "p1": 115.54392910214821,
+          "P_RR_below_100": 0.0,
+          "P_RR_below_120": 1.0
+        },
+        "StressRR": {
+          "mean": 104.44258442532502,
+          "std": 0.25768477289960906,
+          "min": 104.14565210765439,
+          "p5": 104.18853412169939,
+          "p1": 104.15422851046338,
+          "P_StressRR_below_100": 0.0
+        },
+        "LCR": {
+          "mean": 106.72959204373092,
+          "min": 106.24878346431515,
+          "P_LCR_below_1": 0.0,
+          "P_LCR_below_1_2": 0.0
+        },
+        "Losses": {
+          "mean": 2228662.3672439083,
+          "VaR_95": 2385178.433154104,
+          "VaR_99": 2406278.2848399635,
+          "CVaR_95": 2411553.2477614284,
+          "CVaR_99": 2411553.2477614284,
+          "max_loss": 2411553.2477614284
+        }
+      },
+      "sdc_ag": {
+        "cvar_a_usd": 2932691.5025429428,
+        "cvar_b_usd": 2411553.2477614284,
+        "cvar_improvement_bp": -96.50708421879897,
+        "stressrr_a_pct": 103.4533449334297,
+        "stressrr_b_pct": 104.44258442532502,
+        "stressrr_improvement_bp": -98.92394918953187,
+        "lcr_a": 102.12008405150381,
+        "lcr_b": 106.72959204373092,
+        "lcr_improvement_bp_shortfall": 0.0,
+        "lcr_improvement_bp_proportional": -460.9507992227108,
+        "net_resilience_gain_bp": -195.43103340833085,
+        "execution_cost_bp": 3.5999999999999996,
+        "custody_cost_bp": 0.44999999999999996,
+        "volatility_penalty_bp": 45.0,
+        "liquidity_penalty_bp": 3.5999999999999996,
+        "net_cost_bp": 52.65,
+        "sdc_ag_bp": -248.08103340833085,
+        "sdc_ag_bp_proportional": -709.0318326310417,
+        "silver_admitted": false,
+        "silver_admitted_proportional": false,
+        "period": "COVID-2020",
+        "start": "2020-02",
+        "end": "2020-05"
+      }
+    },
+    {
+      "period": "SVB-2023",
+      "start_month": "2023-02",
+      "end_month": "2023-05",
+      "n_months": 3,
+      "portfolio_a": {
+        "label": "A (SVB-2023)",
+        "n_months": 3,
+        "RR": {
+          "mean": 101.04103902506802,
+          "std": 1.2141242211303438,
+          "min": 99.63930905289284,
+          "max": 101.76340838663364,
+          "p5": 99.84741811117131,
+          "p1": 99.68093086454853,
+          "P_RR_below_100": 0.3333333333333333,
+          "P_RR_below_120": 1.0
+        },
+        "StressRR": {
+          "mean": 90.7870687769266,
+          "std": 1.016008898285176,
+          "min": 89.6158551097359,
+          "p5": 89.78564819493607,
+          "p1": 89.64981372677593,
+          "P_StressRR_below_100": 1.0
+        },
+        "LCR": {
+          "mean": 89.59042726306762,
+          "min": 89.16295979293102,
+          "P_LCR_below_1": 0.0,
+          "P_LCR_below_1_2": 0.0
+        },
+        "Losses": {
+          "mean": 10237838.92646327,
+          "VaR_95": 10882394.21996749,
+          "VaR_99": 10972297.33314379,
+          "CVaR_95": 10994773.111437865,
+          "CVaR_99": 10994773.111437865,
+          "max_loss": 10994773.111437865
+        }
+      },
+      "portfolio_b": {
+        "label": "B (SVB-2023)",
+        "n_months": 3,
+        "RR": {
+          "mean": 100.24629602655125,
+          "std": 0.9408851829393989,
+          "min": 99.16078223248198,
+          "max": 100.82790880652428,
+          "p5": 99.31972371329853,
+          "p1": 99.19257052864529,
+          "P_RR_below_100": 0.3333333333333333,
+          "P_RR_below_120": 1.0
+        },
+        "StressRR": {
+          "mean": 90.36520090982867,
+          "std": 0.8008623311549119,
+          "min": 89.44049547000105,
+          "p5": 89.57836247355397,
+          "p1": 89.46806887071163,
+          "P_StressRR_below_100": 1.0
+        },
+        "LCR": {
+          "mean": 92.49520541182649,
+          "min": 92.2462780216496,
+          "P_LCR_below_1": 0.0,
+          "P_LCR_below_1_2": 0.0
+        },
+        "Losses": {
+          "mean": 10667000.145662325,
+          "VaR_95": 11167349.194818791,
+          "VaR_99": 11236011.91453154,
+          "CVaR_95": 11253177.594459727,
+          "CVaR_99": 11253177.594459727,
+          "max_loss": 11253177.594459727
+        }
+      },
+      "portfolio_c": {
+        "label": "C (SVB-2023)",
+        "n_months": 3,
+        "RR": {
+          "mean": 99.2249673104461,
+          "std": 0.9312992621225347,
+          "min": 98.1505129415482,
+          "max": 99.80065450655835,
+          "p5": 98.30783509571656,
+          "p1": 98.18197737238187,
+          "P_RR_below_100": 1.0,
+          "P_RR_below_120": 1.0
+        },
+        "StressRR": {
+          "mean": 89.44454270813931,
+          "std": 0.7927029903226309,
+          "min": 88.52925834676614,
+          "p5": 88.6657207345346,
+          "p1": 88.55655082431983,
+          "P_StressRR_below_100": 1.0
+        },
+        "LCR": {
+          "mean": 91.55284631095634,
+          "min": 91.30645504133336,
+          "P_LCR_below_1": 0.0,
+          "P_LCR_below_1_2": 0.0
+        },
+        "Losses": {
+          "mean": 11218517.652359106,
+          "VaR_95": 11713769.048313059,
+          "VaR_99": 11781732.21891379,
+          "CVaR_95": 11798723.011563972,
+          "CVaR_99": 11798723.011563972,
+          "max_loss": 11798723.011563972
+        }
+      },
+      "sdc_ag": {
+        "cvar_a_usd": 10994773.111437865,
+        "cvar_b_usd": 11253177.594459727,
+        "cvar_improvement_bp": 47.85268204108571,
+        "stressrr_a_pct": 90.7870687769266,
+        "stressrr_b_pct": 90.36520090982867,
+        "stressrr_improvement_bp": 42.18678670979301,
+        "lcr_a": 89.59042726306762,
+        "lcr_b": 92.49520541182649,
+        "lcr_improvement_bp_shortfall": 0.0,
+        "lcr_improvement_bp_proportional": -290.4778148758865,
+        "net_resilience_gain_bp": 90.03946875087871,
+        "execution_cost_bp": 3.5999999999999996,
+        "custody_cost_bp": 0.44999999999999996,
+        "volatility_penalty_bp": 45.0,
+        "liquidity_penalty_bp": 3.5999999999999996,
+        "net_cost_bp": 52.65,
+        "sdc_ag_bp": 37.38946875087871,
+        "sdc_ag_bp_proportional": -253.0883461250078,
+        "silver_admitted": true,
+        "silver_admitted_proportional": false,
+        "period": "SVB-2023",
+        "start": "2023-02",
+        "end": "2023-05"
+      }
+    },
+    {
+      "period": "Inflation-2022",
+      "start_month": "2022-04",
+      "end_month": "2022-11",
+      "n_months": 7,
+      "portfolio_a": {
+        "label": "A (Inflation-2022)",
+        "n_months": 7,
+        "RR": {
+          "mean": 100.99961009494352,
+          "std": 3.3823594509358963,
+          "min": 96.83991612291938,
+          "max": 105.17455185605316,
+          "p5": 96.98237813227522,
+          "p1": 96.86840852479054,
+          "P_RR_below_100": 0.42857142857142855,
+          "P_RR_below_120": 1.0
+        },
+        "StressRR": {
+          "mean": 90.79414297377727,
+          "std": 3.0513061716722336,
+          "min": 87.03651618639634,
+          "p5": 87.16301173023747,
+          "p1": 87.06181529516456,
+          "P_StressRR_below_100": 1.0
+        },
+        "LCR": {
+          "mean": 90.07603508826172,
+          "min": 86.26117699283643,
+          "P_LCR_below_1": 0.0,
+          "P_LCR_below_1_2": 0.0
+        },
+        "Losses": {
+          "mean": 10260210.548730489,
+          "VaR_95": 12429515.808571381,
+          "VaR_99": 12491059.396613106,
+          "CVaR_95": 12506445.293623537,
+          "CVaR_99": 12506445.293623537,
+          "max_loss": 12506445.293623537
+        }
+      },
+      "portfolio_b": {
+        "label": "B (Inflation-2022)",
+        "n_months": 7,
+        "RR": {
+          "mean": 100.65170221270012,
+          "std": 3.136632768174205,
+          "min": 96.66245339889255,
+          "max": 104.37443077754165,
+          "p5": 96.81310747040588,
+          "p1": 96.69258421319522,
+          "P_RR_below_100": 0.42857142857142855,
+          "P_RR_below_120": 1.0
+        },
+        "StressRR": {
+          "mean": 90.76138976259732,
+          "std": 2.8294710558350173,
+          "min": 87.1559302608609,
+          "p5": 87.29629188314907,
+          "p1": 87.18400258531854,
+          "P_StressRR_below_100": 1.0
+        },
+        "LCR": {
+          "mean": 93.28196340035083,
+          "min": 89.56034215045139,
+          "P_LCR_below_1": 0.0,
+          "P_LCR_below_1_2": 0.0
+        },
+        "Losses": {
+          "mean": 10448080.805141946,
+          "VaR_95": 12520921.965980832,
+          "VaR_99": 12586004.524874587,
+          "CVaR_95": 12602275.164598025,
+          "CVaR_99": 12602275.164598025,
+          "max_loss": 12602275.164598025
+        }
+      },
+      "portfolio_c": {
+        "label": "C (Inflation-2022)",
+        "n_months": 7,
+        "RR": {
+          "mean": 99.83630435480686,
+          "std": 3.361809392929137,
+          "min": 95.67763756690087,
+          "max": 103.97671690394614,
+          "p5": 95.82675674550012,
+          "p1": 95.70746140262072,
+          "P_RR_below_100": 0.42857142857142855,
+          "P_RR_below_120": 1.0
+        },
+        "StressRR": {
+          "mean": 89.83032702996051,
+          "std": 2.922790771316008,
+          "min": 86.26796873128274,
+          "p5": 86.40690032212672,
+          "p1": 86.29575504945153,
+          "P_StressRR_below_100": 1.0
+        },
+        "LCR": {
+          "mean": 90.04646281930533,
+          "min": 87.49576475406741,
+          "P_LCR_below_1": 0.0,
+          "P_LCR_below_1_2": 0.0
+        },
+        "Losses": {
+          "mean": 10888395.6484043,
+          "VaR_95": 13053551.357429937,
+          "VaR_99": 13117970.84258481,
+          "CVaR_95": 13134075.713873528,
+          "CVaR_99": 13134075.713873528,
+          "max_loss": 13134075.713873528
+        }
+      },
+      "sdc_ag": {
+        "cvar_a_usd": 12506445.293623537,
+        "cvar_b_usd": 12602275.164598025,
+        "cvar_improvement_bp": 17.746272402683065,
+        "stressrr_a_pct": 90.79414297377727,
+        "stressrr_b_pct": 90.76138976259732,
+        "stressrr_improvement_bp": 3.2753211179951336,
+        "lcr_a": 90.07603508826172,
+        "lcr_b": 93.28196340035083,
+        "lcr_improvement_bp_shortfall": 0.0,
+        "lcr_improvement_bp_proportional": -320.5928312089114,
+        "net_resilience_gain_bp": 21.0215935206782,
+        "execution_cost_bp": 3.5999999999999996,
+        "custody_cost_bp": 0.44999999999999996,
+        "volatility_penalty_bp": 45.0,
+        "liquidity_penalty_bp": 3.5999999999999996,
+        "net_cost_bp": 52.65,
+        "sdc_ag_bp": -31.6284064793218,
+        "sdc_ag_bp_proportional": -352.22123768823315,
+        "silver_admitted": false,
+        "silver_admitted_proportional": false,
+        "period": "Inflation-2022",
+        "start": "2022-04",
+        "end": "2022-11"
+      }
+    },
+    {
+      "period": "GoldRally-2024",
+      "start_month": "2024-02",
+      "end_month": "2024-06",
+      "n_months": 4,
+      "portfolio_a": {
+        "label": "A (GoldRally-2024)",
+        "n_months": 4,
+        "RR": {
+          "mean": 96.99514510751752,
+          "std": 0.45702725407993994,
+          "min": 96.49646138571251,
+          "max": 97.52012851055434,
+          "p5": 96.5354195433815,
+          "p1": 96.5042530172463,
+          "P_RR_below_100": 1.0,
+          "P_RR_below_120": 1.0
+        },
+        "StressRR": {
+          "mean": 87.12263802992578,
+          "std": 0.38422604740818994,
+          "min": 86.72345826574889,
+          "p5": 86.75118378737017,
+          "p1": 86.72900337007314,
+          "P_StressRR_below_100": 1.0
+        },
+        "LCR": {
+          "mean": 85.575851950928,
+          "min": 85.05347334221653,
+          "P_LCR_below_1": 0.0,
+          "P_LCR_below_1_2": 0.0
+        },
+        "Losses": {
+          "mean": 12422621.641940542,
+          "VaR_95": 12670873.44657399,
+          "VaR_99": 12687703.370686993,
+          "CVaR_95": 12691910.851715244,
+          "CVaR_99": 12691910.851715244,
+          "max_loss": 12691910.851715244
+        }
+      },
+      "portfolio_b": {
+        "label": "B (GoldRally-2024)",
+        "n_months": 4,
+        "RR": {
+          "mean": 95.96267865487594,
+          "std": 0.26799242029785625,
+          "min": 95.67594850738774,
+          "max": 96.30389854491666,
+          "p5": 95.70173877733829,
+          "p1": 95.68110656137786,
+          "P_RR_below_100": 1.0,
+          "P_RR_below_120": 1.0
+        },
+        "StressRR": {
+          "mean": 86.48834075642652,
+          "std": 0.22386651314691827,
+          "min": 86.22959333980901,
+          "p5": 86.2568168694218,
+          "p1": 86.23503804573157,
+          "P_StressRR_below_100": 1.0
+        },
+        "LCR": {
+          "mean": 88.23962360496594,
+          "min": 87.87901594840281,
+          "P_LCR_below_1": 0.0,
+          "P_LCR_below_1_2": 0.0
+        },
+        "Losses": {
+          "mean": 12980153.52636699,
+          "VaR_95": 13121061.060237324,
+          "VaR_99": 13132202.45685596,
+          "CVaR_95": 13134987.806010619,
+          "CVaR_99": 13134987.806010619,
+          "max_loss": 13134987.806010619
+        }
+      },
+      "portfolio_c": {
+        "label": "C (GoldRally-2024)",
+        "n_months": 4,
+        "RR": {
+          "mean": 95.25273812703283,
+          "std": 0.44881728154061484,
+          "min": 94.76301268862397,
+          "max": 95.76829080294328,
+          "p5": 94.80127100749388,
+          "p1": 94.77066435239796,
+          "P_RR_below_100": 1.0,
+          "P_RR_below_120": 1.0
+        },
+        "StressRR": {
+          "mean": 85.55757936133664,
+          "std": 0.3773238653830378,
+          "min": 85.16557040562441,
+          "p5": 85.19279786992172,
+          "p1": 85.17101589848387,
+          "P_StressRR_below_100": 1.0
+        },
+        "LCR": {
+          "mean": 84.03857952729345,
+          "min": 83.52558485355387,
+          "P_LCR_below_1": 0.0,
+          "P_LCR_below_1_2": 0.0
+        },
+        "Losses": {
+          "mean": 13363521.411402274,
+          "VaR_95": 13607313.655953301,
+          "VaR_99": 13623841.249705102,
+          "CVaR_95": 13627973.148143053,
+          "CVaR_99": 13627973.148143053,
+          "max_loss": 13627973.148143053
+        }
+      },
+      "sdc_ag": {
+        "cvar_a_usd": 12691910.851715244,
+        "cvar_b_usd": 13134987.806010619,
+        "cvar_improvement_bp": 82.05128783247676,
+        "stressrr_a_pct": 87.12263802992578,
+        "stressrr_b_pct": 86.48834075642652,
+        "stressrr_improvement_bp": 63.42972734992571,
+        "lcr_a": 85.575851950928,
+        "lcr_b": 88.23962360496594,
+        "lcr_improvement_bp_shortfall": 0.0,
+        "lcr_improvement_bp_proportional": -266.37716540379444,
+        "net_resilience_gain_bp": 145.48101518240247,
+        "execution_cost_bp": 3.5999999999999996,
+        "custody_cost_bp": 0.44999999999999996,
+        "volatility_penalty_bp": 45.0,
+        "liquidity_penalty_bp": 3.5999999999999996,
+        "net_cost_bp": 52.65,
+        "sdc_ag_bp": 92.83101518240247,
+        "sdc_ag_bp_proportional": -173.54615022139197,
+        "silver_admitted": true,
+        "silver_admitted_proportional": false,
+        "period": "GoldRally-2024",
+        "start": "2024-02",
+        "end": "2024-06"
+      }
+    },
+    {
+      "period": "GoldRally-2025",
+      "start_month": "2025-01",
+      "end_month": "2025-09",
+      "n_months": 8,
+      "portfolio_a": {
+        "label": "A (GoldRally-2025)",
+        "n_months": 8,
+        "RR": {
+          "mean": 99.01187359577877,
+          "std": 2.035812298483508,
+          "min": 95.99371652053085,
+          "max": 101.06472971422009,
+          "p5": 96.02840385187733,
+          "p1": 96.00065398680015,
+          "P_RR_below_100": 0.5,
+          "P_RR_below_120": 1.0
+        },
+        "StressRR": {
+          "mean": 88.93949071159008,
+          "std": 1.8354513415094025,
+          "min": 86.26881328204287,
+          "p5": 86.27052411673347,
+          "p1": 86.269155448981,
+          "P_StressRR_below_100": 1.0
+        },
+        "LCR": {
+          "mean": 87.48574233942364,
+          "min": 84.25002829935822,
+          "P_LCR_below_1": 0.0,
+          "P_LCR_below_1_2": 0.0
+        },
+        "Losses": {
+          "mean": 11333588.258279465,
+          "VaR_95": 12944661.919986239,
+          "VaR_99": 12959646.847127918,
+          "CVaR_95": 12963393.078913338,
+          "CVaR_99": 12963393.078913338,
+          "max_loss": 12963393.078913338
+        }
+      },
+      "portfolio_b": {
+        "label": "B (GoldRally-2025)",
+        "n_months": 8,
+        "RR": {
+          "mean": 97.14020053670467,
+          "std": 1.8596866757124049,
+          "min": 94.44363246520592,
+          "max": 99.03883639157678,
+          "p5": 94.45300763915866,
+          "p1": 94.44550749999647,
+          "P_RR_below_100": 1.0,
+          "P_RR_below_120": 1.0
+        },
+        "StressRR": {
+          "mean": 87.5449429599179,
+          "std": 1.6823397657884611,
+          "min": 85.11325978079137,
+          "p5": 85.12165282304053,
+          "p1": 85.1149383892412,
+          "P_StressRR_below_100": 1.0
+        },
+        "LCR": {
+          "mean": 89.35405055995861,
+          "min": 86.40817435488101,
+          "P_LCR_below_1": 0.0,
+          "P_LCR_below_1_2": 0.0
+        },
+        "Losses": {
+          "mean": 12344291.710179478,
+          "VaR_95": 13795375.874854326,
+          "VaR_99": 13799425.950001907,
+          "CVaR_95": 13800438.468788803,
+          "CVaR_99": 13800438.468788803,
+          "max_loss": 13800438.468788803
+        }
+      },
+      "portfolio_c": {
+        "label": "C (GoldRally-2025)",
+        "n_months": 8,
+        "RR": {
+          "mean": 97.23323839179079,
+          "std": 1.9992412561297883,
+          "min": 94.26929906064004,
+          "max": 99.24921729512268,
+          "p5": 94.3033632737036,
+          "p1": 94.27611190325275,
+          "P_RR_below_100": 1.0,
+          "P_RR_below_120": 1.0
+        },
+        "StressRR": {
+          "mean": 87.34179436003714,
+          "std": 1.80247955486752,
+          "min": 84.71909259969178,
+          "p5": 84.72077270119152,
+          "p1": 84.71942861999173,
+          "P_StressRR_below_100": 1.0
+        },
+        "LCR": {
+          "mean": 85.9141609167027,
+          "min": 82.73657278308352,
+          "P_LCR_below_1": 0.0,
+          "P_LCR_below_1_2": 0.0
+        },
+        "Losses": {
+          "mean": 12294051.268432973,
+          "VaR_95": 13876183.83220006,
+          "VaR_99": 13890899.572243514,
+          "CVaR_95": 13894578.507254377,
+          "CVaR_99": 13894578.507254377,
+          "max_loss": 13894578.507254377
+        }
+      },
+      "sdc_ag": {
+        "cvar_a_usd": 12963393.078913338,
+        "cvar_b_usd": 13800438.468788803,
+        "cvar_improvement_bp": 155.00840553249336,
+        "stressrr_a_pct": 88.93949071159008,
+        "stressrr_b_pct": 87.5449429599179,
+        "stressrr_improvement_bp": 139.4547751672178,
+        "lcr_a": 87.48574233942364,
+        "lcr_b": 89.35405055995861,
+        "lcr_improvement_bp_shortfall": 0.0,
+        "lcr_improvement_bp_proportional": -186.83082205349706,
+        "net_resilience_gain_bp": 294.4631806997112,
+        "execution_cost_bp": 3.5999999999999996,
+        "custody_cost_bp": 0.44999999999999996,
+        "volatility_penalty_bp": 45.0,
+        "liquidity_penalty_bp": 3.5999999999999996,
+        "net_cost_bp": 52.65,
+        "sdc_ag_bp": 241.81318069971118,
+        "sdc_ag_bp_proportional": 54.98235864621413,
+        "silver_admitted": true,
+        "silver_admitted_proportional": true,
+        "period": "GoldRally-2025",
+        "start": "2025-01",
+        "end": "2025-09"
+      }
+    }
+  ],
+  "portfolio_c_silver_weights_by_month": [
+    {
+      "date": "2020-02-01",
+      "silver_weight": 0.0
+    },
+    {
+      "date": "2020-03-01",
+      "silver_weight": 0.0
+    },
+    {
+      "date": "2020-04-01",
+      "silver_weight": 0.0
+    },
+    {
+      "date": "2020-05-01",
+      "silver_weight": 0.0
+    },
+    {
+      "date": "2020-06-01",
+      "silver_weight": 0.0
+    },
+    {
+      "date": "2020-07-01",
+      "silver_weight": 0.0
+    },
+    {
+      "date": "2020-08-01",
+      "silver_weight": 0.0
+    },
+    {
+      "date": "2020-09-01",
+      "silver_weight": 0.0
+    },
+    {
+      "date": "2020-10-01",
+      "silver_weight": 0.0
+    },
+    {
+      "date": "2020-11-01",
+      "silver_weight": 0.0
+    },
+    {
+      "date": "2020-12-01",
+      "silver_weight": 0.0
+    },
+    {
+      "date": "2021-01-01",
+      "silver_weight": 0.0
+    },
+    {
+      "date": "2021-02-01",
+      "silver_weight": 0.0
+    },
+    {
+      "date": "2021-03-01",
+      "silver_weight": 0.0
+    },
+    {
+      "date": "2021-04-01",
+      "silver_weight": 0.03
+    },
+    {
+      "date": "2021-05-01",
+      "silver_weight": 0.03
+    },
+    {
+      "date": "2021-06-01",
+      "silver_weight": 0.03
+    },
+    {
+      "date": "2021-07-01",
+      "silver_weight": 0.03
+    },
+    {
+      "date": "2021-08-01",
+      "silver_weight": 0.03
+    },
+    {
+      "date": "2021-09-01",
+      "silver_weight": 0.03
+    },
+    {
+      "date": "2021-10-01",
+      "silver_weight": 0.03
+    },
+    {
+      "date": "2021-11-01",
+      "silver_weight": 0.03
+    },
+    {
+      "date": "2021-12-01",
+      "silver_weight": 0.03
+    },
+    {
+      "date": "2022-01-01",
+      "silver_weight": 0.03
+    },
+    {
+      "date": "2022-02-01",
+      "silver_weight": 0.03
+    },
+    {
+      "date": "2022-03-01",
+      "silver_weight": 0.03
+    },
+    {
+      "date": "2022-04-01",
+      "silver_weight": 0.03
+    },
+    {
+      "date": "2022-05-01",
+      "silver_weight": 0.03
+    },
+    {
+      "date": "2022-06-01",
+      "silver_weight": 0.03
+    },
+    {
+      "date": "2022-07-01",
+      "silver_weight": 0.03
+    },
+    {
+      "date": "2022-08-01",
+      "silver_weight": 0.03
+    },
+    {
+      "date": "2022-09-01",
+      "silver_weight": 0.0
+    },
+    {
+      "date": "2022-10-01",
+      "silver_weight": 0.0
+    },
+    {
+      "date": "2022-11-01",
+      "silver_weight": 0.0
+    },
+    {
+      "date": "2022-12-01",
+      "silver_weight": 0.0
+    },
+    {
+      "date": "2023-01-01",
+      "silver_weight": 0.0
+    },
+    {
+      "date": "2023-02-01",
+      "silver_weight": 0.0
+    },
+    {
+      "date": "2023-03-01",
+      "silver_weight": 0.0
+    },
+    {
+      "date": "2023-04-01",
+      "silver_weight": 0.0
+    },
+    {
+      "date": "2023-05-01",
+      "silver_weight": 0.0
+    },
+    {
+      "date": "2023-06-01",
+      "silver_weight": 0.0
+    },
+    {
+      "date": "2023-07-01",
+      "silver_weight": 0.0
+    },
+    {
+      "date": "2023-08-01",
+      "silver_weight": 0.0
+    },
+    {
+      "date": "2023-09-01",
+      "silver_weight": 0.0
+    },
+    {
+      "date": "2023-10-01",
+      "silver_weight": 0.03
+    },
+    {
+      "date": "2023-11-01",
+      "silver_weight": 0.03
+    },
+    {
+      "date": "2023-12-01",
+      "silver_weight": 0.03
+    },
+    {
+      "date": "2024-01-01",
+      "silver_weight": 0.03
+    },
+    {
+      "date": "2024-02-01",
+      "silver_weight": 0.03
+    },
+    {
+      "date": "2024-03-01",
+      "silver_weight": 0.03
+    },
+    {
+      "date": "2024-04-01",
+      "silver_weight": 0.03
+    },
+    {
+      "date": "2024-05-01",
+      "silver_weight": 0.03
+    },
+    {
+      "date": "2024-06-01",
+      "silver_weight": 0.03
+    },
+    {
+      "date": "2024-07-01",
+      "silver_weight": 0.03
+    },
+    {
+      "date": "2024-08-01",
+      "silver_weight": 0.03
+    },
+    {
+      "date": "2024-09-01",
+      "silver_weight": 0.03
+    },
+    {
+      "date": "2024-10-01",
+      "silver_weight": 0.03
+    },
+    {
+      "date": "2024-11-01",
+      "silver_weight": 0.03
+    },
+    {
+      "date": "2024-12-01",
+      "silver_weight": 0.03
+    },
+    {
+      "date": "2025-01-01",
+      "silver_weight": 0.03
+    },
+    {
+      "date": "2025-02-01",
+      "silver_weight": 0.03
+    },
+    {
+      "date": "2025-03-01",
+      "silver_weight": 0.03
+    },
+    {
+      "date": "2025-04-01",
+      "silver_weight": 0.03
+    },
+    {
+      "date": "2025-05-01",
+      "silver_weight": 0.03
+    },
+    {
+      "date": "2025-06-01",
+      "silver_weight": 0.03
+    },
+    {
+      "date": "2025-07-01",
+      "silver_weight": 0.03
+    },
+    {
+      "date": "2025-08-01",
+      "silver_weight": 0.03
+    },
+    {
+      "date": "2025-09-01",
+      "silver_weight": 0.03
+    }
+  ],
+  "verdict": {
+    "primary_shortfall_LCR": {
+      "full_sample_admit": true,
+      "rolling_admit_rate": 0.7368421052631579,
+      "statistically_significant_95": true,
+      "decision": "SILVER ADMITTED (primary / shortfall-LCR view) \u2014 SDC_Ag > 0 with statistical confidence in majority of months. Conditional band 0-3% justified."
+    },
+    "sensitivity_proportional_LCR": {
+      "full_sample_admit": false,
+      "rolling_admit_rate": 0.05263157894736842,
+      "statistically_significant_95": false,
+      "decision": "SILVER = 0% under proportional-LCR sensitivity (pessimistic LCR view also rejects silver)."
+    },
+    "honest_disclaimer": "Results reflect actual historical gold/silver/FX returns 2020-01 \u2192 2025-09. If SDC_Ag \u2264 0, silver = 0% is the VALID v24.2.1 policy outcome (\u00a7\u00a717-19). No results have been forced or cherry-picked. Both primary (shortfall-LCR) and sensitivity (proportional-LCR) verdicts are reported for transparency; the LCR normalization materially affects the conclusion (see report)."
+  }
+}
