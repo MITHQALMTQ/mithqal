@@ -1,0 +1,87 @@
+{
+  "date": "2026-08-13T21:12:44.714529Z",
+  "version": "v24.2",
+  "parameters": {
+    "calibration_period": "2020-01-01 to 2026-08-12",
+    "distributions": "Student-t (df=5) for FX/gold/silver; Normal for cash",
+    "correlation_matrix": "Baseline + crisis (correlation_break=1.5x)",
+    "tail_model": "Student-t with df=5 (fat tails)",
+    "jump_process": "Merton jump-diffusion (lambda=2/year, jump_size=-5%)",
+    "volatility_process": "GARCH(1,1) with volatility clustering",
+    "regime_switching": "2-state Markov (normal/stress) with transition matrix",
+    "liquidity_process": "Bid-ask spread expansion in stress (2x normal, 3x crisis)",
+    "redemption_demand_process": "Poisson with stress-dependent intensity",
+    "stablecoin_depeg_model": "Bernoulli with p=0.02/year, magnitude=N(0.05, 0.1)",
+    "counterparty_migration": "Markov chain (AAA\u2192AA\u2192A\u2192BBB with stress-dependent transitions)",
+    "oracle_failure_model": "Bernoulli p=0.01/path, duration=exponential(1/48) hours",
+    "execution_cost_model": "Linear in trade size + stress multiplier (1x/2x/3x)",
+    "simulation_horizon": "30 days",
+    "number_of_paths": 250000,
+    "random_seed_policy": "FIXED seed=42 for full reproducibility",
+    "confidence_intervals": [
+      95,
+      99,
+      99.9
+    ],
+    "cvar_confidence_level": 0.99
+  },
+  "monte_carlo": {
+    "paths": 250000,
+    "RR": {
+      "mean": 100.03616467193113,
+      "std": 10.90471649448932,
+      "min": 36.687326043586665,
+      "p5": 77.16543554735864,
+      "p1": 74.41223254123207,
+      "p0_1": 70.68784817597414,
+      "P_RR_below_100": 0.215432,
+      "P_RR_below_105": 0.549852,
+      "P_RR_below_120": 0.99992
+    },
+    "StressRR": {
+      "mean": 89.05095660005993,
+      "std": 10.835864024917363,
+      "min": 31.025014336044006,
+      "p5": 66.38736808089645,
+      "p1": 63.9691362552523,
+      "P_StressRR_below_100": 0.993404
+    },
+    "LCR": {
+      "mean": 7.305373783747665,
+      "std": 2.2465810116233844,
+      "min": 1.3207437375691202,
+      "P_LCR_below_1": 0.0,
+      "P_LCR_below_1_2": 0.0
+    },
+    "Losses": {
+      "mean": 10780651.824487008,
+      "VaR_95": 23130664.80442633,
+      "VaR_99": 24617394.427734688,
+      "VaR_99_9": 26628561.98497406,
+      "CVaR_95": 24072931.226319335,
+      "CVaR_99": 25524383.38161179,
+      "CVaR_99_9": 28023532.60792984,
+      "max_loss": 44988843.9364632
+    }
+  },
+  "reverse_stress": {
+    "min_usd_decline": {
+      "shock_pct": 80,
+      "rr_at_breach": 99.83999999999999
+    },
+    "min_redemption": {
+      "redemption_pct": 21,
+      "rr_at_breach": 99.42
+    },
+    "min_correlated_shock": {
+      "shock_pct": 17,
+      "rr_at_breach": 99.6
+    },
+    "min_custody_loss": {
+      "loss_pct": 17,
+      "rr_at_breach": 99.6
+    }
+  },
+  "honest": true,
+  "forced_to_pass": false
+}

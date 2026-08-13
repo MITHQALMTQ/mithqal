@@ -35,7 +35,7 @@ import { NextResponse } from "next/server";
 const SDN_CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
 let sdnCache: { names: Set<string>; fetchedAt: number } | null = null;
 
-async function loadOfacSdnList(): Promise<Set<string>> {
+async function loadOfacSdnList(): Promise<Set<string> | null> {
   if (sdnCache && Date.now() - sdnCache.fetchedAt < SDN_CACHE_TTL) {
     return sdnCache.names;
   }
@@ -73,12 +73,11 @@ async function loadOfacSdnList(): Promise<Set<string>> {
     sdnCache = { names, fetchedAt: Date.now() };
     return names;
   } catch {
-    // If OFAC fetch fails, return empty set (fail-open for testnet;
-    // production must fail-closed)
-    if (!sdnCache) {
-      sdnCache = { names: new Set(), fetchedAt: Date.now() };
-    }
-    return sdnCache.names;
+    // v24.2 CORRECTION: FAIL-CLOSED — if OFAC fetch fails, block ALL transactions
+    // (v24.1 failed open — returned empty set = all addresses pass. This was a P0 bug.)
+    // Now: return null sentinel → caller must reject all transactions
+    console.error("[compliance] OFAC SDN fetch failed — FAILING CLOSED per v24.2 §25");
+    return null;
   }
 }
 
@@ -173,13 +172,15 @@ const screeningLog: ScreeningRecord[] = [];
 
 export async function GET() {
   const sdnList = await loadOfacSdnList();
+  const ofacOnline = sdnList !== null;
 
   return NextResponse.json({
     generatedAt: new Date().toISOString(),
     framework: {
       name: "MITHQAL Compliance Layer",
-      version: "v23.1",
+      version: "v24.2",
       mode: "FRAMEWORK_ACTIVE",
+      failClosedPolicy: "v24.2 CORRECTION: OFAC fetch failure → ALL transactions BLOCKED (fail-closed, not fail-open)",
       productionNote:
         "Production deployment requires a licensed blockchain analytics provider " +
         "(Chainalysis, Elliptic, TRM Labs) for real-time wallet risk scoring. " +
@@ -188,7 +189,9 @@ export async function GET() {
     sanctions: {
       provider: "OFAC SDN List (U.S. Treasury)",
       url: "https://www.treasury.gov/ofac/downloads/sdn.csv",
-      cachedEntries: sdnList.size,
+      ofacOnline,
+      cachedEntries: ofacOnline ? sdnList!.size : 0,
+      failClosed: true,
       cacheTtlHours: 24,
       lastFetch: sdnCache ? new Date(sdnCache.fetchedAt).toISOString() : null,
       coverage: ["SDN (Specially Designated Nationals)", "Consolidated Sanctions List"],
@@ -266,8 +269,27 @@ export async function POST(request: Request) {
     const name = body.name?.trim();
     const tier = body.tier ?? 1;
 
-    // 1. Sanctions screening (OFAC SDN)
+    // 1. Sanctions screening (OFAC SDN) — v24.2 FAIL-CLOSED
     const sdnList = await loadOfacSdnList();
+
+    // v24.2: If OFAC fetch failed, BLOCK ALL transactions (fail-closed)
+    if (sdnList === null) {
+      return NextResponse.json({
+        screeningId: `scr_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+        address,
+        type,
+        name,
+        passed: false,
+        riskScore: 100,
+        flags: ["OFAC SDN list unavailable — FAIL-CLOSED per v24.2"],
+        sanctionsMatches: [],
+        tier,
+        action: "BLOCK",
+        reason: "OFAC SDN screening system unavailable — all transactions blocked per fail-closed policy (v24.2 §25)",
+        nextSteps: "Escalate to compliance officer; retry when OFAC system is available",
+      }, { status: 503 });
+    }
+
     const sanctionsMatches: string[] = [];
 
     // Check name against SDN list (exact + partial)
