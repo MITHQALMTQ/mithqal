@@ -66,6 +66,7 @@ import {
 import { DetailModal } from "@/components/detail-modal";
 import { V23MetricsPanel } from "@/components/v23-metrics-panel";
 import { CbgrsPanel } from "@/components/cbgrs-panel";
+import { RebalancingDashboard } from "@/components/rebalancing-dashboard";
 
 /* ============================================================
  * Types — matches /api/transparency
@@ -1746,6 +1747,9 @@ export default function TransparencyDashboard() {
 
               {/* v24.1.1 CBGRS — Currency Basket Gold-Relative Strength (Layer 2 Advisory) */}
               <CbgrsPanel />
+
+              {/* v24.1.1 Dynamic Reserve Rebalancing Dashboard */}
+              <RebalancingDashboard />
 
               {/* Detailed-view-only contents (UI9 Fix 2): basket table, data
                   sources label, fee schedule. Hidden in Quick View to keep
