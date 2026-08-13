@@ -1,0 +1,1893 @@
+# =====================================================================
+# MITHQAL v24.2 → v24.2.1
+# CTO-CONTROLLED RESERVE RECONCILIATION + GOLD DIGITIZATION +
+# CONDITIONAL SILVER + STRESS-VALIDATED CAPITAL-EFFICIENT REMEDIATION
+# =====================================================================
+
+ROLE
+=====================================================================
+
+You are the Lead CTO + COO + Quantitative Monetary Systems Architect
++ Treasury/Risk Engineer + Project Manager for MITHQAL.
+
+AUTHORITATIVE SOURCE OF TRUTH:
+    MITHQAL-v24.2-FINAL-INSTITUTIONAL-BLUEPRINT.md
+
+The uploaded v24.2 blueprint is the current canonical source.
+
+DO NOT implement the previous v24.1 remediation prompt.
+DO NOT recreate architecture already implemented in v24.2.
+DO NOT create duplicate systems.
+DO NOT increase the permanent reserve requirement.
+DO NOT replace 120% strategic RR with 102%.
+DO NOT force stress tests to pass.
+DO NOT redefine PAR.
+DO NOT weaken constitutional constraints.
+
+THIS IS A CONTROLLED:
+    v24.2 → v24.2.1
+RECONCILIATION + VALIDATION + TARGETED REMEDIATION.
+
+=====================================================================
+0. MASTER OBJECTIVE
+=====================================================================
+
+Objective:
+
+    MAXIMUM VERIFIED RESILIENCE
+    /
+    MINIMUM CAPITAL COST
+
+The system MUST first use:
+
+    reconciliation
+    model correction
+    reserve rebalancing
+    liquidity optimization
+    custody diversification
+    jurisdiction diversification
+    risk transfer
+    liability control
+    operational controls
+
+before considering additional permanent capital.
+
+NO permanent increase to the reserve requirement is authorized by
+this amendment.
+
+Current strategic policy remains:
+
+    RR_strategic = 120%
+
+until independent stress evidence proves otherwise.
+
+=====================================================================
+1. VERSION / AUTHORITY RECONCILIATION
+=====================================================================
+
+v24.2 currently declares itself canonical and supersedes v24.1 and
+earlier versions.
+
+Preserve this authority model.
+
+Create:
+
+    v24.2.1
+
+as the next controlled amendment.
+
+v24.2 becomes:
+    immediate historical parent / baseline
+
+v24.2.1 becomes:
+    new canonical active specification
+    ONLY after all validation gates pass.
+
+DO NOT leave multiple active "canonical" sections.
+
+The current blueprint contains an embedded section labeled:
+
+    "V24 CANONICAL BLUEPRINT"
+
+with Version 24.0 content.
+
+This MUST be explicitly relabeled:
+
+    HISTORICAL / NON-NORMATIVE / ARCHIVE
+
+unless each conflicting value is deliberately reconciled into the
+v24.2.1 canonical registry.
+
+The top-level v24.2 authority MUST win.
+
+=====================================================================
+2. SINGLE ACTIVE CONSTANTS REGISTRY
+=====================================================================
+
+Create/maintain exactly one active constants registry.
+
+Every active monetary/risk parameter must have:
+
+    classification
+    value
+    version
+    authority
+    effective date
+
+Preserve the v24.2 classification model:
+
+    CLASS A = Constitutional Invariant
+    CLASS B = Strategic Policy
+    CLASS C = Operating Corridor
+    CLASS D = Model Parameter
+
+No active duplicate or contradictory constants may remain.
+
+=====================================================================
+3. PRESERVE CORE CONSTITUTIONAL INVARIANTS
+=====================================================================
+
+KEEP EXACTLY:
+
+    PAR = $1.00
+
+    L = S × PAR
+
+    RR = R_a / (S × PAR)
+
+    StressRR(s) = R_stress(s) / (S × PAR)
+
+    RR_floor = 100%
+
+    RR_policy = 105%
+
+    RR_strategic = 120%
+
+Reserve conservation:
+
+    B_t + F_t + D_t = 100%
+
+Constitutional ranges:
+
+    15% <= B_t <= 25%
+    70% <= F_t <= 85%
+     0% <= D_t <=  5%
+
+RR remains the SINGLE legal solvency metric.
+
+Stress-RR remains a forward-looking planning/optimizer hard
+constraint, not a second legal solvency ratio.
+
+Do not alter PAR.
+
+Do not turn MITHQAL into:
+    USD-backed identity
+    gold peg
+    stablecoin
+    sovereign currency
+
+=====================================================================
+4. DO NOT ADOPT THE 102% RESERVE CEILING
+=====================================================================
+
+The separate v24.4/102% proposal is NOT canonical.
+
+Do not import:
+
+    RRmax = 102%
+    RRnormal = 100.5%
+    100.4% in-kind solvency theorem
+    hyper-steep 50% barrier fee as constitutional mechanism
+
+Theoretical reason:
+
+At RR = 1.02:
+
+    maximum loss before RR reaches 100%
+    =
+    1 - 1/1.02
+    =
+    1.960784%
+
+This is too narrow to treat as an institutional reserve safety
+standard without extraordinary proof of residual-loss control.
+
+Retain:
+
+    RR_strategic = 120%
+
+=====================================================================
+5. IMMEDIATE CALM CORRECTION
+=====================================================================
+
+v24.2 currently contains:
+
+    NORMAL    = 1.15
+    CAUTION   = 1.18
+    DEFENSIVE = 1.20
+    STRESS    = 1.25
+    EMERGENCY = 1.30
+    RECOVERY  = 1.20
+
+This is internally inconsistent with:
+
+    RR_strategic = 1.20
+
+and with the purpose of CALM as risk-responsive issuance control.
+
+Correct the direction.
+
+INITIAL TARGET STRUCTURE:
+
+    NORMAL    = 1.20
+    CAUTION   = 1.22
+    DEFENSIVE = 1.23 to 1.25
+    STRESS    = 1.25
+    EMERGENCY = 1.30
+    RECOVERY  = 1.20 to 1.22
+
+Exact intermediate values are CLASS D / policy-calibration
+parameters and MUST be validated.
+
+Core monotonic invariant:
+
+    Risk ↑
+      ->
+    RR_target ↑
+      ->
+    S_max ↓
+      ->
+    MintCapacity ↓
+
+CRISIS/EMERGENCY:
+
+    minting = BLOCKED
+
+Do not rely on fees alone for emergency safety.
+
+=====================================================================
+6. CORRECT Smax EQUATION
+=====================================================================
+
+Canonical formula:
+
+    S_max(t)
+    =
+    R_a(t)
+    /
+    (RR_target(t) × PAR)
+
+NEVER:
+
+    S_max = R_a × RR_target × PAR
+
+The equation, code, tests and documentation MUST be identical.
+
+=====================================================================
+7. AUDIT CURRENT v24.2 BEFORE CHANGING ARCHITECTURE
+=====================================================================
+
+Do NOT immediately replace the existing v24.2 risk engine.
+
+First reproduce the current baseline exactly.
+
+Current blueprint reports:
+
+    250,000 Monte Carlo paths
+    fixed seed = 42
+
+with:
+
+    P(RR < 100%) = 21.54%
+    P(LCR < 1.0) = 0%
+    VaR99 = 24.6M
+    CVaR99 = 25.5M
+    CVaR99.9 = 28.0M
+    minimum correlated shock to breach = 17%
+    minimum custody loss to breach = 17%
+
+These reported results MUST be independently reproduced.
+
+DO NOT rewrite the model before determining:
+    whether the numbers are reproducible
+    whether assumptions are consistent
+    whether risks are double-counted
+    whether the scenario engine is fat-tailed
+    whether correlation assumptions are appropriate
+    whether custody/ERTF assumptions are realistic.
+
+=====================================================================
+8. BASELINE VALIDATION RECORD
+=====================================================================
+
+Create immutable baseline:
+
+    v24.2_BASELINE
+
+Capture:
+
+    reserve composition
+    RR
+    Stress-RR
+    LCR
+    CVaR
+    MRRC
+    custody exposure
+    jurisdiction exposure
+    digital exposure
+    silver allocation
+    gold allocation
+    tokenized assets
+    ERTF
+    model parameters
+    seed
+    scenario set
+
+No later result may overwrite this baseline.
+
+=====================================================================
+9. RESERVE ARCHITECTURE — DO NOT CHANGE TOTAL RESERVE
+=====================================================================
+
+Keep:
+
+    Bullion range = 15–25%
+    Fiat range = 70–85%
+    Digital range = 0–5%
+
+But REASSESS THE STRATEGIC REFERENCE PORTFOLIO.
+
+Do not blindly retain:
+    Gold 15%
+    Silver 3%
+    Fiat 79.5%
+    Digital 2.5%
+
+because our new gold/tokenization proposal changes the internal
+bullion composition.
+
+=====================================================================
+10. NEW GOLD-DOMINANT REFERENCE CANDIDATES
+=====================================================================
+
+Do NOT immediately select a new target.
+
+Create an A/B/C/D/E comparison framework.
+
+MODEL A — CURRENT v24.2 BASELINE
+
+    Physical Gold = 15%
+    Silver = 3%
+    Fiat/Sovereign = 79.5%
+    Digital Liquidity = 2.5%
+
+MODEL B — GOLD-DOMINANT + TOKENIZED GOLD
+
+    Physical Allocated Gold = 15%
+    Tokenized Allocated Gold = 5%
+    Silver = 0%
+    Fiat/Sovereign = 77.5%
+    Digital Liquidity = 2.5%
+
+Total = 100%
+
+MODEL C — MORE PHYSICAL GOLD
+
+    Physical Gold = 17%
+    Tokenized Gold = 3%
+    Silver = 0%
+    Fiat/Sovereign = 77.5%
+    Digital = 2.5%
+
+MODEL D — ALL PHYSICAL GOLD
+
+    Physical Gold = 20%
+    Tokenized Gold = 0%
+    Silver = 0%
+    Fiat/Sovereign = 77.5%
+    Digital = 2.5%
+
+MODEL E — CONDITIONAL SILVER
+
+    Physical Gold = 14%
+    Tokenized Gold = 4%
+    Silver = 2%
+    Fiat/Sovereign = 77.5%
+    Digital = 2.5%
+
+All totals MUST equal:
+
+    100%
+
+DO NOT select the winner by preference.
+
+Select based on stress testing.
+
+=====================================================================
+11. GOLD-DOMINANT POLICY
+=====================================================================
+
+The strategic policy direction is:
+
+    Gold = mandatory primary bullion component
+
+    Silver = optional secondary metal
+
+Gold remains:
+
+    strategic monetary anchor
+    long-term reserve reference
+    last-resort liquidation asset
+
+Gold is NOT:
+
+    PAR
+    gold peg
+    fixed gold redemption promise
+
+=====================================================================
+12. TOKENIZED ALLOCATED GOLD
+=====================================================================
+
+Add a NEW reserve representation layer:
+
+    Tokenized Allocated Gold
+
+This is NOT a new reserve asset class outside bullion.
+
+It is a digital representation/mobility layer of verified allocated
+physical gold.
+
+Canonical identity:
+
+    Gold_total
+    =
+    PhysicalAllocatedGold
+    +
+    TokenizedAllocatedGold
+
+NO double counting.
+
+Tokenized gold must not simultaneously be counted as:
+    physical gold
+    digital liquidity
+    tokenized government liquidity
+    stablecoin exposure
+
+=====================================================================
+13. TOKENIZED GOLD ELIGIBILITY
+=====================================================================
+
+Tokenized gold may enter core bullion only if ALL conditions pass:
+
+    identifiable physical gold backing
+    legally enforceable ownership/proprietary interest
+    allocated custody
+    segregation
+    bankruptcy remoteness
+    no rehypothecation
+    independent reconciliation
+    independent valuation
+    redemption rights
+    approved oracle/reference pricing
+    legal review
+    technology/ledger integrity
+    operational continuity
+
+Reject:
+
+    unallocated gold claims
+    unsecured issuer promises
+    synthetic gold
+    gold derivatives
+    gold futures
+    ETFs for core reserve
+    double-counted claims
+
+=====================================================================
+14. TOKENIZED GOLD RESERVE SCORE
+=====================================================================
+
+Create:
+
+    TGRS = Tokenized Gold Reserve Score
+
+Dimensions:
+
+    PhysicalBacking
+    LegalTitle
+    Custody
+    Redemption
+    IssuerReliability
+    OracleReliability
+    Settlement
+    Liquidity
+    OperationalResilience
+    Jurisdiction
+
+Normalize consistently.
+
+Create governance-approved minimum eligibility.
+
+TGRS is NOT a solvency metric.
+
+=====================================================================
+15. TOKENIZED GOLD HAIRCUT
+=====================================================================
+
+Do not automatically assign tokenized gold the same haircut as
+physical allocated gold.
+
+Define:
+
+    R_a,TG
+    =
+    Q_TG × P_Gold × (1 - H_TG) × C_TG
+
+where:
+
+    H_TG = tokenized-gold haircut
+    C_TG = confidence/counterparty/custody/legal factor
+
+H_TG responds to:
+
+    oracle risk
+    custody risk
+    legal risk
+    redemption risk
+    liquidity
+    issuer risk
+    technology risk
+
+Tokenized-gold haircut may converge toward physical-gold haircut
+ONLY when evidence supports equivalence.
+
+=====================================================================
+16. TOKENIZED GOLD DYNAMIC RANGE
+=====================================================================
+
+Initial candidate range:
+
+    Physical Gold = 10–20%
+    Tokenized Gold = 0–7%
+
+subject to:
+
+    Total bullion <= 25%
+
+and:
+
+    Gold_total = Physical + Tokenized
+
+The normal target begins as a TEST CANDIDATE:
+
+    Physical = 15%
+    Tokenized = 5%
+
+Do not freeze this until A/B testing validates it.
+
+=====================================================================
+17. SILVER — CHANGE FROM MANDATORY TO CONDITIONAL
+=====================================================================
+
+v24.2 currently makes silver a strategic 3% target.
+
+Change the PRINCIPLE:
+
+    Silver normal target = 0%
+
+    Silver conditional band = 0–3%
+
+Silver is NOT deleted.
+
+Silver becomes:
+
+    optional secondary reserve diversification asset
+
+rather than:
+
+    mandatory reserve target.
+
+=====================================================================
+18. SILVER ADMISSION TEST
+=====================================================================
+
+Create:
+
+    SDC_Ag = Silver Diversification Contribution
+
+Evaluate:
+
+    CVaR_with_silver
+    CVaR_without_silver
+
+    StressRR_with_silver
+    StressRR_without_silver
+
+    LCR_with_silver
+    LCR_without_silver
+
+    execution cost
+
+    liquidity depth
+
+    custody cost
+
+Silver may be allocated only where:
+
+    net risk reduction > net economic cost
+
+and constitutional constraints remain satisfied.
+
+If Silver provides no statistically meaningful diversification benefit:
+
+    Silver = 0%
+
+is a VALID policy result.
+
+=====================================================================
+19. SILVER TOKENIZATION — CONDITIONAL
+=====================================================================
+
+Tokenized silver MAY be supported only as a future conditional
+representation layer.
+
+Initial maximum:
+
+    TokenizedSilver <= 2%
+
+but:
+
+    Silver_total <= 3%
+
+No automatic target.
+
+Create:
+
+    TSRIS = Tokenized Silver Reserve Integrity Score
+
+The same anti-double-counting rules apply.
+
+Do NOT make tokenized silver part of the first production rollout
+unless A/B testing proves its benefit.
+
+=====================================================================
+20. REWRITE φ_t LOGIC
+=====================================================================
+
+Current v24.2 contains:
+
+    φ_min = 60%
+    φ_max = 95%
+    normal 75–85%
+    default 75% gold / 25% silver
+
+Replace the DEFAULT logic.
+
+New principle:
+
+    Gold is mandatory dominant component.
+
+    Silver is conditional.
+
+Define:
+
+    GoldShareWithinBullion
+    =
+    Gold_total / Bullion_total
+
+If:
+
+    Silver = 0
+
+then:
+
+    GoldShareWithinBullion = 100%
+
+When silver is admitted, enforce:
+
+    GoldShare >= governance-approved dominant threshold.
+
+Do NOT create a fixed 75/25 gold/silver requirement.
+
+=====================================================================
+21. REVISE BRI
+=====================================================================
+
+Current BRI assumes:
+
+    90% Gold
+    10% Silver
+
+Replace the mandatory silver dependence.
+
+Implement:
+
+    GoldResilienceIndex
+
+and:
+
+    ConditionalMetalDiversificationIndex
+
+If:
+
+    SilverWeight = 0
+
+then the silver component is zero, NOT an error.
+
+BRI remains:
+
+    ADVISORY ONLY
+
+It cannot:
+    modify PAR
+    modify RR
+    authorize minting
+    trigger liquidation
+    guarantee purchasing power
+
+=====================================================================
+22. LIQUIDATION ORDER
+=====================================================================
+
+Preserve the constitutional principle:
+
+    Gold = last-resort liquidation asset
+
+But make execution liquidity-aware.
+
+Conceptual hierarchy:
+
+    Stablecoin
+    ->
+    Cash
+    ->
+    Sovereign
+    ->
+    Non-USD FX
+    ->
+    Conditional Silver / Tokenized Conditional Metal
+    ->
+    Tokenized Gold
+    ->
+    Physical Gold LAST
+
+Actual execution SHALL depend on:
+
+    executable liquidity
+    legal accessibility
+    market depth
+    transaction cost
+    stress state
+    RR
+    LCR
+    LSD
+
+=====================================================================
+23. STABLECOINS — KEEP CURRENT v24.2 LOGIC
+=====================================================================
+
+Do NOT replace stablecoins with tokenized gold.
+
+Preserve:
+
+    Digital Liquidity = 0–5%
+    strategic v24.2 target = 2.5%
+    normal operating corridor = 2–3.5% where appropriate
+
+Stablecoins remain:
+
+    settlement liquidity
+    redemption bridge
+    digital operational liquidity
+
+They are NOT:
+
+    core monetary reserve
+    gold substitute
+    solvency metric
+
+Preserve:
+
+    USDC
+    USDP
+    EURC
+    BUIDL
+
+with:
+    DAI optional
+    USDT excluded
+
+subject to current DRQS and StressDRQS rules.
+
+=====================================================================
+24. DIGITAL LIQUIDITY A/B TEST
+=====================================================================
+
+Compare:
+
+A:
+    stablecoin 2.0%
+    tokenized government 0.5%
+
+B:
+    stablecoin 1.5%
+    tokenized government 1.0%
+
+C:
+    stablecoin 1.0%
+    tokenized government 1.5%
+
+D:
+    defensive digital reduction
+    toward 0%
+
+Measure:
+
+    RR
+    StressRR
+    LCR
+    LSD
+    CVaR
+    redemption latency
+    depeg risk
+    execution cost
+
+Select dynamically.
+
+=====================================================================
+25. PRESERVE v24.2 EFFECTIVE USD EXPOSURE
+=====================================================================
+
+Keep:
+
+    EffectiveUSDExposure
+    =
+    DirectUSD
+    + USD stablecoins
+    + USD tokenized
+    + Pegged AED
+    + Pegged SAR
+
+Maintain:
+
+    strategic <=30%
+    constitutional <=35%
+
+Do not let tokenized gold accidentally count as USD exposure unless
+its legal/economic structure actually creates USD-linked exposure.
+
+=====================================================================
+26. PRESERVE STRESSDRQS
+=====================================================================
+
+Keep v24.2:
+
+    StressDRQS
+    =
+    DRQS × (1 - weighted stress factors)
+
+Use:
+
+    min(DRQS, StressDRQS)
+
+Do not revert to headline DRQS only.
+
+=====================================================================
+27. PRESERVE HIERARCHICAL OPTIMIZER
+=====================================================================
+
+Do NOT rebuild the optimizer.
+
+Keep:
+
+Tier 1:
+    Hard constraints
+
+Tier 2:
+    Risk
+
+Tier 3:
+    Costs
+
+Tier 4:
+    Stability
+
+Preserve the v24.2 principle:
+
+    Constitutional feasibility first.
+    Risk optimization second.
+    Execution last.
+
+=====================================================================
+28. INTEGRATE NEW GOLD/SILVER INTO THE HIERARCHICAL OPTIMIZER
+=====================================================================
+
+Add:
+
+    PhysicalGold
+    TokenizedGold
+    ConditionalSilver
+    ConditionalTokenizedSilver
+
+to the optimizer universe.
+
+But HARD CONSTRAINTS must remain:
+
+    RR >= 100%
+    StressRR >= approved floor
+    LCR >= 1.0
+    USD <= 35%
+    EffectiveUSDExposure <=35%
+    Bullion 15–25%
+    Digital <=5%
+    per-issuer <=2%
+    per-custodian <=15% target/risk cap
+    jurisdiction <=30%
+
+No portfolio may pass by trading away constitutional safety.
+
+=====================================================================
+29. CUSTODY
+=====================================================================
+
+Preserve v24.2 15% optimizer target/cap where already implemented.
+
+Add:
+
+    EffectiveCustodyRisk_i
+    =
+    Exposure_i
+    × LGD_i
+    × CommonMode_i
+    × (1 - RecoveryFactor_i)
+
+Do not assume:
+
+    zero LGD
+
+Do not assume:
+
+    zero commercial default risk
+
+Model:
+
+    segregation
+    bankruptcy remoteness
+    custody jurisdiction
+    common bank
+    common infrastructure
+    common legal entity
+    operational dependency
+
+=====================================================================
+30. SOVEREIGN / DIRECT CUSTODY
+=====================================================================
+
+Keep v24.2 conditional direct/encumbered sovereign-custody
+architecture.
+
+Do NOT hard-code:
+
+    60% = guaranteed zero risk
+
+Use:
+
+    0–50%
+
+as an architectural possible range ONLY where legally and
+operationally available.
+
+Actual target must be optimizer/governance controlled.
+
+=====================================================================
+31. ERTF
+=====================================================================
+
+Preserve existing v24.2 ERTF.
+
+ERTF remains:
+
+    external
+    ring-fenced
+    non-reserve
+    non-PAR
+    non-monetary
+
+Current stated coverage:
+
+    $10M
+
+Current expected recovery:
+
+    $5.905M
+
+Add explicit fields:
+
+    contractual coverage
+    expected recovery
+    conservative recovery
+    worst-case recovery
+    trigger
+    trigger probability
+    recovery delay
+    counterparty
+    legal enforceability
+
+Ordinary RR MUST NOT add ERTF to R_a.
+
+=====================================================================
+32. IN-KIND DELIVERY
+=====================================================================
+
+Preserve v24.2 correct implementation:
+
+    InKindValue = MarketValue(DeliveredAssets)
+
+NOT:
+
+    InKindValue = PAR
+
+Do not introduce the false "in-kind guarantees 100% solvency" theorem.
+
+Correct theorem:
+
+For proportional delivery:
+
+    R_a' = R_a(1-x)
+    L' = L(1-x)
+
+therefore:
+
+    RR' = RR
+
+subject to:
+
+    valuation
+    fees
+    rounding
+    execution
+
+In-kind:
+    preserves ratio
+    does not create value
+    does not repair existing insolvency
+
+=====================================================================
+33. GLOBAL + SUBSYSTEM STATE RECONCILIATION
+=====================================================================
+
+v24.2 has:
+
+    NORMAL
+    CAUTION
+    DEFENSIVE
+    STRESS
+    EMERGENCY
+    RECOVERY
+
+Keep.
+
+Add explicit subsystem states:
+
+    LiquidityState
+    CorrelationState
+    CustodyState
+    CurrencyState
+    DigitalState
+    OracleState
+    ModelState
+
+Create:
+
+    GlobalReserveState
+
+Global state MUST be derived from subsystem severity through a
+documented precedence model.
+
+It is NOT acceptable for the system to show:
+
+    Global = NORMAL
+    while:
+    Correlation = CRISIS
+
+without explicit and validated hierarchy.
+
+Recommended principle:
+
+    GlobalState
+    >=
+    highest applicable subsystem state
+
+subject to hysteresis.
+
+=====================================================================
+34. MODEL RISK UPGRADE
+=====================================================================
+
+Do NOT discard current v24.2 Monte Carlo.
+
+Instead build a challenger stack:
+
+MODEL 1:
+    Current v24.2 Monte Carlo
+    250k paths
+    seed 42
+
+MODEL 2:
+    Historical empirical simulation
+
+MODEL 3:
+    Regime-aware Monte Carlo
+
+MODEL 4:
+    Fat-tail / Cornish-Fisher diagnostic
+
+MODEL 5:
+    Correlation stress / rho -> 1
+
+Compare:
+
+    RR breach probability
+    LCR breach probability
+    VaR
+    CVaR
+    MRRC
+    scenario ranking
+
+The production optimizer MUST use the validated model designated
+by the ModelValidityGate.
+
+=====================================================================
+35. MODEL VALIDITY GATE
+=====================================================================
+
+Preserve:
+
+    If ModelValidity < minimum:
+        fallback to
+        LastApprovedDeterministicPolicyPortfolio
+
+Model failure MUST NEVER expand risk.
+
+=====================================================================
+36. 250,000-PATH REPRODUCTION GATE
+=====================================================================
+
+Before modifying assumptions:
+
+Reproduce:
+
+    P(RR<100%) = 21.54%
+    P(LCR<1) = 0%
+    VaR99 = 24.6M
+    CVaR99 = 25.5M
+    CVaR99.9 = 28.0M
+    min correlated shock = 17%
+    min custody loss = 17%
+
+If results cannot be reproduced exactly from the same inputs and
+seed, STOP.
+
+Do not modify the model until the discrepancy is explained.
+
+=====================================================================
+37. NEW A/B TEST MATRIX
+=====================================================================
+
+Run the exact same scenario universe against:
+
+A — Current v24.2
+B — 15% Physical Gold + 5% Tokenized Gold + 0% Silver
+C — 17% Physical Gold + 3% Tokenized Gold + 0% Silver
+D — 20% Physical Gold + 0% Tokenized Gold + 0% Silver
+E — 14% Physical Gold + 4% Tokenized Gold + 2% Silver
+
+For each record:
+
+    RR
+    StressRR
+    P(RR<100%)
+    LCR
+    LSD
+    VaR99
+    CVaR99
+    CVaR99.9
+    MRRC
+    custody loss sensitivity
+    tokenized-gold failure
+    silver contribution
+    digital stress
+    execution cost
+    lifecycle cost
+    model dependency
+
+=====================================================================
+38. SILVER A/B TEST
+=====================================================================
+
+Run:
+
+    Silver 0%
+    Silver 1%
+    Silver 2%
+    Silver 3%
+
+holding total reserves constant.
+
+Do not permit a silver increase to create >100% total reserves.
+
+Find:
+
+    Silver_opt
+
+where:
+
+    net_resilience_gain
+    >
+    net_cost + volatility + liquidity penalty
+
+If no silver allocation improves the portfolio:
+
+    Silver_opt = 0%
+
+This is a valid successful outcome.
+
+=====================================================================
+39. TOKENIZED GOLD A/B TEST
+=====================================================================
+
+Run:
+
+    0%
+    3%
+    5%
+    7%
+
+tokenized gold
+
+holding:
+
+    total bullion constant
+
+Compare:
+
+    physical custody risk
+    digital infrastructure risk
+    liquidity benefit
+    settlement latency
+    redemption reliability
+    CVaR
+    StressRR
+    LCR
+    execution cost
+
+Do not assume 5% is optimal.
+
+=====================================================================
+40. ADVERSARIAL TOKENIZED-GOLD TESTS
+=====================================================================
+
+Run:
+
+    tokenized gold 10% discount
+    tokenized gold 25% discount
+    tokenized gold 50% impairment
+    tokenized gold 100% impairment
+    issuer failure
+    custody failure
+    oracle failure
+    redemption delay
+    blockchain outage
+    legal-recognition failure
+
+System MUST:
+
+    recognize loss
+    avoid double counting
+    reduce tokenized allocation
+    restore via physical gold/fiat/liquidity where appropriate
+
+=====================================================================
+41. ADVERSARIAL SILVER TESTS
+=====================================================================
+
+Run:
+
+    silver -10%
+    silver -20%
+    silver -30%
+    silver -50%
+    silver liquidity freeze
+
+Compare against:
+
+    Silver = 0%
+
+The purpose is to determine whether silver actually improves
+portfolio resilience.
+
+=====================================================================
+42. DIGITAL / STABLECOIN STRESS
+=====================================================================
+
+Run:
+
+    single stablecoin -10%
+    -25%
+    -50%
+    -100%
+
+and:
+
+    total stablecoin sleeve = 0%
+
+and:
+
+    banking freeze
+    issuer failure
+    redemption delay
+    depeg
+    liquidity disappearance
+
+Digital liquidity may move toward 0%.
+
+Fiat/Sovereign absorbs the freed allocation.
+
+Do not liquidate gold merely to replace a stablecoin.
+
+=====================================================================
+43. CUSTODY STRESS
+=====================================================================
+
+Run:
+
+    5%
+    10%
+    15%
+    20%
+    30%
+
+custodian exposure with:
+
+    LGD = 25%
+    LGD = 50%
+    LGD = 100%
+
+Then:
+
+    correlated two-custodian failure
+    common infrastructure failure
+    ERTF unavailable
+    ERTF delayed
+    ERTF partial recovery
+
+Report:
+
+    gross loss
+    recoverable loss
+    residual loss
+    RR
+    StressRR
+
+=====================================================================
+44. CORRELATION STRESS
+=====================================================================
+
+Run:
+
+    rho = 0.50
+    rho = 0.75
+    rho = 0.90
+    rho = 1.00
+
+Then:
+
+    broad -10%
+    broad -15%
+    broad -20%
+    broad -30%
+
+Do not classify failures as BDL merely to obtain a 100% pass rate.
+
+The design envelope MUST be approved independently.
+
+=====================================================================
+45. WEEKEND / GAP / BASIS TESTS
+=====================================================================
+
+Test:
+
+    gold weekend -10%
+    gold weekend -20%
+    FX weekend -10%
+    multi-asset gap
+    basis +100bps
+    basis +250bps
+    basis +350bps
+    execution slippage 25bps
+    execution slippage 50bps
+    execution slippage 100bps
+
+Do not use "zero-cost" terminology for option collars.
+
+If a hedge has zero net premium:
+
+    disclose opportunity cost
+    disclose capped upside
+    disclose basis risk
+    disclose roll risk
+    disclose counterparty/clearing risk
+
+=====================================================================
+46. REDEMPTION STRESS
+=====================================================================
+
+Run:
+
+    10%
+    20%
+    30%
+    50%
+    80%
+
+redemption demand.
+
+Include:
+
+    48-hour
+    7-day
+    30-day
+
+stress windows.
+
+Measure:
+
+    RR
+    StressRR
+    LCR
+    LSD
+    cash exhaustion
+    digital liquidity exhaustion
+    sovereign liquidation
+    silver usage
+    gold protection
+
+=====================================================================
+47. IN-KIND STRESS TEST
+=====================================================================
+
+At:
+
+    RR = 100.4%
+
+perform:
+
+    10%
+    30%
+    50%
+    80%
+
+proportional in-kind redemptions.
+
+Expected:
+
+    RR_after approximately RR_before
+
+NOT:
+
+    RR_after automatically 100%
+
+Then apply an independent additional market loss.
+
+Verify:
+
+    in-kind does not magically restore solvency.
+
+=====================================================================
+48. BLUEPRINT RECONCILIATION SWEEP
+=====================================================================
+
+Search the ENTIRE 27,000+ line blueprint for:
+
+    Silver 5%
+    Silver 3%
+    Silver 3-8%
+    Gold 15%
+    Gold 12-18%
+    Gold 15-20%
+    Digital 3.5%
+    Digital 2.5%
+    Stablecoin 5%
+    Stablecoin 2-8%
+    RR 117%
+    RR 115%
+    RR 102%
+    100.5%
+    100.4%
+    zero LGD
+    zero commercial default
+    zero-cost hedge
+    guaranteed PAR in-kind
+    guaranteed solvency
+    DEX derivative
+    MTQ-J
+
+Classify each occurrence:
+
+    ACTIVE — UPDATE
+or
+    HISTORICAL — NON-NORMATIVE ARCHIVE
+
+No contradictory active values may remain.
+
+=====================================================================
+49. EXACT BLUEPRINT SECTION CHANGES
+=====================================================================
+
+FIRST:
+Update the CANONICAL v24.2 AMENDMENT REGISTRY with v24.2.1 changes.
+
+SECOND:
+Update the active constants registry.
+
+THIRD:
+Update the strategic reference portfolio.
+
+FOURTH:
+Update the six-state gold/silver policy table.
+
+FIFTH:
+Update the metallic reserve architecture.
+
+SIXTH:
+Add tokenized allocated gold eligibility.
+
+SEVENTH:
+Make silver conditional.
+
+EIGHTH:
+Update φ_t and BRI.
+
+NINTH:
+Update Article IV / Monetary Metals language.
+
+TENTH:
+Update reserve valuation/haircut table.
+
+ELEVENTH:
+Update optimizer constraints.
+
+TWELFTH:
+Update liquidation order.
+
+THIRTEENTH:
+Update dashboard reporting.
+
+FOURTEENTH:
+Archive obsolete v24 text as historical.
+
+=====================================================================
+50. SPECIFIC NEW SECTION TO ADD
+=====================================================================
+
+ADD NEW CANONICAL SECTION:
+
+    "V24.2.1 — TOKENIZED ALLOCATED GOLD RESERVE LAYER"
+
+Include:
+
+    purpose
+    legal ownership
+    physical backing
+    custody
+    reconciliation
+    anti-rehypothecation
+    TGRS
+    haircut
+    dynamic allocation
+    failure treatment
+    token supply <= underlying gold
+    independent verification
+
+=====================================================================
+51. SPECIFIC NEW SECTION TO ADD
+=====================================================================
+
+ADD:
+
+    "V24.2.1 — CONDITIONAL SILVER RESERVE POLICY"
+
+Include:
+
+    normal target = 0%
+    conditional range = 0–3%
+    SDC_Ag
+    silver A/B stress testing
+    physical silver
+    optional tokenized silver
+    removal criteria
+    no constitutional requirement to hold silver
+
+=====================================================================
+52. SPECIFIC NEW SECTION TO ADD
+=====================================================================
+
+ADD:
+
+    "V24.2.1 — RESERVE COMPOSITION SELECTION PROTOCOL"
+
+The optimizer MUST compare candidate reserve portfolios.
+
+Selection must be based on:
+
+    hard feasibility
+    StressRR
+    CVaR
+    MRRC
+    LCR
+    LSD
+    custody
+    jurisdiction
+    execution cost
+    lifecycle cost
+    model dependency
+
+No human preference may override the documented selection protocol
+except through formal governance approval.
+
+=====================================================================
+53. STRATEGIC REFERENCE PORTFOLIO — PROVISIONAL ONLY
+=====================================================================
+
+Until A/B validation completes:
+
+    Candidate:
+        PhysicalGold = 15%
+        TokenizedGold = 5%
+        Silver = 0%
+        Fiat/Sovereign = 77.5%
+        Digital = 2.5%
+
+Label:
+
+    PROVISIONAL — PENDING A/B STRESS VALIDATION
+
+Do NOT mark as immutable.
+
+The final chosen portfolio MUST be the best validated candidate.
+
+=====================================================================
+54. DO NOT CREATE DOUBLE-COUNTING
+=====================================================================
+
+These identities MUST hold:
+
+    GoldTotal
+    =
+    PhysicalGold + TokenizedGold
+
+    SilverTotal
+    =
+    PhysicalSilver + TokenizedSilver
+
+    Bullion
+    =
+    GoldTotal + SilverTotal
+
+    TotalReserve
+    =
+    Bullion + Fiat + Digital
+    =
+    100%
+
+Tokenized metal underlying assets MUST NOT be added twice.
+
+=====================================================================
+55. METAL ELIGIBILITY
+=====================================================================
+
+The existing physical-metal prohibition on:
+
+    derivatives
+    futures
+    ETFs
+    unallocated claims
+
+remains unchanged.
+
+Tokenized allocated metals are an exception ONLY if they satisfy
+the strict allocated-physical-ownership test.
+
+Otherwise they are NOT eligible.
+
+=====================================================================
+56. DOCUMENT TERMINOLOGY
+=====================================================================
+
+Do not use:
+
+    "gold-backed token"
+
+Preferred:
+
+    "reserve-backed settlement infrastructure"
+    "gold-disciplined settlement architecture"
+    "tokenized allocated gold representation"
+
+Do not imply:
+
+    1 MTQ = X gold
+
+=====================================================================
+57. CAPITAL EFFICIENCY
+=====================================================================
+
+Do not increase:
+
+    RR_strategic
+
+as an automatic response to failed scenarios.
+
+After all non-capital controls are applied, calculate:
+
+    ΔCapital_min
+
+Only a positive ΔCapital_min may justify future capitalization.
+
+=====================================================================
+58. FINAL VALIDATION MATRIX
+=====================================================================
+
+The final report MUST contain:
+
+    v24.2 baseline
+    Candidate A
+    Candidate B
+    Candidate C
+    Candidate D
+    Candidate E
+
+For each:
+
+    RR
+    StressRR
+    P(RR<100%)
+    LCR
+    LSD
+    CVaR99
+    CVaR99.9
+    MRRC
+    custody risk
+    tokenized-gold risk
+    silver risk
+    digital risk
+    execution cost
+    lifecycle cost
+    minimum additional capital required
+
+=====================================================================
+59. RELEASE GATES
+=====================================================================
+
+Preserve v24.2 release gates and extend them.
+
+Required:
+
+1. Arithmetic Gate
+2. Constant Gate
+3. Solvency Gate
+4. Liquidity Gate
+5. Model Gate
+6. Oracle Gate
+7. Custody Gate
+8. Legal Gate
+9. Sharia Governance Gate
+10. Digital Asset Gate
+11. Tokenized Gold Gate
+12. Silver Conditionality Gate
+13. Capital-Efficiency Gate
+14. Reproducibility Gate
+
+No production approval before all applicable gates pass.
+
+=====================================================================
+60. FINAL STATUS
+=====================================================================
+
+Until independently validated:
+
+    IMPLEMENTED / VALIDATION REQUIRED
+
+Do NOT call this:
+
+    production certified
+    institutionally approved
+    central-bank approved
+    regulator approved
+    Sharia certified
+    risk-free
+
+=====================================================================
+61. REQUIRED FINAL DEVELOPER REPORT
+=====================================================================
+
+Return:
+
+A. Exact files changed
+B. Exact blueprint sections changed
+C. Conflicting legacy constants found
+D. Conflicts resolved
+E. v24.2 baseline reproduction
+F. 250k Monte Carlo reproduction result
+G. Current model diagnostics
+H. New candidate portfolios
+I. Gold/tokenized-gold test results
+J. Silver 0/1/2/3% test results
+K. Digital sleeve test results
+L. Custody test results
+M. ERTF stress results
+N. Correlation stress results
+O. Redemption stress results
+P. In-kind results
+Q. CALM corrected state table
+R. Global/subsystem state reconciliation
+S. Before/after CVaR
+T. Before/after Stress-RR
+U. Before/after P(RR<100%)
+V. LCR/LSD comparison
+W. Minimum capital required
+X. Final selected reserve configuration
+Y. Why it won
+Z. Remaining FAIL scenarios
+AA. Remaining BDL scenarios
+AB. Independent validation requirements
+
+=====================================================================
+62. FINAL COO DECISION PRINCIPLE
+=====================================================================
+
+The final system MUST optimize:
+
+    VERIFIED RESILIENCE
+    /
+    CAPITAL COST
+
+The correct sequence is:
+
+    Reconcile
+      ->
+    Reproduce
+      ->
+    Stress
+      ->
+    Compare
+      ->
+    Optimize
+      ->
+    Validate
+      ->
+    Freeze
+
+NOT:
+
+    Add feature
+      ->
+    declare PASS
+      ->
+    freeze blueprint.
+
+The objective is NOT to maximize gold,
+not to maximize silver,
+not to maximize digital assets,
+not to minimize reserve capital blindly.
+
+The objective is:
+
+    the lowest-cost reserve configuration that demonstrably
+    survives the approved risk envelope while preserving all
+    constitutional, legal, liquidity and redemption constraints.
+
+=====================================================================
+END OF v24.2 → v24.2.1 MASTER IMPLEMENTATION PROMPT
+=====================================================================
