@@ -1,103 +1,57 @@
 # Mithqal Blueprint Documentation
 
-This directory contains the complete Mithqal Constitutional Blueprint.
+This directory contains the **single canonical blueprint** for MITHQAL.
 
-## Documents
+## Canonical Document
 
-### blueprint.txt
+### `mithqal-canonical-blueprint.md`
 
-The complete v18 Constitutional Blueprint — all 5 layers, 42 articles.
+**Version:** 24.2.1-FINAL
+**Date:** 2026-08-13
+**Status:** CANONICAL — sole source of truth for all monetary, reserve, governance, legal, technical, and operational requirements.
 
-**Status:** ✅ Complete
+This is the ONLY blueprint document. All prior versions (v18, v19, v20, v21, v22, v23, v24, v24.1, v24.2) have been removed. Historical text from those versions is retained as non-normative archive within the canonical document itself.
 
-**Version:** 18.0
+## Key Contents
 
-**Date:** 2026-07-19
+- **Institutional Constitution** — 17 Articles (identity, neutrality, governance)
+- **Monetary Constitution** — 9 Articles (PAR, RR, reserve principles, monetary metals)
+- **Policy Framework** — 8 Articles (dynamic ranges, fees, sanctions, risk tolerances)
+- **Technical Framework** — 8 Articles (smart contracts, oracles, security, formal verification)
+- **Operations** — 7 Articles (reserve management, transactions, compliance, vendor management)
 
-## Blueprint Structure
+## v24.2.1 Amendments (Active)
 
-### Part 1: Layer 1 — Institutional Constitution (17 Articles)
-- Article I: Constitutional Objectives
-- Article II: Constitutional Principles
-- Article III: Decision Hierarchy
-- Article IV: Institutional Neutrality
-- Article V: Anti-Platform / No Constitutional Drift
-- Article VI: Predictably Adaptive
-- Article VII: Failure Definition
-- Article VIII: Governance
-- Article IX: Founder Succession
-- Article X: Emergency Governance
-- Article XI: Regulatory Adaptability
-- Article XII: Amendment Philosophy
-- Article XIII: Interpretation Clause
-- Article XIV: Institutional Lifecycle
-- Article XV: Constitutional Success Metrics
-- Article XVI: Language Standards
-- Article XVII: Five-Year Independent Review
+1. CALM correction (NORMAL=1.20, monotonically increasing)
+2. Tokenized Allocated Gold (TGRS/TGLS/TGBS, 13-point eligibility gate)
+3. Conditional Silver (SDC_Ag, 0% normal target, 0-3% conditional band)
+4. φ_t rewrite (gold mandatory dominant, silver conditional)
+5. BRI revision (GoldResilienceIndex + ConditionalMetalDiversificationIndex)
+6. Liquidation order (tokenized gold before physical gold)
+7. Subsystem state reconciliation (7 subsystems, global ≥ highest)
+8. A/B/C/D/E portfolio comparison (common random numbers)
+9. Separated oracle architecture (GoldNAV ≠ PAXG market)
+10. Anti-double-counting formal proof (32/32 PASS)
 
-### Part 2: Layer 2 — Monetary Constitution (9 Articles)
-- Article I: Invariants
-- Article II: Monetary Objectives
-- Article III: Reserve Principles
-- Article IV: Monetary Metals
-- Article V: Currency Framework
-- Article VI: Monetary Engine
-- Article VII: Proof of Reserves
-- Article VIII: Yield Separation
-- Article IX: Sharia Compliance
+## Selected Portfolio
 
-### Part 3: Layer 3 — Policy Framework (8 Articles)
-- Article I: Dynamic Reserve Ranges
-- Article II: Committee Mandates
-- Article III: Fee Schedules
-- Article IV: Sanctions Mechanics
-- Article V: Risk Tolerances
-- Article VI: Maturity Stages
-- Article VII: Review Cycles
-- Article VIII: Physical Redemption Terms
+**Portfolio B — APPROVED CANDIDATE:**
+- Physical Gold = 15% (allocated vault)
+- Tokenized Gold = 5% (PAXG only — TGRS 9.00)
+- Silver = 0% (conditional, SDC_Ag-negative)
+- Fiat = 77.5% (10-currency basket)
+- Digital = 2.5% (USDC/USDP/EURC/BUIDL)
 
-### Part 4: Layer 4 — Technical Framework (8 Articles)
-- Article I: Smart Contracts
-- Article II: Cryptography
-- Article III: Oracle Architecture
-- Article IV: Interoperability
-- Article V: Security
-- Article VI: Infrastructure
-- Article VII: Formal Verification
-- Article VIII: Disaster Recovery
+## Validation
 
-### Part 5: Layer 5 — Operations (7 Articles)
-- Article I: Reserve Management Operations
-- Article II: Transaction Processing Operations
-- Article III: Participant Services
-- Article IV: Compliance Execution
-- Article V: Technical Operations
-- Article VI: Vendor Management
-- Article VII: Documentation and Reporting
+6-task validation cycle complete. 17/22 acceptance gates satisfied. See Appendix V24.2.1-V in the blueprint for full results.
 
----
+## Governance Status
 
-## Key Principles
-
-### The 4 Absolute Invariants
-1. 100% Reserve Ratio
-2. No Discretionary Minting
-3. No Lending of Reserves
-4. No Commingling
-
-### The Anti-Platform Clause
-The MMA operates no commercial services. This is permanent and not subject to amendment.
-
-### Institutional Neutrality
-No political, economic, or jurisdictional alignment.
-
-### Sharia Compliance
-AAOIFI standards, independent Sharia Committee.
-
----
+APPROVED CANDIDATE — PENDING INDEPENDENT INSTITUTIONAL VALIDATION.
+NOT production-certified. NOT regulator-approved. NOT risk-free.
 
 ## For More Information
 
 - **GitHub:** https://github.com/MITHQALMTQ/mithqal
-- **Twitter/X:** https://x.com/MithqalMTQ
-- **Blueprint:** https://github.com/MITHQALMTQ/mithqal/blob/main/docs/blueprint/blueprint.txt
+- **Blueprint:** https://github.com/MITHQALMTQ/mithqal/blob/main/docs/blueprint/mithqal-canonical-blueprint.md

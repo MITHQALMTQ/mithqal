@@ -1,11 +1,11 @@
-// Mithqal v19.0.3 — Constitutional Infrastructure Modules
+// Mithqal v24.2.1 — Constitutional Infrastructure Modules
 //
 // Implements Part V (Oracle Engine & Technical Operations, §30-42) and
-// Part VI (Governance & Constitutional Framework, §43-55) of the v19.0.3
+// Part VI (Governance & Constitutional Framework, §43-55) of the v24.2.1
 // specification. These modules complement the Monetary Engine (§1-22A)
 // and Reserve Allocation (§23-29).
 //
-// All implementations are faithful to the v19.0.3 specification, which is
+// All implementations are faithful to the v24.2.1 specification, which is
 // the single source of truth.
 
 import {
@@ -185,7 +185,7 @@ export function oracleFailureRecovery(
 }
 
 // ============================================================
-// §33: SEVERE DEVIATION PROTOCOL (SDP) v19.0.3
+// §33: SEVERE DEVIATION PROTOCOL (SDP) v24.2.1
 // ============================================================
 
 export interface SDPTrigger {
@@ -211,7 +211,7 @@ export const SDP_TRIGGER_THRESHOLD = 0.05; // 5%
 export const SDP_CAP = 0.50; // weights cannot drop below 50% of current
 
 /**
- * §33 Severe Deviation Protocol — v19.0.3.
+ * §33 Severe Deviation Protocol — v24.2.1.
  * Detects deviation, computes emergency adjustment, applies anti-shock cap.
  */
 export function detectSDP(
@@ -271,7 +271,7 @@ export function computeSDPEmergency(
 
 /**
  * §10 Constitutional Counterparty Exposure Limit — single tier of the
- * 7-row cap table specified by the v19.0.3 blueprint.
+ * 7-row cap table specified by the v24.2.1 blueprint.
  *
  * Exposure is measured against the institution's total adjusted reserves
  * (R_a, §2). Each tier caps the maximum permissible concentration at a
@@ -794,7 +794,7 @@ export const STRESS_SCENARIOS = [
 /**
  * §12 Currency Admission Lifecycle — runtime state machine.
  *
- * The v19.0.3 constitution (§12) specifies a 4-stage lifecycle for every
+ * The v24.2.1 constitution (§12) specifies a 4-stage lifecycle for every
  * basket currency:
  *
  *   observation ──(≥ 2 quarters)──▶ probation ──(Council approval)──▶ full
@@ -1376,7 +1376,7 @@ export function advanceAmendment(
 }
 
 // ============================================================
-// §44: 5-LEVEL EMERGENCY GOVERNANCE (BLUEPRINT v19.0.3)
+// §44: 5-LEVEL EMERGENCY GOVERNANCE (BLUEPRINT v24.2.1)
 // ============================================================
 
 /**
@@ -2038,7 +2038,7 @@ export function verifyConstant(name: string, value: number): boolean {
 // §27: CONSTITUTIONAL STABLECOIN REPLACEMENT FRAMEWORK
 // ============================================================
 //
-// Implements §27 of the v19.0.3 Constitution: when an operational
+// Implements §27 of the v24.2.1 Constitution: when an operational
 // stablecoin loses eligibility (§26), breaches a concentration cap
 // (§21), suffers a counterparty downgrade (§7), or is removed by
 // governance decision, the Constitution mandates a deterministic
@@ -2237,7 +2237,7 @@ export function verifyStablecoinReplacement(
 // §28: CONSTITUTIONAL GOLD & SILVER ACQUISITION FRAMEWORK
 // ============================================================
 //
-// Implements §28 of the v19.0.3 Constitution: prudential, transparent,
+// Implements §28 of the v24.2.1 Constitution: prudential, transparent,
 // and deterministic bullion acquisition for the Constitutional
 // Bullion Reserve Layer (§25). Acquisitions shall prioritise reserve
 // integrity, price efficiency, operational security, counterparty
@@ -2485,7 +2485,7 @@ export function deferBullionAcquisition(
 // §29: CONSTITUTIONAL RESERVE REBALANCING ALGORITHM
 // ============================================================
 //
-// Implements §29 of the v19.0.3 Constitution: deterministic reserve
+// Implements §29 of the v24.2.1 Constitution: deterministic reserve
 // rebalancing that restores constitutional compliance while
 // minimising transaction costs, market impact, and operational
 // risk. Rebalancing SHALL be initiated ONLY when constitutionally
@@ -3400,7 +3400,7 @@ export function verifyRebalanceCompletion(postState: {
 // §47: CONSTITUTIONAL CONTINUITY & INSTITUTIONAL RESILIENCE
 // ============================================================
 //
-// Implements §47 of the v19.0.3 Constitution: continuous constitutional
+// Implements §47 of the v24.2.1 Constitution: continuous constitutional
 // operation under all reasonably foreseeable technical, operational,
 // legal, financial, geopolitical, and systemic disruptions. Recovery
 // procedures SHALL preserve Constitutional Invariants, reserve
@@ -3624,7 +3624,7 @@ function median(data: number[]): number {
 // §56: CONSTITUTIONAL DEPENDENCY FRAMEWORK
 // ============================================================
 //
-// Implements Section 56 of the v19.0.3 specification — the largest single
+// Implements Section 56 of the v24.2.1 specification — the largest single
 // blueprint section (1700+ lines). The framework governs every external
 // entity the Institution depends on: RPC endpoints, oracle APIs, the
 // operational database, SMTP email, LLM providers, web hosting, DNS,
@@ -3767,7 +3767,7 @@ export const DEPENDENCY_AUDIT_FREQUENCY: Record<DependencyTier, Dependency["audi
 
 /**
  * §56.2 Dependency Registry — the canonical, exhaustively-enumerated
- * list of every external entity on which the Mithqal v19.0.3
+ * list of every external entity on which the Mithqal v24.2.1
  * implementation depends. Each entry carries its §56.1A tier, §56.4
  * concentration limit, §56.6 replacement plan, and §56.12 lifecycle
  * status. Adding a new dependency requires §56.10 approval at the
@@ -4339,7 +4339,7 @@ export interface CryptographicAuditEntry {
  *   Level 3  Emergency Keys    Emergency custodian access
  *   Level 4  Backup Keys       Disaster recovery
  *
- * Threshold quorums are taken from the v19.0.3 blueprint and exist to
+ * Threshold quorums are taken from the v24.2.1 blueprint and exist to
  * prevent any single custodian from unilaterally exercising root
  * authority. In the simulation these quorums are enforced by
  * `thresholdSign()`; in production they are enforced inside the MPC node.
@@ -4586,7 +4586,7 @@ export function verifyZeroTrust(accessRequest: {
 // ============================================================
 //
 // The existing §10 7-tier table (above) models exposure as a tiered
-// cap stack. The v19.0.3 blueprint §10 ALSO defines exposure along
+// cap stack. The v24.2.1 blueprint §10 ALSO defines exposure along
 // seven orthogonal CATEGORIES that map directly to §10.1–§10.7.
 // This block surfaces the categorical view so compliance dashboards
 // can render both representations from the same source of truth.
@@ -4669,7 +4669,7 @@ export function checkExposure(exposures: Record<string, number>): ExposureCheck[
 //
 // The existing §12 `currencyLifecycle()` function implements a
 // 4-stage state machine (observation → probation → full → suspended)
-// over the basket's `CurrencyData[]`. The v19.0.3 blueprint §12
+// over the basket's `CurrencyData[]`. The v24.2.1 blueprint §12
 // actually specifies a 9-stage admission lifecycle with formal
 // evaluation, council review, monitoring, removal, and reinstatement
 // stages. This block implements the full 9-stage machine as a
@@ -4818,16 +4818,16 @@ export interface EngineVersion {
 
 export const ENGINE_VERSIONS: EngineVersion[] = [
   {
-    version: "v19.0.3",
+    version: "v24.2.1",
     releaseDate: "2026-07-22",
     status: "active",
     changes: ["Initial constitutional release", "55 sections implemented", "Fixed-point arithmetic (§11)"],
     backwardCompatible: true,
-    minValidatorVersion: "v19.0.3",
+    minValidatorVersion: "v24.2.1",
   },
 ];
 
-export const CURRENT_ENGINE_VERSION = "v19.0.3";
+export const CURRENT_ENGINE_VERSION = "v24.2.1";
 
 export function getEngineVersion(): string {
   return CURRENT_ENGINE_VERSION;

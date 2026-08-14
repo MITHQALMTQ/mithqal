@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * MITHQAL v19.0.3 — ECONOMIC SIMULATION (Task 17-b, Part X)
+ * MITHQAL v24.2.1 — ECONOMIC SIMULATION (Task 17-b, Part X)
  * ============================================================================
  *
  * Built by the Enterprise Risk Manager role. Runs economic simulations at
@@ -23,7 +23,7 @@
  *   • Compliance:      $300K/yr fixed
  *   • Audit:           $200K/yr fixed
  *
- *   Reserve composition (matches the v19.0.3 baseline):
+ *   Reserve composition (matches the v24.2.1 baseline):
  *     Cash        57.6% of total  ($32.45M at $56.3M baseline)
  *     Sovereign   24.0%           ($13.50M)
  *     Gold        15.4%           (2,122.86 oz @ $4,076.9)
@@ -438,7 +438,7 @@ const USER_SCALES = [10, 100, 1_000, 10_000, 100_000, 1_000_000, 10_000_000];
 const RESERVE_SCALES = [100_000, 1_000_000, 10_000_000, 100_000_000, 1_000_000_000, 10_000_000_000, 100_000_000_000];
 
 console.log("\n" + "=".repeat(120));
-console.log("  MITHQAL v19.0.3 — ECONOMIC SIMULATION (Task 17-b, Part X)");
+console.log("  MITHQAL v24.2.1 — ECONOMIC SIMULATION (Task 17-b, Part X)");
 console.log("  7 user scales × 7 reserve sizes = 49 simulation points");
 console.log("=".repeat(120));
 console.log("\nASSUMPTIONS:");

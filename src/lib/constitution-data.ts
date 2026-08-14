@@ -1,4 +1,4 @@
-// Mithqal Constitution v19.0.3 — structured, citable reference.
+// Mithqal Constitution v24.2.1 — structured, citable reference.
 // The blueprint is a 4-layer architecture (Institutional / Monetary /
 // Governance & Policy / Technical / Operations) with ~47 articles.
 // This module structures the full table of contents plus detailed

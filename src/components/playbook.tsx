@@ -278,7 +278,7 @@ function Hero() {
         <Reveal>
           <div className="flex items-center gap-2">
             <Badge className="border-gold/40 bg-gold/10 text-gold hover:bg-gold/10">
-              v19.0.3 · Consolidated Specification
+              v24.2.1 · Consolidated Specification
             </Badge>
             <Badge className="border-line bg-ink-card text-fg-muted hover:bg-ink-card">
               Prepared for the COO / PM
@@ -341,7 +341,7 @@ function Hero() {
         <Reveal delay={0.24}>
           <div className="mt-8 grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-line bg-line sm:grid-cols-4">
             {[
-              { k: "Blueprint", v: "v19.0.3", s: "1.46M-char Constitution" },
+              { k: "Blueprint", v: "v24.2.1", s: "1.46M-char Constitution" },
               { k: "Capital", v: "Pre-seed", s: "Pre-institutional — founder dedication phase" },
               { k: "Entity", v: "JOZOUR LLC", s: "Registered (NJ, USA)" },
               { k: "Target raise", v: "$0.25–8M", s: "Pre-seed → Seed (Entity B)" },
@@ -1328,13 +1328,13 @@ function Footer() {
               <FileText className="h-4 w-4" /> GitHub
             </a>
             <span className="inline-flex items-center gap-1.5">
-              <Boxes className="h-4 w-4" /> Blueprint v19.0.3
+              <Boxes className="h-4 w-4" /> Blueprint v24.2.1
             </span>
           </div>
         </div>
         <Separator className="my-6 bg-line" />
         <p className="text-xs leading-relaxed text-fg-muted">
-          This playbook is a strategic execution document derived from the Mithqal v19.0.3
+          This playbook is a strategic execution document derived from the Mithqal v24.2.1
           FINAL Consolidated Implementation Specification. It does not constitute an
           offer to sell securities or any MTQ unit. MTQ is minted exclusively against
           verified reserve deposits and is never sold unbacked, per the Constitution's

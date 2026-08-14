@@ -419,8 +419,8 @@ export function initializeReserveState(
 
   reserveStateStore = {
     reserveStateVersion: 0,
-    algorithmVersion: "v19.0.3",
-    constitutionVersion: "v19.0.3",
+    algorithmVersion: "v24.2.1",
+    constitutionVersion: "v24.2.1",
     oracleSnapshotVersion: "init",
     executionVersion: "1.0.0-simulation",
     timestamp: now,

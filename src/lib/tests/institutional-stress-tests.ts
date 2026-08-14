@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * MITHQAL v19.0.3 — INSTITUTIONAL CONSTITUTIONAL STRESS TESTS (Task 15-b)
+ * MITHQAL v24.2.1 — INSTITUTIONAL CONSTITUTIONAL STRESS TESTS (Task 15-b)
  * ============================================================================
  *
  * Author   : Chief Verification Engineer (Task ID 15-b)
@@ -1497,7 +1497,7 @@ function scenario13_bankRun(): ScenarioResult {
 // ============================================================================
 
 function main() {
-  banner("MITHQAL v19.0.3 — INSTITUTIONAL CONSTITUTIONAL STRESS TESTS (Task 15-b)");
+  banner("MITHQAL v24.2.1 — INSTITUTIONAL CONSTITUTIONAL STRESS TESTS (Task 15-b)");
   console.log("  13 extreme scenarios — feature-freeze verification for the COO.");
   console.log("  Baseline: v19.0.9 (8% over-collateralization buffer — Monte Carlo optimal).");
   console.log("");

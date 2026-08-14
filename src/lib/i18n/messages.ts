@@ -68,7 +68,7 @@ const en: Messages = {
   "action.returnHome": "Return to the Institution",
 
   // ---- Institution hero ----
-  "hero.eyebrow": "Constitutional Settlement Institution · Est. under the v23 Constitution",
+  "hero.eyebrow": "Constitutional Settlement Institution · Est. under the v24.2.1 Constitution",
   "hero.title": "Mithqal",
   "hero.subtitle": "A constitutional settlement institution.",
   "hero.description": "Mithqal is a neutral, fully-reserved settlement infrastructure for international trade. It is not a token, a platform, a bank, or a DeFi protocol. It is a monetary institution — governed by an immutable Constitution designed to endure beyond any single technology or market cycle.",
@@ -933,7 +933,7 @@ const zh: Messages = {
   "action.returnHome": "返回机构",
 
   // ---- 首屏 ----
-  "hero.eyebrow": "宪法货币机构 · 依 v23 宪法设立",
+  "hero.eyebrow": "宪法货币机构 · 依 v24.2.1 宪法设立",
   "hero.title": "Mithqal",
   "hero.subtitle": "一家宪法结算机构。",
   "hero.description": "Mithqal 是用于国际贸易的中立、全额储备结算基础设施。它不是代币、平台、银行或 DeFi 协议。它是一家货币机构——由一部不可变的宪法治理，旨在超越任何单一技术或市场周期而存续。",

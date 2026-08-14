@@ -3,7 +3,7 @@
 /* ============================================================
  * StressTestProof — Proof-of-Strength section for the public site
  * ------------------------------------------------------------
- * Surfaces the v19.0.3 verified stress-test results as a single,
+ * Surfaces the v24.2.1 verified stress-test results as a single,
  * scannable proof of MTQ's stability. Mounted on the Institution
  * view (public-site.tsx) right after the Reserves section so the
  * reader sees "what backs MTQ" → "how we proved it can't break".
@@ -117,7 +117,7 @@ function Eyebrow({ children }: { children: React.ReactNode }) {
 }
 
 /* ============================================================
- * Data — v19.0.3 verified results (Task 3-a baseline + Tasks
+ * Data — v24.2.1 verified results (Task 3-a baseline + Tasks
  * 2-a/2-c/3-d stress suites). All numbers are sourced from the
  * docs/verification/ master audit report and the stability-tests
  * / stress-test-fixed engine outputs.
@@ -429,7 +429,7 @@ interface ComplianceRow {
 }
 
 const COMPLIANCE_ROWS: ComplianceRow[] = [
-  { id: 1,  requirement: "COO/CTO/PM role",                section: "Art. V",       evidence: "All fixes applied with executive authority. Triple-hat governance (operations + technical + product) over the v19.0.3 constitutional corrections." },
+  { id: 1,  requirement: "COO/CTO/PM role",                section: "Art. V",       evidence: "All fixes applied with executive authority. Triple-hat governance (operations + technical + product) over the v24.2.1 constitutional corrections." },
   { id: 2,  requirement: "Dynamic reserve percentages",   section: "§23–27",      evidence: "Shared computeDynamicReserveAllocation(): fiat 70–80%, bullion 15–25%, stablecoin 2–8% (clamped + adjusted by reserve ratio + gold volatility). Used by both /api/transparency and /api/reserve/status." },
   { id: 3,  requirement: "Top currency rule",             section: "§12, §13",    evidence: "§13 structural weight: COFER 50% (α) + SWIFT 40% (β) + BIS 10% (γ). 8 top currencies: USD, EUR, JPY, GBP, CNY, CHF, AUD, CAD. §12 4-stage lifecycle (observation → probation → full → suspended)." },
   { id: 4,  requirement: "Rebalancing correct",           section: "§29",         evidence: "All 9 trigger types wired into detectRebalanceTriggers() + generateRebalancePlan + verifyRebalancePlanLiquidity + verifyRebalancePlanReserveRatio." },
@@ -664,7 +664,7 @@ function StressScenariosTab({
         <p className="text-sm text-fg-muted">
           {isLive ? (
             <>
-              Every Article XV scenario is simulated live against the v19.0.3
+              Every Article XV scenario is simulated live against the v24.2.1
               monetary state via <code className="font-mono text-[11px]">/api/stress-lab</code>.
               A scenario passes when the shock does not break the constitutional
               invariants (RR ≥ 100% AND LRR ≥ 1.0), or when the scenario is
@@ -673,7 +673,7 @@ function StressScenariosTab({
           ) : (
             <>
               Every reserve-shock, currency-crash, and depeg scenario is
-              simulated against the live v19.0.3 monetary state. A scenario
+              simulated against the live v24.2.1 monetary state. A scenario
               passes when the shock does not break the constitutional
               invariants. <span className="text-amber-600 dark:text-amber-400">(Fallback dataset — live API unavailable.)</span>
             </>
@@ -1312,7 +1312,7 @@ function VolatilityComparison() {
 
 // impl-C-stress — Canonical fallback baseline NAV + RR. Updated from
 // the stale 1.0419 / 102.07 to the canonical 1.0373 / 102.05 used
-// across the v19.0.3 monetary engine, the live APIs, and the audit
+// across the v24.2.1 monetary engine, the live APIs, and the audit
 // reports. Used as the pre-fetch fallback BEFORE the live `/api/nav`
 // fetch resolves, and for the FALLBACK_SCENARIOS table when
 // `/api/stress-lab` is unavailable.
@@ -1352,7 +1352,7 @@ export function StressTestProof() {
 
     // impl-C-stress — fetch the live 20-scenario stress-lab results so
     // the Stress Scenarios tab reflects actual RR/LRR/pass outcomes from
-    // the v19.0.3 engine (rather than the stale hardcoded table).
+    // the v24.2.1 engine (rather than the stale hardcoded table).
     fetch("/api/stress-lab", { cache: "no-store" })
       .then((r) => (r.ok ? r.json() : null))
       .then((data) => {
@@ -1417,7 +1417,7 @@ export function StressTestProof() {
       <div className="mx-auto w-full max-w-6xl">
         {/* Headline */}
         <Reveal>
-          <Eyebrow>Proof of Strength · v19.0.3 verified</Eyebrow>
+          <Eyebrow>Proof of Strength · v24.2.1 verified</Eyebrow>
           <h2
             id="s-proof-heading"
             className="font-display mt-4 text-3xl leading-tight text-balance sm:text-5xl"

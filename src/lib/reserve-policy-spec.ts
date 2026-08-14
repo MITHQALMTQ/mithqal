@@ -10,7 +10,7 @@
  *   - docs/verification/reserve-canonical-audit.md (Phase 1)
  *   - docs/architecture/institutional-reserve-stability.md (Phase 2)
  *   - docs/architecture/rebalancing-policy.md (Phase 3)
- *   - Latest Mithqal Blueprint (v19.0.3)
+ *   - Latest Mithqal Blueprint (v24.2.1)
  *
  * The blueprint remains supreme. If any value here conflicts with the
  * blueprint, the blueprint wins.
