@@ -142,7 +142,7 @@ const FAQS: FaqItem[] = [
     id: "what-is-constitution",
     question: "What is the Constitution?",
     answer:
-      "A 1.46M-character specification (v19.0.3) covering 57 sections across 6 parts: math, currency engine, reserves, oracles, governance, and compliance. It is the supreme law of the Institution — every operational decision must trace back to a clause in it. Read it on the Constitution view.",
+      "A 1.46M-character specification (v24.2.1) covering 57 sections across 6 parts: math, currency engine, reserves, oracles, governance, and compliance. It is the supreme law of the Institution — every operational decision must trace back to a clause in it. Read it on the Constitution view.",
     category: "Governance",
     tags: ["constitution", "spec", "v19", "law"],
   },
@@ -281,7 +281,7 @@ export default function FAQ() {
                 FAQ
               </Badge>
               <Badge className="border-line bg-ink-card text-fg-muted hover:bg-ink-card">
-                {FAQS.length} questions · v19.0.3
+                {FAQS.length} questions · v24.2.1
               </Badge>
             </div>
           </Reveal>
@@ -502,7 +502,7 @@ export default function FAQ() {
 
         <Separator className="my-8 bg-line" />
         <p className="text-center text-[10px] leading-relaxed text-fg-muted">
-          {FAQS.length} questions · {CATEGORIES.length - 1} categories · Mithqal v19.0.3
+          {FAQS.length} questions · {CATEGORIES.length - 1} categories · Mithqal v24.2.1
           Constitutional Settlement Institution. Nothing here constitutes an
           offer to sell securities or any MTQ unit.
         </p>

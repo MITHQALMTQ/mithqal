@@ -1080,7 +1080,7 @@ export default function TransparencyDashboard() {
               </Badge>
               {state && (
                 <Badge className="border-gold/30 bg-gold/10 text-gold hover:bg-gold/10">
-                  v23 · {state.monetary?.specVersion ?? "constitutional spec"}
+                  v24.2.1 · {state.monetary?.specVersion ?? "constitutional spec"}
                 </Badge>
               )}
             </div>
@@ -1612,14 +1612,14 @@ export default function TransparencyDashboard() {
         </Reveal>
         ) : null}
 
-        {/* Monetary Engine v23 — Constitutional Monetary Infrastructure */}
+        {/* Monetary Engine v24.2.1 — Constitutional Monetary Infrastructure */}
         {state?.monetary ? (
           <Reveal>
             <div className="mt-6 rounded-2xl border border-gold/30 bg-gradient-to-br from-gold/[0.06] to-ink-soft p-6 sm:p-7">
               <div className="flex items-center gap-2 text-gold">
                 <TrendingUp className="h-4 w-4" />
                 <span className="text-[11px] font-semibold uppercase tracking-[0.22em]">
-                  Monetary Engine · v23 Constitutional Specification
+                  Monetary Engine · v24.2.1 Constitutional Specification
                 </span>
               </div>
               <h2 className="font-display mt-3 text-xl text-foreground sm:text-2xl">
@@ -1743,7 +1743,7 @@ export default function TransparencyDashboard() {
                 basket={state.monetary.basketVerification.passed ? 100 : 0}
               />
 
-              {/* v23 Four-Layer Advisory Metrics — GEI/BRI/LCI/DRQS/SE/SAE + stablecoin state machine */}
+              {/* v24.2.1 Four-Layer Advisory Metrics — GEI/BRI/LCI/DRQS/SE/SAE + stablecoin state machine */}
               <V23MetricsPanel />
 
               {/* v24.2.1 Portfolio B — Tokenized Allocated Gold (PAXG) + Conditional Silver */}

@@ -1,9 +1,9 @@
 // Mithqal Strategic Execution Playbook — structured data
-// Authored from the v19.0.3 Consolidated Implementation Specification.
+// Authored from the v24.2.1 Consolidated Implementation Specification.
 
 export const STATUS = {
   have: [
-    { label: "Blueprint v19.0.3 — FINAL", note: "Full constitutional specification (reserves, governance, compliance, post-quantum, lifecycle)" },
+    { label: "Blueprint v24.2.1 — FINAL", note: "Full constitutional specification (reserves, governance, compliance, post-quantum, lifecycle)" },
     { label: "GitHub repository", note: "github.com/MITHQALMTQ/mithqal" },
     { label: "X / Twitter presence", note: "@MithqalMTQ" },
     { label: "Operating entity (JOZOUR LLC)", note: "In place — NJ LLC registered (Oct 2019), EIN assigned, active" },
@@ -62,9 +62,9 @@ export const PHASES = [
     goal: "Convert the blueprint into a Term-Sheet-ready narrative + a live testnet + a Formation Committee candidate list.",
     milestones: [
       "Operating entity (JOZOUR LLC, NJ) — active since 22 Oct 2019 (ID 0600463904, EIN 84-3470275)",
-      "Constitution v19.0.3 published publicly (mithqal.vercel.app + GitHub)",
+      "Constitution v24.2.1 published publicly (mithqal.vercel.app + GitHub)",
       "MTQ + Governance + Safe contracts live on Monad Testnet (9/9 on-chain tests PASS)",
-      "Monetary Engine v19.0.3 implemented (55 sections, 10 on-chain invariants + 14 forbidden selectors, 8-currency basket)",
+      "Monetary Engine v24.2.1 implemented (55 sections, 10 on-chain invariants + 14 forbidden selectors, 8-currency basket)",
       "Institutional due-diligence audit completed (15-panel simulation, 21 red flags fixed)",
       "Legal framework published (privacy, terms, risk-disclosure, cookies)",
       "Anti-platform clause enforced on-chain (selector-based, 14 forbidden selectors)",
@@ -173,7 +173,7 @@ export const SPRINT: { week: string; focus: string; tasks: string[] }[] = [
     week: "Week 5–6",
     focus: "Publish the Constitution",
     tasks: [
-      "Publish the full v19.0.3 specification as a versioned, citable docs site",
+      "Publish the full v24.2.1 specification as a versioned, citable docs site",
       "Open-source the testnet contract scaffold on GitHub",
       "Publish the reserve policy, fee schedule, and governance map",
       "Open a public 'Formation Committee' interest form",

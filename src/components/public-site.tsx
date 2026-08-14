@@ -813,7 +813,7 @@ function Reserves() {
 /* ---------------- Monetary Engine Compact (Audit Fix 1) ---------------- */
 
 /**
- * MonetaryEngineCompact — a compact, inline visualization of the v19.0.3
+ * MonetaryEngineCompact — a compact, inline visualization of the v24.2.1
  * Monetary Engine's currency basket. It is NOT the full interactive Engine
  * view — it shows the single core concept: Gold is the anchor → 8 sovereign
  * currencies contribute weighted pressure → MTQ is the synthesised output.
@@ -831,7 +831,7 @@ interface BasketCurrency {
   weight: number; // percentage value, e.g. 47.99
 }
 
-// Published v19.0.3 worked-example weights (Part III) — used until the first
+// Published v24.2.1 worked-example weights (Part III) — used until the first
 // successful /api/transparency response lands, and as a permanent fallback.
 const FALLBACK_BASKET: BasketCurrency[] = [
   { code: "USD", name: "US Dollar", weight: 47.99 },

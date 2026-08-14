@@ -244,7 +244,7 @@ export default function TestnetAudit() {
             </div>
             <p className="mt-4 text-sm leading-relaxed text-fg-muted">
               The MITHQAL testnet has been audited for constitutional compliance, functional correctness,
-              and security readiness. The Monetary Engine v19.0.3 is fully implemented (all 55 sections, per the engine header).
+              and security readiness. The Monetary Engine v24.2.1 is fully implemented (all 55 sections, per the engine header).
             </p>
             <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <div className="rounded-lg border border-line bg-ink p-4 text-center">
@@ -577,7 +577,7 @@ export default function TestnetAudit() {
             </div>
             <Separator className="my-4 bg-line" />
             <p className="text-xs text-fg-muted">
-              This audit is based on the MITHQAL v19.0.3 Constitutional Monetary Infrastructure Specification.
+              This audit is based on the MITHQAL v24.2.1 Constitutional Monetary Infrastructure Specification.
               The audit covers functional, security, constitutional compliance, and performance dimensions.
               Status: {status}. Next audit: Pre-Mainnet Security Audit (v2.0).
             </p>

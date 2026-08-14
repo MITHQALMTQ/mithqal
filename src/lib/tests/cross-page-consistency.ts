@@ -2,7 +2,7 @@
  * MITHQAL — CROSS-PAGE CONSISTENCY TEST SUITE (Phase 5 — §28)
  * ====================================================================
  *
- * Phase 5 §28 of the v19.0.3 Constitutional Monetary Infrastructure
+ * Phase 5 §28 of the v24.2.1 Constitutional Monetary Infrastructure
  * Specification requires:
  *
  *   "For every page: NAV(page) == canonical NAV, RR(page) == canonical RR,
@@ -42,7 +42,7 @@
  * -----------------------------------------------
  *   • "108%"           — old hackathon RR value
  *   • "$1.11"          — old hackathon NAV value
- *   • "v20"            — old title (should be v19.0.3)
+ *   • "v20"            — old title (should be v24.2.1)
  *   • "permanently"    — §46 forbidden word
  *   • "Constitutional Monetary Institution" — should be "Settlement"
  *
@@ -295,7 +295,7 @@ function hasForbiddenToken(html: string, token: "108%" | "$1.11" | "v20" | "perm
   }
 }
 
-/** Returns true if "v19.0.3" appears anywhere in the HTML. */
+/** Returns true if "v24.2.1" appears anywhere in the HTML. */
 function hasCurrentVersion(html: string): boolean {
   return /v19\.0\.3/.test(html);
 }
@@ -498,10 +498,10 @@ function runCanonicalConsistencyTests(r: TestRunner): void {
     assert(diff <= TOL.NAV, `NAV mismatch: nav=${nav!.navM}, reserve-status=${reserveStatus!.nav.market}, diff=${diff.toFixed(4)}`);
   });
 
-  r.test("/api/status.version == 'v19.0.3'", () => {
+  r.test("/api/status.version == 'v24.2.1'", () => {
     const { status } = FIXTURES;
     assert(status !== null, "status payload missing");
-    assert(status!.version === "v19.0.3", `expected v19.0.3, got ${status!.version}`);
+    assert(status!.version === "v24.2.1", `expected v24.2.1, got ${status!.version}`);
   });
 
   r.test("/api/stress-lab.summary.scenariosPassed == scenariosRun (all scenarios pass)", () => {
@@ -555,13 +555,13 @@ function runForbiddenTokensTests(r: TestRunner): void {
 // ============================================================
 
 function runRequiredVersionTests(r: TestRunner): void {
-  r.category("D. Required Version v19.0.3 Present (per page)");
+  r.category("D. Required Version v24.2.1 Present (per page)");
 
   for (const page of PAGES) {
     const fixture = FIXTURES.pages[page.path];
-    r.test(`[${page.label}] HTML contains "v19.0.3"`, () => {
+    r.test(`[${page.label}] HTML contains "v24.2.1"`, () => {
       assert(fixture && fixture.ok && fixture.html, `page not fetchable`);
-      assert(hasCurrentVersion(fixture!.html!), `expected "v19.0.3" in HTML`);
+      assert(hasCurrentVersion(fixture!.html!), `expected "v24.2.1" in HTML`);
     });
   }
 }
@@ -785,17 +785,17 @@ function runCrossPageConsistencyTests(r: TestRunner): void {
     );
   });
 
-  r.test("all pages show the same protocol version (v19.0.3)", () => {
+  r.test("all pages show the same protocol version (v24.2.1)", () => {
     const versions = new Set<string>();
     for (const page of PAGES) {
       const fixture = FIXTURES.pages[page.path];
       if (fixture && fixture.ok && fixture.html) {
-        if (/v19\.0\.3/.test(fixture.html)) versions.add("v19.0.3");
+        if (/v19\.0\.3/.test(fixture.html)) versions.add("v24.2.1");
         if (/v19\.0\.2/.test(fixture.html)) versions.add("v19.0.2");
         if (/\bv20\b/.test(fixture.html)) versions.add("v20");
       }
     }
-    assert(versions.has("v19.0.3"), `expected v19.0.3 in versions set, got: ${[...versions].join(", ")}`);
+    assert(versions.has("v24.2.1"), `expected v24.2.1 in versions set, got: ${[...versions].join(", ")}`);
     assert(!versions.has("v20"), `forbidden v20 still present in some page`);
   });
 }
@@ -858,16 +858,16 @@ function runBaselineConsistencyTests(r: TestRunner): void {
     );
   });
 
-  r.test("video page SSR contains v19.0.3 version", () => {
+  r.test("video page SSR contains v24.2.1 version", () => {
     const html = FIXTURES.pages["/video"]?.html;
     assert(html, "video HTML not fetched");
-    assert(/v19\.0\.3/.test(html!), `video SSR missing v19.0.3`);
+    assert(/v19\.0\.3/.test(html!), `video SSR missing v24.2.1`);
   });
 
-  r.test("status page SSR contains v19.0.3 version", () => {
+  r.test("status page SSR contains v24.2.1 version", () => {
     const html = FIXTURES.pages["/status"]?.html;
     assert(html, "status HTML not fetched");
-    assert(/v19\.0\.3/.test(html!), `status SSR missing v19.0.3`);
+    assert(/v19\.0\.3/.test(html!), `status SSR missing v24.2.1`);
   });
 }
 

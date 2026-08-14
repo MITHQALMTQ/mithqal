@@ -246,7 +246,7 @@ export default function InfrastructureView() {
         <div className="relative mx-auto w-full max-w-6xl">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
             <div className="flex items-center gap-2">
-              <Badge className="glass border-gold/40 text-gold hover:bg-gold/10">v23 Constitutional Infrastructure</Badge>
+              <Badge className="glass border-gold/40 text-gold hover:bg-gold/10">v24.2.1 Constitutional Infrastructure</Badge>
               <Badge className="glass border-line text-fg-muted hover:bg-ink-card">Release Candidate</Badge>
             </div>
             <div className="mt-6 flex items-center gap-4">
@@ -257,7 +257,7 @@ export default function InfrastructureView() {
               </div>
             </div>
             <p className="mt-6 max-w-2xl text-sm leading-relaxed text-fg-muted sm:text-base">
-              The complete v23 constitutional infrastructure — 55 sections implemented across 6 parts (per the engine header; the 57-section blueprint is the source of truth, with 2 sections pending implementation). Every module is auditable and faithful to the specification. This is the institutional plumbing that makes Mithqal trustworthy.
+              The complete v24.2.1 constitutional infrastructure — 55 sections implemented across 6 parts (per the engine header; the 57-section blueprint is the source of truth, with 2 sections pending implementation). Every module is auditable and faithful to the specification. This is the institutional plumbing that makes Mithqal trustworthy.
             </p>
           </motion.div>
         </div>
@@ -448,7 +448,7 @@ export default function InfrastructureView() {
           <Separator className="my-8 bg-line" />
           <div className="flex items-center gap-2 rounded-xl border border-gold/30 bg-gold/[0.05] p-4 text-xs text-fg-muted">
             <Shield className="h-4 w-4 shrink-0 text-gold" />
-            <span>v23 Constitutional Release Candidate — Pending Independent External Validation. 55 of 57 sections implemented (per the engine header). The specification is the single source of truth.</span>
+            <span>v24.2.1 Constitutional Release Candidate — Pending Independent External Validation. 55 of 57 sections implemented (per the engine header). The specification is the single source of truth.</span>
           </div>
         </div>
       )}
@@ -624,7 +624,7 @@ function InvariantDetailBody({
         </div>
         <p className="rounded-lg border border-line bg-ink-card p-3 text-sm leading-relaxed text-foreground/90">
           {detail?.description ??
-            "This provision is part of the §45 set of constitutional invariants — non-amendable provisions that define the permanent identity of the Institution. The full description is being progressively published in the v23 specification."}
+            "This provision is part of the §45 set of constitutional invariants — non-amendable provisions that define the permanent identity of the Institution. The full description is being progressively published in the v24.2.1 specification."}
         </p>
       </div>
 

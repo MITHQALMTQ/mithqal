@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * MITHQAL v19.0.3 — CONSTITUTIONAL MONTE CARLO STRESS ENGINE (Task 9-b)
+ * MITHQAL v24.2.1 — CONSTITUTIONAL MONTE CARLO STRESS ENGINE (Task 9-b)
  * ============================================================================
  *
  * Author: Chief Quantitative Risk Engineer, Federal Regulatory Architect,

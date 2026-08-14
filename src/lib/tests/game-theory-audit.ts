@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * MITHQAL v19.0.3 — GAME THEORY AUDIT (Task 17-b, Part IX)
+ * MITHQAL v24.2.1 — GAME THEORY AUDIT (Task 17-b, Part IX)
  * ============================================================================
  *
  * Built by the Enterprise Risk Manager role. Attempts to exploit the MITHQAL
@@ -405,7 +405,7 @@ function severityFor(_name: string, profit: number): Severity {
 // ============================================================
 
 console.log("\n" + "=".repeat(78));
-console.log("  MITHQAL v19.0.3 — GAME THEORY AUDIT (Task 17-b, Part IX)");
+console.log("  MITHQAL v24.2.1 — GAME THEORY AUDIT (Task 17-b, Part IX)");
 console.log("  11 timing attacks against the monetary engine");
 console.log("=".repeat(78));
 console.log(`\nBASELINE: gold=${fmtUsd(BASE_GOLD)}/oz, silver=${fmtUsd(BASE_SILVER)}/oz,`);
@@ -635,7 +635,7 @@ attack(
     //   4. NAV is recomputed ON EVERY mint/redeem call (no caching at the engine level).
     //
     // The "stale NAV cache" attack vector ASSUMES the engine caches NAV. In
-    // the v19.0.3 implementation, computeMonetaryStateV19 is a PURE function
+    // the v24.2.1 implementation, computeMonetaryStateV19 is a PURE function
     // of the current oracle — it ALWAYS reflects the latest oracle
     // observation. There is no cache to exploit.
     //
@@ -991,7 +991,7 @@ attack(
     // Attacker submits a mint at T0+0.5s, expecting the batch to settle at
     // T0+1s using the NAV computed at T0 (stale by 1s).
 
-    // DEFENSE: The v19.0.3 engine does NOT batch transactions for NAV purposes.
+    // DEFENSE: The v24.2.1 engine does NOT batch transactions for NAV purposes.
     // Each mint/redeem call invokes computeMonetaryStateV19 with the CURRENT
     // oracle snapshot. There is no "batch NAV" — every transaction settles
     // at the live NAV at the moment of execution.

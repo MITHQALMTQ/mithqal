@@ -1,4 +1,4 @@
-// Mithqal public institutional site — content distilled from the v19.0.3
+// Mithqal public institutional site — content distilled from the v24.2.1
 // Consolidated Implementation Specification. This is the credibility-layer
 // copy that faces investors, advisors, anchor participants and the public.
 

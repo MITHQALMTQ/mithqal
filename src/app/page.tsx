@@ -106,7 +106,7 @@ export default function Page() {
   };
 
   return (
-    <div className="print-page flex min-h-screen flex-col bg-ink text-foreground">
+    <div className="print-page flex min-h-screen flex-col overflow-x-hidden bg-ink text-foreground">
       <ViewSwitcher view={view} setView={setView} />
       <CommandPalette />
       <main id="main-content" className="flex-1">
@@ -155,7 +155,7 @@ function PlaybookGate() {
   const { data: session } = useSession();
   if (session) return <Playbook />;
   return (
-    <div className="grain-bg flex min-h-screen items-center justify-center px-5">
+    <div className="grain-bg flex min-h-[60vh] items-center justify-center px-5 py-20">
       <div className="max-w-md text-center">
         <BookOpen className="mx-auto mb-4 h-12 w-12 text-gold" />
         <h2 className="font-display text-2xl text-foreground">Strategic Document</h2>

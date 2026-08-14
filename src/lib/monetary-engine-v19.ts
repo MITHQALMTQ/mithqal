@@ -1,11 +1,11 @@
-// Mithqal Monetary Engine v19.0.3 — Constitutional Monetary Infrastructure Specification
+// Mithqal Monetary Engine v24.2.1 — Constitutional Monetary Infrastructure Specification
 // §11: All internal calculations use deterministic fixed-point arithmetic via decimal.js
 //
-// Implements the complete v19.0.3 specification (55 sections, 6 parts):
+// Implements the complete v24.2.1 specification (55 sections, 6 parts):
 //   PART I — Constitutional Mathematical Foundations (§1-11)
 //   PART II — Currency Engine (§12-22A)
 //
-// Key v19.0.3 innovations vs v2.0:
+// Key v24.2.1 innovations vs v2.0:
 //   - Three-layer reserve valuation (Market / Adjusted / Liquidation)
 //   - Three NAV definitions (Market / Prudential / Stress)
 //   - Reserve Ratio = R_a / (S × PAR) — PAR-based redemption liability (v19.0.2 fix); over-collateralizable
@@ -225,7 +225,7 @@ export const HAIRCUTS = {
 /**
  * §7 Composite counterparty score: C_a = Credit × Jurisdiction × Operational
  *
- * Per the v19.0.3 blueprint, the composite score is MULTIPLICATIVE (not a
+ * Per the v24.2.1 blueprint, the composite score is MULTIPLICATIVE (not a
  * weighted sum). Multiplicative aggregation correctly captures the principle
  * that a single weak dimension (e.g. a downgrade in credit OR a sanction
  * on the jurisdiction OR an operational incident) materially impairs the
@@ -450,7 +450,7 @@ export function shockAbsorberFactor(volatility: number): number {
  * §17.7 Canonical implementation:
  * K_i = 1 + A_t × (M_i × R_i - 1)
  *
- * NOTE: v19.0.3 applies the attenuation to the COMBINED (M×R - 1) term,
+ * NOTE: v24.2.1 applies the attenuation to the COMBINED (M×R - 1) term,
  * NOT to momentum alone (as in v2.0). This preserves the internal balance
  * of the weighting engine.
  */
@@ -727,7 +727,7 @@ export interface MonetaryStateV19 {
   mintingPaused: boolean;
 }
 
-// ---- Main: compute full v19.0.3 monetary state ----
+// ---- Main: compute full v24.2.1 monetary state ----
 
 export function computeMonetaryStateV19(
   snapshot: OracleSnapshot,
@@ -915,7 +915,7 @@ export function computeMonetaryStateV19(
   };
 }
 
-// ---- §9 Fees (carried from v2.0 — unchanged in v19.0.3) ----
+// ---- §9 Fees (carried from v2.0 — unchanged in v24.2.1) ----
 
 export const MINT_FEE_BPS = 5;
 export const MINT_FEE_CAP = 5000;

@@ -20,7 +20,7 @@ const PAD2 = (n: number) => String(n).padStart(2, "0");
 
 /* ------------------------------------------------------------------ */
 /*  Presenter notes — per-slide talking points for the live presenter. */
-/*  Authored from the v19.0.3 narrative; kept in the component so the     */
+/*  Authored from the v24.2.1 narrative; kept in the component so the     */
 /*  data file stays presentation-format-only.                          */
 /* ------------------------------------------------------------------ */
 
@@ -466,7 +466,7 @@ export default function InvestorDeck() {
       <div className="mt-auto border-t border-line/50 bg-ink-soft/60 px-4 py-4 sm:px-6">
         <div className="mx-auto w-full max-w-5xl">
           <p className="text-center text-[10px] leading-relaxed text-fg-muted sm:text-[11px]">
-            Confidential. Derived from the Mithqal v19.0.3 specification. Not
+            Confidential. Derived from the Mithqal v24.2.1 specification. Not
             an offer to sell securities or any MTQ unit. MTQ is minted
             exclusively against verified reserves.
           </p>

@@ -18,7 +18,7 @@
  *   - Views        — the 11 top-level views of the working surface
  *   - Quick actions — Mint MTQ, Redeem MTQ, Test SMTP, View on MonadScan
  *   - Contracts    — MTQ Token, Governance, Safe Multi-Sig (open in MonadScan)
- *   - Documentation — Constitution v19.0.3, Audit Report, Backup & Recovery
+ *   - Documentation — Constitution v24.2.1, Audit Report, Backup & Recovery
  */
 
 import { Fragment, type ComponentType, useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -137,8 +137,8 @@ const VIEWS: PaletteItem[] = [
   { id: "v-institution", type: "view", label: "Institution", hint: "Public-facing site", icon: Landmark, run: () => navigateToView("institution") },
   { id: "v-transparency", type: "view", label: "Transparency", hint: "Live · build in public", icon: Eye, run: () => navigateToView("transparency") },
   { id: "v-engine", type: "view", label: "Engine", hint: "5-layer explainer", icon: Compass, run: () => navigateToView("engine") },
-  { id: "v-infrastructure", type: "view", label: "Infrastructure", hint: "v19.0.3 infrastructure", icon: Network, run: () => navigateToView("infrastructure") },
-  { id: "v-constitution", type: "view", label: "Constitution", hint: "v19.0.3 spec · citable", icon: ScrollText, run: () => navigateToView("constitution") },
+  { id: "v-infrastructure", type: "view", label: "Infrastructure", hint: "v24.2.1 infrastructure", icon: Network, run: () => navigateToView("infrastructure") },
+  { id: "v-constitution", type: "view", label: "Constitution", hint: "v24.2.1 spec · citable", icon: ScrollText, run: () => navigateToView("constitution") },
   { id: "v-testnet", type: "view", label: "Testnet", hint: "MTQ simulator", icon: FlaskConical, run: () => navigateToView("testnet") },
   { id: "v-os", type: "view", label: "OS", hint: "Operating System", icon: Cpu, run: () => navigateToView("os") },
   { id: "v-audit", type: "view", label: "Audit", hint: "Testnet validation v1.0", icon: ShieldCheck, run: () => navigateToView("audit") },
@@ -217,7 +217,7 @@ const DOCS: PaletteItem[] = [
   {
     id: "d-constitution",
     type: "doc",
-    label: "Constitution v19.0.3",
+    label: "Constitution v24.2.1",
     hint: "The full citable specification",
     icon: ScrollText,
     keywords: "constitution docs spec v19 citable",

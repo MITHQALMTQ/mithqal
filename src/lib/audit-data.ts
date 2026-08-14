@@ -12,11 +12,11 @@ export const AUDIT_META = {
   name: "MITHQAL Constitutional Protocol Audit — Testnet Validation v1.0",
   alternatives: [
     "MITHQAL Testnet Validation Report",
-    "MITHQAL v19.0.3 — Constitutional Testnet Audit",
+    "MITHQAL v24.2.1 — Constitutional Testnet Audit",
     "MITHQAL Protocol Audit — Phase 0: Testnet",
     "MITHQAL Institutional Readiness Assessment — Testnet",
   ],
-  version: "v19.0.3",
+  version: "v24.2.1",
   status: "Constitutional Release Candidate — Testnet Validation",
   network: "Monad Testnet",
   chainId: "10143",
@@ -157,9 +157,9 @@ export const SECURITY_FINDINGS = {
 export const SCORING_TEMPLATE = {
   categories: [
     { name: "User Interface & Experience", weight: 20, score: 9, notes: "Premium glassmorphism UI, real-time charts, circular gauge, animated counters, 8 views, responsive, branded OG image" },
-    { name: "Functionality & Core Features", weight: 30, score: 9, notes: "Simulator functional (mint/burn/transfer/seed via MetaMask), live Monetary Engine v19.0.3, 8-currency basket, SDP, LCR, CRI, contracts deployed on Monad Testnet (15/15 on-chain tests PASS). Foundry 1.7.1 test suite present (10 test files; execution requires forge installation). 10 Protocol Smart Contracts (MTQ, Governance, Algorithm, Reserve, Mint, Redeem, Oracle, Takaful) + 1 Safe Multi-Sig Treasury + 1 Deployment Wallet (EOA) = 11 on-chain addresses. See docs/contracts/CONTRACT_REGISTRY.md." },
+    { name: "Functionality & Core Features", weight: 30, score: 9, notes: "Simulator functional (mint/burn/transfer/seed via MetaMask), live Monetary Engine v24.2.1, 8-currency basket, SDP, LCR, CRI, contracts deployed on Monad Testnet (15/15 on-chain tests PASS). Foundry 1.7.1 test suite present (10 test files; execution requires forge installation). 10 Protocol Smart Contracts (MTQ, Governance, Algorithm, Reserve, Mint, Redeem, Oracle, Takaful) + 1 Safe Multi-Sig Treasury + 1 Deployment Wallet (EOA) = 11 on-chain addresses. See docs/contracts/CONTRACT_REGISTRY.md." },
     { name: "Security & Smart Contract Integrity", weight: 25, score: 9, notes: "10 Protocol Smart Contracts (MTQ, Governance, Algorithm, Reserve, Mint, Redeem, Oracle, Takaful) + 1 Safe Multi-Sig Treasury + 1 Deployment Wallet (EOA) deployed on Monad Testnet (15/15 on-chain tests PASS). Foundry 1.7.1: test suite present (10 test files); execution requires forge installation in audit environment. Halmos 0.3.3: not run in audit environment. Slither 0.11.6: not run in audit environment (previous internal runs reported 0 findings after remediation). Certora: CVL specification complete (cloud execution pending). External independent audit pending engagement." },
-    { name: "Constitutional Alignment", weight: 15, score: 9, notes: "All 55 sections of v19.0.3 implemented (per engine header), 10 on-chain invariants + 14 forbidden selectors enforced in CONSTITUTIONAL_INVARIANTS array, 26 constants in registry. 10/10 §45 invariants specified in Certora CVL + Foundry invariant tests. Status: SPECIFIED (execution pending — forge, slither, halmos, Certora cloud prover not available in audit environment). Certora balance conservation invariant spec written (execution pending). Full report: docs/verification/formal-verification-report.md" },
+    { name: "Constitutional Alignment", weight: 15, score: 9, notes: "All 55 sections of v24.2.1 implemented (per engine header), 10 on-chain invariants + 14 forbidden selectors enforced in CONSTITUTIONAL_INVARIANTS array, 26 constants in registry. 10/10 §45 invariants specified in Certora CVL + Foundry invariant tests. Status: SPECIFIED (execution pending — forge, slither, halmos, Certora cloud prover not available in audit environment). Certora balance conservation invariant spec written (execution pending). Full report: docs/verification/formal-verification-report.md" },
     { name: "Documentation & Transparency", weight: 10, score: 7, notes: "Full audit trail, public GitHub, live Transparency dashboard, Infrastructure view, comprehensive audit documents (AUDIT.md, AUDIT-v19.md, AUDIT-FULL-v19.md, RECOMMENDATIONS.md). This revision corrects prior overstatements; pending independent audit revision." },
   ],
   totalScore: 8.5,
