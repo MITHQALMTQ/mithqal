@@ -1871,3 +1871,44 @@ Stage Summary:
 - 3 mainnet blockers remain (Monad Oracle, Arc silverPrice, Safe Multi-Sig).
 - Production status: IMPLEMENTED + PROVISIONALLY VALIDATED + NOT PRODUCTION-AUTHORIZED.
 - Ready for git commit + push.
+
+---
+Task ID: v25.0-final-recommended-architecture
+Agent: main (Super Z) — COO+CTO+PM+Legal/Regulatory Architecture Lead
+Task: Implement the 44-point final recommended architecture directive (Corporate MTQ Settlement Account, Proof-of-Liabilities, Settlement Permission Engine, 3-Layer Privacy, Bank Revenue, 10 Principles, Product Hierarchy, Authority Matrix).
+
+Work Log:
+- Read full 44-point directive. Identified ~20 NEW architectural additions beyond the previous v25.0 session.
+- Created src/lib/corporate-settlement-account.ts (250 lines):
+  * §5 Corporate MTQ Settlement Account (bank-linked, beneficial holder = corporate, security = bank)
+  * §23 Bank-controlled wallet architecture (hybrid: on-chain institutional wallet + corporate subaccounts)
+  * §22 Three-way reconciliation (canonical ledger vs bank subledger vs signed attestation)
+  * §24 Corporate treasury dashboard UX concept
+  * §5 Division of Control (bank: auth/HSM/MPC/signatories; MITHQAL: protocol/issuance/supply)
+- Created src/lib/proof-of-liabilities.ts (200 lines):
+  * §21 Institutional Proof-of-Liabilities (reserve vs outstanding MTQ vs institutional positions vs bank positions vs corporate sub-positions)
+  * §36 Settlement Permission Engine (12-check gate: institution A/B auth, corridor, jurisdiction, currency, customer attestation, AML/KYC, sanctions, limits, reserve, network, policy version)
+  * Any check failure = BLOCK, no partial settlement
+- Created src/lib/v25-0-privacy-revenue-principles.ts (320 lines):
+  * §14 3-Layer Privacy (Bank Vault / MITHQAL Institutional / Authorized Disclosure)
+  * §15 Zero-knowledge architecture (ZK proofs, verifiable credentials, selective disclosure)
+  * §8 Bank Revenue Model (9 bank revenue streams + 8 MITHQAL revenue streams + fundamental rule: revenue never influences issuance)
+  * §9 MITHQAL Operating Company (narrowly defined, not a bank/exchange/broker)
+  * §29 Non-compete principle (MITHQAL makes banks more useful)
+  * §28 FX boundary (MITHQAL ≠ FX exchange)
+  * §39 Product Hierarchy (9-layer stack)
+  * §43 10 Constitutional Principles
+  * §41 Authority Matrix (5 actors × 7 actions)
+  * §17 Regulatory observability (within legal authority, not global surveillance)
+  * §30 Economic proposition (measure, don't promise)
+  * §44 Final COO Decision (locked architecture)
+- Updated src/app/api/v25.0/route.ts: added all new modules to the API response.
+- Verified /api/v25.0 returns: version=v25.0, 10 principles, 9 product layers, 5 authority actors, final architecture sentence.
+
+Stage Summary:
+- ALL 44 directive points addressed.
+- 3 new src/lib modules (770 lines total).
+- API enriched with privacy, revenue, principles, hierarchy, authority matrix.
+- Constitutional spine preserved (no-discretionary-minting, reserve integrity, non-platform).
+- Key conceptual sentence locked: "Customers continue to use banks; banks use MITHQAL; MITHQAL uses MTQ to settle value between monetary systems."
+- Ready for git commit + push.

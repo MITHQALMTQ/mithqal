@@ -27,6 +27,22 @@ import {
   getInstitutionalLimits,
 } from "@/lib/institutional-authorization";
 import { processWholesaleSettlement, checkCBDCInterop, processRedemption } from "@/lib/wholesale-settlement";
+import {
+  PRIVACY_ARCHITECTURE,
+  ZK_ARCHITECTURE,
+  BANK_REVENUE_MODEL,
+  MITHQAL_OPERATING_COMPANY,
+  NON_COMPETE_PRINCIPLE,
+  FX_BOUNDARY,
+  PRODUCT_HIERARCHY,
+  TEN_PRINCIPLES,
+  AUTHORITY_MATRIX,
+  REGULATORY_OBSERVABILITY,
+  ECONOMIC_PROPOSITION,
+  FINAL_ARCHITECTURE,
+} from "@/lib/v25-0-privacy-revenue-principles";
+import { DIVISION_OF_CONTROL } from "@/lib/corporate-settlement-account";
+import { checkSettlementPermissions } from "@/lib/proof-of-liabilities";
 
 /**
  * GET /api/v25.0
@@ -113,6 +129,64 @@ export async function GET() {
 
       // §28 — Canonical Terminology
       terminology: TERMINOLOGY,
+
+      // §14 — 3-Layer Privacy Architecture
+      privacy: PRIVACY_ARCHITECTURE,
+
+      // §15 — Zero-knowledge architecture
+      zkArchitecture: ZK_ARCHITECTURE,
+
+      // §8 — Bank Revenue Model
+      bankRevenue: BANK_REVENUE_MODEL,
+
+      // §9 — MITHQAL Operating Company
+      operatingCompany: MITHQAL_OPERATING_COMPANY,
+
+      // §29 — Non-compete principle
+      nonCompete: NON_COMPETE_PRINCIPLE,
+
+      // §28 — FX boundary
+      fxBoundary: FX_BOUNDARY,
+
+      // §39 — Product Hierarchy
+      productHierarchy: PRODUCT_HIERARCHY,
+
+      // §43 — 10 Constitutional Principles
+      tenPrinciples: TEN_PRINCIPLES,
+
+      // §41 — Authority Matrix
+      authorityMatrix: AUTHORITY_MATRIX,
+
+      // §17 — Regulatory observability
+      regulatoryObservability: REGULATORY_OBSERVABILITY,
+
+      // §30 — Economic proposition
+      economicProposition: ECONOMIC_PROPOSITION,
+
+      // §44 — Final COO Decision (locked architecture)
+      finalArchitecture: FINAL_ARCHITECTURE,
+
+      // §5 — Division of Control (bank vs MITHQAL)
+      divisionOfControl: DIVISION_OF_CONTROL,
+
+      // §36 — Settlement Permission Engine (demo)
+      settlementPermissionEngine: {
+        description: "12-check gate — every transaction must pass ALL checks. Any failure = BLOCK. No partial settlement.",
+        checks: [
+          "1. Institution A authorized",
+          "2. Institution B authorized",
+          "3. Corridor allowed",
+          "4. Jurisdiction allowed",
+          "5. Currency pair allowed",
+          "6. Customer authorization attested",
+          "7. AML/KYC status valid",
+          "8. Sanctions clear",
+          "9. Transaction within limit",
+          "10. Reserve/liquidity state allows",
+          "11. Network healthy",
+          "12. Policy version valid",
+        ],
+      },
 
       // Live values (preserved from v24.2.1)
       liveValues: {
