@@ -1,7 +1,9 @@
-// v24.1.1 CALM — Capital-Adaptive Liability Management
+// v25.0 CALM — Capital-Adaptive Liability Management
 // =================================================================
-// Implements CALM per §26 of the Institutional Dynamic Reserve
-// Rebalancing specification.
+// Implements CALM per §33 of the v25.0 canonical blueprint.
+//
+// v25.0 CORRECTION: Uses the v24.2 6-state machine (not the v24.1 5-state).
+//   NORMAL → CAUTION → DEFENSIVE → STRESS → EMERGENCY → RECOVERY
 //
 // CALM is a SECONDARY defense. It prevents the liability side from
 // expanding beyond current reserve risk capacity.
@@ -14,7 +16,7 @@
 // CALM does NOT permit undercollateralization.
 // =================================================================
 
-import { ReserveState } from "./reserve-state-engine";
+import { ReserveStateV242 as ReserveState } from "./v24-2-state-machine";
 
 export interface CalmInput {
   ra: number;          // current R_a (adjusted reserve value in USD)
@@ -41,9 +43,9 @@ export interface CalmResult {
 }
 
 // State-dependent RR targets and stabilization fees
-// v24.2.1 CORRECTION: NORMAL target must = strategic target (1.20)
-// v24.2 had NORMAL=1.15 which was BELOW strategic target 1.20 — inconsistent.
-// v24.2.1 fix: NORMAL=1.20, monotonically increasing with risk.
+// v25.0 CORRECTION: Uses v24.2 6-state machine with corrected targets
+// v24.2 had NORMAL=1.15 (WRONG — below strategic target 1.20)
+// v25.0 (per §33): NORMAL=1.20, monotonically increasing
 // Core invariant: Risk↑ → RR_target↑ → S_max↓ → MintCapacity↓
 const STATE_CONFIG: Record<ReserveState, {
   rrTarget: number;
@@ -51,9 +53,10 @@ const STATE_CONFIG: Record<ReserveState, {
   feeRange: string;
 }> = {
   NORMAL:     { rrTarget: 1.20, feeBps: 5,   feeRange: "0.05%" },
-  ELEVATED:   { rrTarget: 1.22, feeBps: 15,  feeRange: "0.10–0.20%" },
-  HIGH_STRESS:{ rrTarget: 1.25, feeBps: 37,  feeRange: "0.25–0.50%" },
-  CRISIS:     { rrTarget: 1.30, feeBps: 0,   feeRange: "minting disabled" },
+  CAUTION:    { rrTarget: 1.22, feeBps: 15,  feeRange: "0.10–0.20%" },
+  DEFENSIVE:  { rrTarget: 1.23, feeBps: 25,  feeRange: "0.20–0.25%" },
+  STRESS:     { rrTarget: 1.25, feeBps: 37,  feeRange: "0.25–0.50%" },
+  EMERGENCY:  { rrTarget: 1.30, feeBps: 0,   feeRange: "minting disabled" },
   RECOVERY:   { rrTarget: 1.21, feeBps: 10,  feeRange: "0.05–0.10%" },
 };
 
@@ -95,12 +98,12 @@ export function computeCalm(input: CalmInput): CalmResult {
     reason = `Headroom=${headroomPct.toFixed(1)}% — near capacity, restricted minting`;
   }
 
-  // In CRISIS, minting is always disabled
-  if (input.reserveState === "CRISIS") {
+  // In EMERGENCY, minting is always disabled
+  if (input.reserveState === "EMERGENCY") {
     restrictionLevel = "DISABLED";
     issuanceAllowed = false;
     mintingDisabled = true;
-    reason = `Reserve state=CRISIS — minting disabled per §26`;
+    reason = `Reserve state=EMERGENCY — minting disabled per §33`;
   }
 
   return {

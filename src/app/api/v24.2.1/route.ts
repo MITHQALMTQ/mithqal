@@ -62,9 +62,10 @@ export async function GET() {
       oracleHealth: 0.9, custodyStress: 0.1, correlationBreak: 0,
     });
 
-    const calmStateMap: Record<string, "NORMAL" | "ELEVATED" | "HIGH_STRESS" | "CRISIS" | "RECOVERY"> = {
-      "NORMAL": "NORMAL", "CAUTION": "ELEVATED", "DEFENSIVE": "ELEVATED",
-      "STRESS": "HIGH_STRESS", "EMERGENCY": "CRISIS", "RECOVERY": "RECOVERY",
+    // v25.0 FIX: CALM now uses v24.2 6-state machine directly (no mapping needed)
+    const calmStateMap: Record<string, "NORMAL" | "CAUTION" | "DEFENSIVE" | "STRESS" | "EMERGENCY" | "RECOVERY"> = {
+      "NORMAL": "NORMAL", "CAUTION": "CAUTION", "DEFENSIVE": "DEFENSIVE",
+      "STRESS": "STRESS", "EMERGENCY": "EMERGENCY", "RECOVERY": "RECOVERY",
     };
     const calm = computeCalm({
       ra, supply, par,
@@ -139,7 +140,7 @@ export async function GET() {
 
     // §20 — Dynamic haircut (using current risk inputs)
     const dynamicHaircut = computeDynamicHaircut({
-      oracleRisk: tgbs.state === "NORMAL" ? 0.1 : tgbs.state === "ELEVATED" ? 0.3 : 0.6,
+      oracleRisk: tgbs.state === "NORMAL" ? 0.1 : tgbs.state === "ELEVATED" || tgbs.state === "SEVERE" ? 0.3 : 0.6,
       custodyRisk: 0.1,        // PAXG custody = Brink's allocated (low)
       legalRisk: 0.05,         // NYDFS chartered (low)
       redemptionRisk: 0.1,     // 1 oz min, T+1-T+2 (low-moderate)

@@ -2103,12 +2103,12 @@ State transitions are driven by a multi-dimensional stress score incorporating: 
 
 | State | Bullion Range | Gold Target | Silver Target | Digital Ceiling | Cash Min | Minting | CALM Target |
 |-------|-------------|-------------|---------------|-----------------|----------|---------|-------------|
-| NORMAL | 16-20% | 13-17% | 3-4% | 3.5% | 55% | ALLOWED | 1.15 |
-| CAUTION | 17-21% | 14-18% | 3-4% | 3.0% | 60% | ALLOWED (70%) | 1.18 |
-| DEFENSIVE | 18-22% | 15-19% | 3-5% | 2.5% | 65% | RESTRICTED (40%) | 1.20 |
-| STRESS | 20-24% | 16-20% | 3-5% | 2.0% | 72% | RESTRICTED (15%) | 1.25 |
-| EMERGENCY | 22-25% | 18-22% | 3-5% | 0% | 78% | BLOCKED | 1.30 |
-| RECOVERY | 19-22% | 15-18% | 3-4% | 2.5% | 68% | RESTRICTED (30%) | 1.20 |
+| NORMAL | 16-20% | 13-17% | 0-3% | 2.5% | 55% | ALLOWED | **1.20** |
+| CAUTION | 17-21% | 14-18% | 0-3% | 2.0% | 60% | ALLOWED (70%) | **1.22** |
+| DEFENSIVE | 18-22% | 15-19% | 0-3% | 2.0% | 65% | RESTRICTED (40%) | **1.23** |
+| STRESS | 20-24% | 16-20% | 0-3% | 1.5% | 72% | RESTRICTED (15%) | **1.25** |
+| EMERGENCY | 22-25% | 18-22% | 0-3% | 0% | 78% | BLOCKED | **1.30** |
+| RECOVERY | 19-22% | 15-18% | 0-3% | 2.0% | 68% | RESTRICTED (30%) | **1.21** |
 
 ### V24.2.3 — NEW STRUCTURAL WEIGHT FORMULA (§16 of v24.2 Directive)
 
@@ -2263,7 +2263,7 @@ The v24.1 release incorporates the strongest components of the v19 constitutiona
 
 ### Mandatory v24 Corrections
 1. **Canonical reserve ranges unified:** Bullion 15–25%, Fiat 70–85%, Digital Liquidity 0–5%. No active constitutional section may use 2–8% stablecoin allocation.
-2. **Canonical policy target unified:** Bullion 20%, Fiat 76.5%, Digital Liquidity 3.5%.
+2. **Canonical policy target unified:** Bullion 20%, Fiat 77.5%, Digital Liquidity 2.5% [v24.2.1 CORRECTED].
 3. **Asset-level arithmetic corrected:** Fiat target is 76.5%; EUR target is raised from 18.0% to 19.5% so the full strategic allocation equals exactly 100%.
 4. **Solvency definition unified:** RR = R_a / (S × PAR). Floor 100%; Policy 105%; Strategic 120%. A 120% strategic RR is explicitly defined as 20% excess reserve value over contractual redemption liabilities, not as a claim that reserves can necessarily fall 20% and remain solvent.
 5. **Stress solvency separated from legal RR:** Stress-RR is a forward-looking scenario constraint and is never represented as a second legal solvency ratio.
@@ -2353,7 +2353,7 @@ The following constants and definitions are normative. Any conflicting constant 
 | Bullion range | 15–25% | Constitutional |
 | Fiat range | 70–85% | Constitutional |
 | Digital liquidity range | 0–5% | Constitutional |
-| Policy target | 20% bullion / 76.5% fiat / 3.5% digital | Strategic policy |
+| Policy target | 20% bullion / 77.5% fiat / 2.5% digital [v24.2.1 CORRECTED] | Strategic policy |
 | USD hard cap | 35% | Constitutional |
 | Per-currency cap | 60% | Constitutional |
 | Stablecoin issuer cap | 2% | Constitutional |
@@ -2389,7 +2389,7 @@ The 60% general per-currency cap is retained as the constitutional maximum. A **
 **Three-pillar strategic architecture** (monetary design view):
 - Pillar A — Bullion Anchor (Gold + Silver): policy target 20%; constitutional range 15–25%
 - Pillar B — Global Fiat Reserve (Cash + Sovereign): policy target 76.5%; constitutional range 70–85%
-- Pillar C — Digital Liquidity Sleeve (Eligible stablecoins + tokenized government liquidity): policy target 3.5%; constitutional range 0–5%
+- Pillar C — Digital Liquidity Sleeve (Eligible stablecoins + tokenized government liquidity): policy target 2.5% [v24.2.1 CORRECTED from 3.5%]; constitutional range 0–5%
 
 **Four-layer measurement architecture** (risk measurement view):
 - Layer 1 — Constitutional Solvency (RR)
@@ -2962,7 +2962,7 @@ Before any material parameter change, the proposed model SHALL be compared again
 |---|---|---|---|---|
 | **A — Bullion Anchor** | Gold + Silver | 20% | 15-25% | Strategic real-asset anchor |
 | **B — Global Fiat Reserve** | Cash + Sovereign (11 currencies) | 76.5% | 70-85% | Core solvency + liquidity reserve |
-| **C — Digital Liquidity** | Eligible stablecoins + tokenized | 3.5% | 0-5% | Settlement/redemption bridge |
+| **C — Digital Liquidity** | Eligible stablecoins + tokenized | 2.5% [v24.2.1 CORRECTED] | 0-5% | Settlement/redemption bridge |
 | **Total** | | 100% | | |
 
 **Constraint: A + B + C = 100%. When C reduces (depeg event), B absorbs the freed allocation. A (bullion) is NOT reducible for stablecoin substitution.**
@@ -3572,7 +3572,7 @@ The following gates are release-blocking. Passing documentation alone is insuffi
 ```text
 Bullion target = 20.0%
 Fiat target    = 76.5%
-Digital target = 3.5%
+Digital target = 2.5% [v24.2.1 CORRECTED from 3.5%]
 TOTAL          = 100.0%
 
 Fiat detail:
@@ -45924,7 +45924,7 @@ Strategic allocation ranges are constitutional.
 Operational allocations within those ranges are determined by the Reserve Management Policy.
 No operational decision may exceed constitutional limits without a Constitutional Amendment.
 23.11 Illustrative Note
-Numerical examples throughout this Constitution use the Constitutional Policy Targets (76.5% Fiat, 20% Bullion, 3.5% Digital Liquidity) solely for illustration. Live reserve allocations SHALL be determined by the Constitutional Reserve Allocation Framework and verified institutional data.
+Numerical examples throughout this Constitution use the Constitutional Policy Targets (77.5% Fiat, 20% Bullion, 2.5% Digital Liquidity [v24.2.1 CORRECTED]) solely for illustration. Live reserve allocations SHALL be determined by the Constitutional Reserve Allocation Framework and verified institutional data.
 23.12 Constitutional Verification
 text
 ✓ Total Reserve Allocation = 100%

@@ -1,0 +1,1084 @@
+{
+  "audit_id": "CONTRADICTION-STRESS-AUDIT",
+  "audit_version": "1.0",
+  "timestamp_utc": "2026-08-14T23:36:33.851947+00:00",
+  "blueprint_path": "/home/z/my-project/docs/blueprint/mithqal-v25-FINAL-blueprint.md",
+  "blueprint_lines": 70345,
+  "part_1_contradictions": {
+    "patterns_total": 10,
+    "patterns_with_contradictions": 4,
+    "patterns_without_contradictions": 6,
+    "unmarked_contradiction_lines_total": 5,
+    "patterns": [
+      {
+        "pattern_id": 1,
+        "name": "CALM NORMAL target (1.15 vs 1.20)",
+        "findings": [
+          {
+            "line": 2077,
+            "text": "| 10 | CALM RR targets | NORMAL=1.15, ELEVATED=1.20, HIGH_STRESS=1.25, CRISIS=1.30 | NORMAL=1.15, CAUTION=1.18, DEFENSIV",
+            "inside_historical_archive": false,
+            "marked_historical_inline": true,
+            "marked_at_all": true,
+            "severity": "OK"
+          },
+          {
+            "line": 1892,
+            "text": "| NORMAL | 1.15 | **1.20** | = strategic target |",
+            "inside_historical_archive": false,
+            "marked_historical_inline": true,
+            "marked_at_all": true,
+            "severity": "OK"
+          },
+          {
+            "line": 1886,
+            "text": "v24.2 had NORMAL CALM target = 1.15, which was BELOW the strategic target (1.20). This was internally inconsistent.",
+            "inside_historical_archive": false,
+            "marked_historical_inline": true,
+            "marked_at_all": true,
+            "severity": "OK"
+          },
+          {
+            "line": 2106,
+            "text": "| NORMAL | 16-20% | 13-17% | 3-4% | 3.5% | 55% | ALLOWED | 1.15 |",
+            "inside_historical_archive": false,
+            "marked_historical_inline": false,
+            "marked_at_all": false,
+            "severity": "CONTRADICTION"
+          }
+        ],
+        "has_contradiction": true,
+        "unmarked_count": 1
+      },
+      {
+        "pattern_id": 2,
+        "name": "102% ceiling",
+        "findings": [
+          {
+            "line": 2051,
+            "text": "- ❌ 102% reserve ceiling (max loss before breach = 1.96% — too narrow)",
+            "inside_historical_archive": false,
+            "marked_historical_inline": true,
+            "marked_at_all": true,
+            "severity": "OK"
+          },
+          {
+            "line": 2052,
+            "text": "- ❌ RRmax = 102%, RRnormal = 100.5%",
+            "inside_historical_archive": false,
+            "marked_historical_inline": true,
+            "marked_at_all": true,
+            "severity": "OK"
+          },
+          {
+            "line": 20909,
+            "text": ">102%",
+            "inside_historical_archive": true,
+            "marked_historical_inline": false,
+            "marked_at_all": true,
+            "severity": "OK"
+          },
+          {
+            "line": 20915,
+            "text": "100-102%",
+            "inside_historical_archive": true,
+            "marked_historical_inline": false,
+            "marked_at_all": true,
+            "severity": "OK"
+          },
+          {
+            "line": 20929,
+            "text": "- Ratio above 102% is acceptable",
+            "inside_historical_archive": true,
+            "marked_historical_inline": false,
+            "marked_at_all": true,
+            "severity": "OK"
+          },
+          {
+            "line": 20930,
+            "text": "- Ratio of 100-102% requires enhanced monitoring and minting pause",
+            "inside_historical_archive": true,
+            "marked_historical_inline": false,
+            "marked_at_all": true,
+            "severity": "OK"
+          },
+          {
+            "line": 20935,
+            "text": "The Institution's reserve ratio is 105%. This is above 102% and is acceptable. If the ratio falls to 101%, enhanced moni",
+            "inside_historical_archive": true,
+            "marked_historical_inline": false,
+            "marked_at_all": true,
+            "severity": "OK"
+          },
+          {
+            "line": 21608,
+            "text": ">102%",
+            "inside_historical_archive": true,
+            "marked_historical_inline": false,
+            "marked_at_all": true,
+            "severity": "OK"
+          },
+          {
+            "line": 21609,
+            "text": "100-102%",
+            "inside_historical_archive": true,
+            "marked_historical_inline": false,
+            "marked_at_all": true,
+            "severity": "OK"
+          },
+          {
+            "line": 21742,
+            "text": "- Reserve ratio: acceptable >102%, elevated 100-102%, critical <100%",
+            "inside_historical_archive": true,
+            "marked_historical_inline": false,
+            "marked_at_all": true,
+            "severity": "OK"
+          },
+          {
+            "line": 31863,
+            "text": ">102%",
+            "inside_historical_archive": true,
+            "marked_historical_inline": false,
+            "marked_at_all": true,
+            "severity": "OK"
+          },
+          {
+            "line": 35259,
+            "text": "The Operations team monitors the reserve ratio in real-time. If the ratio falls below 102%, enhanced monitoring begins. ",
+            "inside_historical_archive": true,
+            "marked_historical_inline": false,
+            "marked_at_all": true,
+            "severity": "OK"
+          },
+          {
+            "line": 39327,
+            "text": "Ratio <102%",
+            "inside_historical_archive": true,
+            "marked_historical_inline": false,
+            "marked_at_all": true,
+            "severity": "OK"
+          },
+          {
+            "line": 60696,
+            "text": "The Institution's reserve ratio is 105%. This is above 102% and is acceptable. If the ratio falls to 101%, enhanced moni",
+            "inside_historical_archive": true,
+            "marked_historical_inline": false,
+            "marked_at_all": true,
+            "severity": "OK"
+          },
+          {
+            "line": 66277,
+            "text": "The Operations team monitors the reserve ratio in real-time. If the ratio falls below 102%, enhanced monitoring begins. ",
+            "inside_historical_archive": true,
+            "marked_historical_inline": false,
+            "marked_at_all": true,
+            "severity": "OK"
+          }
+        ],
+        "code_occurrences_portfolio_stress_suite_py": [
+          {
+            "line": 64,
+            "text": "RR_CEILING = 1.02                  # §46 approved operational ceiling (the \"102% ceiling\")"
+          },
+          {
+            "line": 64,
+            "text": "RR_CEILING = 1.02                  # §46 approved operational ceiling (the \"102% ceiling\")"
+          },
+          {
+            "line": 67,
+            "text": "# Rationale for using RR_CEILING (102%) instead of RR_TARGET (120%) as the stress baseline:"
+          },
+          {
+            "line": 68,
+            "text": "# - §46 explicitly tests from the 102% \"approved ceiling\" to prove it is \"not immune to small losses\"."
+          },
+          {
+            "line": 70,
+            "text": "#   the 102% ceiling (the approved operational buffer above the 100% solvency floor)."
+          }
+        ],
+        "has_contradiction": true,
+        "unmarked_count": 0
+      },
+      {
+        "pattern_id": 3,
+        "name": "Reserve ranges (silver 3-8%, gold 12-18%, stablecoin 2-8%)",
+        "findings": [
+          {
+            "pattern": "silver 3-8% (v19 range)",
+            "line": 3007,
+            "text": "- Bullion: 15-25% (gold 12-18%, silver 3-8%)",
+            "inside_historical_archive": false,
+            "marked_historical_inline": false,
+            "covered_by_forward_reference": true,
+            "marked_at_all": true,
+            "severity": "OK"
+          },
+          {
+            "pattern": "silver 3-8% (v19 range)",
+            "line": 69905,
+            "text": "**Key change from v24.1**: v24.1 set silver at 5% (range 3-8%) based on a grid-test optimization. v24.2 reduced to 3% citing insufficient diversification vs 30% volatility. v24.2.1 goes further and makes silver fully conditional, with 0% as the conservative default.",
+            "inside_historical_archive": true,
+            "marked_historical_inline": true,
+            "covered_by_forward_reference": true,
+            "marked_at_all": true,
+            "severity": "OK"
+          },
+          {
+            "pattern": "gold 12-18% (v19/v24 range)",
+            "line": 3007,
+            "text": "- Bullion: 15-25% (gold 12-18%, silver 3-8%)",
+            "inside_historical_archive": false,
+            "marked_historical_inline": false,
+            "covered_by_forward_reference": true,
+            "marked_at_all": true,
+            "severity": "OK"
+          }
+        ],
+        "has_contradiction": false,
+        "unmarked_count": 0
+      },
+      {
+        "pattern_id": 4,
+        "name": "Participant minting",
+        "findings": [
+          {
+            "line": 287,
+            "text": "**OLD (v24.2 — RETIRED):** \"Participant deposits assets and directly mints MTQ\"",
+            "inside_historical_archive": false,
+            "marked_historical_inline": true,
+            "marked_via_archive_notice": false,
+            "marked_at_all": true,
+            "severity": "OK"
+          },
+          {
+            "line": 9822,
+            "text": "A participant deposits $10,000,000 in eligible reserve assets. The deposit is verified. The Institution mints 10,000,000 MTQ. The invariant ",
+            "inside_historical_archive": true,
+            "marked_historical_inline": true,
+            "marked_via_archive_notice": true,
+            "marked_at_all": true,
+            "severity": "OK"
+          },
+          {
+            "line": 10693,
+            "text": "A participant deposits eligible assets. The deposit is verified. The Institution mints MTQ. The minting is automatic, not discretionary. No ",
+            "inside_historical_archive": true,
+            "marked_historical_inline": true,
+            "marked_via_archive_notice": true,
+            "marked_at_all": true,
+            "severity": "OK"
+          },
+          {
+            "line": 19537,
+            "text": "A participant mints 1,000,000 MTQ at NAV of $1.00. The minting fee is 0.05% or $500. The participant receives 999,500 MTQ. The fee is reason",
+            "inside_historical_archive": true,
+            "marked_historical_inline": true,
+            "marked_via_archive_notice": true,
+            "marked_at_all": true,
+            "severity": "OK"
+          },
+          {
+            "line": 24834,
+            "text": "A participant deposits $10,000,000 in eligible reserve assets. The deposit is verified by the custody oracle. Mint.sol calculates the MTQ am",
+            "inside_historical_archive": true,
+            "marked_historical_inline": true,
+            "marked_via_archive_notice": true,
+            "marked_at_all": true,
+            "severity": "OK"
+          },
+          {
+            "line": 56927,
+            "text": "A participant deposits $10,000,000 in eligible reserve assets. The deposit is verified. The Institution mints 10,000,000 MTQ. The invariant ",
+            "inside_historical_archive": true,
+            "marked_historical_inline": true,
+            "marked_via_archive_notice": true,
+            "marked_at_all": true,
+            "severity": "OK"
+          },
+          {
+            "line": 57384,
+            "text": "A participant deposits eligible assets. The deposit is verified. The Institution mints MTQ. The minting is automatic, not discretionary. No ",
+            "inside_historical_archive": true,
+            "marked_historical_inline": true,
+            "marked_via_archive_notice": true,
+            "marked_at_all": true,
+            "severity": "OK"
+          },
+          {
+            "line": 60087,
+            "text": "A participant mints 1,000,000 MTQ at NAV of $1.00. The minting fee is 0.05% or $500. The participant receives 999,500 MTQ. The fee is reason",
+            "inside_historical_archive": true,
+            "marked_historical_inline": true,
+            "marked_via_archive_notice": true,
+            "marked_at_all": true,
+            "severity": "OK"
+          },
+          {
+            "line": 62162,
+            "text": "A participant deposits $10,000,000 in eligible reserve assets. The deposit is verified by the custody oracle. Mint.sol calculates the MTQ am",
+            "inside_historical_archive": true,
+            "marked_historical_inline": true,
+            "marked_via_archive_notice": true,
+            "marked_at_all": true,
+            "severity": "OK"
+          }
+        ],
+        "v25_0_retire_notice_line": 287,
+        "archive_wide_notice_line": 1172,
+        "has_contradiction": false,
+        "unmarked_count": 0
+      },
+      {
+        "pattern_id": 5,
+        "name": "PAR anchor / 100% reserve-backed",
+        "findings": [
+          {
+            "line": 8448,
+            "text": "Every unit is backed by reserves.",
+            "inside_historical_archive": true,
+            "marked_historical_inline": false,
+            "marked_at_all": true,
+            "is_real_contradiction": false,
+            "note": "Reserve-backing (portfolio composition) is distinct from PAR anchor (unit of account). Terminology overlap, not a substantive contradiction.",
+            "severity": "NOT_A_CONTRADICTION"
+          },
+          {
+            "line": 9709,
+            "text": "- The settlement unit is fully backed by reserves",
+            "inside_historical_archive": true,
+            "marked_historical_inline": false,
+            "marked_at_all": true,
+            "is_real_contradiction": false,
+            "note": "Reserve-backing (portfolio composition) is distinct from PAR anchor (unit of account). Terminology overlap, not a substantive contradiction.",
+            "severity": "NOT_A_CONTRADICTION"
+          },
+          {
+            "line": 47367,
+            "text": "Every newly issued MTQ shall be fully backed by eligible reserves before issuance.",
+            "inside_historical_archive": true,
+            "marked_historical_inline": false,
+            "marked_at_all": true,
+            "is_real_contradiction": false,
+            "note": "Reserve-backing (portfolio composition) is distinct from PAR anchor (unit of account). Terminology overlap, not a substantive contradiction.",
+            "severity": "NOT_A_CONTRADICTION"
+          },
+          {
+            "line": 56193,
+            "text": "Every unit is backed by reserves.",
+            "inside_historical_archive": true,
+            "marked_historical_inline": false,
+            "marked_at_all": true,
+            "is_real_contradiction": false,
+            "note": "Reserve-backing (portfolio composition) is distinct from PAR anchor (unit of account). Terminology overlap, not a substantive contradiction.",
+            "severity": "NOT_A_CONTRADICTION"
+          },
+          {
+            "line": 56866,
+            "text": "The settlement unit is fully backed by reserves",
+            "inside_historical_archive": true,
+            "marked_historical_inline": false,
+            "marked_at_all": true,
+            "is_real_contradiction": false,
+            "note": "Reserve-backing (portfolio composition) is distinct from PAR anchor (unit of account). Terminology overlap, not a substantive contradiction.",
+            "severity": "NOT_A_CONTRADICTION"
+          }
+        ],
+        "v25_0_clarification_lines": [
+          {
+            "line": 2508,
+            "text": "PAR = $1.00 is a **USD-denominated settlement unit**, NOT a USD-backed monetary identity. MITHQAL is not saying \"MTQ is backed by USD.\" It i"
+          },
+          {
+            "line": 2508,
+            "text": "PAR = $1.00 is a **USD-denominated settlement unit**, NOT a USD-backed monetary identity. MITHQAL is not saying \"MTQ is backed by USD.\" It i"
+          },
+          {
+            "line": 2508,
+            "text": "PAR = $1.00 is a **USD-denominated settlement unit**, NOT a USD-backed monetary identity. MITHQAL is not saying \"MTQ is backed by USD.\" It i"
+          },
+          {
+            "line": 202,
+            "text": "**MTQ is NOT:** a retail stablecoin, a consumer payment coin, a replacement for USD/JPY/EUR/AED or any sovereign currency, a CBDC, a soverei"
+          }
+        ],
+        "has_contradiction": false,
+        "note": "Reserve-backing (portfolio) is distinct from PAR anchor (unit of account). Not a substantive contradiction."
+      },
+      {
+        "pattern_id": 6,
+        "name": "6-state vs 5-state (CALM module)",
+        "findings": {
+          "blueprint_6state_lines": [
+            [
+              2070,
+              "| 3 | Reserve states | 5 (NORMAL/ELEVATED/HIGH_STRESS/CRISIS/RECOVERY) | 6 (NORMAL/CAUTION/DEFENSIVE/STRESS/EMERGENCY/RECOVERY) | C | Added "
+            ],
+            [
+              2077,
+              "| 10 | CALM RR targets | NORMAL=1.15, ELEVATED=1.20, HIGH_STRESS=1.25, CRISIS=1.30 | NORMAL=1.15, CAUTION=1.18, DEFENSIVE=1.20, STRESS=1.25,"
+            ],
+            [
+              2098,
+              "States: `NORMAL → CAUTION → DEFENSIVE → STRESS → EMERGENCY → RECOVERY`"
+            ]
+          ],
+          "blueprint_5state_lines_historical": [
+            [
+              2070,
+              "| 3 | Reserve states | 5 (NORMAL/ELEVATED/HIGH_STRESS/CRISIS/RECOVERY) | 6 (NORMAL/CAUTION/DEFENSIVE/STRESS/EMERGENCY/RECOVERY) | C | Added "
+            ],
+            [
+              2077,
+              "| 10 | CALM RR targets | NORMAL=1.15, ELEVATED=1.20, HIGH_STRESS=1.25, CRISIS=1.30 | NORMAL=1.15, CAUTION=1.18, DEFENSIVE=1.20, STRESS=1.25,"
+            ]
+          ],
+          "blueprint_active_NORMAL_115_table_lines": [
+            [
+              1892,
+              "| NORMAL | 1.15 | **1.20** | = strategic target |"
+            ],
+            [
+              2106,
+              "| NORMAL | 16-20% | 13-17% | 3-4% | 3.5% | 55% | ALLOWED | 1.15 |"
+            ]
+          ],
+          "code_calm_ts_5state_lines": [
+            [
+              54,
+              "ELEVATED:   { rrTarget: 1.22, feeBps: 15,  feeRange: \"0.10–0.20%\" },"
+            ],
+            [
+              55,
+              "HIGH_STRESS:{ rrTarget: 1.25, feeBps: 37,  feeRange: \"0.25–0.50%\" },"
+            ]
+          ],
+          "code_calm_ts_6state_lines": [],
+          "contradiction": true,
+          "severity": "CONTRADICTION",
+          "note": "Implementation src/lib/calm.ts uses OLD 5-state names (NORMAL/ELEVATED/HIGH_STRESS/CRISIS/RECOVERY), NOT the v24.2 6-state names (NORMAL/CAUTION/DEFENSIVE/STRESS/EMERGENCY/RECOVERY). Additionally the blueprint ACTIVE v24.2 6-state table at lines [1892, 2106] still shows NORMAL=1.15 (v24.2 wrong value, v24.2.1 corrected to 1.20)."
+        },
+        "has_contradiction": true,
+        "unmarked_count": 1
+      },
+      {
+        "pattern_id": 7,
+        "name": "Silver target 3% vs 0% conditional",
+        "findings": [
+          {
+            "line": 1945,
+            "text": "Silver normal target = 0% (was 3% in v24.2)",
+            "inside_historical_archive": false,
+            "marked_historical_inline": true,
+            "covered_by_forward_reference_C2": true,
+            "marked_at_all": true,
+            "severity": "OK"
+          },
+          {
+            "line": 2068,
+            "text": "| 1 | Silver strategic target | 5% | 3% | B | Reduced volatility; silver at 5% provided insufficient diversification vs 30% volatility |",
+            "inside_historical_archive": false,
+            "marked_historical_inline": true,
+            "covered_by_forward_reference_C2": true,
+            "marked_at_all": true,
+            "severity": "OK"
+          },
+          {
+            "line": 69404,
+            "text": "**Operational implication**: The v24.2.1 conditional silver policy (0% normal target, 0-3% conditional band) is **validated**. Silver remain",
+            "inside_historical_archive": true,
+            "marked_historical_inline": true,
+            "covered_by_forward_reference_C2": true,
+            "marked_at_all": true,
+            "severity": "OK"
+          },
+          {
+            "line": 69898,
+            "text": "Silver normal target      = 0%   (default; was 3% in v24.2, was 5% in v24.1)",
+            "inside_historical_archive": true,
+            "marked_historical_inline": true,
+            "covered_by_forward_reference_C2": true,
+            "marked_at_all": true,
+            "severity": "OK"
+          },
+          {
+            "line": 69903,
+            "text": "**Key change from v24.2**: v24.2 set silver as a mandatory strategic target (3%, range 3-6%). v24.2.1 removes the mandate: silver is admitte",
+            "inside_historical_archive": true,
+            "marked_historical_inline": true,
+            "covered_by_forward_reference_C2": true,
+            "marked_at_all": true,
+            "severity": "OK"
+          },
+          {
+            "line": 70088,
+            "text": "- **v24.2**: Silver strategic target = 3% (range 3-6%). Reduced citing \"insufficient diversification vs 30% volatility.\" Still mandatory; no",
+            "inside_historical_archive": true,
+            "marked_historical_inline": true,
+            "covered_by_forward_reference_C2": false,
+            "marked_at_all": true,
+            "severity": "OK"
+          },
+          {
+            "line": 70089,
+            "text": "- **v24.2.1**: Silver strategic target = 0% (conditional band 0-3%). Conditional admission via SDC_Ag. The v24.2.1 framework makes silver op",
+            "inside_historical_archive": true,
+            "marked_historical_inline": true,
+            "covered_by_forward_reference_C2": false,
+            "marked_at_all": true,
+            "severity": "OK"
+          },
+          {
+            "line": 2253,
+            "text": "| Silver | 3% | 3-6% |",
+            "inside_historical_archive": false,
+            "marked_historical_inline": false,
+            "covered_by_forward_reference_C2": true,
+            "marked_at_all": true,
+            "severity": "OK"
+          },
+          {
+            "line": 1872,
+            "text": "51. Silver 5% (range 3-8%) — optimal per grid test",
+            "inside_historical_archive": false,
+            "marked_historical_inline": false,
+            "covered_by_forward_reference_C2": true,
+            "marked_at_all": true,
+            "severity": "OK"
+          },
+          {
+            "line": 3007,
+            "text": "- Bullion: 15-25% (gold 12-18%, silver 3-8%)",
+            "inside_historical_archive": false,
+            "marked_historical_inline": false,
+            "covered_by_forward_reference_C2": true,
+            "marked_at_all": true,
+            "severity": "OK"
+          },
+          {
+            "line": 69905,
+            "text": "**Key change from v24.1**: v24.1 set silver at 5% (range 3-8%) based on a grid-test optimization. v24.2 reduced to 3% citing insufficient di",
+            "inside_historical_archive": true,
+            "marked_historical_inline": true,
+            "covered_by_forward_reference_C2": true,
+            "marked_at_all": true,
+            "severity": "OK"
+          }
+        ],
+        "v24_2_1_zero_silver_confirmation_lines": [
+          {
+            "line": 1977,
+            "text": "**Old:** BRI assumes 90% gold / 10% silver."
+          },
+          {
+            "line": 17834,
+            "text": "The Institution holds 20% of reserves in allocated physical bullion. This is 80% gold and 20% silver, held in vaults across three jurisdicti"
+          },
+          {
+            "line": 59526,
+            "text": "The Institution holds 20% of reserves in allocated physical bullion. This is 80% gold and 20% silver, held in vaults across three jurisdicti"
+          },
+          {
+            "line": 69323,
+            "text": "**>>> WINNER: Portfolio D (All-physical gold max: 20% physical, 0% tokenized, 0% silver)**"
+          },
+          {
+            "line": 69328,
+            "text": "- Portfolio B (the provisional strategic reference: 15% phys + 5% tok + 0% silver) is ranked #4 — it has the **lowest CVaR_99** ($15.62M) bu"
+          },
+          {
+            "line": 69333,
+            "text": "The provisional reference (B-like: 15% phys + 5% tok + 0% silver) is **dominated** by Portfolio D on StressRR and model dependency. However,"
+          },
+          {
+            "line": 69404,
+            "text": "**Operational implication**: The v24.2.1 conditional silver policy (0% normal target, 0-3% conditional band) is **validated**. Silver remain"
+          },
+          {
+            "line": 69497,
+            "text": "- Task 2 confirms Task 4's finding: Portfolio D (0% silver) marginally outperforms Portfolio A (3% silver) and Portfolio E (2% silver) on St"
+          },
+          {
+            "line": 69905,
+            "text": "**Key change from v24.1**: v24.1 set silver at 5% (range 3-8%) based on a grid-test optimization. v24.2 reduced to 3% citing insufficient di"
+          },
+          {
+            "line": 70029,
+            "text": "When silver = 0%, the BRI (Basket Resilience Index, §V24.2.1.5) reduces to the GoldResilienceIndex (silver component = 0, NOT an error). The"
+          },
+          {
+            "line": 70122,
+            "text": "| **B** (v24.2.1 default) | 15% | 5% | 0% | 77.5% | 2.5% | Tokenized allocated gold (PAXG); silver conditional default 0% |"
+          }
+        ],
+        "has_contradiction": false,
+        "unmarked_count": 0
+      },
+      {
+        "pattern_id": 8,
+        "name": "Digital target 3.5% vs 2.5%",
+        "findings": [
+          {
+            "line": 2356,
+            "text": "| Policy target | 20% bullion / 76.5% fiat / 3.5% digital | Strategic policy |",
+            "inside_historical_archive": false,
+            "inside_v24_historical_section": false,
+            "marked_historical_inline": false,
+            "covered_by_forward_reference": false,
+            "marked_at_all": false,
+            "severity": "CONTRADICTION",
+            "note": "Active body still shows 3.5% digital target (v24.1 value); v24.2/24.2.1 reduced to 2.5%. Unlike silver (§V24.2.1.C2 forward-ref), there is NO equivalent forward-reference acknowledging this conflict."
+          },
+          {
+            "line": 45952,
+            "text": "Numerical examples throughout this Constitution use the Constitutional Policy Targets (76.5% Fiat, 20% Bullion, 3.5% Digital Liquidity) sole",
+            "inside_historical_archive": true,
+            "inside_v24_historical_section": false,
+            "marked_historical_inline": false,
+            "covered_by_forward_reference": false,
+            "marked_at_all": true,
+            "severity": "OK",
+            "note": "Active body still shows 3.5% digital target (v24.1 value); v24.2/24.2.1 reduced to 2.5%. Unlike silver (§V24.2.1.C2 forward-ref), there is NO equivalent forward-reference acknowledging this conflict."
+          },
+          {
+            "line": 2266,
+            "text": "2. **Canonical policy target unified:** Bullion 20%, Fiat 76.5%, Digital Liquidity 3.5%.",
+            "inside_historical_archive": false,
+            "inside_v24_historical_section": false,
+            "marked_historical_inline": true,
+            "covered_by_forward_reference": false,
+            "marked_at_all": true,
+            "severity": "OK",
+            "note": "Active body still shows 3.5% digital target (v24.1 value); v24.2/24.2.1 reduced to 2.5%. Unlike silver (§V24.2.1.C2 forward-ref), there is NO equivalent forward-reference acknowledging this conflict."
+          },
+          {
+            "line": 2392,
+            "text": "- Pillar C — Digital Liquidity Sleeve (Eligible stablecoins + tokenized government liquidity): policy target 3.5%; constitutional range 0–5%",
+            "inside_historical_archive": false,
+            "inside_v24_historical_section": false,
+            "marked_historical_inline": false,
+            "covered_by_forward_reference": false,
+            "marked_at_all": false,
+            "severity": "CONTRADICTION",
+            "note": "Active body still shows 3.5% digital target (v24.1 value); v24.2/24.2.1 reduced to 2.5%. Unlike silver (§V24.2.1.C2 forward-ref), there is NO equivalent forward-reference acknowledging this conflict."
+          },
+          {
+            "line": 3575,
+            "text": "Digital target = 3.5%",
+            "inside_historical_archive": false,
+            "inside_v24_historical_section": true,
+            "marked_historical_inline": false,
+            "covered_by_forward_reference": false,
+            "marked_at_all": true,
+            "severity": "OK",
+            "note": "Active body still shows 3.5% digital target (v24.1 value); v24.2/24.2.1 reduced to 2.5%. Unlike silver (§V24.2.1.C2 forward-ref), there is NO equivalent forward-reference acknowledging this conflict."
+          },
+          {
+            "line": 2965,
+            "text": "| **C — Digital Liquidity** | Eligible stablecoins + tokenized | 3.5% | 0-5% | Settlement/redemption bridge |",
+            "inside_historical_archive": false,
+            "inside_v24_historical_section": false,
+            "marked_historical_inline": false,
+            "covered_by_forward_reference": false,
+            "marked_at_all": false,
+            "severity": "CONTRADICTION",
+            "note": "Active body still shows 3.5% digital target (v24.1 value); v24.2/24.2.1 reduced to 2.5%. Unlike silver (§V24.2.1.C2 forward-ref), there is NO equivalent forward-reference acknowledging this conflict."
+          }
+        ],
+        "v24_2_2_5_confirmation_lines": [
+          {
+            "line": 2255,
+            "text": "| Digital Liquidity | 2.5% | 0-5% (normal 2-3.5%) |"
+          }
+        ],
+        "has_contradiction": true,
+        "unmarked_count": 3
+      },
+      {
+        "pattern_id": 9,
+        "name": "CBDC language",
+        "findings": {
+          "suspicious_lines": [],
+          "negated_hits_excluded": 0,
+          "v25_0_clarification_lines": [
+            {
+              "line": 202,
+              "text": "**MTQ is NOT:** a retail stablecoin, a consumer payment coin, a replacement for USD/JPY/EUR/AED or any sovereign currency, a CBDC, a soverei"
+            },
+            {
+              "line": 393,
+              "text": "6. CBDCs remain liabilities of their issuing central banks"
+            },
+            {
+              "line": 425,
+              "text": "CBDCs remain liabilities of their issuing central banks. MTQ does not become another CBDC."
+            }
+          ],
+          "contradiction": false,
+          "severity": "NOT_A_CONTRADICTION",
+          "note": "No old blueprint language was found implying MTQ is CBDC-like or that MTQ is a sovereign liability. v25.0 §V25.0.7 explicitly states CBDCs remain sovereign liabilities and MTQ does not become another CBDC. NOT A CONTRADICTION."
+        },
+        "has_contradiction": false
+      },
+      {
+        "pattern_id": 10,
+        "name": "BRICS language",
+        "findings": {
+          "suspicious_lines": [],
+          "negated_hits_excluded": 0,
+          "v25_0_clarification_lines": [
+            {
+              "line": 1435,
+              "text": "> **MTQ shall remain independently functional regardless of whether a BRICS unit, BRICS CBDC framework, BRICS payment system or BRICS moneta"
+            },
+            {
+              "line": 1723,
+              "text": "1. **MTQ is not BRICS money.**"
+            }
+          ],
+          "contradiction": false,
+          "severity": "NOT_A_CONTRADICTION",
+          "note": "No blueprint language was found claiming MTQ IS BRICS money or BRICS-aligned. The BRICS Neutrality Amendment (§1-26 of the amendment) explicitly states MTQ is NOT BRICS money and remains independently functional regardless of BRICS. NOT A CONTRADICTION."
+        },
+        "has_contradiction": false
+      }
+    ]
+  },
+  "part_2_stress_tests": {
+    "scenarios_total": 15,
+    "pass_count": 8,
+    "fail_count": 0,
+    "bdl_count": 7,
+    "baseline": {
+      "PAR": 1.0,
+      "SUPPLY": 54000000,
+      "LIABILITY": 54000000.0,
+      "RR_baseline": 1.2,
+      "R_a_baseline": 64800000.0,
+      "portfolio": {
+        "name": "B",
+        "label": "v24.2.1 default (15% phys + 5% PAXG + 0% Ag + 77.5% fiat + 2.5% digital)",
+        "weights": {
+          "physical_gold": 0.15,
+          "tokenized_gold_paxg": 0.05,
+          "silver": 0.0,
+          "fiat": 0.775,
+          "digital": 0.025
+        }
+      }
+    },
+    "hard_constraints": {
+      "RR_min": 1.0,
+      "StressRR_min": 0.8,
+      "LCR_min": 1.0
+    },
+    "results": [
+      {
+        "id": "S01",
+        "name": "US Treasury default",
+        "type": "BDL",
+        "description": "US Treasury defaults — USD sovereign holdings impaired 60%",
+        "shocks": {
+          "fiat_USD_sovereign": 0.4
+        },
+        "RR_after": 1.099862,
+        "StressRR": 0.997742,
+        "LCR": 1.719725,
+        "R_after_usd": 59392564.33,
+        "R_stress_usd": 53878055.08,
+        "HQLA_usd": 46432564.33,
+        "outflows_30d_usd": 27000000.0,
+        "classification": "BDL",
+        "classification_reason": "Per §47 honesty: a US sovereign default is EXPLICITLY outside the approved design envelope (the §3.6 sovereign stress coefficient assumes worst = 0.80, not 0.0). Design assumes G7 sovereigns NEVER default. Declared BDL BEFORE computation per §47.",
+        "bdl_reason": "Per §47 honesty: a US sovereign default is EXPLICITLY outside the approved design envelope (the §3.6 sovereign stress coefficient assumes worst = 0.80, not 0.0). Design assumes G7 sovereigns NEVER default. Declared BDL BEFORE computation per §47.",
+        "redemption_pressure": 0.5
+      },
+      {
+        "id": "S02",
+        "name": "Gold market closure (30 days)",
+        "type": "DESIGN",
+        "description": "Gold market closes for 30 days; physical redemption blocked",
+        "shocks": {},
+        "RR_after": 1.191,
+        "StressRR": 1.084593,
+        "LCR": 3.2,
+        "R_after_usd": 64314000.0,
+        "R_stress_usd": 58567998.96,
+        "HQLA_usd": 51840000.0,
+        "outflows_30d_usd": 16200000.0,
+        "classification": "PASS",
+        "classification_reason": "RR_after=1.1910 >= 1.00, StressRR=1.0846 >= 0.80, LCR=3.2000 >= 1.00",
+        "bdl_reason": null,
+        "redemption_pressure": 0.3
+      },
+      {
+        "id": "S03",
+        "name": "PAXG issuer failure (Paxos insolvency)",
+        "type": "BDL",
+        "description": "Paxos insolvency — 5% tokenized gold sleeve impaired 100%",
+        "shocks": {
+          "tokenized_gold_paxg": 0.0
+        },
+        "RR_after": 1.14,
+        "StressRR": 1.041873,
+        "LCR": 2.4,
+        "R_after_usd": 61560000.0,
+        "R_stress_usd": 56261118.96,
+        "HQLA_usd": 51840000.0,
+        "outflows_30d_usd": 21600000.0,
+        "classification": "BDL",
+        "classification_reason": "Per §47: full PAXG tokenized-gold impairment is the §3.6 BDL example. The 5% PAXG sleeve is uninsured against full issuer failure; design assumes max 50% impairment, not 100%. Declared BDL BEFORE computation per §47 honesty rule.",
+        "bdl_reason": "Per §47: full PAXG tokenized-gold impairment is the §3.6 BDL example. The 5% PAXG sleeve is uninsured against full issuer failure; design assumes max 50% impairment, not 100%. Declared BDL BEFORE computation per §47 honesty rule.",
+        "redemption_pressure": 0.4
+      },
+      {
+        "id": "S04",
+        "name": "Multi-custodian failure (2 of 4)",
+        "type": "BDL",
+        "description": "Brinks + Loomis fail simultaneously — 60% of physical gold lost",
+        "shocks": {
+          "physical_gold": 0.0
+        },
+        "RR_after": 1.02,
+        "StressRR": 0.927273,
+        "LCR": 1.92,
+        "R_after_usd": 55080000.0,
+        "R_stress_usd": 50072718.96,
+        "HQLA_usd": 51840000.0,
+        "outflows_30d_usd": 27000000.0,
+        "classification": "BDL",
+        "classification_reason": "Per §47: simultaneous failure of 2 of 4 custodians breaches the §11 single-custodian concentration cap (25%); the §3.6 stress coefficient assumes worst = single-custodian failure (5% loss). Two simultaneous custodian failures = ~60% bullion loss is EXPLICITLY beyond design. Declared BDL BEFORE computation.",
+        "bdl_reason": "Per §47: simultaneous failure of 2 of 4 custodians breaches the §11 single-custodian concentration cap (25%); the §3.6 stress coefficient assumes worst = single-custodian failure (5% loss). Two simultaneous custodian failures = ~60% bullion loss is EXPLICITLY beyond design. Declared BDL BEFORE computation.",
+        "redemption_pressure": 0.5
+      },
+      {
+        "id": "S05",
+        "name": "Stablecoin depeg cascade (USDC + USDP + EURC)",
+        "type": "DESIGN",
+        "description": "All 3 stablecoin issuers depeg simultaneously for 48h",
+        "shocks": {
+          "digital": 0.5
+        },
+        "RR_after": 1.185,
+        "StressRR": 1.080873,
+        "LCR": 3.15,
+        "R_after_usd": 63990000.0,
+        "R_stress_usd": 58367118.96,
+        "HQLA_usd": 51030000.0,
+        "outflows_30d_usd": 16200000.0,
+        "classification": "PASS",
+        "classification_reason": "RR_after=1.1850 >= 1.00, StressRR=1.0809 >= 0.80, LCR=3.1500 >= 1.00",
+        "bdl_reason": null,
+        "redemption_pressure": 0.3
+      },
+      {
+        "id": "S06",
+        "name": "Correlation collapse (rho → 1.0, all assets decline)",
+        "type": "DESIGN",
+        "description": "All asset correlations converge to 1.0; everything declines 20%",
+        "shocks": {
+          "physical_gold": 0.8,
+          "tokenized_gold_paxg": 0.8,
+          "silver": 0.8,
+          "fiat": 0.8,
+          "digital": 0.8
+        },
+        "RR_after": 1.146,
+        "StressRR": 1.044753,
+        "LCR": 3.18,
+        "R_after_usd": 61884000.0,
+        "R_stress_usd": 56416638.96,
+        "HQLA_usd": 51516000.0,
+        "outflows_30d_usd": 16200000.0,
+        "classification": "PASS",
+        "classification_reason": "RR_after=1.1460 >= 1.00, StressRR=1.0448 >= 0.80, LCR=3.1800 >= 1.00",
+        "bdl_reason": null,
+        "redemption_pressure": 0.3
+      },
+      {
+        "id": "S07",
+        "name": "Redemption bank run (80% in 48h)",
+        "type": "BDL",
+        "description": "80% of MTQ supply redeemed in 48 hours",
+        "shocks": {},
+        "RR_after": 1.164,
+        "StressRR": 1.060383,
+        "LCR": 1.2,
+        "R_after_usd": 62856000.0,
+        "R_stress_usd": 57260658.96,
+        "HQLA_usd": 51840000.0,
+        "outflows_30d_usd": 43200000.0,
+        "classification": "BDL",
+        "classification_reason": "Per §47: §3.8 LCR design assumes worst 30-day net outflows = 30% of supply. 80% in 48h is 2.67x beyond design and triggers fire-sale losses on illiquid bullion. Declared BDL BEFORE computation.",
+        "bdl_reason": "Per §47: §3.8 LCR design assumes worst 30-day net outflows = 30% of supply. 80% in 48h is 2.67x beyond design and triggers fire-sale losses on illiquid bullion. Declared BDL BEFORE computation.",
+        "redemption_pressure": 0.8
+      },
+      {
+        "id": "S08",
+        "name": "Oracle failure cascade (all 4 sources)",
+        "type": "DESIGN",
+        "description": "All 4 oracle sources fail simultaneously — system falls back to last-known-good prices",
+        "shocks": {},
+        "RR_after": 1.14,
+        "StressRR": 1.038229,
+        "LCR": 4.56,
+        "R_after_usd": 61560000.0,
+        "R_stress_usd": 56064363.01,
+        "HQLA_usd": 49248000.0,
+        "outflows_30d_usd": 10800000.0,
+        "classification": "PASS",
+        "classification_reason": "RR_after=1.1400 >= 1.00, StressRR=1.0382 >= 0.80, LCR=4.5600 >= 1.00",
+        "bdl_reason": null,
+        "redemption_pressure": 0.2
+      },
+      {
+        "id": "S09",
+        "name": "Ethereum outage (7 days — PAXG chain)",
+        "type": "DESIGN",
+        "description": "Ethereum mainnet down 7 days — PAXG sleeve illiquid",
+        "shocks": {},
+        "RR_after": 1.194,
+        "StressRR": 1.087773,
+        "LCR": 4.8,
+        "R_after_usd": 64476000.0,
+        "R_stress_usd": 58739718.96,
+        "HQLA_usd": 51840000.0,
+        "outflows_30d_usd": 10800000.0,
+        "classification": "PASS",
+        "classification_reason": "RR_after=1.1940 >= 1.00, StressRR=1.0878 >= 0.80, LCR=4.8000 >= 1.00",
+        "bdl_reason": null,
+        "redemption_pressure": 0.2
+      },
+      {
+        "id": "S10",
+        "name": "US JSG isolation",
+        "type": "DESIGN",
+        "description": "US Jurisdictional Settlement Gateway isolated — USD leg frozen, rest of network operates",
+        "shocks": {
+          "fiat_USD": 0.5
+        },
+        "RR_after": 1.144368,
+        "StressRR": 1.040022,
+        "LCR": 4.52184,
+        "R_after_usd": 61795869.07,
+        "R_stress_usd": 56161194.58,
+        "HQLA_usd": 48835869.07,
+        "outflows_30d_usd": 10800000.0,
+        "classification": "PASS",
+        "classification_reason": "RR_after=1.1444 >= 1.00, StressRR=1.0400 >= 0.80, LCR=4.5218 >= 1.00",
+        "bdl_reason": null,
+        "redemption_pressure": 0.2
+      },
+      {
+        "id": "S11",
+        "name": "Governance attack (4/7 council captured)",
+        "type": "BDL",
+        "description": "Malicious council captures 4/7 seats — attempts to subvert invariants",
+        "shocks": {},
+        "RR_after": 1.2,
+        "StressRR": 1.092873,
+        "LCR": 6.4,
+        "R_after_usd": 64800000.0,
+        "R_stress_usd": 59015118.96,
+        "HQLA_usd": 51840000.0,
+        "outflows_30d_usd": 8100000.0,
+        "classification": "BDL",
+        "classification_reason": "Per §47: governance attack by supermajority is outside the approved risk envelope. The §25 invariants (no-discretionary-minting, no-lending, reserve-segregation) are CONSTITUTIONAL INVARIANTS that even a 4/7 council CANNOT override. However, a captured council could ATTEMPT to: (a) approve in-kind redemptions in distressed asset categories, (b) reclassify eligible assets, (c) trigger emergency mode. The MATHEMATICAL outflow under invariant preservation is bounded but the GOVERNANCE-PROCESS damage is unbounded. Declared BDL because §47 covers 'governance capture' scenarios.",
+        "bdl_reason": "Per §47: governance attack by supermajority is outside the approved risk envelope. The §25 invariants (no-discretionary-minting, no-lending, reserve-segregation) are CONSTITUTIONAL INVARIANTS that even a 4/7 council CANNOT override. However, a captured council could ATTEMPT to: (a) approve in-kind redemptions in distressed asset categories, (b) reclassify eligible assets, (c) trigger emergency mode. The MATHEMATICAL outflow under invariant preservation is bounded but the GOVERNANCE-PROCESS damage is unbounded. Declared BDL because §47 covers 'governance capture' scenarios.",
+        "redemption_pressure": 0.15
+      },
+      {
+        "id": "S12",
+        "name": "Interest rate shock (+500bps USD)",
+        "type": "DESIGN",
+        "description": "USD rates rise 500bps — sovereign bond MTM impact",
+        "shocks": {},
+        "RR_after": 1.179075,
+        "StressRR": 1.073696,
+        "LCR": 4.695375,
+        "R_after_usd": 63670050.0,
+        "R_stress_usd": 57979607.78,
+        "HQLA_usd": 50710050.0,
+        "outflows_30d_usd": 10800000.0,
+        "classification": "PASS",
+        "classification_reason": "RR_after=1.1791 >= 1.00, StressRR=1.0737 >= 0.80, LCR=4.6954 >= 1.00",
+        "bdl_reason": null,
+        "redemption_pressure": 0.2
+      },
+      {
+        "id": "S13",
+        "name": "Gold crash (-50% in 7 days)",
+        "type": "BDL",
+        "description": "Gold drops 50% in 7 days",
+        "shocks": {
+          "physical_gold": 0.5,
+          "tokenized_gold_paxg": 0.5
+        },
+        "RR_after": 1.08,
+        "StressRR": 0.984573,
+        "LCR": 3.2,
+        "R_after_usd": 58320000.0,
+        "R_stress_usd": 53166918.96,
+        "HQLA_usd": 51840000.0,
+        "outflows_30d_usd": 16200000.0,
+        "classification": "BDL",
+        "classification_reason": "Per §47 + §3.6: §3.6 worst-eligible gold stress coefficient = 0.92 (i.e., gold -8% under stress). The §45 §1 gold shock library defines max = -50% as the boundary scenario, but v25.0 directive §4 REJECTS the 102% ceiling specifically because max loss before breach = 1.96% is too narrow. A -50% gold move at RR_baseline=120% (Portfolio B with 20% bullion) implies 10% reserve loss = RR drops from 120% to 108% (likely still PASS). However the v24.2.1 design envelope max is -25%. Declared BDL because it exceeds the design envelope (-25%).",
+        "bdl_reason": "Per §47 + §3.6: §3.6 worst-eligible gold stress coefficient = 0.92 (i.e., gold -8% under stress). The §45 §1 gold shock library defines max = -50% as the boundary scenario, but v25.0 directive §4 REJECTS the 102% ceiling specifically because max loss before breach = 1.96% is too narrow. A -50% gold move at RR_baseline=120% (Portfolio B with 20% bullion) implies 10% reserve loss = RR drops from 120% to 108% (likely still PASS). However the v24.2.1 design envelope max is -25%. Declared BDL because it exceeds the design envelope (-25%).",
+        "redemption_pressure": 0.3
+      },
+      {
+        "id": "S14",
+        "name": "FX crisis (all non-USD -20%)",
+        "type": "DESIGN",
+        "description": "All non-USD currencies drop 20% vs USD simultaneously",
+        "shocks": {
+          "fiat_non_USD": 0.8
+        },
+        "RR_after": 1.069632,
+        "StressRR": 0.975269,
+        "LCR": 4.14816,
+        "R_after_usd": 57760130.93,
+        "R_stress_usd": 52664499.55,
+        "HQLA_usd": 44800130.93,
+        "outflows_30d_usd": 10800000.0,
+        "classification": "PASS",
+        "classification_reason": "RR_after=1.0696 >= 1.00, StressRR=0.9753 >= 0.80, LCR=4.1482 >= 1.00",
+        "bdl_reason": null,
+        "redemption_pressure": 0.2
+      },
+      {
+        "id": "S15",
+        "name": "Combined black swan (gold -30% + PAXG -50% + stablecoin -50% + custody 5% + FX -15%)",
+        "type": "BDL",
+        "description": "Multi-factor tail: gold -30%, PAXG -50%, stablecoin -50%, custody 5%, FX -15%",
+        "shocks": {
+          "physical_gold": 0.7,
+          "tokenized_gold_paxg": 0.5,
+          "digital": 0.5,
+          "fiat_non_USD": 0.85
+        },
+        "RR_after": 0.994221,
+        "StressRR": 0.908487,
+        "LCR": 1.694448,
+        "R_after_usd": 53687952.39,
+        "R_stress_usd": 49058288.6,
+        "HQLA_usd": 45750098.19,
+        "outflows_30d_usd": 27000000.0,
+        "classification": "BDL",
+        "classification_reason": "Per §47: this is the EXPLICIT BDL example named in the directive. Multi-factor tail event combining 5 simultaneous shocks; by construction outside any single-asset design envelope. Declared BDL BEFORE computation per §47 honesty rule.",
+        "bdl_reason": "Per §47: this is the EXPLICIT BDL example named in the directive. Multi-factor tail event combining 5 simultaneous shocks; by construction outside any single-asset design envelope. Declared BDL BEFORE computation per §47 honesty rule.",
+        "redemption_pressure": 0.5
+      }
+    ]
+  },
+  "overall_risk_verdict": "AMBER — ELEVATED",
+  "summary": {
+    "contradiction_patterns_total": 10,
+    "contradiction_patterns_with_findings": 4,
+    "unmarked_contradiction_lines": 5,
+    "stress_pass": 8,
+    "stress_fail": 0,
+    "stress_bdl": 7,
+    "stress_total": 15
+  }
+}
