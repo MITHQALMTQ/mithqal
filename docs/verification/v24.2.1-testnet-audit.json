@@ -1,0 +1,227 @@
+{
+  "date": "2026-08-14T07:49:55.566461+00:00",
+  "version": "v24.2.1",
+  "audit": "Comprehensive Testnet Verification",
+  "honest": true,
+  "forced_to_pass": false,
+  "networks": {
+    "monad": {
+      "rpc": "https://testnet-rpc.monad.xyz",
+      "chain_id": 10143,
+      "results": [
+        {
+          "test": "RPC reachability (eth_blockNumber)",
+          "status": "PASS",
+          "detail": "block=0x331d192"
+        },
+        {
+          "test": "Chain ID = 10143",
+          "status": "PASS",
+          "detail": "actual=10143"
+        },
+        {
+          "test": "Contract deployed: MTQ (0x9e6EdC15...)",
+          "status": "PASS",
+          "detail": "bytecode=13362 bytes"
+        },
+        {
+          "test": "Contract deployed: Governance (0xE35a9180...)",
+          "status": "PASS",
+          "detail": "bytecode=51638 bytes"
+        },
+        {
+          "test": "Contract deployed: Safe (0xE71869C6...)",
+          "status": "PASS",
+          "detail": "bytecode=342 bytes"
+        },
+        {
+          "test": "Contract deployed: Algorithm (0x8839ce50...)",
+          "status": "PASS",
+          "detail": "bytecode=5092 bytes"
+        },
+        {
+          "test": "Contract deployed: Reserve (0x1bbCd78E...)",
+          "status": "PASS",
+          "detail": "bytecode=11406 bytes"
+        },
+        {
+          "test": "Contract deployed: Mint (0x197e9CB2...)",
+          "status": "PASS",
+          "detail": "bytecode=11288 bytes"
+        },
+        {
+          "test": "Contract deployed: Redeem (0x963201C0...)",
+          "status": "PASS",
+          "detail": "bytecode=12340 bytes"
+        },
+        {
+          "test": "Contract deployed: Oracle (0xDfcA66ac...)",
+          "status": "PASS",
+          "detail": "bytecode=10546 bytes"
+        },
+        {
+          "test": "Contract deployed: Takaful (0x3eC27BB2...)",
+          "status": "PASS",
+          "detail": "bytecode=12086 bytes"
+        },
+        {
+          "test": "MTQ.name() returns string",
+          "status": "PASS",
+          "detail": "name='MITHQAL'"
+        },
+        {
+          "test": "MTQ.symbol() returns string",
+          "status": "PASS",
+          "detail": "symbol='MTQ'"
+        },
+        {
+          "test": "MTQ.decimals() = 18",
+          "status": "PASS",
+          "detail": "decimals=18"
+        },
+        {
+          "test": "MTQ.totalSupply() > 0",
+          "status": "PASS",
+          "detail": "supply=310.95 MTQ"
+        },
+        {
+          "test": "Oracle.goldPrice() > 0",
+          "status": "FAIL",
+          "detail": "Oracle bytecode may not match source (no return data)"
+        },
+        {
+          "test": "Oracle.silverPrice() > 0",
+          "status": "FAIL",
+          "detail": "no return data"
+        }
+      ]
+    },
+    "arc": {
+      "rpc": "https://rpc.testnet.arc.io",
+      "chain_id": 5042002,
+      "results": [
+        {
+          "test": "RPC reachability (eth_blockNumber)",
+          "status": "PASS",
+          "detail": "block=0x3647d0c"
+        },
+        {
+          "test": "Chain ID = 5042002",
+          "status": "PASS",
+          "detail": "actual=5042002"
+        },
+        {
+          "test": "Contract deployed: MTQ (0x237c3Aa2...)",
+          "status": "PASS",
+          "detail": "bytecode=6948 bytes"
+        },
+        {
+          "test": "Contract deployed: Governance (0xE35a9180...)",
+          "status": "PASS",
+          "detail": "bytecode=26258 bytes"
+        },
+        {
+          "test": "Contract deployed: Safe (0xE71869C6...)",
+          "status": "PASS",
+          "detail": "bytecode=342 bytes"
+        },
+        {
+          "test": "Contract deployed: Algorithm (0x62f8E524...)",
+          "status": "PASS",
+          "detail": "bytecode=2474 bytes"
+        },
+        {
+          "test": "Contract deployed: Reserve (0x27a1a201...)",
+          "status": "PASS",
+          "detail": "bytecode=5794 bytes"
+        },
+        {
+          "test": "Contract deployed: Mint (0x0dd8b4F8...)",
+          "status": "PASS",
+          "detail": "bytecode=5694 bytes"
+        },
+        {
+          "test": "Contract deployed: Redeem (0xcAde4594...)",
+          "status": "PASS",
+          "detail": "bytecode=6074 bytes"
+        },
+        {
+          "test": "Contract deployed: Oracle (0xbcA4c5Cc...)",
+          "status": "PASS",
+          "detail": "bytecode=6008 bytes"
+        },
+        {
+          "test": "Contract deployed: Takaful (0xA3B89Ffd...)",
+          "status": "PASS",
+          "detail": "bytecode=6066 bytes"
+        },
+        {
+          "test": "MTQ.name() returns string",
+          "status": "PASS",
+          "detail": "name='MITHQAL'"
+        },
+        {
+          "test": "MTQ.symbol() returns string",
+          "status": "PASS",
+          "detail": "symbol='MTQ'"
+        },
+        {
+          "test": "MTQ.decimals() = 18",
+          "status": "PASS",
+          "detail": "decimals=18"
+        },
+        {
+          "test": "MTQ.totalSupply() > 0",
+          "status": "PASS",
+          "detail": "supply=1000.00 MTQ"
+        },
+        {
+          "test": "Oracle.goldPrice() > 0",
+          "status": "PASS",
+          "detail": "gold=$4432.40/oz (raw=443239990200)"
+        },
+        {
+          "test": "Oracle.silverPrice() > 0",
+          "status": "FAIL",
+          "detail": "no return data"
+        }
+      ]
+    },
+    "solana": {
+      "rpc": "https://api.devnet.solana.com",
+      "results": [
+        {
+          "test": "Solana getHealth = ok",
+          "status": "PASS",
+          "detail": "ok"
+        },
+        {
+          "test": "getSlot returns a slot",
+          "status": "PASS",
+          "detail": "slot=483731552"
+        },
+        {
+          "test": "MTQ SPL token exists (getAccountInfo)",
+          "status": "PASS",
+          "detail": "supply=18.45 MTQ, decimals=18"
+        },
+        {
+          "test": "MTQ supply > 0",
+          "status": "PASS",
+          "detail": "supply=18.45 MTQ"
+        },
+        {
+          "test": "MTQ decimals = 18",
+          "status": "PASS",
+          "detail": "decimals=18"
+        }
+      ]
+    }
+  },
+  "summary": {
+    "total": 39,
+    "passed": 36,
+    "failed": 3,
+    "pass_rate_pct": 92.3
+  }
+}
