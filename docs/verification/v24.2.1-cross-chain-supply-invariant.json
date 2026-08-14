@@ -1,0 +1,93 @@
+{
+  "date": "2026-08-14T08:35:30.481572+00:00",
+  "version": "v24.2.1",
+  "section": "\u00a751 CROSS-CHAIN SUPPLY INVARIANT",
+  "directive_50_arc_oracle": "0xFd2B8d176bf059287638Db30D02C6651dA02861e",
+  "previous_audit_arc_oracle": "0xbcA4c5Cc6eB49aa059Aaa2e4b8A905bAF130c4f7",
+  "chains": {
+    "monad": {
+      "chain": "monad",
+      "rpc": "https://testnet-rpc.monad.xyz",
+      "mtq_address": "0x9e6EdC15DAc420931508d8Ddf9BC817651A253aD",
+      "deployed": true,
+      "bytecode_bytes": 13362,
+      "supply_raw": 310949000000000000000,
+      "supply_mtq": 310.94899999999996
+    },
+    "arc": {
+      "chain": "arc",
+      "rpc": "https://rpc.testnet.arc.io",
+      "mtq_address": "0x237c3Aa2B79248f86f6523D3890095BCd1996601",
+      "deployed": true,
+      "bytecode_bytes": 6948,
+      "supply_raw": 1000000000000000000000,
+      "supply_mtq": 1000.0
+    },
+    "solana": {
+      "chain": "solana",
+      "rpc": "https://api.devnet.solana.com",
+      "mint": "GAGRdrY6jcRTmD7A9KzvXA5sGMpNAkkRXwDoXBrEjxS4",
+      "deployed": true,
+      "supply_raw": 18446744073709551615,
+      "decimals": 18,
+      "supply_mtq": 18.446744073709553
+    }
+  },
+  "arc_oracle_probe": {
+    "directive_50_address": {
+      "address": "0xFd2B8d176bf059287638Db30D02C6651dA02861e",
+      "label": "directive_\u00a750",
+      "bytecode_bytes": 5202,
+      "deployed": true,
+      "goldPrice": {
+        "status": "FAIL",
+        "raw": null,
+        "usd": null,
+        "detail": "no return data"
+      },
+      "silverPrice": {
+        "status": "FAIL",
+        "raw": null,
+        "usd": null,
+        "detail": "no return data"
+      }
+    },
+    "previous_audit_address": {
+      "address": "0xbcA4c5Cc6eB49aa059Aaa2e4b8A905bAF130c4f7",
+      "label": "previous_audit",
+      "bytecode_bytes": 6008,
+      "deployed": true,
+      "goldPrice": {
+        "status": "PASS",
+        "raw": 443239990200,
+        "usd": 4432.399902
+      },
+      "silverPrice": {
+        "status": "FAIL",
+        "raw": null,
+        "usd": null,
+        "detail": "no return data"
+      }
+    }
+  },
+  "totals": {
+    "monad_mtq": 310.94899999999996,
+    "arc_mtq": 1000.0,
+    "solana_mtq": 18.446744073709553,
+    "locked_bridge_mtq": 0.0,
+    "total_authorized_outstanding_mtq": 1329.3957440737097,
+    "blueprint_authorized_ceiling_mtq": 54000000.0,
+    "over_authorization_mtq": -53998670.60425593,
+    "pct_of_blueprint_ceiling": 0.0024618439705068698
+  },
+  "invariant": {
+    "chain_supplies_readable": true,
+    "sum_within_blueprint": true,
+    "bridge_accounting_complete": true,
+    "no_known_duplicate_mtq": true,
+    "status": "VERIFIED",
+    "note": "LockedBridgeRepresentation assumed = 0 because no bridge contract is currently deployed. Each chain maintains an independent native MTQ mint. The invariant reduces to: total = sum of native supplies. Since each MTQ unit appears in exactly one chain's supply (no cross-chain locking), the invariant is conserved compositionally. A production bridge must add locked-canonical accounting to enable true cross-chain transfers without double-counting."
+  },
+  "honest": true,
+  "forced_to_pass": false
+}

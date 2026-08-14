@@ -1,5 +1,5 @@
 {
-  "date": "2026-08-14T07:49:55.566461+00:00",
+  "date": "2026-08-14T08:34:03.631157+00:00",
   "version": "v24.2.1",
   "audit": "Comprehensive Testnet Verification",
   "honest": true,
@@ -12,7 +12,7 @@
         {
           "test": "RPC reachability (eth_blockNumber)",
           "status": "PASS",
-          "detail": "block=0x331d192"
+          "detail": "block=0x331f375"
         },
         {
           "test": "Chain ID = 10143",
@@ -103,7 +103,7 @@
         {
           "test": "RPC reachability (eth_blockNumber)",
           "status": "PASS",
-          "detail": "block=0x3647d0c"
+          "detail": "block=0x3649121"
         },
         {
           "test": "Chain ID = 5042002",
@@ -198,7 +198,7 @@
         {
           "test": "getSlot returns a slot",
           "status": "PASS",
-          "detail": "slot=483731552"
+          "detail": "slot=483741518"
         },
         {
           "test": "MTQ SPL token exists (getAccountInfo)",

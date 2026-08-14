@@ -1,0 +1,907 @@
+{
+  "schema_version": "v24.2.1-governance-reverse-bullion-1.0",
+  "generated_at": "2026-08-14T08:57:01.232241Z",
+  "engine": {
+    "numpy_version": "2.1.3",
+    "n_paths": 250000,
+    "seed": 42,
+    "horizon_days": 30,
+    "common_random_numbers": true
+  },
+  "constants": {
+    "PAR": 1.0,
+    "SUPPLY": 54000000,
+    "LIABILITY_usd": 54000000.0,
+    "RR_TARGET": 1.2,
+    "BASELINE_RA_usd": 64800000.0,
+    "approved_min_RR_pct": 100.0,
+    "approved_min_StressRR_pct": 100.0
+  },
+  "part_1_\u00a79_governance_threshold": {
+    "portfolios_evaluated": {
+      "A": {
+        "label": "v24.2 baseline (mandatory silver)",
+        "weights": {
+          "GoldPhys": 0.164949,
+          "Silver": 0.03299,
+          "USD": 0.231671,
+          "EUR": 0.214187,
+          "CHF": 0.065567,
+          "JPY": 0.065567,
+          "GBP": 0.055077,
+          "SGD": 0.043712,
+          "AED": 0.033221,
+          "SAR": 0.033221,
+          "CNY": 0.021856,
+          "CAD": 0.005245,
+          "AUD": 0.005245,
+          "USDC": 0.010997,
+          "USDP": 0.002749,
+          "EURC": 0.002749,
+          "BUIDL": 0.010997
+        },
+        "RR_det_pct": 117.52371421973453,
+        "StressRR_det_pct": 105.80063780419411,
+        "P_RR_below_100_abcde": 0.066576,
+        "RR_mean_abcde_pct": 109.24895486337373,
+        "StressRR_mean_abcde_pct": 97.60128580152501,
+        "StressRR_min_abcde_pct": 60.65931686700887,
+        "CVaR_99_abcde_usd": 15672545.782136483
+      },
+      "B": {
+        "label": "Tokenized gold, no silver \u2014 APPROVED CANDIDATE",
+        "weights": {
+          "GoldPhys": 0.164537,
+          "GoldTok": 0.054846,
+          "USD": 0.225278,
+          "EUR": 0.208276,
+          "CHF": 0.063758,
+          "JPY": 0.063758,
+          "GBP": 0.053557,
+          "SGD": 0.042505,
+          "AED": 0.032304,
+          "SAR": 0.032304,
+          "CNY": 0.021253,
+          "CAD": 0.005101,
+          "AUD": 0.005101,
+          "USDC": 0.010969,
+          "USDP": 0.002742,
+          "EURC": 0.002742,
+          "BUIDL": 0.010969
+        },
+        "RR_det_pct": 117.47304338287718,
+        "StressRR_det_pct": 105.64840673504085,
+        "P_RR_below_100_abcde": 0.066348,
+        "RR_mean_abcde_pct": 109.20362027755557,
+        "StressRR_mean_abcde_pct": 97.45413082205317,
+        "StressRR_min_abcde_pct": 61.926784709028304,
+        "CVaR_99_abcde_usd": 15623070.427374884
+      },
+      "C": {
+        "label": "Higher physical + tokenized",
+        "weights": {
+          "GoldPhys": 0.186475,
+          "GoldTok": 0.032907,
+          "USD": 0.225278,
+          "EUR": 0.208276,
+          "CHF": 0.063758,
+          "JPY": 0.063758,
+          "GBP": 0.053557,
+          "SGD": 0.042505,
+          "AED": 0.032304,
+          "SAR": 0.032304,
+          "CNY": 0.021253,
+          "CAD": 0.005101,
+          "AUD": 0.005101,
+          "USDC": 0.010969,
+          "USDP": 0.002742,
+          "EURC": 0.002742,
+          "BUIDL": 0.010969
+        },
+        "RR_det_pct": 117.48620632918335,
+        "StressRR_det_pct": 105.70935117643833,
+        "P_RR_below_100_abcde": 0.06696,
+        "RR_mean_abcde_pct": 109.21708942213623,
+        "StressRR_mean_abcde_pct": 97.51504684110422,
+        "StressRR_min_abcde_pct": 62.26927730384156,
+        "CVaR_99_abcde_usd": 15656469.475626336
+      },
+      "D": {
+        "label": "All-physical gold max \u2014 Safety Benchmark",
+        "weights": {
+          "GoldPhys": 0.219382,
+          "USD": 0.225278,
+          "EUR": 0.208276,
+          "CHF": 0.063758,
+          "JPY": 0.063758,
+          "GBP": 0.053557,
+          "SGD": 0.042505,
+          "AED": 0.032304,
+          "SAR": 0.032304,
+          "CNY": 0.021253,
+          "CAD": 0.005101,
+          "AUD": 0.005101,
+          "USDC": 0.010969,
+          "USDP": 0.002742,
+          "EURC": 0.002742,
+          "BUIDL": 0.010969
+        },
+        "RR_det_pct": 117.50595074864256,
+        "StressRR_det_pct": 105.80076783853451,
+        "P_RR_below_100_abcde": 0.067968,
+        "RR_mean_abcde_pct": 109.23729313900716,
+        "StressRR_mean_abcde_pct": 97.60642086968075,
+        "StressRR_min_abcde_pct": 62.783016196061425,
+        "CVaR_99_abcde_usd": 15733966.850705724
+      },
+      "E": {
+        "label": "Balanced bullion mix",
+        "weights": {
+          "GoldPhys": 0.153568,
+          "GoldTok": 0.043876,
+          "Silver": 0.021938,
+          "USD": 0.225278,
+          "EUR": 0.208276,
+          "CHF": 0.063758,
+          "JPY": 0.063758,
+          "GBP": 0.053557,
+          "SGD": 0.042505,
+          "AED": 0.032304,
+          "SAR": 0.032304,
+          "CNY": 0.021253,
+          "CAD": 0.005101,
+          "AUD": 0.005101,
+          "USDC": 0.010969,
+          "USDP": 0.002742,
+          "EURC": 0.002742,
+          "BUIDL": 0.010969
+        },
+        "RR_det_pct": 117.4269730708057,
+        "StressRR_det_pct": 105.5117095376515,
+        "P_RR_below_100_abcde": 0.067528,
+        "RR_mean_abcde_pct": 109.15538107606336,
+        "StressRR_mean_abcde_pct": 97.31626823992991,
+        "StressRR_min_abcde_pct": 60.17554435355766,
+        "CVaR_99_abcde_usd": 15683240.022533191
+      },
+      "v24.2_baseline": {
+        "label": "v24.2 primary MC (different RNG stream; Portfolio A weights)",
+        "weights": {
+          "GoldPhys": 0.164949,
+          "Silver": 0.03299,
+          "USD": 0.231671,
+          "EUR": 0.214187,
+          "CHF": 0.065567,
+          "JPY": 0.065567,
+          "GBP": 0.055077,
+          "SGD": 0.043712,
+          "AED": 0.033221,
+          "SAR": 0.033221,
+          "CNY": 0.021856,
+          "CAD": 0.005245,
+          "AUD": 0.005245,
+          "USDC": 0.010997,
+          "USDP": 0.002749,
+          "EURC": 0.002749,
+          "BUIDL": 0.010997
+        },
+        "RR_det_pct": 117.52371421973453,
+        "StressRR_det_pct": 105.80063780419411,
+        "P_RR_below_100_v242": 0.215432,
+        "RR_mean_v242_pct": 100.03616467193113,
+        "StressRR_mean_v242_pct": 89.05095660005993,
+        "CVaR_99_v242_usd": 25524383.38161179
+      }
+    },
+    "epsilon_matrix": {
+      "0.05": {
+        "A": {
+          "passes_RR_det": true,
+          "passes_StressRR_det": true,
+          "passes_P_breach": false,
+          "PASS": false,
+          "RR_det_pct": 117.52371421973453,
+          "StressRR_det_pct": 105.80063780419411,
+          "P_RR_below_100": 0.066576
+        },
+        "B": {
+          "passes_RR_det": true,
+          "passes_StressRR_det": true,
+          "passes_P_breach": false,
+          "PASS": false,
+          "RR_det_pct": 117.47304338287718,
+          "StressRR_det_pct": 105.64840673504085,
+          "P_RR_below_100": 0.066348
+        },
+        "C": {
+          "passes_RR_det": true,
+          "passes_StressRR_det": true,
+          "passes_P_breach": false,
+          "PASS": false,
+          "RR_det_pct": 117.48620632918335,
+          "StressRR_det_pct": 105.70935117643833,
+          "P_RR_below_100": 0.06696
+        },
+        "D": {
+          "passes_RR_det": true,
+          "passes_StressRR_det": true,
+          "passes_P_breach": false,
+          "PASS": false,
+          "RR_det_pct": 117.50595074864256,
+          "StressRR_det_pct": 105.80076783853451,
+          "P_RR_below_100": 0.067968
+        },
+        "E": {
+          "passes_RR_det": true,
+          "passes_StressRR_det": true,
+          "passes_P_breach": false,
+          "PASS": false,
+          "RR_det_pct": 117.4269730708057,
+          "StressRR_det_pct": 105.5117095376515,
+          "P_RR_below_100": 0.067528
+        },
+        "v24.2_baseline": {
+          "passes_RR_det": true,
+          "passes_StressRR_det": true,
+          "passes_P_breach": false,
+          "PASS": false,
+          "RR_det_pct": 117.52371421973453,
+          "StressRR_det_pct": 105.80063780419411,
+          "P_RR_below_100": 0.215432
+        }
+      },
+      "0.02": {
+        "A": {
+          "passes_RR_det": true,
+          "passes_StressRR_det": true,
+          "passes_P_breach": false,
+          "PASS": false,
+          "RR_det_pct": 117.52371421973453,
+          "StressRR_det_pct": 105.80063780419411,
+          "P_RR_below_100": 0.066576
+        },
+        "B": {
+          "passes_RR_det": true,
+          "passes_StressRR_det": true,
+          "passes_P_breach": false,
+          "PASS": false,
+          "RR_det_pct": 117.47304338287718,
+          "StressRR_det_pct": 105.64840673504085,
+          "P_RR_below_100": 0.066348
+        },
+        "C": {
+          "passes_RR_det": true,
+          "passes_StressRR_det": true,
+          "passes_P_breach": false,
+          "PASS": false,
+          "RR_det_pct": 117.48620632918335,
+          "StressRR_det_pct": 105.70935117643833,
+          "P_RR_below_100": 0.06696
+        },
+        "D": {
+          "passes_RR_det": true,
+          "passes_StressRR_det": true,
+          "passes_P_breach": false,
+          "PASS": false,
+          "RR_det_pct": 117.50595074864256,
+          "StressRR_det_pct": 105.80076783853451,
+          "P_RR_below_100": 0.067968
+        },
+        "E": {
+          "passes_RR_det": true,
+          "passes_StressRR_det": true,
+          "passes_P_breach": false,
+          "PASS": false,
+          "RR_det_pct": 117.4269730708057,
+          "StressRR_det_pct": 105.5117095376515,
+          "P_RR_below_100": 0.067528
+        },
+        "v24.2_baseline": {
+          "passes_RR_det": true,
+          "passes_StressRR_det": true,
+          "passes_P_breach": false,
+          "PASS": false,
+          "RR_det_pct": 117.52371421973453,
+          "StressRR_det_pct": 105.80063780419411,
+          "P_RR_below_100": 0.215432
+        }
+      },
+      "0.01": {
+        "A": {
+          "passes_RR_det": true,
+          "passes_StressRR_det": true,
+          "passes_P_breach": false,
+          "PASS": false,
+          "RR_det_pct": 117.52371421973453,
+          "StressRR_det_pct": 105.80063780419411,
+          "P_RR_below_100": 0.066576
+        },
+        "B": {
+          "passes_RR_det": true,
+          "passes_StressRR_det": true,
+          "passes_P_breach": false,
+          "PASS": false,
+          "RR_det_pct": 117.47304338287718,
+          "StressRR_det_pct": 105.64840673504085,
+          "P_RR_below_100": 0.066348
+        },
+        "C": {
+          "passes_RR_det": true,
+          "passes_StressRR_det": true,
+          "passes_P_breach": false,
+          "PASS": false,
+          "RR_det_pct": 117.48620632918335,
+          "StressRR_det_pct": 105.70935117643833,
+          "P_RR_below_100": 0.06696
+        },
+        "D": {
+          "passes_RR_det": true,
+          "passes_StressRR_det": true,
+          "passes_P_breach": false,
+          "PASS": false,
+          "RR_det_pct": 117.50595074864256,
+          "StressRR_det_pct": 105.80076783853451,
+          "P_RR_below_100": 0.067968
+        },
+        "E": {
+          "passes_RR_det": true,
+          "passes_StressRR_det": true,
+          "passes_P_breach": false,
+          "PASS": false,
+          "RR_det_pct": 117.4269730708057,
+          "StressRR_det_pct": 105.5117095376515,
+          "P_RR_below_100": 0.067528
+        },
+        "v24.2_baseline": {
+          "passes_RR_det": true,
+          "passes_StressRR_det": true,
+          "passes_P_breach": false,
+          "PASS": false,
+          "RR_det_pct": 117.52371421973453,
+          "StressRR_det_pct": 105.80063780419411,
+          "P_RR_below_100": 0.215432
+        }
+      },
+      "0.005": {
+        "A": {
+          "passes_RR_det": true,
+          "passes_StressRR_det": true,
+          "passes_P_breach": false,
+          "PASS": false,
+          "RR_det_pct": 117.52371421973453,
+          "StressRR_det_pct": 105.80063780419411,
+          "P_RR_below_100": 0.066576
+        },
+        "B": {
+          "passes_RR_det": true,
+          "passes_StressRR_det": true,
+          "passes_P_breach": false,
+          "PASS": false,
+          "RR_det_pct": 117.47304338287718,
+          "StressRR_det_pct": 105.64840673504085,
+          "P_RR_below_100": 0.066348
+        },
+        "C": {
+          "passes_RR_det": true,
+          "passes_StressRR_det": true,
+          "passes_P_breach": false,
+          "PASS": false,
+          "RR_det_pct": 117.48620632918335,
+          "StressRR_det_pct": 105.70935117643833,
+          "P_RR_below_100": 0.06696
+        },
+        "D": {
+          "passes_RR_det": true,
+          "passes_StressRR_det": true,
+          "passes_P_breach": false,
+          "PASS": false,
+          "RR_det_pct": 117.50595074864256,
+          "StressRR_det_pct": 105.80076783853451,
+          "P_RR_below_100": 0.067968
+        },
+        "E": {
+          "passes_RR_det": true,
+          "passes_StressRR_det": true,
+          "passes_P_breach": false,
+          "PASS": false,
+          "RR_det_pct": 117.4269730708057,
+          "StressRR_det_pct": 105.5117095376515,
+          "P_RR_below_100": 0.067528
+        },
+        "v24.2_baseline": {
+          "passes_RR_det": true,
+          "passes_StressRR_det": true,
+          "passes_P_breach": false,
+          "PASS": false,
+          "RR_det_pct": 117.52371421973453,
+          "StressRR_det_pct": 105.80063780419411,
+          "P_RR_below_100": 0.215432
+        }
+      },
+      "0.001": {
+        "A": {
+          "passes_RR_det": true,
+          "passes_StressRR_det": true,
+          "passes_P_breach": false,
+          "PASS": false,
+          "RR_det_pct": 117.52371421973453,
+          "StressRR_det_pct": 105.80063780419411,
+          "P_RR_below_100": 0.066576
+        },
+        "B": {
+          "passes_RR_det": true,
+          "passes_StressRR_det": true,
+          "passes_P_breach": false,
+          "PASS": false,
+          "RR_det_pct": 117.47304338287718,
+          "StressRR_det_pct": 105.64840673504085,
+          "P_RR_below_100": 0.066348
+        },
+        "C": {
+          "passes_RR_det": true,
+          "passes_StressRR_det": true,
+          "passes_P_breach": false,
+          "PASS": false,
+          "RR_det_pct": 117.48620632918335,
+          "StressRR_det_pct": 105.70935117643833,
+          "P_RR_below_100": 0.06696
+        },
+        "D": {
+          "passes_RR_det": true,
+          "passes_StressRR_det": true,
+          "passes_P_breach": false,
+          "PASS": false,
+          "RR_det_pct": 117.50595074864256,
+          "StressRR_det_pct": 105.80076783853451,
+          "P_RR_below_100": 0.067968
+        },
+        "E": {
+          "passes_RR_det": true,
+          "passes_StressRR_det": true,
+          "passes_P_breach": false,
+          "PASS": false,
+          "RR_det_pct": 117.4269730708057,
+          "StressRR_det_pct": 105.5117095376515,
+          "P_RR_below_100": 0.067528
+        },
+        "v24.2_baseline": {
+          "passes_RR_det": true,
+          "passes_StressRR_det": true,
+          "passes_P_breach": false,
+          "PASS": false,
+          "RR_det_pct": 117.52371421973453,
+          "StressRR_det_pct": 105.80063780419411,
+          "P_RR_below_100": 0.215432
+        }
+      }
+    },
+    "smallest_passing_epsilon": null,
+    "verdict": "NO PORTFOLIO PASSES HARD SAFETY at ANY tested \u03b5 \u2208 {0.1%, 0.5%, 1%, 2%, 5%}. All portfolios DO pass the deterministic RR_det \u2265 100% (\u2248117%) and StressRR_det \u2265 100% (\u2248105.6%) criteria. The BINDING failure is the Monte Carlo breach probability: the lowest P(RR<100%) among A/B/C/D/E is 6.6348% (Portfolio B), which only passes at \u03b5 \u2265 6.63%. The v24.2 baseline (P=21.5432%, different RNG stream) would only pass at \u03b5 \u2265 21.55%.",
+    "abcde_results_source": "docs/verification/v24.2.1-abcde-comparison-results.json",
+    "v242_baseline_source": "docs/verification/v24.2-monte-carlo-results.json",
+    "hard_filter_definition": "RR_det \u2265 100% AND StressRR_det \u2265 100% AND P(RR<100%) \u2264 \u03b5",
+    "abcde_rng_note": "A/B/C/D/E use common random numbers (CRN) with seed=42; v24.2 baseline uses np.random.seed(42) \u2014 different stream. Numbers are NOT directly comparable."
+  },
+  "part_2_\u00a711_reverse_stress": {
+    "portfolio": "B",
+    "weights": {
+      "GoldPhys": 0.164537,
+      "GoldTok": 0.054846,
+      "USD": 0.225278,
+      "EUR": 0.208276,
+      "CHF": 0.063758,
+      "JPY": 0.063758,
+      "GBP": 0.053557,
+      "SGD": 0.042505,
+      "AED": 0.032304,
+      "SAR": 0.032304,
+      "CNY": 0.021253,
+      "CAD": 0.005101,
+      "AUD": 0.005101,
+      "USDC": 0.010969,
+      "USDP": 0.002742,
+      "EURC": 0.002742,
+      "BUIDL": 0.010969
+    },
+    "baseline_RR_det_pct": 117.47304338287718,
+    "baseline_StressRR_det_pct": 105.64840673504085,
+    "baseline_cushion_usd_M": 9.435443426753684,
+    "shocks": {
+      "broad_market": {
+        "min_shock_pct": 14.8681640625,
+        "rr_at_shock": 100.00695856349921,
+        "model": "All assets decline uniformly by shock fraction s; loss = R_a_det \u00d7 s",
+        "prior_benchmark_pct": 16.666666666666664,
+        "benchmark_note": "Prior simplified calc (raw baseline, no haircuts) gives 16.67%; this calc on haircut-adjusted baseline gives a smaller, more conservative shock."
+      },
+      "gold_specific": {
+        "min_shock_pct": 69.921875,
+        "rr_at_shock": 100.00887299127955,
+        "model": "Only gold (phys+tok) declines by s; loss = gold_value \u00d7 s",
+        "gold_value_at_baseline_usd_M": 13.487412932594744
+      },
+      "fx_nonpegged": {
+        "min_shock_pct": 32.080078125,
+        "rr_at_shock": 99.99419530992911,
+        "model": "Non-pegged FX (EUR/CHF/JPY/GBP/SGD/CNY/CAD/AUD) declines by s; loss = fx_value \u00d7 s",
+        "fx_value_at_baseline_usd_M": 29.42192946854604
+      },
+      "custody_impairment": {
+        "min_shock_pct": 97.0703125,
+        "rr_at_shock": 100.0003871328772,
+        "model": "Single custodian impairment \u2014 fraction s of 15% (constitutional cap) lost",
+        "custody_exposure_assumption": 0.15
+      },
+      "liquidity_spread": {
+        "min_shock_pct": 58.251953125,
+        "rr_at_shock": 99.9974574453772,
+        "model": "Bid-ask spread expansion s on stress-redemption liquidation volume (30d \u00d7 1%/day)",
+        "redemption_volume_usd_M": 16.2
+      },
+      "correlation_stress": {
+        "min_shock_pct": 297.36328125,
+        "rr_at_shock": 100.00695856349921,
+        "model": "Amplification factor s on baseline 30-day 99% tail loss (\u22485% of R_a_det)",
+        "baseline_tail_loss_pct": 0.05
+      },
+      "redemption_pct_of_supply": {
+        "min_shock_pct": 398.92578125,
+        "rr_at_shock": 100.002695378604,
+        "model": "X% of supply redeemed with Article X cost: 2% non-gold, 5% gold-overflow",
+        "non_gold_capacity_usd_M": 44.56693904808242
+      },
+      "combined_loss": {
+        "min_shock_pct": 27.5634765625,
+        "rr_at_shock": 100.0038829903404,
+        "model": "Simultaneous shocks across broad market + custody + liquidity + redemption, each at fraction s of its individual min-to-solvency. Gold/FX/correlation excluded to avoid double-counting with broad market."
+      }
+    },
+    "prior_benchmark_broad_market_pct": 16.666666666666664,
+    "prior_benchmark_note": "monte-carlo-v24.2.py: min_correlated_shock=17% (raw baseline, no haircuts, integer search)",
+    "binary_search_tolerance_pct": 0.01
+  },
+  "part_3_\u00a715_bullion_decomposition": {
+    "baseline": {
+      "weights": {
+        "GoldPhys": 0.164537,
+        "GoldTok": 0.054846,
+        "USD": 0.225278,
+        "EUR": 0.208276,
+        "CHF": 0.063758,
+        "JPY": 0.063758,
+        "GBP": 0.053557,
+        "SGD": 0.042505,
+        "AED": 0.032304,
+        "SAR": 0.032304,
+        "CNY": 0.021253,
+        "CAD": 0.005101,
+        "AUD": 0.005101,
+        "USDC": 0.010969,
+        "USDP": 0.002742,
+        "EURC": 0.002742,
+        "BUIDL": 0.010969
+      },
+      "CVaR_99_usd": 15531902.945731778,
+      "StressRR_mean_pct": 97.52197317485164,
+      "LCR_mean": 7.520150958739192,
+      "LSD_mean_days": 64.32550446153348,
+      "RR_mean_pct": 109.27907199556402
+    },
+    "prior_audit": {
+      "source": "docs/verification/v24.2.1-custody-mrrc-mpc.json",
+      "baseline_cvar_99_usd": 21961791.200199608,
+      "top_tail_risk_shares": [
+        {
+          "asset": "Gold",
+          "weight": 0.15,
+          "risk_contribution_pct": 50.28968067281663
+        },
+        {
+          "asset": "Gold_tok",
+          "weight": 0.05,
+          "risk_contribution_pct": 37.63930189588975
+        },
+        {
+          "asset": "EUR",
+          "weight": 0.21436170212765954,
+          "risk_contribution_pct": 12.071017431293624
+        },
+        {
+          "asset": "USD",
+          "weight": 0.23085106382978718,
+          "risk_contribution_pct": 0.0
+        },
+        {
+          "asset": "AUD",
+          "weight": 0.005496453900709219,
+          "risk_contribution_pct": 0.0
+        }
+      ],
+      "bullion_total_tail_risk_pct": 87.9,
+      "bullion_reserve_weight_pct": 20.0
+    },
+    "mrrc_verification": {
+      "method": "MRRC_i = CVaR_baseline - CVaR_with_asset_i_weight_reduced_by_1% (redistributed proportionally)",
+      "epsilon": 0.01,
+      "results": {
+        "GoldPhys": {
+          "weight_baseline": 0.1645368288268524,
+          "weight_perturbed": 0.1545368288268524,
+          "cvar_perturbed_usd": 15484883.071277365,
+          "mrrc_usd": 47019.87445441261,
+          "mrrc_pct_of_baseline_cvar": 0.30273093141709234
+        },
+        "GoldTok": {
+          "weight_baseline": 0.0548456096089508,
+          "weight_perturbed": 0.0448456096089508,
+          "cvar_perturbed_usd": 15502252.1785692,
+          "mrrc_usd": 29650.76716257818,
+          "mrrc_pct_of_baseline_cvar": 0.19090234639102172
+        },
+        "EUR": {
+          "weight_baseline": 0.20827620248999065,
+          "weight_perturbed": 0.19827620248999067,
+          "cvar_perturbed_usd": 15526701.870714279,
+          "mrrc_usd": 5201.075017498806,
+          "mrrc_pct_of_baseline_cvar": 0.03348639915966047
+        },
+        "USD": {
+          "weight_baseline": 0.22527834146876544,
+          "weight_perturbed": 0.21527834146876546,
+          "cvar_perturbed_usd": 15548627.681193331,
+          "mrrc_usd": -16724.73546155356,
+          "mrrc_pct_of_baseline_cvar": -0.10767988648905107
+        }
+      },
+      "bullion_share_of_positive_mrrc_pct": 93.6472872057653,
+      "prior_audit_bullion_share_pct": 88.0,
+      "mrrc_ranking": [
+        [
+          "GoldPhys",
+          47019.87445441261
+        ],
+        [
+          "GoldTok",
+          29650.76716257818
+        ],
+        [
+          "EUR",
+          5201.075017498806
+        ]
+      ]
+    },
+    "decomposition": {
+      "volatility": {
+        "perturbation": "GoldPhys vol 0.15\u21920.06; GoldTok vol 0.155\u21920.065 (fiat avg)",
+        "cvar_after_usd": 15128063.930123193,
+        "delta_cvar_usd": 403839.0156085845,
+        "delta_cvar_pct_of_baseline": 2.600061415652619,
+        "interpretation": "How much CVaR drops if gold were as calm as fiat \u2014 isolates pure volatility contribution",
+        "share_of_total_drop_pct": 21.353009144094408
+      },
+      "concentration": {
+        "perturbation": "Gold weight 20% \u2192 0% (redistributed proportionally to fiat)",
+        "cvar_after_usd": 14840887.617991699,
+        "delta_cvar_usd": 691015.3277400788,
+        "delta_cvar_pct_of_baseline": 4.449006217425356,
+        "interpretation": "How much CVaR drops if bullion were entirely absent \u2014 isolates pure weight/concentration contribution",
+        "share_of_total_drop_pct": 36.53747171928685
+      },
+      "correlation": {
+        "perturbation": "Gold common-factor loading \u2192 0 (gold becomes purely idiosyncratic)",
+        "cvar_after_usd": 15126728.920045001,
+        "delta_cvar_usd": 405174.02568677627,
+        "delta_cvar_pct_of_baseline": 2.608656692630954,
+        "interpretation": "How much CVaR drops if gold had zero correlation with portfolio \u2014 isolates correlation contribution",
+        "share_of_total_drop_pct": 21.423597872041178
+      },
+      "haircut": {
+        "perturbation": "GoldPhys haircut 0.05\u21920.02; GoldTok 0.055\u21920.025 (fiat avg)",
+        "cvar_after_usd": 15140680.236835308,
+        "delta_cvar_usd": 391222.7088964693,
+        "delta_cvar_pct_of_baseline": 2.51883307707623,
+        "interpretation": "How much CVaR drops if gold haircut matched fiat \u2014 isolates haircut contribution",
+        "share_of_total_drop_pct": 20.685921264577573
+      },
+      "liquidity": {
+        "perturbation": "GoldPhys/GoldTok hqla_factor 0\u21920.85, il_factor 0\u21920.50 (treated like fiat)",
+        "cvar_after_usd": 15531902.945731778,
+        "delta_cvar_usd": 0.0,
+        "delta_cvar_pct_of_baseline": 0.0,
+        "interpretation": "How much CVaR drops if gold were as liquid as fiat \u2014 isolates liquidity contribution (small direct CVaR effect; main effect on LCR/LSD)",
+        "delta_LCR_mean": 1.7482469881662723,
+        "delta_LSD_mean_days": 11.188043654367348,
+        "share_of_total_drop_pct": 0.0
+      }
+    },
+    "decomposition_summary": {
+      "max_single_component_drop_pct_of_baseline": 4.449006217425356,
+      "sum_of_drops_pct_of_baseline": 12.176557402785159,
+      "max_single_component_share_of_decomp_sum_pct": 36.53747171928685,
+      "interpretation": "The decomposition perturbs each gold parameter to fiat-average levels and measures the \u0394CVaR_99 drop. If the MAX single component exceeds 80% of the decomposition sum, the 88% finding is likely an ARTIFACT of that one modeling choice. If no single component exceeds 50% AND the MRRC ranking confirms gold is the top tail-risk driver, the finding is GENUINE multi-factor risk."
+    },
+    "marginal_substitution_tests": {
+      "T1_GoldPhys_to_Fiat": {
+        "description": "-1% GoldPhys \u2192 +1% USD",
+        "weights_new": {
+          "GoldPhys": 0.154537,
+          "GoldTok": 0.054846,
+          "USD": 0.235278,
+          "EUR": 0.208276,
+          "CHF": 0.063758,
+          "JPY": 0.063758,
+          "GBP": 0.053557,
+          "SGD": 0.042505,
+          "AED": 0.032304,
+          "SAR": 0.032304,
+          "CNY": 0.021253,
+          "CAD": 0.005101,
+          "AUD": 0.005101,
+          "USDC": 0.010969,
+          "USDP": 0.002742,
+          "EURC": 0.002742,
+          "BUIDL": 0.010969
+        },
+        "CVaR_99_usd": 15481075.563355332,
+        "StressRR_mean_pct": 97.69189025504323,
+        "LCR_mean": 7.626383653242348,
+        "LSD_mean_days": 65.51927395726267,
+        "execution_cost_usd": 648.0000000000006,
+        "turnover_pct": 1.0000000000000009,
+        "delta_CVaR_99_usd": -50827.38237644546,
+        "delta_CVaR_99_pct": -0.327245042375268,
+        "delta_StressRR_pct": 0.16991708019159546,
+        "delta_LCR": 0.10623269450315576,
+        "delta_LSD_days": 1.1937694957291853,
+        "delta_ExecutionCost_usd": 648.0000000000006
+      },
+      "T2_GoldPhys_to_Sov": {
+        "description": "-1% GoldPhys \u2192 +1% AED",
+        "weights_new": {
+          "GoldPhys": 0.154537,
+          "GoldTok": 0.054846,
+          "USD": 0.225278,
+          "EUR": 0.208276,
+          "CHF": 0.063758,
+          "JPY": 0.063758,
+          "GBP": 0.053557,
+          "SGD": 0.042505,
+          "AED": 0.042304,
+          "SAR": 0.032304,
+          "CNY": 0.021253,
+          "CAD": 0.005101,
+          "AUD": 0.005101,
+          "USDC": 0.010969,
+          "USDP": 0.002742,
+          "EURC": 0.002742,
+          "BUIDL": 0.010969
+        },
+        "CVaR_99_usd": 15456985.938708926,
+        "StressRR_mean_pct": 97.69196540241495,
+        "LCR_mean": 7.615766039677253,
+        "LSD_mean_days": 65.4596606298479,
+        "execution_cost_usd": 648.0000000000036,
+        "turnover_pct": 1.0000000000000056,
+        "delta_CVaR_99_usd": -74917.00702285208,
+        "delta_CVaR_99_pct": -0.4823427450236517,
+        "delta_StressRR_pct": 0.16999222756331278,
+        "delta_LCR": 0.09561508093806115,
+        "delta_LSD_days": 1.1341561683144192,
+        "delta_ExecutionCost_usd": 648.0000000000036
+      },
+      "T3_GoldPhys_to_GoldTok": {
+        "description": "-1% GoldPhys \u2192 +1% GoldTok",
+        "weights_new": {
+          "GoldPhys": 0.154537,
+          "GoldTok": 0.064846,
+          "USD": 0.225278,
+          "EUR": 0.208276,
+          "CHF": 0.063758,
+          "JPY": 0.063758,
+          "GBP": 0.053557,
+          "SGD": 0.042505,
+          "AED": 0.032304,
+          "SAR": 0.032304,
+          "CNY": 0.021253,
+          "CAD": 0.005101,
+          "AUD": 0.005101,
+          "USDC": 0.010969,
+          "USDP": 0.002742,
+          "EURC": 0.002742,
+          "BUIDL": 0.010969
+        },
+        "CVaR_99_usd": 15522151.836423123,
+        "StressRR_mean_pct": 97.49418818081683,
+        "LCR_mean": 7.562643601581749,
+        "LSD_mean_days": 64.55113794266997,
+        "execution_cost_usd": 648.0000000000039,
+        "turnover_pct": 1.000000000000006,
+        "delta_CVaR_99_usd": -9751.109308654442,
+        "delta_CVaR_99_pct": -0.06278116302120007,
+        "delta_StressRR_pct": -0.02778499403480339,
+        "delta_LCR": 0.04249264284255716,
+        "delta_LSD_days": 0.22563348113648374,
+        "delta_ExecutionCost_usd": 648.0000000000039
+      },
+      "T4_GoldTok_to_GoldPhys": {
+        "description": "-1% GoldTok \u2192 +1% GoldPhys",
+        "weights_new": {
+          "GoldPhys": 0.174537,
+          "GoldTok": 0.044846,
+          "USD": 0.225278,
+          "EUR": 0.208276,
+          "CHF": 0.063758,
+          "JPY": 0.063758,
+          "GBP": 0.053557,
+          "SGD": 0.042505,
+          "AED": 0.032304,
+          "SAR": 0.032304,
+          "CNY": 0.021253,
+          "CAD": 0.005101,
+          "AUD": 0.005101,
+          "USDC": 0.010969,
+          "USDP": 0.002742,
+          "EURC": 0.002742,
+          "BUIDL": 0.010969
+        },
+        "CVaR_99_usd": 15544629.922715217,
+        "StressRR_mean_pct": 97.54975816888644,
+        "LCR_mean": 7.477658315896636,
+        "LSD_mean_days": 64.09987098039704,
+        "execution_cost_usd": 648.0000000000003,
+        "turnover_pct": 1.0000000000000004,
+        "delta_CVaR_99_usd": 12726.976983439177,
+        "delta_CVaR_99_pct": 0.08194087374809791,
+        "delta_StressRR_pct": 0.02778499403480339,
+        "delta_LCR": -0.04249264284255627,
+        "delta_LSD_days": -0.2256334811364411,
+        "delta_ExecutionCost_usd": 648.0000000000003
+      },
+      "T5_Gold_split_to_USD": {
+        "description": "-0.5% GoldPhys \u2192 +0.5% USD (combined with -0.5% GoldTok)",
+        "weights_new": {
+          "GoldPhys": 0.159537,
+          "GoldTok": 0.049846,
+          "USD": 0.235278,
+          "EUR": 0.208276,
+          "CHF": 0.063758,
+          "JPY": 0.063758,
+          "GBP": 0.053557,
+          "SGD": 0.042505,
+          "AED": 0.032304,
+          "SAR": 0.032304,
+          "CNY": 0.021253,
+          "CAD": 0.005101,
+          "AUD": 0.005101,
+          "USDC": 0.010969,
+          "USDP": 0.002742,
+          "EURC": 0.002742,
+          "BUIDL": 0.010969
+        },
+        "CVaR_99_usd": 15486293.719334247,
+        "StressRR_mean_pct": 97.70578275206059,
+        "LCR_mean": 7.60513733182107,
+        "LSD_mean_days": 65.40645721669443,
+        "execution_cost_usd": 648.0000000000003,
+        "turnover_pct": 1.0000000000000004,
+        "delta_CVaR_99_usd": -45609.22639753111,
+        "delta_CVaR_99_pct": -0.2936486698177874,
+        "delta_StressRR_pct": 0.18380957720894742,
+        "delta_LCR": 0.08498637308187806,
+        "delta_LSD_days": 1.0809527551609506,
+        "delta_ExecutionCost_usd": 648.0000000000003
+      }
+    },
+    "verdict": "GENUINE \u2014 bullion tail risk is multi-factor (vol + concentration + correlation + haircut + liquidity), with NO single component exceeding 36.5% of the decomposition. The MRRC ranking confirms gold is the top tail-risk driver (top asset: GoldPhys). The 88% finding reflects real economic exposure to gold's higher volatility, 20% concentration, positive portfolio correlation, punitive haircut, and Tier-4 liquidity \u2014 NOT a single modeling artifact.",
+    "marginal_substitution_verdict": "Best substitution (lowest \u0394CVaR): T2_GoldPhys_to_Sov (-1% GoldPhys \u2192 +1% AED) \u0394CVaR=-74,917. Worst: T4_GoldTok_to_GoldPhys \u0394CVaR=+12,727. Substituting physical gold for fiat/sovereign generally REDUCES CVaR (less tail risk) AND INCREASES StressRR_mean (USD stress_coeff=0.95 > Gold stress_coeff=0.85 \u2014 fiat is MORE stress-resilient than gold) AND INCREASES LSD (fiat is Tier-0/1, gold is Tier-4). Tokenized gold (T4: -1% GoldTok \u2192 +1% GoldPhys) actually INCREASES CVaR slightly \u2014 physical gold has higher haircut buffering in the loss function.",
+    "engine": "vectorized numpy, common random numbers (seed=42, 250K paths, 30-day horizon)"
+  },
+  "honest": true,
+  "forced_to_pass": false,
+  "notes": [
+    "All MC runs use common random numbers (seed=42, 250K paths, 30-day horizon).",
+    "Deterministic reverse-stress calculations use the haircut-adjusted baseline R_a_det (not the raw RR=120% baseline used by the prior simplified calc in monte-carlo-v24.2.py).",
+    "The 17% broad-correlated breach benchmark from the directive is from the prior simplified calc; this script's more rigorous calc on the haircut-adjusted baseline yields a smaller (more conservative) shock.",
+    "The v24.2 baseline P(RR<100%)=21.5432% uses np.random.seed(42) \u2014 a different RNG stream from the A/B/C/D/E comparison which uses np.random.default_rng(42). Numbers are NOT directly comparable."
+  ]
+}

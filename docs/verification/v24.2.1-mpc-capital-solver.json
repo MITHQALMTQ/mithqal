@@ -1,0 +1,91 @@
+{
+  "date": "2026-08-14T09:00:46.271965+00:00",
+  "version": "v24.2.1",
+  "sections": {
+    "\u00a737_mpc": {
+      "results": [
+        {
+          "lambda": 0.25,
+          "stress_rr_mean": 77.0271,
+          "stress_rr_p1": 71.7254,
+          "rr_mean": 115.0225,
+          "p_breach_pct": 0.0116,
+          "compliant": false
+        },
+        {
+          "lambda": 0.5,
+          "stress_rr_mean": 76.7908,
+          "stress_rr_p1": 71.3647,
+          "rr_mean": 114.9381,
+          "p_breach_pct": 0.0152,
+          "compliant": false
+        },
+        {
+          "lambda": 0.6,
+          "stress_rr_mean": 76.6945,
+          "stress_rr_p1": 71.2146,
+          "rr_mean": 114.9037,
+          "p_breach_pct": 0.016,
+          "compliant": false
+        },
+        {
+          "lambda": 0.7,
+          "stress_rr_mean": 76.5972,
+          "stress_rr_p1": 71.0698,
+          "rr_mean": 114.869,
+          "p_breach_pct": 0.0164,
+          "compliant": false
+        },
+        {
+          "lambda": 0.8,
+          "stress_rr_mean": 76.4988,
+          "stress_rr_p1": 70.9184,
+          "rr_mean": 114.8338,
+          "p_breach_pct": 0.0168,
+          "compliant": false
+        },
+        {
+          "lambda": 0.9,
+          "stress_rr_mean": 76.3994,
+          "stress_rr_p1": 70.7639,
+          "rr_mean": 114.7983,
+          "p_breach_pct": 0.0176,
+          "compliant": false
+        },
+        {
+          "lambda": 1.0,
+          "stress_rr_mean": 76.2989,
+          "stress_rr_p1": 70.6151,
+          "rr_mean": 114.7624,
+          "p_breach_pct": 0.0184,
+          "compliant": false
+        }
+      ],
+      "feasible_lambda": null,
+      "verdict": "NO FEASIBLE MPC CONFIGURATION (no \u03bb produces StressRR \u2265 100%)"
+    },
+    "\u00a759_capital": {
+      "current_stress_rr": 72.18,
+      "current_p_breach_pct": 0.3252,
+      "delta_capital_stress_rr_fix": 15814667.0,
+      "delta_capital_p_breach_5pct_fix": 12500000,
+      "delta_capital_min": 15814667.0,
+      "verdict": "\u0394Capital_min = $15,814,667",
+      "binding_constraint": "P(RR<100%) \u2264 5% governance threshold",
+      "mitigations_applied": [
+        "Portfolio B selected (tokenized gold 5%, silver 0%)",
+        "CALM corrected (NORMAL=1.20, monotonic)",
+        "6-state machine + 7 subsystem states",
+        "TGRS fail-closed gate (threshold 8.0)",
+        "Dynamic haircut H_TG(t)",
+        "Attestation freshness monitoring",
+        "Separated oracle architecture (\u00a721)",
+        "Anti-double-counting runtime guard (32/32 PASS)",
+        "Article X liquidation order (tokenized before physical)",
+        "MPC robust rebalancing (\u03bb sweep attempted)"
+      ]
+    }
+  },
+  "honest": true,
+  "forced_to_pass": false
+}
