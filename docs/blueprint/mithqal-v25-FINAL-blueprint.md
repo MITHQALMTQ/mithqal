@@ -1173,6 +1173,575 @@ No retail MTQ | No exchange | No brokerage | No speculative trading | No discret
 
 ---
 
+
+---
+
+# PART V25.0-BRICS — BRICS / U.S. / JURISDICTIONAL NEUTRALITY AMENDMENT
+
+> **This amendment is INSERTED into the existing v25.0 architecture. It does NOT replace the earlier v25.0 architecture — it supplements it. Where these provisions conflict with older BRICS/CBDC/interoperability language, these provisions are NORMATIVE.**
+
+## §B.1 — INSTITUTIONAL IDENTITY / NEUTRALITY
+
+> **MITHQAL shall remain politically, monetarily and jurisdictionally neutral.**
+
+MITHQAL shall NOT constitute:
+- a BRICS monetary instrument
+- a Western monetary instrument
+- an anti-dollar mechanism
+- a sanctions-evasion mechanism
+- a geopolitical settlement bloc
+
+MTQ shall function as a neutral wholesale settlement instrument between authorized monetary systems.
+
+MITHQAL shall not require participating jurisdictions to abandon, replace, subordinate or adopt another jurisdiction's sovereign currency, central-bank money, CBDC or monetary policy.
+
+Sovereign currencies and CBDCs remain under the authority of their respective issuing jurisdictions.
+
+MITHQAL's role is interoperability and settlement, not monetary substitution.
+
+---
+
+## §B.2 — MTQ DEFINITION (Neutral Cross-Jurisdictional)
+
+> **MTQ is a permissioned wholesale settlement instrument capable of settling value between authorized regulated financial institutions and, where explicitly authorized, central banks or sovereign monetary authorities.**
+
+MTQ does NOT constitute:
+- a BRICS currency
+- a U.S. currency
+- a replacement reserve currency
+- a CBDC
+- a sovereign liability
+- a geopolitical settlement instrument
+- a mechanism for bypassing sanctions or capital controls
+
+**Canonical principle:** MTQ sits between monetary systems, not instead of monetary systems.
+
+---
+
+## §B.3 — BRICS INTEGRATION PRINCIPLE
+
+1. MITHQAL shall not seek to replace or compete with any formally established BRICS monetary or settlement instrument.
+2. If a competent BRICS authority formally establishes a BRICS unit of account, settlement instrument, CBDC interoperability standard, or other official monetary/financial instrument, MITHQAL may support that instrument through a jurisdictionally controlled interoperability adapter, subject to applicable law and institutional authorization.
+3. MITHQAL shall not assume that any privately proposed, unofficial or externally branded "BRICS Unit" constitutes an official BRICS monetary instrument.
+4. Any future BRICS instrument shall be treated as an external authorized settlement asset/interface unless and until formally recognized by the competent institutions.
+
+**Critical rule:** MITHQAL shall integrate with BRICS where authorized; MITHQAL shall not become the BRICS monetary system.
+
+---
+
+## §B.4 — BRICS SETTLEMENT INTEROPERABILITY ADAPTER (BSIA)
+
+### Purpose
+
+Provide a controlled interface between MITHQAL's neutral MTQ settlement core and officially authorized BRICS payment/settlement instruments, including any future BRICS unit of account, approved CBDCs, local-currency settlement systems, or participating-bank settlement assets.
+
+### Flow
+
+```
+BRICS Unit / Authorized BRICS Instrument
+                    ↕
+                   MTQ
+                    ↕
+        Participating Bank / CBDC
+```
+
+### Adapter Properties
+
+The adapter must be:
+- modular
+- optional
+- jurisdiction-controlled
+- policy-controlled
+- auditable
+- replaceable
+- independent of MTQ's constitutional identity
+
+### Architectural Rule
+
+> **The BRICS adapter is not part of MTQ's monetary identity. If BRICS changes its architecture, the adapter may be replaced without changing MTQ's constitutional identity.**
+
+**Implementation:** `src/lib/v25-0-brics-neutrality-amendment.ts` → `BSIA_PROPERTIES`, `src/lib/brics-jsg-runtime.ts` → `BRICSInteroperabilityAdapter`
+
+---
+
+## §B.5 — GLOBAL MONETARY INTEROPERABILITY MODEL
+
+### Neutral Multi-Jurisdictional Interoperability Model
+
+```
+                    MITHQAL
+              NEUTRAL MTQ SETTLEMENT CORE
+                            │
+           ┌────────────────┼────────────────┐
+           │                │                │
+           ▼                ▼                ▼
+        U.S. JSG        BRICS JSG        Japan JSG
+           │                │                │
+           ▼                ▼                ▼
+      U.S. Banks       BRICS Banks      Japanese Banks
+           │                │                │
+           ▼                ▼                ▼
+     USD / CBDC       BRICS Assets*     JPY / CBDC
+
+  * Only formally authorized instruments.
+```
+
+**Canonical rule:** MITHQAL Core is neutral. Access to MITHQAL Core is jurisdictionally controlled.
+
+---
+
+## §B.6 — JURISDICTIONAL SETTLEMENT GATEWAY (JSG)
+
+### Component Definition
+
+Every participating jurisdiction shall connect to MITHQAL through a jurisdiction-specific policy and authorization boundary called a **Jurisdictional Settlement Gateway (JSG)**.
+
+### Known JSGs
+
+| JSG ID | Jurisdiction | Status |
+|--------|-------------|--------|
+| US-JSG | US | ACTIVE |
+| JP-JSG | JP | ACTIVE |
+| AE-JSG | AE | ACTIVE |
+| IN-JSG | IN | ACTIVE |
+| BR-JSG | BR | ACTIVE |
+| EU-JSG | EU | ACTIVE |
+| SG-JSG | SG | ACTIVE |
+| HK-JSG | HK | ACTIVE |
+| BRICS-JSG | BRICS | PENDING (pending formal BRICS authorization) |
+
+### JSG Enforcement Rules (17)
+
+Each JSG shall enforce:
+1. permitted institutions
+2. permitted counterparties
+3. permitted currencies
+4. permitted CBDCs
+5. permitted settlement assets
+6. permitted BRICS instruments
+7. sanctions
+8. AML/CFT requirements
+9. transaction limits
+10. disclosure rules
+11. data residency
+12. privacy rules
+13. capital controls
+14. corridor restrictions
+15. licensing requirements
+16. central-bank authorization
+17. prohibited transaction classes
+
+**Implementation:** `src/lib/brics-jsg-runtime.ts` → `JSGManager`
+
+---
+
+## §B.7 — U.S. JURISDICTION GATEWAY PRINCIPLE
+
+> **U.S. participation in MITHQAL shall be governed exclusively through the U.S. jurisdictional settlement gateway and applicable U.S. law.**
+
+U.S. participating institutions may interact only with:
+- authorized institutions
+- permitted jurisdictions
+- permitted settlement instruments
+- permitted CBDCs
+- permitted transaction categories
+- permitted BRICS-related instruments, where applicable
+
+No MITHQAL architecture, MTQ transaction, BRICS adapter or cross-border routing mechanism may override U.S. sanctions, AML/CFT requirements, banking law, payment regulation, capital controls or other applicable U.S. requirements.
+
+**Mandatory principle:** Technical interoperability does not create legal authorization.
+
+---
+
+## §B.8 — U.S. / BRICS COMPATIBILITY
+
+> **MITHQAL shall not assume that U.S. institutions may access all BRICS instruments, jurisdictions, banks or CBDCs.**
+
+A U.S. institution may participate in an MTQ settlement corridor involving a BRICS jurisdiction only where:
+1. the U.S. transaction is legally permitted
+2. the counterparty is authorized
+3. the relevant instrument is permitted
+4. sanctions requirements are satisfied
+5. applicable U.S. regulatory requirements are satisfied
+6. the relevant counterpart jurisdiction permits the transaction
+7. the MITHQAL policy engine returns ALLOWED
+
+**Where any requirement fails: SETTLEMENT = BLOCK. No technical path may circumvent the block.**
+
+---
+
+## §B.9 — SANCTIONS / GEOPOLITICAL NEUTRALITY
+
+> **MITHQAL neutrality shall never be interpreted as sanctions neutrality.**
+
+MITHQAL may be politically neutral, but it must remain legally compliant. Therefore:
+- neutrality does not override sanctions
+- neutrality does not override AML/CFT
+- neutrality does not override capital controls
+- neutrality does not permit prohibited transactions
+- neutrality does not permit circumvention through MTQ
+- neutrality does not permit indirect routing around jurisdictional restrictions
+
+**Canonical statement:** Neutral infrastructure is not law-free infrastructure.
+
+---
+
+## §B.10 — CORRIDOR AUTHORIZATION POLICY
+
+### Settlement Corridor Policy States
+
+Every MTQ corridor shall have an explicit policy state:
+
+| State | Action |
+|-------|--------|
+| ALLOWED | Proceed |
+| CONDITIONAL | Require additional review |
+| RESTRICTED | Apply restrictions |
+| PROHIBITED | BLOCK |
+| UNKNOWN | **BLOCK** |
+
+**Rule:** UNKNOWN = BLOCK
+
+A corridor is evaluated independently of the existence of a technical connection.
+
+**Thus:** Technical connectivity ≠ legal permission
+
+---
+
+## §B.11 — BRICS UNIT (Conditional Existence)
+
+### Correct Language
+
+Use: **"BRICS Unit, if and when formally established and authorized by competent BRICS institutions."**
+
+Never write: "The BRICS Unit is an existing official currency."
+
+### If a Formal BRICS Unit Exists
+
+```
+BRICS Unit → BRICS Settlement Adapter → MTQ → Authorized Bank / CBDC / Local Currency
+```
+
+### If No Formal BRICS Unit Exists
+
+**MITHQAL remains fully functional without it.**
+
+This is essential for technological and geopolitical independence.
+
+---
+
+## §B.12 — MTQ INDEPENDENCE FROM BRICS
+
+> **MTQ shall remain independently functional regardless of whether a BRICS unit, BRICS CBDC framework, BRICS payment system or BRICS monetary instrument exists.**
+
+### The Powerful Asymmetry
+
+| Scenario | MITHQAL Status |
+|-----------|---------------|
+| If BRICS succeeds | MITHQAL can connect |
+| If BRICS changes | MITHQAL adapts |
+| If BRICS never creates a common unit | MITHQAL still works through national currencies, bank money and CBDCs |
+
+This is a **formal architectural requirement**.
+
+---
+
+## §B.13 — MULTI-CURRENCY SETTLEMENT MODEL
+
+```
+USD → MTQ → JPY
+
+INR → MTQ → AED
+
+BRL → MTQ → INR
+
+BRICS Unit* → MTQ → Local Currency / CBDC
+
+* only if officially authorized
+```
+
+**Principle:** MTQ provides settlement interoperability without requiring bilateral monetary unification.
+
+---
+
+## §B.14 — MTQ vs BRICS CURRENCY DISTINCTION
+
+| | BRICS Currency | MTQ |
+|---|---|---|
+| **Purpose** | Attempts to establish a common monetary unit | Provides a common neutral settlement layer |
+| **Monetary policy** | May establish common policy | Does NOT establish monetary policy |
+| **Sovereign currency** | May become one | Does NOT seek to be a sovereign currency |
+| **Central bank** | May create one | Does NOT create a central bank |
+| **Political bloc** | May form a political monetary bloc | Does NOT form a political monetary bloc |
+| **Function** | Common monetary unit | Common neutral settlement layer through which separate monetary systems exchange settlement value under their respective laws |
+
+This distinction must appear in:
+- executive summary
+- institutional architecture
+- BRICS strategy
+- central-bank section
+- regulatory section
+- investor/partner materials
+
+---
+
+## §B.15 — CENTRAL-BANK INTEROPERABILITY
+
+> **A central bank may participate in MITHQAL only through a formally authorized jurisdictional gateway. Direct central-bank participation is not assumed.**
+
+MITHQAL shall support:
+- bank-to-bank settlement
+- bank-to-wholesale-CBDC settlement
+- wholesale-CBDC-to-wholesale-CBDC settlement
+- central-bank-connected settlement
+- future officially authorized BRICS settlement instruments
+
+---
+
+## §B.16 — ECONOMIC / GEOPOLITICAL NEUTRALITY (Marketing Control)
+
+### Shall NOT Be Marketed As
+
+- de-dollarization infrastructure
+- anti-Western infrastructure
+- BRICS monetary infrastructure
+- sanctions-evasion infrastructure
+- an alternative geopolitical financial bloc
+
+### Shall Be Marketed As
+
+> **Neutral cross-border settlement infrastructure capable of serving multiple monetary systems under their respective laws.**
+
+This is a **critical communications control**.
+
+---
+
+## §B.17 — PRIVACY IN CROSS-JURISDICTIONAL SETTLEMENT
+
+> **MITHQAL shall not require universal disclosure of underlying customer identity merely because a cross-border settlement occurs.**
+
+Customer identity shall remain primarily within the customer's regulated institution, subject to applicable law.
+
+MITHQAL shall use:
+- minimum-necessary institutional data
+- cryptographic attestations
+- privacy-preserving credentials
+- selective disclosure where technically and legally appropriate
+
+Authorized authorities shall retain access to information to the extent required by applicable law.
+
+---
+
+## §B.18 — PRIVACY + U.S. / BRICS
+
+> **A transaction involving a BRICS jurisdiction shall not cause MITHQAL to automatically expose underlying corporate or customer information to another jurisdiction.**
+
+Cross-border information sharing shall be governed by:
+- applicable law
+- data-sharing agreements
+- institutional authorization
+- regulatory authority
+- selective disclosure policy
+
+**Technical settlement connectivity shall not automatically imply unrestricted data connectivity.**
+
+This is important for U.S., EU, UAE, China, India and other data-sovereignty environments.
+
+---
+
+## §B.19 — POLICY ENGINE (COUNTRY_GATEWAY_POLICY)
+
+### Inputs
+
+The jurisdiction policy engine must determine:
+1. Origin Jurisdiction
+2. Destination Jurisdiction
+3. Origin Institution
+4. Destination Institution
+5. Origin Instrument
+6. Destination Instrument
+7. Settlement Asset
+8. CBDC
+9. BRICS Instrument
+10. Customer Purpose Class
+11. Transaction Type
+12. Sanctions State
+13. AML State
+14. Disclosure State
+15. Legal Status
+16. Authorization State
+
+### Output
+
+`ALLOWED | CONDITIONAL | RESTRICTED | PROHIBITED | UNKNOWN`
+
+**Rule:** UNKNOWN = BLOCK
+
+**Implementation:** `src/lib/v25-0-brics-neutrality-amendment.ts` → `evaluateCountryGatewayPolicy()`
+
+---
+
+## §B.20 — TECHNICAL ARCHITECTURE (JSG Model)
+
+```
+                    MITHQAL CORE
+              ┌─────────────────────┐
+              │ MTQ Settlement      │
+              │ Issuance Engine     │
+              │ Reserve Engine      │
+              │ Finality            │
+              │ Audit               │
+              │ Privacy             │
+              └─────────┬───────────┘
+                        │
+        ┌───────────────┼────────────────┐
+        │               │                │
+        ▼               ▼                ▼
+      U.S. JSG       BRICS JSG       OTHER JSG
+        │               │                │
+        ▼               ▼                ▼
+      Banks        BRICS Banks       Banks/CBDCs
+        │               │                │
+      USD/CBDC    BRICS Instruments   Local/CBDC
+```
+
+**No jurisdiction connects directly to the unrestricted MTQ core without passing through its policy gateway.**
+
+---
+
+## §B.21 — BRICS ADAPTER SECURITY
+
+The BRICS Settlement Interoperability Adapter must have:
+- independent authorization
+- version control
+- policy control
+- transaction limits
+- jurisdiction controls
+- cryptographic authentication
+- emergency disablement
+- audit trail
+- upgrade governance
+- no bypass path into MTQ core
+
+**Critical requirement:** Disabling the BRICS adapter must not disable MTQ itself. This preserves MTQ's neutrality and operational independence.
+
+**Implementation:** `src/lib/brics-jsg-runtime.ts` → `BRICSInteroperabilityAdapter.disable()`
+
+---
+
+## §B.22 — U.S. EMERGENCY ISOLATION
+
+### Jurisdictional Emergency Isolation
+
+If U.S. law, regulator instruction or system risk requires suspension:
+
+```
+U.S. JSG → ISOLATED
+
+while:
+
+Japan JSG → ACTIVE
+UAE JSG → ACTIVE
+India JSG → ACTIVE
+Other permitted JSGs → ACTIVE
+
+subject to their own laws.
+```
+
+Likewise, any jurisdiction can isolate its own gateway without collapsing the entire MITHQAL network.
+
+**This is much stronger than a globally centralized block/unblock switch.**
+
+**Implementation:** `src/lib/brics-jsg-runtime.ts` → `performEmergencyIsolation()`
+
+---
+
+## §B.23 — ECONOMIC RESILIENCE
+
+> **The MITHQAL network shall be designed so that jurisdictional isolation does not automatically create global settlement failure.**
+
+A prohibited or suspended jurisdiction shall be isolated through its gateway while permitted corridors continue operating where legally and technically possible.
+
+This creates geopolitical and operational resilience.
+
+---
+
+## §B.24 — BRICS PILOT STRATEGY (5 Phases)
+
+### Recommended Deployment Path
+
+| Phase | Name | Flow |
+|-------|------|------|
+| 1 | Non-BRICS / Cross-Currency Pilot | Bank → MTQ → Bank |
+| 2 | BRICS National-Currency Corridor | INR → MTQ → AED (or another legally approved corridor) |
+| 3 | CBDC Corridor | CBDC A → MTQ → CBDC B |
+| 4 | Official BRICS Instrument | BRICS Unit → MTQ → Local Currency / CBDC (if formally created) |
+| 5 | Multilateral Network | Multiple BRICS and non-BRICS jurisdictions |
+
+This prevents MITHQAL from becoming dependent on political decisions outside its control.
+
+---
+
+## §B.25 — FINAL BRICS / U.S. CANONICAL STATEMENT
+
+> **MITHQAL is not a BRICS monetary instrument and is not an alternative geopolitical monetary bloc. MTQ is a neutral wholesale settlement instrument capable of connecting authorized banks, sovereign monetary systems, local currencies, wholesale CBDCs, and—if formally established and authorized—a future BRICS unit of account or settlement instrument. Each jurisdiction retains complete authority over what institutions, assets, currencies, transactions and information may pass through its jurisdictional settlement gateway. Technical interoperability does not create legal authorization. MITHQAL shall never be used to circumvent sanctions, capital controls, AML/CFT requirements or other applicable law.**
+
+---
+
+## §B.26 — FINAL DESIGN DECISION
+
+### Final Conceptual Architecture
+
+```
+                  SOVEREIGN / MONETARY SYSTEMS
+                              │
+              ┌───────────────┼────────────────┐
+              │               │                │
+             USA            BRICS            JAPAN
+              │               │                │
+          U.S. JSG         BRICS JSG         JP JSG
+              │               │                │
+           U.S. Banks      BRICS Banks      JP Banks
+              │               │                │
+              └───────────────┼────────────────┘
+                              │
+                              ▼
+                    MITHQAL MTQ CORE
+                    NEUTRAL SETTLEMENT
+                              │
+                 ┌────────────┴────────────┐
+                 │                         │
+            CBDC Adapter             BRICS Adapter
+                 │                         │
+                 ▼                         ▼
+         Authorized CBDCs          Officially Authorized
+                                   BRICS Instruments
+```
+
+### The Three Rules That Must Never Be Lost
+
+1. **MTQ is not BRICS money.**
+2. **MTQ is not U.S. money.**
+3. **MTQ is the neutral settlement layer between authorized monetary systems.**
+
+### Final COO Recommendation
+
+> Pursue BRICS interoperability through the jurisdictional-gateway model rather than putting BRICS directly into the MTQ core. This gives:
+> - BRICS compatibility without becoming a BRICS political instrument
+> - U.S. compatibility without assuming U.S. authorization for BRICS transactions
+> - CBDC compatibility without becoming a CBDC
+> - Local-currency compatibility without requiring monetary union
+> - Neutrality without becoming lawless
+
+### Key Asymmetry
+
+> If BRICS succeeds, MITHQAL has a role. If BRICS changes direction, MITHQAL still has a role. If the U.S. restricts a particular corridor, the U.S. gateway can isolate it without destroying the global MITHQAL network.
+
+---
+
+
+---
+
 # PRESERVED v24.2.1 CANONICAL BLUEPRINT (Full Text)
 
 > **The following is the complete v24.2.1-FINAL canonical blueprint, preserved in full. All 28,899 lines of the original are retained below. Where v25.0 supersedes v24.2.1 language, the prior text is marked with [HISTORICAL/NON-NORMATIVE — Superseded by v25.0 §X] markers.**

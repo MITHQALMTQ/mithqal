@@ -43,6 +43,34 @@ import {
 } from "@/lib/v25-0-privacy-revenue-principles";
 import { DIVISION_OF_CONTROL } from "@/lib/corporate-settlement-account";
 import { checkSettlementPermissions } from "@/lib/proof-of-liabilities";
+import {
+  INSTITUTIONAL_NEUTRALITY,
+  MTQ_NEUTRAL_DEFINITION,
+  BRICS_INTEGRATION_PRINCIPLE,
+  BSIA_PROPERTIES,
+  GLOBAL_INTEROP_MODEL,
+  US_GATEWAY_PRINCIPLE,
+  US_BRICS_COMPATIBILITY,
+  SANCTIONS_NEUTRALITY,
+  CORRIDOR_AUTHORIZATION,
+  BRICS_UNIT_POLICY,
+  MTQ_BRICS_INDEPENDENCE,
+  MULTI_CURRENCY_SETTLEMENT,
+  MTQ_VS_BRICS_DISTINCTION,
+  CB_INTEROP,
+  MARKETING_NEUTRALITY,
+  CROSS_JURISDICTIONAL_PRIVACY,
+  PRIVACY_US_BRICS,
+  BRICS_ADAPTER_SECURITY,
+  JURISDICTIONAL_EMERGENCY_ISOLATION,
+  ECONOMIC_RESILIENCE,
+  BRICS_PILOT_STRATEGY,
+  FINAL_BRICS_US_STATEMENT,
+  FINAL_DESIGN_DECISION,
+  TECHNICAL_ARCHITECTURE_JSG,
+  KNOWN_JSGS,
+} from "@/lib/v25-0-brics-neutrality-amendment";
+import { JSGManager, BRICSInteroperabilityAdapter, checkMTQIndependence } from "@/lib/brics-jsg-runtime";
 
 /**
  * GET /api/v25.0
@@ -168,6 +196,94 @@ export async function GET() {
 
       // §5 — Division of Control (bank vs MITHQAL)
       divisionOfControl: DIVISION_OF_CONTROL,
+
+      // ============ BRICS / U.S. / JURISDICTIONAL NEUTRALITY AMENDMENT ============
+
+      // §1 — Institutional Neutrality
+      bricsNeutrality: INSTITUTIONAL_NEUTRALITY,
+
+      // §2 — MTQ Neutral Definition
+      mtqNeutralDefinition: MTQ_NEUTRAL_DEFINITION,
+
+      // §3 — BRICS Integration Principle
+      bricsIntegration: BRICS_INTEGRATION_PRINCIPLE,
+
+      // §4 — BRICS Settlement Interoperability Adapter (BSIA)
+      bricsAdapter: {
+        properties: BSIA_PROPERTIES,
+        runtimeStatus: new BRICSInteroperabilityAdapter().getConfig(),
+      },
+
+      // §5 — Global Monetary Interoperability Model
+      globalInteropModel: GLOBAL_INTEROP_MODEL,
+
+      // §6 — Jurisdictional Settlement Gateways (JSG)
+      jurisdictionalGateways: {
+        known: new JSGManager().listGateways(),
+        enforcementRules: KNOWN_JSGS,
+      },
+
+      // §7 — U.S. Gateway Principle
+      usGatewayPrinciple: US_GATEWAY_PRINCIPLE,
+
+      // §8 — U.S. / BRICS Compatibility
+      usBricsCompatibility: US_BRICS_COMPATIBILITY,
+
+      // §9 — Sanctions / Geopolitical Neutrality
+      sanctionsNeutrality: SANCTIONS_NEUTRALITY,
+
+      // §10 — Corridor Authorization Policy
+      corridorAuthorization: CORRIDOR_AUTHORIZATION,
+
+      // §11 — BRICS Unit Policy
+      bricsUnitPolicy: BRICS_UNIT_POLICY,
+
+      // §12 — MTQ Independence from BRICS
+      mtqBricsIndependence: {
+        ...MTQ_BRICS_INDEPENDENCE,
+        check: checkMTQIndependence(),
+      },
+
+      // §13 — Multi-Currency Settlement
+      multiCurrencySettlement: MULTI_CURRENCY_SETTLEMENT,
+
+      // §14 — MTQ vs BRICS Currency Distinction
+      mtqVsBrics: MTQ_VS_BRICS_DISTINCTION,
+
+      // §15 — Central-Bank Interoperability
+      cbInterop: CB_INTEROP,
+
+      // §16 — Marketing Neutrality
+      marketingNeutrality: MARKETING_NEUTRALITY,
+
+      // §17 — Cross-Jurisdictional Privacy
+      crossJurisdictionalPrivacy: CROSS_JURISDICTIONAL_PRIVACY,
+
+      // §18 — Privacy + U.S. / BRICS
+      privacyUsBrics: PRIVACY_US_BRICS,
+
+      // §20 — Technical Architecture (JSG Model)
+      technicalArchitectureJSG: TECHNICAL_ARCHITECTURE_JSG,
+
+      // §21 — BRICS Adapter Security
+      bricsAdapterSecurity: BRICS_ADAPTER_SECURITY,
+
+      // §22 — Jurisdictional Emergency Isolation
+      emergencyIsolation: JURISDICTIONAL_EMERGENCY_ISOLATION,
+
+      // §23 — Economic Resilience
+      economicResilience: ECONOMIC_RESILIENCE,
+
+      // §24 — BRICS Pilot Strategy
+      bricsPilotStrategy: BRICS_PILOT_STRATEGY,
+
+      // §25 — Final BRICS / U.S. Canonical Statement
+      finalBricsUsStatement: FINAL_BRICS_US_STATEMENT,
+
+      // §26 — Final Design Decision
+      finalDesignDecision: FINAL_DESIGN_DECISION,
+
+      // ============ END BRICS AMENDMENT ============
 
       // §36 — Settlement Permission Engine (demo)
       settlementPermissionEngine: {

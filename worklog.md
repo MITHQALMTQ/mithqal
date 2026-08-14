@@ -1980,3 +1980,44 @@ Stage Summary:
 - .docx: 435 KB (was 100 KB), 27,847 paragraphs (was 1,417), 79 tables (was 92), 455 headings.
 - Nothing deleted — only modified and added. All v19 historical archive, sections 39-58, sections 59+, validation appendices PRESERVED.
 - Ready for git commit + push.
+
+---
+Task ID: v25.0-brics-neutrality-amendment
+Agent: main (Super Z) — COO + Project Manager
+Task: Verify no essentials deleted from older versions + insert BRICS/U.S./Jurisdictional Neutrality Amendment (26 sections) into v25.0 blueprint.
+
+Work Log:
+- Verified v25.0 FINAL blueprint (30,080 lines) preserves ALL v24.2 sections: SUPREMACY CLAUSE, CONFLICT RESOLUTIONS, CONSTITUTIONAL IDENTITY, MONETARY ARCHITECTURE, RESERVE ARCHITECTURE, GOLD/SILVER, CURRENCY ENGINE, DIGITAL LIQUIDITY SLEEVE, REBALANCING ENGINE, LIQUIDITY & REDEMPTION, CUSTODY & RECONCILIATION, ORACLE ARCHITECTURE, GOVERNANCE, CONSTITUTIONAL INVARIANTS, DETERMINISM, AUDIT TRAIL, SMART CONTRACT REQUIREMENTS, EXECUTION MODES, USER FEES, SUPPORTED CURRENCIES, FINALITY, RESERVE VERIFICATION, Cryptographic Governance, Institutional Continuity, Engineering Lifecycle, v19 FINAL — all present (72 occurrences verified). Nothing deleted.
+- Created src/lib/v25-0-brics-neutrality-amendment.ts (560 lines) — 26 sections:
+  * §1 Institutional Neutrality, §2 MTQ Neutral Definition, §3 BRICS Integration Principle
+  * §4 BRICS Settlement Interoperability Adapter (BSIA)
+  * §5 Global Monetary Interoperability Model
+  * §6 Jurisdictional Settlement Gateway (JSG) — 9 known JSGs, 17 enforcement rules
+  * §7 U.S. Gateway Principle, §8 U.S./BRICS Compatibility
+  * §9 Sanctions Neutrality (immutable), §10 Corridor Authorization (UNKNOWN=BLOCK)
+  * §11 BRICS Unit (conditional), §12 MTQ Independence from BRICS (asymmetry)
+  * §13 Multi-Currency Settlement, §14 MTQ vs BRICS Currency Distinction
+  * §15 Central-Bank Interoperability, §16 Marketing Neutrality
+  * §17 Cross-Jurisdictional Privacy, §18 Privacy + U.S./BRICS
+  * §19 Country Gateway Policy Engine, §20 Technical Architecture (JSG Model)
+  * §21 BRICS Adapter Security, §22 U.S. Emergency Isolation
+  * §23 Economic Resilience, §24 BRICS Pilot Strategy (5 phases)
+  * §25 Final BRICS/U.S. Canonical Statement, §26 Final Design Decision
+- Created src/lib/brics-jsg-runtime.ts (190 lines):
+  * JSGManager class (9 gateways, isolate/activate/emergencyIsolate)
+  * BRICSInteroperabilityAdapter class (disable adapter does NOT disable MTQ)
+  * checkMTQIndependence() — MTQ always functional regardless of BRICS
+  * performEmergencyIsolation() — isolate one JSG without collapsing network
+- Updated src/app/api/v25.0/route.ts — added 22 BRICS amendment fields to API response
+- Inserted BRICS amendment sections (566 lines) into the blueprint between v25.0 new architecture and v24.2 preserved content (NOT replacing — supplementing)
+- Regenerated .docx (442 KB, 28,129 paragraphs, 84 tables, 504 headings)
+- API verified: bricsNeutrality canonical statement, bricsAdapter status=PENDING_AUTHORIZATION, 9 JSGs, 5 pilot phases, final BRICS statement
+
+Stage Summary:
+- BRICS/U.S./Jurisdictional Neutrality Amendment INSERTED (not replacing) into v25.0 architecture.
+- 2 new TypeScript modules (750 lines), API enriched with 22 BRICS fields.
+- Blueprint: 30,649 lines (was 30,080) — +569 lines of BRICS amendment.
+- .docx: 442 KB (was 435 KB), 28,129 paragraphs, 84 tables, 504 headings.
+- Lint clean.
+- Three rules locked: MTQ is not BRICS money, MTQ is not U.S. money, MTQ is the neutral settlement layer.
+- Ready for git commit + push.
