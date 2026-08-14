@@ -1,0 +1,1666 @@
+# MITHQAL v25.0 — CTO-CONTROLLED WHOLESALE NEUTRAL SETTLEMENT TRANSFORMATION
+
+## Full Blueprint + Platform + Architecture + Compliance + Smart-Contract Remediation
+
+**BASELINE:** MITHQAL v24.2 FINAL INSTITUTIONAL BLUEPRINT
+**TARGET:** MITHQAL v25.0 — Permissioned Wholesale Neutral Settlement Architecture
+**EXECUTION:** Full-stack architectural transformation, not a cosmetic documentation update.
+
+---
+
+# 0. ROLE
+
+You are the **Lead MITHQAL AI Architect, CTO, Principal Blockchain Architect, Institutional Payments Architect, Regulatory Architecture Lead, Security Architect, and Senior Product Engineer**.
+
+You must modify the existing MITHQAL platform and the canonical blueprint so that **the actual software architecture, data model, permissions, workflows, smart contracts, APIs, UI, compliance controls, documentation, tests, and terminology all implement the same institutional model**.
+
+Do not simply edit the blueprint.
+
+**The implemented platform and the blueprint must become one coherent system.**
+
+---
+
+# 1. SOURCE OF TRUTH
+
+Use the existing:
+
+**MITHQAL v24.2 FINAL INSTITUTIONAL BLUEPRINT**
+
+as the baseline.
+
+Preserve all valid v24.2 constitutional, reserve, risk, governance, Sharia, security, formal-verification and institutional components unless explicitly changed by this directive.
+
+Where v24.2 conflicts with this directive:
+
+> **This directive becomes the new normative v25.0 architecture.**
+
+Historical v19/v20/v21/v22/v23/v24 material may remain for traceability, but conflicting material MUST be marked:
+
+`HISTORICAL — NON-NORMATIVE`
+
+There must be **one and only one normative architecture** after remediation.
+
+---
+
+# 2. NEW CANONICAL IDENTITY
+
+Replace the previous broader participant-facing concept with:
+
+## MITHQAL
+
+> **MITHQAL is a neutral wholesale institutional settlement infrastructure connecting regulated monetary systems across jurisdictions.**
+
+## MTQ
+
+> **MTQ is a permissioned wholesale settlement instrument used by authorized regulated financial institutions and, where explicitly authorized, central banks or sovereign monetary authorities to transfer settlement value between participating monetary systems.**
+
+MTQ is:
+
+* neutral;
+* wholesale;
+* institutional;
+* settlement-focused;
+* reserve-disciplined;
+* cryptographically secure;
+* auditable;
+* permissioned;
+* privacy-preserving;
+* jurisdiction-aware;
+* interoperable with regulated monetary systems.
+
+MTQ is NOT:
+
+* a retail payment coin;
+* a consumer wallet asset;
+* an unrestricted stablecoin;
+* a sovereign currency;
+* a CBDC;
+* a replacement for USD/JPY/EUR/AED/RMB/etc.;
+* a speculative asset;
+* an investment product;
+* an exchange asset;
+* a market-making instrument.
+
+---
+
+# 3. CORE STRATEGIC PRINCIPLE
+
+Make this the central principle of v25.0:
+
+> **MTQ does not compete with sovereign currencies or CBDCs. MTQ sits between regulated monetary systems as a neutral wholesale settlement instrument.**
+
+The canonical flow is:
+
+```text
+Sovereign Money / CBDC A
+        ↓
+Regulated Bank / Authorized Institution
+        ↓
+MTQ
+        ↓
+MITHQAL Neutral Wholesale Settlement Layer
+        ↓
+MTQ
+        ↓
+Regulated Bank / Authorized Institution
+        ↓
+Sovereign Money / CBDC B
+```
+
+The customer does not need to own MTQ.
+
+The customer does not directly mint MTQ.
+
+The bank performs the customer-facing financial activity.
+
+MITHQAL performs the institutional settlement function.
+
+---
+
+# 4. B2B / WHOLESALE-ONLY SCOPE
+
+This is a HARD product boundary.
+
+## Direct MTQ participants
+
+Allowed:
+
+1. Regulated commercial banks.
+2. Approved regulated financial institutions where legally permitted.
+3. Central banks / sovereign monetary authorities only where explicitly authorized.
+4. Other institutional settlement participants only where explicitly authorized by the relevant jurisdiction.
+
+## Underlying users
+
+Allowed:
+
+* companies;
+* corporations;
+* institutional trade counterparties.
+
+## Direct retail access
+
+PROHIBITED from the primary MITHQAL architecture:
+
+* individuals;
+* personal bank accounts;
+* consumer wallets;
+* retail MTQ minting;
+* retail MTQ issuance;
+* consumer direct MTQ settlement.
+
+Individuals may continue to use their normal banking/retail payment systems.
+
+**MTQ is B2B/wholesale only.**
+
+This must be enforced in:
+
+* frontend;
+* backend;
+* APIs;
+* database;
+* authorization;
+* smart contracts;
+* policy engine;
+* documentation;
+* tests.
+
+---
+
+# 5. BANK-MEDIATED CUSTOMER MODEL
+
+The customer can initiate a transfer, but only through the customer's regulated bank.
+
+Canonical model:
+
+```text
+Corporate Customer
+       ↓
+Corporate Bank Account
+       ↓
+Regulated Bank
+       ↓
+MITHQAL Institutional Settlement Gateway
+       ↓
+MTQ
+       ↓
+MITHQAL
+       ↓
+Receiving Bank
+       ↓
+Recipient Corporate Bank Account
+       ↓
+Corporate Beneficiary
+```
+
+The customer sees:
+
+> “International corporate payment.”
+
+The bank sees:
+
+> “Customer payment → MTQ institutional settlement.”
+
+MITHQAL sees:
+
+> “Authorized institution A → Authorized institution B.”
+
+This abstraction is mandatory.
+
+---
+
+# 6. CUSTOMER KYC/KYB RESPONSIBILITY
+
+Do NOT make MITHQAL a duplicate global customer-onboarding platform.
+
+## Regulated Bank Responsibility
+
+Participating banks remain primarily responsible for:
+
+* KYC;
+* KYB;
+* UBO identification;
+* AML/CFT;
+* source-of-funds/source-of-wealth checks where applicable;
+* sanctions screening;
+* transaction monitoring;
+* customer risk scoring;
+* customer account authority;
+* customer documentation;
+* suspicious activity processes.
+
+## MITHQAL Responsibility
+
+MITHQAL must verify and control:
+
+* participating institution identity;
+* regulatory authorization;
+* institution permissions;
+* transaction authority;
+* settlement corridor authorization;
+* jurisdiction eligibility;
+* transaction compliance state;
+* sanctions requirements applicable to MITHQAL;
+* transaction limits;
+* institutional risk limits;
+* settlement integrity;
+* immutable auditability.
+
+Canonical rule:
+
+> **The regulated institution knows its customer. MITHQAL knows and authorizes its participating institution and validates the institutional settlement transaction.**
+
+However, where law requires MITHQAL to obtain direct information, the architecture MUST support additional disclosure/verification.
+
+Never design around avoiding legally required information.
+
+---
+
+# 7. PRIVACY-PRESERVING ARCHITECTURE
+
+Do NOT make MITHQAL completely blind.
+
+Do NOT make MITHQAL a global customer-data repository.
+
+Implement:
+
+## “Privacy-Preserving Institutional Settlement”
+
+Use:
+
+* zero-knowledge proofs where appropriate;
+* verifiable credentials;
+* cryptographic attestations;
+* encrypted references;
+* selective disclosure;
+* role-based disclosure;
+* jurisdictional data-access policies.
+
+## Three-layer identity model
+
+### Layer 1 — Bank Identity Vault
+
+Contains actual customer information:
+
+* legal name;
+* UBO;
+* account;
+* KYC/KYB;
+* source of funds;
+* risk information;
+* identity documents.
+
+Normally retained by the regulated bank.
+
+### Layer 2 — MITHQAL Settlement Identity
+
+MITHQAL normally sees only the minimum required:
+
+```text
+Institution ID
+Corporate Reference
+KYC Status
+AML Status
+Sanctions Status
+Transaction Authorization
+Jurisdiction
+Trade Classification
+Transaction Limit Status
+```
+
+Do not expose unnecessary customer identity.
+
+### Layer 3 — Authorized Disclosure
+
+Where legally required:
+
+```text
+Regulator / Authorized Authority
+        ↓
+Authorized disclosure mechanism
+        ↓
+Regulated Bank
+        ↓
+Underlying customer / trade information
+```
+
+Where local law expressly permits direct MITHQAL disclosure, support controlled disclosure.
+
+---
+
+# 8. “SELECTIVE TRANSPARENCY” PRINCIPLE
+
+Adopt:
+
+> **Transparent to authorized institutions and authorities; confidential to unauthorized parties.**
+
+Not:
+
+* anonymous;
+* public surveillance;
+* globally transparent customer data.
+
+The architecture must support:
+
+* institution-level traceability;
+* transaction-level auditability;
+* lawful regulator access;
+* privacy by default;
+* selective disclosure.
+
+Public users must not be able to reconstruct underlying confidential corporate trade identities from the MTQ ledger.
+
+---
+
+# 9. CENTRAL-BANK ROLE
+
+Do NOT state that MITHQAL gives itself authority over central banks.
+
+Each jurisdiction retains:
+
+* monetary sovereignty;
+* legal authority;
+* banking supervision;
+* financial regulation;
+* domestic data rules;
+* customer-information authority.
+
+Central-bank participation is:
+
+`EXPLICITLY AUTHORIZED`
+
+only.
+
+Implement three modes:
+
+### Mode A — Bank-Only
+
+Regulated banks use MTQ.
+
+### Mode B — Central-Bank-Connected
+
+Banks/wholesale CBDC systems connect through approved central-bank infrastructure.
+
+### Mode C — Direct Central-Bank Participation
+
+Only when the central bank formally authorizes participation.
+
+Never assume approval.
+
+---
+
+# 10. CBDC INTEROPERABILITY LAYER
+
+Create a first-class:
+
+# MITHQAL NEUTRAL CBDC INTEROPERABILITY LAYER
+
+Support, subject to authorization:
+
+```text
+Wholesale CBDC A
+      ↓
+MTQ
+      ↓
+Wholesale CBDC B
+```
+
+and:
+
+```text
+Central Bank Money
+      ↓
+Bank
+      ↓
+MTQ
+      ↓
+Bank
+      ↓
+Central Bank Money
+```
+
+Also support:
+
+* bank money → MTQ → bank money;
+* CBDC → MTQ → bank money;
+* bank money → MTQ → CBDC;
+* tokenized sovereign/cash-equivalent asset → MTQ → regulated destination asset.
+
+Do NOT require jurisdictions to adopt a common CBDC.
+
+Do NOT require one country's sovereign currency to become the international settlement currency.
+
+MITHQAL is the interoperability layer.
+
+---
+
+# 11. MTQ ISSUANCE RESTRICTION
+
+Completely remove the old participant-level direct minting concept from the normative architecture.
+
+## New rule
+
+> **Only authorized institutional issuance channels may originate MTQ.**
+
+Corporate customers cannot directly mint.
+
+Individuals cannot mint.
+
+MITHQAL executives cannot arbitrarily mint.
+
+Governance cannot arbitrarily mint.
+
+Council cannot arbitrarily mint.
+
+No operational minting.
+
+No treasury minting.
+
+No compensation minting.
+
+No promotional minting.
+
+No discretionary emergency minting.
+
+---
+
+# 12. INSTITUTIONAL MTQ ISSUANCE FLOW
+
+Implement:
+
+```text
+Corporate Customer
+      ↓
+Regulated Bank
+      ↓
+Bank validates customer
+      ↓
+Institutional Settlement / Issuance Request
+      ↓
+Institution Authentication
+      ↓
+Institution License / Permission Check
+      ↓
+Jurisdiction Permission Check
+      ↓
+Eligible Reserve / Settlement Asset Check
+      ↓
+Custody Verification
+      ↓
+NAV Calculation
+      ↓
+RR / Stress-RR / Liquidity Checks
+      ↓
+Proof of Reserves
+      ↓
+Proof of Solvency
+      ↓
+Constitutional Policy Check
+      ↓
+Mint.sol
+      ↓
+MTQ.sol
+      ↓
+MTQ enters Wholesale Settlement Layer
+```
+
+MTQ issuance remains deterministic and non-discretionary.
+
+---
+
+# 13. MAINTAIN THE ABSOLUTE MONETARY INVARIANTS
+
+Preserve:
+
+1. 100% minimum reserve coverage.
+2. No discretionary minting.
+3. No reserve lending.
+4. No leverage/fractional reserve.
+5. No rehypothecation.
+6. No reserve commingling.
+7. Redemption integrity.
+8. Atomicity.
+9. Idempotency.
+10. Immutable auditability.
+
+The current v24.2 constitutional supply lifecycle and atomicity model must remain intact unless explicitly modified for institutional authorization.
+
+---
+
+# 14. BANK-TO-BANK SETTLEMENT
+
+The primary institutional settlement flow is:
+
+```text
+BANK A
+   ↓
+MTQ
+   ↓
+MITHQAL
+   ↓
+MTQ
+   ↓
+BANK B
+```
+
+The customer does not need to hold MTQ.
+
+The customer does not need a MITHQAL wallet.
+
+The customer does not need to know the internal MTQ mechanics.
+
+The bank handles:
+
+* customer account;
+* customer currency;
+* customer compliance;
+* customer FX;
+* customer communication.
+
+MITHQAL handles:
+
+* institutional settlement;
+* MTQ;
+* settlement state;
+* compliance attestations;
+* traceability;
+* finality;
+* institutional audit.
+
+---
+
+# 15. JAPAN → USA CANONICAL USE CASE
+
+Implement this as the principal reference example.
+
+```text
+Japanese Corporate Customer
+        ↓
+Japanese Bank Account
+        ↓
+Japanese Regulated Bank
+        ↓
+Customer KYC/KYB + AML + sanctions
+        ↓
+Institutional MTQ Settlement Request
+        ↓
+JPY / authorized settlement value
+        ↓
+MTQ
+        ↓
+MITHQAL Neutral Settlement Layer
+        ↓
+MTQ
+        ↓
+U.S. Regulated Bank
+        ↓
+USD / authorized U.S. settlement asset
+        ↓
+U.S. Corporate Bank Account
+        ↓
+U.S. Exporter
+```
+
+The corporate customer sees only:
+
+> Payment completed.
+
+The banks reconcile:
+
+> Local money → MTQ → local money.
+
+MITHQAL records:
+
+> Bank A → MTQ → Bank B.
+
+---
+
+# 16. SETTLEMENT TRACEABILITY
+
+The transaction architecture must link:
+
+```text
+Customer
+   ↓
+Bank Account Transaction ID
+   ↓
+Bank Institutional Settlement ID
+   ↓
+MITHQAL Settlement ID
+   ↓
+MTQ Transaction Hash
+   ↓
+Receiving Bank Settlement ID
+   ↓
+Beneficiary Account
+```
+
+MITHQAL must maintain the institutional settlement trail without unnecessarily storing the full underlying customer identity.
+
+---
+
+# 17. AML/CFT ARCHITECTURE
+
+Create a layered AML system.
+
+## Layer 1 — Bank AML
+
+Customer-level:
+
+* KYC/KYB;
+* AML;
+* UBO;
+* sanctions;
+* transaction monitoring.
+
+## Layer 2 — MITHQAL AML/Transaction Controls
+
+Institutional-level:
+
+* bank authorization;
+* sanctions;
+* jurisdiction;
+* corridor;
+* transaction limits;
+* suspicious settlement patterns;
+* velocity controls;
+* institutional risk;
+* abnormal MTQ movement;
+* prohibited jurisdiction;
+* blocked institution.
+
+## Layer 3 — Regulator/Central-Bank Access
+
+Authorized authorities can access legally permitted records.
+
+The system must support lawful investigation without requiring MITHQAL to maintain unnecessary raw customer data.
+
+---
+
+# 18. CREATE A JURISDICTIONAL POLICY ENGINE
+
+Implement a jurisdiction engine with:
+
+`ALLOWED`
+`CONDITIONAL`
+`RESTRICTED`
+`PROHIBITED`
+`UNKNOWN`
+
+Unknown must default to:
+
+`BLOCK`
+
+Each jurisdiction record must specify:
+
+* MTQ classification;
+* institutional participation;
+* issuance;
+* settlement;
+* redemption;
+* custody;
+* payment-service exposure;
+* ART/stablecoin exposure;
+* securities exposure;
+* commodity exposure;
+* AML/CFT;
+* sanctions;
+* privacy/data;
+* cross-border restrictions;
+* capital controls;
+* tax/accounting;
+* licenses;
+* required disclosures;
+* central-bank authorization;
+* corporate eligibility;
+* transaction limits.
+
+Do NOT claim that this eliminates regulation.
+
+The system is designed to be:
+
+> **jurisdiction-compatible, not jurisdiction-free.**
+
+---
+
+# 19. CHINA / PROHIBITED JURISDICTIONS
+
+Preserve and strengthen geo-fencing.
+
+If a jurisdiction prohibits relevant MTQ/crypto/stablecoin activity:
+
+* block;
+* do not route around;
+* do not VPN bypass;
+* do not use alternate interfaces to evade;
+* do not indirectly circumvent the prohibition.
+
+Create formal:
+
+`JURISDICTION_BLOCK`
+
+states.
+
+---
+
+# 20. REGULATED ENTRY / EXIT RAILS
+
+MITHQAL must NOT become the global FX exchange.
+
+Create regulated gateway interfaces:
+
+```text
+Domestic Currency / CBDC
+        ↓
+Regulated Bank Gateway
+        ↓
+MTQ
+        ↓
+MITHQAL
+        ↓
+MTQ
+        ↓
+Regulated Bank Gateway
+        ↓
+Destination Currency / CBDC
+```
+
+FX conversion remains within authorized banking/financial infrastructure.
+
+---
+
+# 21. MITHQAL MUST NOT BE AN EXCHANGE
+
+Keep the anti-platform restrictions:
+
+MITHQAL must NOT:
+
+* operate exchange order books;
+* match buyers/sellers;
+* provide brokerage;
+* market-make;
+* provide customer portfolio management;
+* lend;
+* provide trade finance;
+* issue derivatives;
+* run DeFi;
+* operate retail banking;
+* provide speculative investment services.
+
+MITHQAL is the settlement infrastructure.
+
+---
+
+# 22. RESERVE MANAGEMENT
+
+Keep v24.2's reserve architecture:
+
+* gold;
+* silver;
+* fiat;
+* digital liquidity sleeve;
+* reserve segregation;
+* custody;
+* proof of reserves;
+* proof of solvency;
+* RR;
+* Stress-RR;
+* LCR;
+* reserve states;
+* concentration controls;
+* counterparty limits;
+* jurisdiction limits;
+* optimizer;
+* model-validity gate.
+
+Do not convert reserve management into speculative trading.
+
+The purpose remains:
+
+> **settlement integrity and reserve resilience.**
+
+---
+
+# 23. TRADING LANGUAGE
+
+Distinguish:
+
+### Permitted
+
+Institutional reserve acquisition/rebalancing required to maintain the reserve architecture.
+
+### Prohibited
+
+* speculative trading;
+* market making;
+* exchange operation;
+* brokerage;
+* customer portfolio management;
+* leverage;
+* derivatives;
+* return maximization.
+
+Use:
+
+> **Reserve management**
+
+rather than:
+
+> Trading.
+
+---
+
+# 24. SMART CONTRACT REQUIREMENTS
+
+## MTQ.sol
+
+Must:
+
+* allow minting only through authorized minting infrastructure;
+* allow institutional transfers;
+* enforce access permissions where required;
+* support emergency controls;
+* generate complete events;
+* enforce supply integrity.
+
+## Mint.sol
+
+Must require:
+
+* authorized institution;
+* valid institutional permission;
+* valid jurisdiction;
+* eligible reserve;
+* custodian verification;
+* RR;
+* Stress-RR;
+* applicable liquidity checks;
+* compliance proof;
+* unique CTID;
+* valid issuance policy state.
+
+## Redeem.sol
+
+Must require:
+
+* authorized institution;
+* valid redemption permission;
+* MTQ burn;
+* reserve eligibility;
+* RR/stress checks;
+* correct reserve release;
+* jurisdiction compliance.
+
+## Reserve.sol
+
+Must enforce:
+
+* custody;
+* segregation;
+* reserve ownership records;
+* jurisdiction;
+* reserve version;
+* proof references;
+* no unauthorized release.
+
+## Governance.sol
+
+Governance may modify permitted policy parameters only through the constitutional governance process.
+
+Governance must NEVER bypass issuance invariants.
+
+---
+
+# 25. INSTITUTION AUTHORIZATION REGISTRY
+
+Create a first-class registry:
+
+```text
+Institution ID
+Legal Name
+Institution Type
+Jurisdiction
+Regulator
+License
+Authorization Scope
+MTQ Permissions
+CBDC Permissions
+Issuance Permission
+Redemption Permission
+Settlement Corridors
+Currency Scope
+Transaction Limits
+Status
+Review Date
+Compliance Status
+```
+
+Possible statuses:
+
+`ACTIVE`
+`CONDITIONAL`
+`SUSPENDED`
+`REVOKED`
+`EXPIRED`
+`BLOCKED`
+
+---
+
+# 26. MTQ SETTLEMENT PERMISSION ENGINE
+
+Every transaction must evaluate:
+
+```text
+Institution A allowed?
+Institution B allowed?
+Corridor allowed?
+Currency pair allowed?
+Transaction type allowed?
+Jurisdiction allowed?
+Institution limits passed?
+Sanctions passed?
+Compliance attestation valid?
+Settlement amount within limit?
+Liquidity available?
+Reserve state allows operation?
+Network healthy?
+Oracle healthy?
+Policy version valid?
+```
+
+Any failure:
+
+`BLOCK`
+
+No partial settlement.
+
+---
+
+# 27. PRIVACY / ZERO-KNOWLEDGE IMPLEMENTATION
+
+Do not merely add a “zero knowledge” marketing label.
+
+Implement actual privacy architecture where technically and legally appropriate:
+
+* ZK proofs;
+* credential attestations;
+* selective disclosure;
+* encrypted customer references;
+* institution-signed compliance attestations;
+* Merkle/commitment structures;
+* permissioned identity resolution;
+* regulator-only disclosure pathways.
+
+The system must be able to prove:
+
+* customer has passed required KYC;
+* institution is authorized;
+* transaction is allowed;
+* sanctions status is valid;
+* transaction is within institutional limits;
+
+without automatically revealing the customer's full identity to MITHQAL.
+
+Where law requires data disclosure, the system must be able to reveal it to authorized entities.
+
+---
+
+# 28. “FULL TRACEABILITY WITHOUT GLOBAL CUSTOMER SURVEILLANCE”
+
+Make this an explicit architectural principle.
+
+MITHQAL must support:
+
+> **Institutional traceability**
+
+without becoming:
+
+> **A global customer-data repository.**
+
+The system must support lawful end-to-end tracing while minimizing unnecessary personal/confidential data exposure.
+
+---
+
+# 29. FINALITY
+
+Maintain:
+
+* technical finality;
+* settlement state machine;
+* atomicity;
+* idempotency;
+* immutable ledger;
+* cryptographic proofs.
+
+But distinguish:
+
+* technical finality;
+* contractual finality;
+* legal finality;
+* bank settlement finality.
+
+Never claim blockchain confirmation automatically determines legal finality in every jurisdiction.
+
+---
+
+# 30. CBDC + BANK MONEY + MTQ ARCHITECTURE
+
+Implement:
+
+```text
+                         CENTRAL BANK
+                              │
+                     Wholesale Money/CBDC
+                              │
+                              ▼
+                          BANK A
+                              │
+                              │
+                              ▼
+                     ┌────────────────┐
+                     │    MITHQAL     │
+                     │                │
+                     │ MTQ Settlement │
+                     │ Authorization  │
+                     │ Compliance     │
+                     │ Privacy        │
+                     │ Audit          │
+                     └────────────────┘
+                              │
+                              │
+                              ▼
+                          BANK B
+                              │
+                              ▼
+                     Wholesale Money/CBDC
+                              │
+                              ▼
+                         CENTRAL BANK
+```
+
+---
+
+# 31. UI / PLATFORM MODIFICATIONS
+
+Modify the platform so that it visually reflects the institutional model.
+
+## Remove/disable UI for:
+
+* public MTQ minting;
+* retail wallet creation;
+* personal MTQ issuance;
+* consumer MTQ purchase;
+* consumer MTQ investment;
+* retail mint dashboards.
+
+## Create UI for:
+
+### Institution Portal
+
+* institution onboarding;
+* license;
+* authorization;
+* settlement corridors;
+* transaction limits;
+* MTQ balance;
+* settlement requests;
+* compliance status;
+* reconciliation;
+* audit trail;
+* reserve/settlement reporting.
+
+### Corporate Client Portal
+
+Corporate clients may:
+
+* initiate international payment;
+* view transaction status;
+* view bank confirmation;
+* view settlement reference;
+* receive reconciliation information.
+
+They must NOT directly mint MTQ.
+
+### Central Bank / Regulator Portal
+
+Where legally authorized:
+
+* institutional registry;
+* corridor monitoring;
+* settlement monitoring;
+* aggregate flow analytics;
+* compliance alerts;
+* lawful disclosure;
+* audit trail;
+* system-level risk;
+* liquidity;
+* reserve statistics.
+
+Do not expose customer information beyond legal authority.
+
+---
+
+# 32. API / DATA MODEL MODIFICATIONS
+
+Introduce or update entities for:
+
+* Institution;
+* InstitutionLicense;
+* InstitutionAuthorization;
+* SettlementCorridor;
+* SettlementInstruction;
+* InstitutionalComplianceAttestation;
+* PrivacyCredential;
+* ZKProof;
+* CustomerReference;
+* DisclosurePolicy;
+* AuthorizedDisclosure;
+* MTQIssuance;
+* MTQRedemption;
+* MTQSettlement;
+* SettlementFinality;
+* RegulatoryPolicy;
+* JurisdictionRule;
+* JurisdictionBlock;
+* ReserveReference;
+* CustodyReference;
+* BankTransactionReference;
+* CentralBankReference.
+
+Ensure every institutional settlement can be linked without requiring MITHQAL to store unnecessary raw personal data.
+
+---
+
+# 33. EVENT MODEL
+
+Every MTQ transaction must produce:
+
+* Settlement ID;
+* institution ID;
+* sender institution;
+* receiver institution;
+* amount;
+* timestamp;
+* status;
+* policy version;
+* jurisdiction policy version;
+* compliance attestation reference;
+* privacy proof reference;
+* reserve reference if applicable;
+* cryptographic hash;
+* ledger commitment;
+* finality state.
+
+Where lawful, maintain linkage to underlying bank transaction references.
+
+---
+
+# 34. TESTING REQUIREMENTS
+
+Create automated tests proving:
+
+### Retail access
+
+* individual cannot mint MTQ;
+* personal account cannot create MTQ;
+* retail wallet cannot access wholesale settlement.
+
+### Institutional access
+
+* unauthorized bank cannot settle;
+* expired license blocks;
+* revoked authorization blocks;
+* wrong jurisdiction blocks;
+* unauthorized corridor blocks.
+
+### Issuance
+
+* discretionary mint fails;
+* insufficient reserve fails;
+* invalid custody proof fails;
+* invalid institution fails;
+* invalid policy state fails;
+* invalid compliance proof fails;
+* duplicate CTID fails.
+
+### Privacy
+
+* unauthorized actor cannot resolve customer identity;
+* authorized regulator can obtain legally permitted information;
+* bank can resolve its own customer;
+* MITHQAL cannot reconstruct unnecessary customer data.
+
+### AML
+
+* sanctions block;
+* prohibited jurisdiction blocks;
+* institutional risk threshold blocks;
+* suspicious transaction triggers escalation;
+* policy failure causes conservative block.
+
+### Settlement
+
+* atomic;
+* idempotent;
+* auditable;
+* finalizable;
+* reversible only through constitutionally permitted recovery mechanisms.
+
+### CBDC
+
+* unauthorized CBDC connection blocks;
+* authorized CBDC corridor works;
+* jurisdiction-specific rules are enforced.
+
+---
+
+# 35. BLUEPRINT MODIFICATION REQUIREMENTS
+
+Do a complete semantic sweep through the blueprint.
+
+Search every section for:
+
+* participant minting;
+* retail minting;
+* individual minting;
+* customer MTQ wallets;
+* consumer payments;
+* permissionless issuance;
+* public stablecoin;
+* direct user issuance;
+* customer-level MITHQAL KYC;
+* anonymous transaction;
+* unrestricted global settlement;
+* global currency;
+* replacement currency;
+* CBDC replacement;
+* exchange;
+* brokerage;
+* market making;
+* investment;
+* speculative return.
+
+For every conflict:
+
+1. Rewrite to the new v25.0 model.
+2. Update dependent sections.
+3. Update diagrams.
+4. Update formulas/workflows where necessary.
+5. Mark conflicting historical content NON-NORMATIVE.
+
+Do NOT leave contradictory language anywhere in the final normative blueprint.
+
+---
+
+# 36. REQUIRED NEW BLUEPRINT CHAPTERS
+
+Create:
+
+## Chapter A — Institutional Wholesale Identity
+
+## Chapter B — Bank-Mediated Customer Architecture
+
+## Chapter C — Institutional MTQ Issuance
+
+## Chapter D — Neutral Wholesale Settlement Layer
+
+## Chapter E — CBDC Interoperability
+
+## Chapter F — Institutional Compliance & AML/CFT
+
+## Chapter G — Privacy-Preserving Settlement / ZK Architecture
+
+## Chapter H — Selective Disclosure & Regulatory Access
+
+## Chapter I — Institutional Authorization Registry
+
+## Chapter J — Jurisdictional Settlement Policy Engine
+
+## Chapter K — Regulated Entry / Exit Rails
+
+## Chapter L — Settlement Finality
+
+## Chapter M — Institutional Traceability
+
+## Chapter N — Central-Bank Participation Model
+
+## Chapter O — Japan-USA End-to-End Settlement Case
+
+---
+
+# 37. CANONICAL INSTITUTIONAL PRINCIPLE
+
+Insert prominently:
+
+> **Banks know their customers. MITHQAL knows its participating institutions. MITHQAL validates settlement. Authorized authorities obtain information according to law.**
+
+---
+
+# 38. CANONICAL PRIVACY PRINCIPLE
+
+Insert prominently:
+
+> **Privacy by default, traceability by authorization, disclosure by law.**
+
+---
+
+# 39. CANONICAL MONETARY PRINCIPLE
+
+Insert prominently:
+
+> **Sovereign currencies remain sovereign. MTQ is the neutral settlement instrument between participating monetary systems.**
+
+---
+
+# 40. CANONICAL ECONOMIC PRINCIPLE
+
+Insert prominently:
+
+> **MITHQAL does not create economic value by replacing currencies; it seeks to create value by reducing the friction, risk, liquidity cost and operational complexity of cross-border settlement.**
+
+---
+
+# 41. CANONICAL CENTRAL-BANK PROPOSITION
+
+Insert prominently:
+
+> **MITHQAL enables participating monetary systems to retain their own currencies and CBDCs while using a common neutral wholesale settlement layer for cross-border institutional settlement.**
+
+---
+
+# 42. CANONICAL COMPLIANCE PROPOSITION
+
+Insert prominently:
+
+> **MITHQAL is not designed to circumvent jurisdictional regulation. It is designed to encode jurisdictional permission, institutional authorization and lawful transaction controls directly into the settlement architecture.**
+
+---
+
+# 43. CANONICAL TRACEABILITY PROPOSITION
+
+Insert prominently:
+
+> **MITHQAL combines digital settlement speed with the institutional traceability of regulated financial infrastructure, while minimizing unnecessary exposure of confidential customer information.**
+
+---
+
+# 44. ECONOMIC IMPACT MODEL
+
+Add a measurable economic-impact framework.
+
+Do NOT make unsupported claims such as:
+
+* 97% cost reduction;
+* guaranteed GDP increase;
+* guaranteed FX savings;
+* guaranteed settlement-time reduction.
+
+Instead define measurable KPIs:
+
+* settlement time;
+* settlement failure rate;
+* reconciliation time;
+* transaction-processing cost;
+* correspondent hand-offs;
+* trapped liquidity;
+* intraday liquidity requirement;
+* settlement exposure;
+* exception rate;
+* investigation time;
+* compliance-processing time;
+* corridor availability;
+* operational downtime.
+
+All economic benefits must be measured through controlled pilots.
+
+---
+
+# 45. CENTRAL-BANK PRESENTATION MODEL
+
+Create a dedicated central-bank architecture view showing:
+
+```text
+Customer
+   ↓
+Regulated Bank
+   ↓
+Central Bank / Regulatory Framework
+   ↓
+MITHQAL
+   ↓
+Receiving Bank
+   ↓
+Receiving Monetary System
+```
+
+Highlight:
+
+* sovereignty;
+* banking role;
+* AML/CFT;
+* privacy;
+* traceability;
+* finality;
+* interoperability;
+* settlement efficiency.
+
+---
+
+# 46. CRITICAL LEGAL DISCLAIMERS
+
+The blueprint MUST NOT claim:
+
+* automatic regulatory approval;
+* legal exemption;
+* jurisdiction-proof architecture;
+* automatic CBDC acceptance;
+* automatic central-bank participation;
+* absence of licensing requirements;
+* guaranteed regulatory treatment;
+* guaranteed legal classification.
+
+Use:
+
+> **Regulatory compatibility by design; authorization remains jurisdiction-specific.**
+
+---
+
+# 47. FINAL ARCHITECTURAL TEST
+
+After implementation, answer YES/NO to every statement below:
+
+### Identity
+
+* Is MITHQAL clearly wholesale?
+* Is MTQ clearly a neutral settlement instrument?
+* Is sovereign-money competition removed?
+
+### Access
+
+* Can individuals mint MTQ? **MUST BE NO.**
+* Can personal accounts directly access wholesale MTQ? **MUST BE NO.**
+* Can corporate customers initiate transfers through their bank? **MUST BE YES.**
+* Can authorized banks settle? **MUST BE YES.**
+* Can authorized central banks participate? **ONLY WHERE EXPLICITLY AUTHORIZED.**
+
+### Compliance
+
+* Does the bank know its customer? **YES.**
+* Does MITHQAL know the institution? **YES.**
+* Can MITHQAL validate compliance attestations? **YES.**
+* Can authorized authorities obtain lawful information? **YES.**
+* Can unauthorized entities obtain customer data? **NO.**
+
+### Privacy
+
+* Is unnecessary customer data minimized? **YES.**
+* Are ZK/attestation mechanisms supported? **YES.**
+* Is selective disclosure supported? **YES.**
+
+### Settlement
+
+* Is MTQ the neutral middle layer? **YES.**
+* Can Bank A → MTQ → Bank B work? **YES.**
+* Can CBDC A → MTQ → CBDC B work where authorized? **YES.**
+* Does MITHQAL become an exchange? **NO.**
+* Does MITHQAL become an FX dealer? **NO.**
+
+### Monetary integrity
+
+* Is discretionary minting impossible? **YES.**
+* Is reserve backing mandatory? **YES.**
+* Are redemption and supply integrity preserved? **YES.**
+* Are reserve controls preserved? **YES.**
+
+### Jurisdiction
+
+* Does the system enforce jurisdictional permissions? **YES.**
+* Does it bypass prohibitions? **NO.**
+* Does UNKNOWN default to BLOCK? **YES.**
+* Is regulatory authorization still required? **YES.**
+
+---
+
+# 48. REQUIRED DELIVERABLES
+
+At completion, produce:
+
+## 1. MITHQAL v25.0 Final Canonical Blueprint
+
+Complete, internally consistent, no contradictory normative sections.
+
+## 2. v24.2 → v25.0 Change Registry
+
+Every material architectural modification.
+
+## 3. Institutional Authority Matrix
+
+Exactly who can:
+
+* onboard;
+* authorize;
+* initiate;
+* issue;
+* settle;
+* redeem;
+* pause;
+* observe;
+* audit;
+* disclose.
+
+## 4. Customer vs Bank vs MITHQAL Responsibility Matrix
+
+Explicitly separate:
+
+* KYC;
+* AML;
+* identity;
+* transaction monitoring;
+* sanctions;
+* settlement;
+* custody;
+* disclosure;
+* audit.
+
+## 5. Privacy Architecture
+
+Show:
+
+* data stored at bank;
+* data stored at MITHQAL;
+* ZK proofs;
+* attestations;
+* selective disclosure;
+* regulator access.
+
+## 6. CBDC Interoperability Architecture
+
+Bank-only, bank + CBDC, and central-bank-authorized models.
+
+## 7. Japan-USA End-to-End Flow
+
+With complete technical, compliance and settlement sequence.
+
+## 8. Smart-Contract Remediation Report
+
+All contracts, permissions, events, limits and tests.
+
+## 9. API/Data Model Remediation Report
+
+All schemas, roles, identifiers, institution references, policy engines and disclosure controls.
+
+## 10. Regulatory Architecture Report
+
+Jurisdiction-by-jurisdiction policy framework, explicitly distinguishing:
+
+**architectural compatibility**
+
+from
+
+**legal authorization.**
+
+## 11. Test and Verification Report
+
+Evidence that the implemented system matches v25.0.
+
+## 12. Final Architecture Consistency Audit
+
+Perform a final global sweep and report:
+
+* contradictions found;
+* contradictions fixed;
+* remaining assumptions;
+* remaining legal dependencies;
+* remaining implementation gaps.
+
+---
+
+# 49. FINAL NON-NEGOTIABLE END STATE
+
+The completed MITHQAL system MUST implement this exact conceptual model:
+
+```text
+                    SOVEREIGN / CBDC SYSTEM A
+                              │
+                              ▼
+                    REGULATED BANK A
+                              │
+                      BANK KNOWS CUSTOMER
+                              │
+                              ▼
+                INSTITUTIONAL SETTLEMENT GATEWAY
+                              │
+                              ▼
+                 ┌──────────────────────────┐
+                 │        MITHQAL           │
+                 │                          │
+                 │  Neutral Settlement      │
+                 │  MTQ                     │
+                 │  Authorization           │
+                 │  Compliance Controls     │
+                 │  Privacy / ZK             │
+                 │  Selective Disclosure    │
+                 │  Finality                │
+                 │  Auditability            │
+                 │  Reserve Integrity       │
+                 │  CBDC Interoperability   │
+                 └──────────────────────────┘
+                              │
+                              ▼
+                    INSTITUTIONAL MTQ
+                              │
+                              ▼
+                INSTITUTIONAL SETTLEMENT GATEWAY
+                              │
+                              ▼
+                    REGULATED BANK B
+                              │
+                              ▼
+                    SOVEREIGN / CBDC B
+```
+
+### Final strategic definition
+
+> **MITHQAL is a privacy-preserving, permissioned wholesale settlement infrastructure connecting regulated monetary systems. MTQ is its neutral wholesale settlement instrument. Corporate customers initiate payments through their regulated banks; banks perform customer-level KYC/KYB and AML/CFT; MITHQAL validates participating institutions, settlement permissions, jurisdictional rules and transaction integrity; MTQ performs the neutral cross-border settlement leg; receiving banks convert settlement value into their domestic currency or authorized CBDC. MITHQAL does not replace banks, sovereign currencies or CBDCs, and it does not bypass jurisdictional law. It combines digital settlement speed, institutional traceability, lawful selective disclosure and monetary neutrality.**
+
+**Implement this end-to-end. Do not merely document it. The code, smart contracts, APIs, database, authorization model, compliance engine, privacy model, dashboards, workflows, tests and canonical blueprint must all express the same architecture.**
