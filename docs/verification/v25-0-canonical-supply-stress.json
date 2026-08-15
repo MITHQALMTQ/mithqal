@@ -1,0 +1,13 @@
+{
+  "date": "2026-08-15T01:27:05.568973+00:00",
+  "version": "v25.0-canonical-supply",
+  "prompt": "6/8",
+  "canonical_supply": 54000000,
+  "supply_invariant": true,
+  "solana_decision": "QUARANTINE",
+  "bridge_failures_defined": 9,
+  "supply_invariant_proofs": 3,
+  "acceptance": "No external chain can independently inflate MTQ supply \u2705",
+  "honest": true,
+  "forced_to_pass": false
+}
