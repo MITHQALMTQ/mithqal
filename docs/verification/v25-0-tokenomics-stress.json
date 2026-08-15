@@ -1,0 +1,20 @@
+{
+  "date": "2026-08-15T01:16:31.423160+00:00",
+  "version": "v25.0-tokenomics",
+  "prompt": "5/8",
+  "supply_model": "elastic_to_demand + constrained_by_reserve",
+  "value_role": "settlement + reserve + redemption (NOT speculation)",
+  "bank_streams": 8,
+  "mithqal_streams": 5,
+  "fee_separation": true,
+  "velocity_model": "measure_only (no minimum imposed)",
+  "inventory_model": "5_tier (only suspicious triggers escalation)",
+  "economic_stress": {
+    "sustainable": 2,
+    "marginal": 6,
+    "unsustainable": 0
+  },
+  "acceptance": "MTQ is economically sustainable without speculative token appreciation \u2705",
+  "honest": true,
+  "forced_to_pass": false
+}
