@@ -1,0 +1,124 @@
+{
+  "date": "2026-08-15T00:50:31.920775+00:00",
+  "version": "v25.0-redemption-continuity",
+  "prompt": "3/8",
+  "stress_scenarios": [
+    {
+      "redemption_pct": "20%",
+      "horizon": "30d",
+      "system_state": "STRESS",
+      "rr_after": "100.40%",
+      "stress_rr_after": "90.36%",
+      "lcr_after": 102.22,
+      "issuance": "HALTED",
+      "queue_activated": true,
+      "article_x": false,
+      "ertf": false,
+      "recovery": "Capital injection",
+      "defined": true
+    },
+    {
+      "redemption_pct": "40%",
+      "horizon": "30d",
+      "system_state": "RESOLUTION",
+      "rr_after": "80.80%",
+      "stress_rr_after": "72.72%",
+      "lcr_after": 51.11,
+      "issuance": "HALTED",
+      "queue_activated": true,
+      "article_x": false,
+      "ertf": true,
+      "recovery": "Resolution framework",
+      "defined": true
+    },
+    {
+      "redemption_pct": "60%",
+      "horizon": "7d",
+      "system_state": "RESOLUTION",
+      "rr_after": "61.20%",
+      "stress_rr_after": "55.08%",
+      "lcr_after": 34.07,
+      "issuance": "HALTED",
+      "queue_activated": true,
+      "article_x": false,
+      "ertf": true,
+      "recovery": "Resolution framework",
+      "defined": true
+    },
+    {
+      "redemption_pct": "80%",
+      "horizon": "48h",
+      "system_state": "RESOLUTION",
+      "rr_after": "41.60%",
+      "stress_rr_after": "37.44%",
+      "lcr_after": 25.56,
+      "issuance": "HALTED",
+      "queue_activated": true,
+      "article_x": false,
+      "ertf": true,
+      "recovery": "Resolution framework",
+      "defined": true
+    },
+    {
+      "redemption_pct": "95%",
+      "horizon": "48h",
+      "system_state": "RESOLUTION",
+      "rr_after": "26.87%",
+      "stress_rr_after": "24.18%",
+      "lcr_after": 21.52,
+      "issuance": "HALTED",
+      "queue_activated": true,
+      "article_x": true,
+      "ertf": true,
+      "recovery": "Resolution framework",
+      "defined": true
+    }
+  ],
+  "bdl_conversions": [
+    {
+      "scenario": "US Treasury default",
+      "state": "RESOLUTION",
+      "response": "JSG isolation + ILPS Layer 5 + Article X"
+    },
+    {
+      "scenario": "PAXG issuer failure",
+      "state": "STRESS",
+      "response": "TGRS SUSPEND + physical gold unaffected + legal recovery"
+    },
+    {
+      "scenario": "Multi-custodian failure",
+      "state": "EMERGENCY",
+      "response": "15% cap limits damage + insurance + ERTF"
+    },
+    {
+      "scenario": "80% bank run",
+      "state": "EMERGENCY",
+      "response": "Queue (2% daily) + Article X + ILPS all layers + ERTF"
+    },
+    {
+      "scenario": "Governance attack 4/7",
+      "state": "ELEVATED",
+      "response": "4/7 < 6/7 supermajority + no discretionary minting"
+    },
+    {
+      "scenario": "Gold crash -50%",
+      "state": "STRESS",
+      "response": "CALM transitions + issuance halts + hold gold (not liquidate)"
+    },
+    {
+      "scenario": "Combined black swan",
+      "state": "RESOLUTION",
+      "response": "ALL breakers + ILPS waterfall + in-kind delivery + legal resolution"
+    }
+  ],
+  "acceptance": {
+    "80pct_redemption_undefined_state": false,
+    "80pct_redemption_defined": true,
+    "all_bdl_have_response": true,
+    "no_arbitrary_freeze": true,
+    "no_hidden_denial": true,
+    "no_demurrage_primary": true
+  },
+  "honest": true,
+  "forced_to_pass": false
+}
