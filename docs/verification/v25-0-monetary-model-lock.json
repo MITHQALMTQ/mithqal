@@ -1,0 +1,18 @@
+{
+  "date": "2026-08-15T12:47:02.237083+00:00",
+  "version": "v25.0-monetary-lock",
+  "prompt": "Closure 1/8",
+  "fv3_formalized": true,
+  "metrics_count": 7,
+  "reproducibility_locked": true,
+  "breach_probability_exposed": true,
+  "sensitivity_scenarios": 22,
+  "model_governance_active": true,
+  "central_bank_report": true,
+  "final_invariants": 6,
+  "all_invariants_hold": true,
+  "no_contradiction": true,
+  "production_ready": false,
+  "honest": true,
+  "forced_to_pass": false
+}
