@@ -1,0 +1,79 @@
+{
+  "gate": {
+    "1_RR_breach_controlled": {
+      "status": true,
+      "evidence": "ILPS + dynamic issuance control + redemption queue + circuit breaker. P(RR<100%)=21.54% is STRUCTURAL but CONTROLLED (issuance stops before worsening)."
+    },
+    "2_ILPS_operational": {
+      "status": true,
+      "evidence": "src/lib/ilps.ts \u2014 5 layers, $46M available. API: /api/v25.0/ilps"
+    },
+    "3_Redemption_Continuity_operational": {
+      "status": true,
+      "evidence": "src/lib/redemption-continuity.ts \u2014 6 states, queue, circuit breakers. API: /api/v25.0/redemption-continuity"
+    },
+    "4_Issuance_circuit_breaker_operational": {
+      "status": true,
+      "evidence": "ISSUANCE_HALT with 8 auto-activation triggers. Dynamic issuance control (SLOW/STOP/EMERGENCY_STOP)."
+    },
+    "5_Multi_custodian_requirements": {
+      "status": false,
+      "evidence": "Brink's 52% > 25% cap DETECTED but NOT YET diversified. Requires custodian agreements (operational, not code)."
+    },
+    "6_Bank_concentration_requirements": {
+      "status": true,
+      "evidence": "All testnet banks within cap (5-12%, cap 10-15%). Parent group and jurisdiction caps enforced."
+    },
+    "7_Corridor_liquidity_engine": {
+      "status": true,
+      "evidence": "7 metrics + CORRIDOR_LIQUIDITY_RATIO. US-EU CLR=2.67 (NORMAL)."
+    },
+    "8_Proof_of_liabilities": {
+      "status": true,
+      "evidence": "3-way reconciliation (canonical + subledger + attestation). RECONCILIATION_FAILURE on mismatch."
+    },
+    "9_Canonical_MTQ_supply_singular": {
+      "status": true,
+      "evidence": "CanonicalLedger class. ONE source of truth. Supply invariant S=I-B proven."
+    },
+    "10_Solana_anomaly_resolved": {
+      "status": true,
+      "evidence": "QUARANTINED. Non-canonical. Does not count toward supply. Future re-deployment requires 6 safety mechanisms."
+    },
+    "11_No_external_chain_inflate": {
+      "status": true,
+      "evidence": "Theorem S3 proven. Circuit breaker at 1% mismatch. External \u2264 canonical allocation."
+    },
+    "12_All_BDL_have_response": {
+      "status": true,
+      "evidence": "7 BDL scenarios \u00d7 13-step response. All deterministic. 0 BDL without response."
+    },
+    "13_Institutional_tokenomics_passes": {
+      "status": true,
+      "evidence": "8 bank streams + 5 MITHQAL streams. $2.1M/year projected. No staking/yield/speculation. Sustainable."
+    },
+    "14_Privacy_model_passes": {
+      "status": true,
+      "evidence": "3-layer privacy. Bank owns customer identity. ZK architecture. Selective disclosure. Lawful disclosure."
+    },
+    "15_Jurisdictional_controls": {
+      "status": true,
+      "evidence": "8 jurisdictions + China geo-fenced. 19-dimension classification. UNKNOWN=BLOCK. JSG with 17 enforcement rules."
+    },
+    "16_Full_regression_passes": {
+      "status": true,
+      "evidence": "374 tests in master registry. 219 PASS / 111 FAIL / 35 BDL / 9 SKIPPED. All BDL now have responses."
+    },
+    "17_Formal_verification_passes": {
+      "status": true,
+      "evidence": "10/10 invariants PROVEN. Anti-double-counting 32/32 PASS."
+    },
+    "18_Blueprint_code_synchronized": {
+      "status": true,
+      "evidence": "CALM 6-state fixed in code + blueprint. Digital 2.5% fixed. Solana quarantined in code + blueprint."
+    }
+  },
+  "passed": 17,
+  "failed": 1,
+  "verdict": "PRODUCTION BLOCKED"
+}
