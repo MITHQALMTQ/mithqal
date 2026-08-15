@@ -2330,3 +2330,86 @@ Stage Summary:
 - No core replacement. Minimal integration. Existing banking systems remain authoritative. MITHQAL never possesses customer private keys (mithqalDoesNotPossessCustomerPrivateKeys=true across all 3 SIMULATED BankSecurityProfile instances).
 - The 10 standing blockers (per final-pilot-activation-gate.ts) remain OPEN/PARTIALLY_ADDRESSED. This MBG amendment does NOT resolve them; it ADDS the strategic final architecture (bank-side settlement sidecar) on top of the existing closure series.
 - Lint clean (exit code 0). Smoke tests pass (module load + /api/bank-gateway + /api/gateway/v1). Ready for git commit + push.
+
+---
+Task ID: BLUEPRINT-V25-FINAL-CONSOLIDATION
+Agent: Blueprint Structuring Specialist Agent
+Task: Consolidate all v25.0 amendments (8-prompt Institutional Closure + MBG amendment) into the FINAL blueprint, preserving all existing content.
+
+Work Log:
+- Read /home/z/my-project/worklog.md last 300 lines — confirmed 8-prompt Institutional Closure series (1/8 → 8/8) plus MBG amendment had been completed.
+- Read existing blueprint structure: head -120 (cover page, INDEX, PART V25.0 start), tail -50 (end of v24.2.1 canonical corrections §C3), and located the "# INDEX" marker at line 43 with first "---" separator at line 107.
+- Read all 9 source modules in full:
+  * src/lib/monetary-model-lock.ts (415 lines) — FV3, RR 7 metrics, P-breach=21.5432%, reproducibility lock (seed=42), model governance, 6 final invariants.
+  * src/lib/custody-execution.ts (489 lines) — 9 entity types, 11 lifecycle, 14 evidence types, allocation engine (25% hard cap), 9-step transfer plan, 6 failure scenarios, CUSTODY_BLOCKED gate.
+  * src/lib/commercial-model.ts (429 lines) — 3 business models (A/B/C), Model C selected, lean 4-tier cost structure ($350K/$1.1M/$2.5M/$5M/mo), phased capital ($4.7M/$12.6M/$17.6M), 5-year model, MVN analysis.
+  * src/lib/bank-onboarding.ts (433 lines) — 9 entity types, 13 lifecycle, 14 evidence, 4 authorization blocks, 7-element commercial package, 10 tech certification tests, 7-category readiness score.
+  * src/lib/external-validation-workbench.ts (431 lines) — 10 entity types, 11 review categories, 8 review states, 11 auto-generated evidence packages, 7-field findings, independence enforcement.
+  * src/lib/jurisdictional-pilot-authorization.ts (359 lines) — 5 jurisdiction statuses (ALLOWED/CONDITIONAL/RESTRICTED/PROHIBITED/UNKNOWN), 16 legal questions, 7 pilot auth entity types, 12-section CB package, US/BRICS independent blocking, pilot proposal.
+  * src/lib/smart-contract-deployment-closure.ts (1,745 lines) — 37-row change inventory (SC-001..SC-037), 32 IMPLEMENTED + 5 PENDING, 9 verification categories (128 tests / 114 PASS / 14 BLOCKED / 0 FAIL), 28 bytecode certificates (27 EVM + 1 Solana QUARANTINED), 5 supply certs (all CERTIFIED), 6 quarantined contracts, 9 deployment gates (0 PRODUCTION / 2 BLOCKED / 7 TESTNET), final verdict BLOCKED — TESTNET-READY WITH CRITICAL GAPS.
+  * src/lib/final-pilot-activation-gate.ts (1,837 lines) — 6 valid statuses, 10 task gates, 10 standing blockers (all realWorldEvidence=ABSENT), 3 NEVER rules (0 violations), evidence classification (4 REAL / 13 SIMULATED / 0 CONTRACTED / 0 LIVE / 33 ABSENT), 10 external dependencies, 10 ordered next actions, 12 acceptance criteria (all PASS), final verdict PILOT-READY (AMBER) + PRODUCTION-BLOCKED.
+  * src/lib/mithqal-bank-gateway.ts (3,969 lines) — MBG component, MSAS adapter standard (7 connector classes), MTQSettlementInstruction (22-23 canonical fields), BankComplianceAttestation (7 assertions), 3-layer privacy model, BankLinkedCorporateMTQAccount, BankSecurityProfile (mithqalDoesNotPossessCustomerPrivateKeys=true), AccountingReconciliationAdapter, BankMTQSubledger, Five-Way Reconciliation (5 statuses), 13 MTQ status events, 3 deployment models (A/B/C), 12-control connectivity security, 5-auth zero-trust, gateway failure state (8-step recovery), MITHQAL-side failure state, correspondent/SWIFT compatibility, BankIntegrationCostModel (TIER_1 $400K / TIER_2 $200K / TIER_3 $80K one-time), BankROIModel (full NPV5/payback/break-even), CentralBankBenefit, CBDCCompatibilityProfile, BRICSCompatibilityProfile, 20 required tests (all SIMULATED), 8 API endpoints, final architecture diagram, 12 DO NOT MODIFY rules (DNM-01..DNM-12), 18 acceptance criteria (MBG-AC-01..MBG-AC-18, all met), HONEST_STATE (INTEGRATION-READY, 0 banks), 3 MBG NEVER rules.
+- Read audit reports:
+  * docs/verification/v25-0-smart-contract-deployment-closure.md (387 lines) — confirmed headline verdict "BLOCKED — TESTNET-READY WITH CRITICAL GAPS" (RED).
+  * docs/verification/v25-0-final-pilot-activation-gate.md (178 lines) — confirmed headline verdict "PILOT-READY" (AMBER), 10 task gates table, 10 standing blockers table.
+  * docs/architecture/mbg/MITHQAL_BANK_GATEWAY_ARCHITECTURE.md (908 lines) — confirmed canonical principle "TRANSLATION, NOT TRANSFORMATION", 3 deployment models, 12 DO NOT MODIFY rules.
+- Wrote /home/z/my-project/scripts/append_blueprint.py — Python script that:
+  * Reads the existing 70,320-line blueprint.
+  * Updates cover page: Date 2026-08-14 → 2026-08-15; adds "Amended:" line; adds "Final Status: PILOT-READY (AMBER)" line.
+  * Inserts 2 new INDEX subsections (IC + MBG) before the first "---" separator after "# INDEX".
+  * Appends PART V25.0-INSTITUTIONAL-CLOSURE — 8 sections §IC-1 to §IC-8 with substantive content (purpose, entity types, constants, honest state) extracted from each source module.
+  * Appends PART V25.0-MBG-AMENDMENT — 35 sections §MBG-1 to §MBG-35 with substantive content extracted from mithqal-bank-gateway.ts.
+  * Appends CLOSING STATEMENT with final verdict, 10 standing blockers table, 10 ordered next actions, canonical closing principle.
+  * Idempotent: re-running the script makes zero changes (verified — re-ran and got "Added lines: 0").
+- Executed the script. Results:
+  * Original lines: 70,320
+  * New lines: 73,095
+  * Added lines: 2,775
+  * §IC- sections: 8 (expected 8) ✓
+  * §MBG- sections: 35 (expected 35) ✓
+  * PART V25.0-INSTITUTIONAL-CLOSURE marker: 1 ✓
+  * PART V25.0-MBG-AMENDMENT marker: 1 ✓
+  * CLOSING STATEMENT marker: 1 ✓
+- Verified existing content preserved unchanged:
+  * Part V25.0 sections (§V25.0.X): 41 (all preserved) ✓
+  * Section 39 (Cryptographic Governance) header preserved at line 48039 ✓
+  * Section 57 (Institutional Continuity) header preserved at line 50950 ✓
+  * Section 58 (Engineering Lifecycle) sub-sections preserved (58.1 at line 51320) ✓
+  * 68 sub-sections (## N.M format) for sections 39-58 preserved ✓
+  * PART V25.0-BRICS header preserved ✓
+  * v24.2.1 PRESERVED SECTIONS header preserved ✓
+  * ORIGINAL v19 Specification header preserved ✓
+  * End-of-file marker: "*End of MITHQAL v25.0 FINAL CONSOLIDATED BLUEPRINT.*" ✓
+- Verified no contradictions with MTQ structure/constitution:
+  * No retail MTQ (wholesale B2B only — DNM-01 enforced) ✓
+  * No direct individual minting (bank-mediated only — DNM-02, FV6) ✓
+  * No exchange functions (DNM-03) ✓
+  * No speculative tokenomics (DNM-04) ✓
+  * No bypass bank compliance / JSG / sanctions (DNM-05, DNM-06, DNM-07) ✓
+  * No exposure of customer private keys (mithqalDoesNotPossessCustomerPrivateKeys=true; DNM-08) ✓
+  * No making MITHQAL the customer identity authority (DNM-10) ✓
+  * No making BRICS mandatory (bricsAdapterOptional=true; DNM-11) ✓
+  * No making CBDC participation mandatory (cbdcParticipationNotMandatory=true; DNM-12) ✓
+  * Honest state throughout: 0 banks contracted, 0 custodians contracted, 0 licenses, 0 external reviews, 0 Sharia certification, $0 raised — all ABSENT, all honestly disclosed ✓
+  * Final verdict: PILOT-READY (AMBER) + PRODUCTION-BLOCKED — no false production readiness ✓
+
+Stage Summary:
+- Blueprint grew from 70,320 lines to 73,095 lines (added 2,775 lines).
+- Added PART V25.0-INSTITUTIONAL-CLOSURE (8 sections §IC-1 to §IC-8) — appended at end of file (line 70338).
+- Added PART V25.0-MBG-AMENDMENT (35 sections §MBG-1 to §MBG-35) — appended after PART IC (line 71690).
+- Added CLOSING STATEMENT with final verdict (PILOT-READY AMBER + PRODUCTION-BLOCKED) — appended at end (line 73016).
+- Updated cover page date 2026-08-14 → 2026-08-15, added Amended marker, added Final Status line.
+- Updated INDEX with 2 new subsections: 8 IC section links + 1 MBG section link.
+- All existing content preserved unchanged:
+  * Part V25.0 (§V25.0.0 to §V25.0.40) — 41 §V25.0.X headers (unchanged)
+  * Part V25.0-BRICS (26 sections) — preserved
+  * v24.2.1 CTO/COO Remediation (incl. C1/C2/C3 canonical corrections) — preserved
+  * v24.2 CTO-Controlled Remediation — preserved
+  * Original v19 Specification (full historical archive) — preserved
+  * §39 Cryptographic Governance — preserved at line 48039
+  * §40-56 Constitutional Sections — preserved (sub-sections ## N.M format)
+  * §57-58 Institutional Continuity + Engineering Lifecycle — preserved at line 50950+
+- Honest state preserved throughout: every new §IC and §MBG section includes an Honest State subsection declaring what is REAL vs SIMULATED vs ABSENT.
+- Final verdict preserved: PILOT-READY (AMBER) + PRODUCTION-BLOCKED pending 10 standing blockers (all realWorldEvidence=ABSENT).
+- No contradictions with MTQ structure/constitution (12 DO NOT MODIFY rules cataloged as DNM-01..DNM-12).
+- Script is idempotent: re-running makes zero changes.
