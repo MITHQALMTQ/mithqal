@@ -1,0 +1,15 @@
+{
+  "date": "2026-08-15T00:55:51.521509+00:00",
+  "version": "v25.0-custody-concentration",
+  "prompt": "4/8",
+  "custody_breaches": [
+    "Brink's Global",
+    "Loomis International"
+  ],
+  "all_failures_defined": true,
+  "reconciliation_working": true,
+  "no_demurrage": true,
+  "acceptance": "No critical concentration breach can exist unnoticed \u2705",
+  "honest": true,
+  "forced_to_pass": false
+}
