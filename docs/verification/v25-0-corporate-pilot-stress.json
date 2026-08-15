@@ -1,0 +1,14 @@
+{
+  "date": "2026-08-15T11:24:31.170341+00:00",
+  "version": "v25.0-corporate-pilot",
+  "prompt": "Hardening 3/8",
+  "mode": "PILOT",
+  "pipeline_steps": 9,
+  "payment_flow_steps": 9,
+  "reconciliation": "RECONCILED",
+  "fees_independent": true,
+  "no_retail": true,
+  "acceptance": "Complete corporate bank-mediated settlement lifecycle simulated end-to-end without retail access \u2705",
+  "honest": true,
+  "forced_to_pass": false
+}
