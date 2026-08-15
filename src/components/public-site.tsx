@@ -67,6 +67,7 @@ import { CommercialGovernanceDashboard } from "@/components/commercial-governanc
 import { CommercialTransparency } from "@/components/commercial-transparency";
 import { InstitutionalEconomics } from "@/components/institutional-economics";
 import { ReserveFlowSimulator } from "@/components/reserve-flow-simulator";
+import { MBGDashboard } from "@/components/mbg-dashboard";
 
 const Reveal = ({
   children,
@@ -1908,6 +1909,16 @@ export default function PublicSite() {
           → back to participants, plus entity responsibilities and reserve
           integrity guardrails. */}
       <InstitutionalEconomics />
+      {/* MITHQAL v25.0 FINAL ARCHITECTURAL AMENDMENT — MBG Dashboard:
+          The strategic final architecture: a bank-side settlement gateway /
+          sidecar that lets banks connect WITHOUT replacing their core banking
+          systems. "TRANSLATION, NOT TRANSFORMATION." 12 sections per §29
+          (Gateway Status, Connectivity, Pending Instructions, Settlements,
+          Reconciliation, MTQ Position, Compliance Attestations, JSG Status,
+          Incidents, Limits, Audit, DR Status). Integration state:
+          INTEGRATION-READY (0 banks contracted, 20 tests SIMULATED, 18
+          acceptance criteria met at spec level). */}
+      <MBGDashboard />
       {/* Task 14-a — Reserve Flow Simulator: interactive slider ($1K–$10M)
           showing exactly where every dollar of a transaction goes — mint
           fee, net to procurement, gold purchased, savings split, reserve
