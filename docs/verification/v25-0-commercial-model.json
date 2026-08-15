@@ -1,0 +1,19 @@
+{
+  "date": "2026-08-15T13:02:27.875466+00:00",
+  "version": "v25.0-commercial-model",
+  "prompt": "Closure 3/8",
+  "preferred_model": "C_CORRIDOR_SUBSCRIPTION",
+  "lean_cost_pilot": 350000,
+  "lean_cost_early": 1100000,
+  "capital_phased": {
+    "pilot": 4700000,
+    "early": 12600000,
+    "scale": 17600000
+  },
+  "mvn_model_c_early": "~8 institutions",
+  "mvn_model_c_pilot": "~4 institutions",
+  "old_model_not_sustainable": true,
+  "new_model_viable": true,
+  "honest": true,
+  "forced_to_pass": false
+}
