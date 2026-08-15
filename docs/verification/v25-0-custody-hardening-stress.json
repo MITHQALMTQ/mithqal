@@ -1,0 +1,20 @@
+{
+  "date": "2026-08-15T11:03:07.842302+00:00",
+  "version": "v25.0-custody-hardening",
+  "prompt": "Hardening 2/8",
+  "enforcement": "active (detect, block, alert, remediate)",
+  "critical_alerts": 2,
+  "failure_scenarios": 8,
+  "all_defined": true,
+  "custody_class": "ALL SIMULATED (0 contracted, 0 LIVE)",
+  "production_gate": "BLOCKED (5 blockers)",
+  "blockers": [
+    "Brink's 52% > 25% cap",
+    "Loomis 28% > 25% cap",
+    "No legal segregation opinions",
+    "No contracted custodians",
+    "No LIVE custodians"
+  ],
+  "honest": true,
+  "forced_to_pass": false
+}
