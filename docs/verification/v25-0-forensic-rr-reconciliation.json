@@ -1,0 +1,19 @@
+{
+  "date": "2026-08-15T09:48:05.725054+00:00",
+  "version": "v25.0-forensic-rr",
+  "prompt": "Hardening 1/8",
+  "fv3_formalization": "NORMAL: RR\u2265100% hard invariant; RESOLUTION: RR<100% permitted as legal condition",
+  "rr_reconciliation": {
+    "root_cause": "Reporting bug: compared MC post-stress mean (100.04%) vs ILPS point-in-time (120.00%)",
+    "fix": "Clearly distinguish MC RR_mean (post-stress) vs RR_current (point-in-time). ILPS changed RESPONSE, not PROBABILITY.",
+    "is_reporting_bug": true,
+    "rr_current": 1.2,
+    "mc_rr_mean": 1.0004,
+    "p_breach_unchanged": 0.215432
+  },
+  "model_validation": "Fully documented (horizon, seed, distributions, calibration, CI, model error)",
+  "redemption_sensitivity": "18 scenarios run (6 rates \u00d7 3 horizons + 4 clustered)",
+  "acceptance": "ALL 5 criteria PASS \u2705",
+  "honest": true,
+  "forced_to_pass": false
+}
