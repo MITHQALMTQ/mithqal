@@ -2529,3 +2529,114 @@ Stage Summary:
 - Final status: APPROVED CANDIDATE FOR CONTROLLED TESTING — NOT PRODUCTION-AUTHORIZED (unchanged).
 - Honest state: bank-funded model REDUCES but does NOT ELIMINATE capital requirements (bank credit risk ~0.5% is NONZERO; 21.5432% PRESERVED for MITHQAL-owned portion).
 - No version change: v25.0 remains the FROZEN NORMATIVE ARCHITECTURE (no v25.1 created, no renaming, no architecture fork, Bank Gateway/Settlement Sidecar KEPT as core, wholesale B2B model PRESERVED).
+
+---
+Task ID: V25-0-NON-CUSTODIAL-RESERVE-ARCHITECTURE
+Agent: Non-Custodial Reserve Architecture Architect
+Task: Modify v25.0 to separate reserve custody from monetary control — MITHQAL non-custodial by default.
+
+Work Log:
+- Read /home/z/my-project/worklog.md last 300 lines for context on prior 8-prompt Institutional Closure series, MBG amendment, Third-Party Audit Incorporation (§V25.0.A), and Bank-Funded Issuance Model (§V25.0.B). Confirmed canonical figures: Model A breach=21.5432% (PRESERVED), Model B breach≈4.7086% (bank-funded blended), ΔCapital_min=$15.815M (PENDING_INDEPENDENT_VALIDATION), final status=PILOT-READY (AMBER), 10 standing blockers all open.
+- Read existing modules for context (no modifications):
+  * src/lib/bank-funded-issuance-model.ts (2,232 lines) — dual model (Model A 21.5432%, Model B 4.71%), 4 capital concepts, 6 capital categories, ILPS reconciliation $48.1M.
+  * src/lib/canonical-supply-ledger.ts (632 lines) — Theorem S1/S2/S3, canonical MTQ ledger, 5-way reconciliation, 9 bridge failure tests.
+  * src/lib/custody-execution.ts (489 lines) — 9 custodian entity types, 14 evidence types, allocation engine (25% hard cap), CUSTODY_BLOCKED gate.
+  * src/lib/mithqal-bank-gateway.ts (3,969 lines) — MBG + MSAS adapter standard, 22-field MTQSettlementInstruction, 5-way reconciliation, 12 DNM rules, mithqalDoesNotPossessCustomerPrivateKeys=true.
+- Searched blueprint for forbidden phrases: "MITHQAL holds reserves", "MITHQAL controls custody", "MITHQAL custodies gold", "MITHQAL is custodian", "MITHQAL holds customer funds" — none of the exact forbidden phrases exist in the blueprint (existing language already uses "CUSTODIAN" entity type and "MITHQAL Foundation" for structural/anchor reserves). LANGUAGE_CORRECTIONS in the new module serve as forward-prevention (forbidding future regressions).
+- Designed non-custodial reserve architecture module with 30 sections per task spec, preserving:
+  * 21.5432% for Model A (current reserve, 100% MITHQAL-owned)
+  * 4.7086% for Model B (bank-funded, blended)
+  * 4.7086% for Model C (non-custodial bank-funded, blended — SAME as Model B because the non-custodial aspect does NOT change the math; it changes WHO HOLDS the assets, not the risk profile)
+  * mithqalHeldAssets = 0 by default for ordinary reserve custody
+  * nonCustodialByDefault = true
+  * ΔCapital_min $15.815M classified as MODEL-DERIVED ADDITIONAL MONETARY PROTECTION REQUIREMENT (pending independent validation)
+- Created /home/z/my-project/src/lib/non-custodial-reserve-architecture.ts (2,304 lines, 101 KB). Exports:
+  * Section 1: MODULE_VERSION, TASK_ID, RESERVE_CUSTODY_SEPARATION_PRINCIPLE, CANONICAL_DISTINCTION.
+  * Section 2: ActorRole (5 roles) + ActorControlMatrix + FINAL_CONTROL_MATRIX (5 actors with responsibilities + cannotUnilaterallyControl) + FINAL_CONTROL_RULE.
+  * Section 3: LanguageCorrection + LANGUAGE_CORRECTIONS (5 mappings: "MITHQAL holds reserves"→"MITHQAL verifies eligible reserve/backing", etc.).
+  * Section 4: FINAL_BANK_MEDIATED_FLOW (12-step canonical lifecycle).
+  * Section 5: ReserveControlAttestationFramework interface (19 total slots, 17 strictly required + 2 optional) + RCAF_REQUIRED_FIELDS=18 (per task spec) + RCAF_FIELD_LIST + validateRCAF() function.
+  * Section 6: AvailableBackingCertificate interface (16 fields) + AVAILABLE_BACKING_CERTIFICATE_FIELDS=16 + AVAILABLE_BACKING_CERTIFICATE_RULES (8 rules) + validateAvailableBackingCertificate() function.
+  * Section 7: IssuanceStep (15 steps) + IssuanceRequest + IssuanceGateResult + IssuanceGateOutcome + ISSUANCE_GATE_STEPS (15) + ISSUANCE_GATE_RULE + executeIssuanceGate() function (full 15-step gate with structural checks; ANY FAILURE = BLOCK).
+  * Section 8: MintAuthorityState (3 states) + MINT_AUTHORITY_SEPARATION_RULE + MINT_AUTHORITY_STATES.
+  * Section 9: ReserveBackingReconciliationStatus (7 statuses) + ReserveBackingReconciliationReport + RECONCILIATION_FIVE_SOURCES + RECONCILIATION_TOLERANCE + runReserveBackingReconciliation() function (5-way with explicit custodian evidence source).
+  * Section 10: IssuanceVetoTriggerType (6 triggers) + IssuanceVetoTrigger + MANDATORY_VETO_ACTIONS (8 actions) + MANDATORY_VETO_RULE + evaluateIssuanceVeto() function.
+  * Section 11: BackingAttestationFailure + BACKING_ATTESTATION_FAILURE_RULE + handleBackingAttestationFailure() function (existing MTQ NOT deleted — only NEW issuance blocked).
+  * Section 12: EvidenceSource (4 sources) + ConfidenceModel + CONFIDENCE_MODEL (minimumSources=2, noSingleSourceOfTruth=true) + evaluateConfidence() function.
+  * Section 13: CUSTODY_PROHIBITIONS (6 prohibitions) + CUSTODY_PROHIBITION_EXCEPTION + DEFAULT_ARCHITECTURE + CUSTODY_SEPARATION_RULE.
+  * Section 14: JurisdictionStatus + LegalOwnershipMatrix + LEGAL_OWNERSHIP_MATRIX (5 reserve categories, all JURISDICTION_PENDING) + LEGAL_OWNERSHIP_RULE.
+  * Section 15: RedemptionObligorType + RedemptionObligationProfile + REDEMPTION_OBLIGATION_PROFILE (JURISDICTION_PENDING) + REDEMPTION_OBLIGATION_RULE.
+  * Section 16: REDEMPTION_FLOW (8-step canonical bank-mediated redemption flow — MITHQAL does NOT take custody during redemption).
+  * Section 17: CapitalCategoryType (7 types) + CapitalCategoryEntry + SEVEN_CAPITAL_CATEGORIES (7 entries) + CAPITAL_MODEL_CORRECTION_RULE + DELTA_CAPITAL_MIN_CLASSIFICATION ($15.815M classified as MODEL-DERIVED ADDITIONAL MONETARY PROTECTION REQUIREMENT).
+  * Section 18: NonCustodialModelResult + runModelC_NonCustodialBankFunded() function — computes Model C with blended breach = 0.80 × 0.005 + 0.20 × 0.215432 = 0.047086 (4.7086%) — SAME as Model B; mithqalHeldAssets=0 by default; full mathematical explanation documenting WHY Model C = Model B (non-custodial doesn't change math, changes WHO HOLDS assets).
+  * Section 19: ZERO_BUDGET_REALITY (9-stage evidence pipeline) + ZERO_BUDGET_PRINCIPLE.
+  * Section 20: MBG_NON_CUSTODIAL_HANDLES (9 handles) + MBG_NON_CUSTODIAL_RULE (sidecar, no bank core replacement).
+  * Section 21: SECURITY_CONTROLS (11 controls: signed attestations, mTLS, nonce, timestamp, expiry, replay protection, idempotency, certificate revocation, key rotation, emergency revocation, institution allowlist) + SECURITY_RULE.
+  * Section 22: NEW_FORMAL_VERIFICATION_INVARIANTS (7 invariants FV11-FV17) + FV_FORMAL_REQUIREMENTS (10 requirements) + FV_INVARIANT_COUNT=7.
+  * Section 23: MITHQAL_REVENUE_SOURCES (7 sources) + MITHQAL_REVENUE_RULE (no hidden reserve capital fee).
+  * Section 24: CUSTODY_CONCENTRATION_LIMITS (preferred 15%, hardCap 25%, parentGroup 20% — applied to actual custody providers, NOT to MITHQAL itself).
+  * Section 25: CANONICAL_NON_CUSTODIAL_STATEMENT (full canonical statement).
+  * Section 26: FORBIDDEN_CLAIMS (22 forbidden claims) + FORBIDDEN_CLAIMS_CORRECT_ALTERNATIVES (11 mappings).
+  * Section 27: VERSION_CONTROL (noVersionChange=true, noArchitectureFork=true, noV25_1Created=true).
+  * Section 28: NonCustodialTestScenario + NON_CUSTODIAL_TEST_SCENARIOS (18 tests NC-T01..NC-T18) + NON_CUSTODIAL_TEST_SCENARIO_COUNT=18.
+  * Section 29: PRODUCTION_GATE_CONDITIONS (9 conditions) + PRODUCTION_GATE_RULE.
+  * Section 30: NonCustodialReserveReport interface + generateNonCustodialReserveReport() function returning full executive report.
+- Created /home/z/my-project/src/app/api/non-custodial-reserve-architecture/route.ts (37 lines): GET handler returning generateNonCustodialReserveReport() with try/catch error handling (500 status on failure). Comment block documents the non-custodial principle, the preserved figures (Model A 21.5432%, Model C 4.7086% same as Model B), and the unchanged final status.
+- Created /home/z/my-project/docs/blueprint/_v25-non-custodial-reserve-section.md (773 lines) — the markdown section content (31 sub-sections §V25.0.C.0 through §V25.0.C.31) to append to the blueprint.
+- Created /home/z/my-project/scripts/append_non_custodial_reserve.py (96 lines) — idempotent Python script that:
+  * Checks for marker "§V25.0 — FINAL NON-CUSTODIAL RESERVE / BANK-FUNDED ISSUANCE RECONCILIATION".
+  * Updates INDEX (inserts new section link before "## v24.2.1 PRESERVED SECTIONS (Full Text Below)").
+  * Supersedes old END_MARKER (bank-funded-era) so the new combined end marker can take its place.
+  * Appends the new section at the end of the blueprint.
+  * Verified idempotent: second run printed "Section already exists — no changes made (idempotent)."
+- Ran the append script: blueprint grew from 74,882 → 75,655 lines (added 773 lines). Single §V25.0.C section appended with 31 sub-sections (§V25.0.C.0 Purpose through §V25.0.C.31 Closing Declaration) — 33 §V25.0.C references total (1 marker + 31 sub-sections + 1 closing).
+- Updated END_MARKER: previous "FINAL INSTITUTIONAL EDITION (WITH THIRD-PARTY AUDIT INCORPORATION + BANK-FUNDED ISSUANCE RECONCILIATION)" superseded; new end marker is "FINAL INSTITUTIONAL EDITION (WITH THIRD-PARTY AUDIT INCORPORATION + BANK-FUNDED ISSUANCE RECONCILIATION + NON-CUSTODIAL RESERVE ARCHITECTURE)".
+- Smoke test (bun runtime): imported module + invoked generateNonCustodialReserveReport(). Confirmed:
+  * moduleId="v25.0-non-custodial-reserve-architecture-1.0"
+  * FV invariants=7 (FV11-FV17) ✓
+  * Test scenarios=18 (NC-T01..NC-T18) ✓
+  * Model A breach=0.215432 (21.5432% PRESERVED) ✓
+  * Model B breach=0.047086 (4.7086%) ✓
+  * Model C breach=0.047086 (4.7086% — SAME as Model B; non-custodial doesn't change math) ✓
+  * nonCustodialByDefault=true ✓
+  * mithqalHeldAssets=0 ✓
+  * Issuance gate steps=15 ✓
+  * RCAF required fields=18 ✓
+  * AvailableBackingCertificate fields=16 ✓
+  * Capital categories=7 ✓
+  * MBG handles=9 ✓
+  * Security controls=11 ✓
+  * Forbidden claims=22 ✓
+  * Final status: "APPROVED CANDIDATE FOR CONTROLLED TESTING — NOT PRODUCTION-AUTHORIZED" (unchanged)
+- Ran `bun run lint` (had to run `bun install` first — node_modules was missing). Lint output: exit code 0, 0 errors, 0 warnings.
+- Verified API route module loads and exports GET handler.
+
+Stage Summary:
+- New module: src/lib/non-custodial-reserve-architecture.ts (2,304 lines, 101 KB)
+- New API route: src/app/api/non-custodial-reserve-architecture/route.ts (37 lines)
+- New blueprint section file: docs/blueprint/_v25-non-custodial-reserve-section.md (773 lines)
+- New script: scripts/append_non_custodial_reserve.py (96 lines, idempotent)
+- Blueprint section §V25.0.C appended: blueprint grew from 74,882 to 75,655 lines (+773 lines)
+- 31 sub-sections (§V25.0.C.0 Purpose through §V25.0.C.31 Closing Declaration)
+- 7 new FV invariants: FV11 (PvP Atomicity — DESIGNED), FV12 (Reserve Custody Separation — PROVEN_AT_SPEC_LEVEL), FV13 (Backing Evidence Validity — PROVEN_AT_SPEC_LEVEL), FV14 (No Unverified Issuance — PROVEN_AT_SPEC_LEVEL), FV15 (No Double-Counted Backing — PROVEN_AT_SPEC_LEVEL), FV16 (Reserve-to-Liability Reconciliation — PROVEN_AT_SPEC_LEVEL), FV17 (Redemption Supply Conservation — PROVEN_AT_SPEC_LEVEL)
+- 18 test scenarios (NC-T01..NC-T18, all DESIGNED)
+- 4-source trust model: Source A (bank-signed attestation) + Source B (custodian reserve evidence) + Source C (MITHQAL canonical ledger) + Source D (independent attestation oracle proof); minimumSources=2, noSingleSourceOfTruth=true
+- AvailableBackingCertificate schema: 16 fields (matches the task spec's interface listing; the task summary's "15 fields" was an off-by-one count)
+- RCAF framework: 18 required fields (per task spec; the TypeScript interface exposes 19 total slots — 17 strictly required + 2 optional: beneficialOwner and insuranceStatus)
+- 15-step issuance authorization gate: BANK_REQUEST → BANK_AUTHENTICATION → CUSTOMER_AUTHORIZATION_ATTESTATION → FUNDING_VERIFICATION → AVAILABLE_BACKING_CERTIFICATE → CUSTODY_RESERVE_EVIDENCE → INSTITUTION_AUTHORIZATION → JURISDICTION_CHECK → RESERVE_ELIGIBILITY → RR_STRESS_RR → LIQUIDITY_CHECK → EXPOSURE_LIMIT → POLICY_CHECK → MINT_AUTHORIZATION → MTQ_MINT (ANY FAILURE = BLOCK)
+- Mint authority separation: ISSUANCE_REQUEST → ISSUANCE_AUTHORIZATION → MINT_EXECUTION (3 states, no single actor controls both request and authorization)
+- 5-way reserve reconciliation: bank subledger + reserve backing evidence + custodian evidence + MITHQAL canonical ledger + proof of liabilities (7 statuses: VERIFIED/WARNING/MISMATCH/CRITICAL/EXPIRED/UNAVAILABLE/LOCKED)
+- 6 custody prohibitions (default architecture): MITHQAL-operated reserve bank account, MITHQAL-controlled gold vault, MITHQAL customer deposit account, MITHQAL taking custody of customer funds, MITHQAL receiving physical bullion as ordinary operating custody, MITHQAL holding private keys to customer funds as a default architecture. Exception: "unless a separate jurisdictional legal determination expressly requires and authorizes such structure."
+- 7 capital categories (A Reserve/MTQ backing, B Bank funding, C MITHQAL operating, D Regulatory, E Liquidity resources, F Emergency resources, G Scale) — SEPARATE, doNotAutoCombine=true
+- ΔCapital_min $15.815M classified as MODEL-DERIVED ADDITIONAL MONETARY PROTECTION REQUIREMENT (PENDING_INDEPENDENT_VALIDATION) — NOT a fundraising target, NOT regulatory capital, NOT operating capital, NOT reserve backing per MTQ
+- Model C breach: 4.7086% (SAME as Model B because the non-custodial aspect does NOT change the math; it changes WHO HOLDS the assets, not the risk profile). Model A breach: 21.5432% (PRESERVED for current reserve, 100% MITHQAL-owned)
+- Honest state: nonCustodialByDefault=true, mithqalHeldAssets=0 by default, honest=true, forcedToPass=false, productionAuthorized=false
+- Final status: APPROVED CANDIDATE FOR CONTROLLED TESTING — NOT PRODUCTION-AUTHORIZED (unchanged — 9 production gate conditions remain open)
+- Version control: v25.0 (NO v25.1 created) — v25.0 remains the FROZEN NORMATIVE ARCHITECTURE
+- 22 forbidden claims documented with canonical correct alternatives (e.g. "MITHQAL holds customer funds" → "MITHQAL receives reserve attestations; customer funds remain in bank custody")
+- 11 security controls (signed attestations, mTLS, nonce, timestamp, expiry, replay protection, idempotency, certificate revocation, key rotation, emergency revocation, institution allowlist)
+- 7 MITHQAL revenue sources (connectivity, issuance_service, settlement, redemption_infrastructure, reconciliation, enterprise_integration, premium_institutional_services) — explicitly NOT a hidden reserve capital fee
+- Custody concentration limits (15%/25%/20%) apply to ACTUAL reserve custody providers (banks/qualified custodians), NOT to MITHQAL itself (which is non-custodial by default)
+- Legal ownership matrix: 5 reserve categories (physical gold, PAXG, fiat sovereign debt, stablecoin, sukuk) — ALL jurisdictionStatus=JURISDICTION_PENDING until legal counsel establishes otherwise
+- Redemption obligor: JURISDICTION_PENDING — MITHQAL is NOT automatically the redemption obligor merely because it operates the settlement protocol
+- Script is idempotent: re-running makes zero changes (confirmed via second run)
