@@ -68,6 +68,11 @@ import { CommercialTransparency } from "@/components/commercial-transparency";
 import { InstitutionalEconomics } from "@/components/institutional-economics";
 import { ReserveFlowSimulator } from "@/components/reserve-flow-simulator";
 import { MBGDashboard } from "@/components/mbg-dashboard";
+import { FinalIntegratedArchitectureDashboard } from "@/components/final-integrated-architecture-dashboard";
+import { NonCustodialReserveDashboard } from "@/components/non-custodial-reserve-dashboard";
+import { BankFundedIssuanceDashboard } from "@/components/bank-funded-issuance-dashboard";
+import { FinalPilotGateDashboard } from "@/components/final-pilot-gate-dashboard";
+import { SCDeploymentClosureDashboard } from "@/components/sc-deployment-closure-dashboard";
 
 const Reveal = ({
   children,
@@ -1919,6 +1924,37 @@ export default function PublicSite() {
           INTEGRATION-READY (0 banks contracted, 20 tests SIMULATED, 18
           acceptance criteria met at spec level). */}
       <MBGDashboard />
+      {/* §V25.0.D — Final Integrated Architecture Dashboard:
+          The frozen normative v25.0 architecture: 5 corporate entities,
+          7-layer MTQ model, DMCE (8 limits), FV11-FV25 (15 invariants),
+          35 integrated test scenarios, 12 /gateway/v1/* endpoints, 7x18
+          authority matrix, 44 acceptance criteria — all at spec level. */}
+      <FinalIntegratedArchitectureDashboard />
+      {/* §V25.0.C — Non-Custodial Reserve Architecture Dashboard:
+          Canonical distinction: CUSTODY != VERIFICATION != ISSUANCE
+          AUTHORIZATION != CANONICAL SUPPLY CONTROL. 5-actor control
+          matrix, RCAF + ABC schemas, 15-step issuance gate, 6 custody
+          prohibitions, FV11-FV17, Model A 21.5432% vs Model C 4.7086%. */}
+      <NonCustodialReserveDashboard />
+      {/* §V25.0.B — Bank-Funded Issuance Model Dashboard:
+          4 capital concepts (A/B/C/D), Model A 21.5432% vs Model B 4.7086%,
+          ILPS $48.1M (Emergency + Structural $23.8M is SUBSET), 6 capital
+          categories (NOT auto-combined), 7-row Sources & Uses table,
+          5 bank failure scenarios, 9-stage zero-budget evidence pipeline. */}
+      <BankFundedIssuanceDashboard />
+      {/* §V25.0.A — Smart-Contract Deployment Closure Dashboard:
+          37-row inventory matrix (by contract / risk / status), 9 verification
+          categories (128 tests, 114 passed, 14 blocked, 0 failed), 28 bytecode
+          certificates (4 chains), 5 supply cert properties (all CERTIFIED),
+          6 quarantined contracts (incl. Solana NON_CANONICAL), 9 deployment
+          gates (0 PRODUCTION, 2 BLOCKED, 7 TESTNET), 10-stage release train. */}
+      <SCDeploymentClosureDashboard />
+      {/* §V25.0 — Final Pilot Activation Gate Dashboard:
+          PILOT-READY (AMBER) — PRODUCTION-BLOCKED. 10 task gates, 10 standing
+          blockers (all realWorldEvidence=ABSENT), 3 NEVER rules (0 violations),
+          4 REAL / 13 SIMULATED / 0 CONTRACTED / 0 LIVE / 33 ABSENT evidence,
+          10 external dependencies, 10 recommended next actions. */}
+      <FinalPilotGateDashboard />
       {/* Task 14-a — Reserve Flow Simulator: interactive slider ($1K–$10M)
           showing exactly where every dollar of a transaction goes — mint
           fee, net to procurement, gold purchased, savings split, reserve
