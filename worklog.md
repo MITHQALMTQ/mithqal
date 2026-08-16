@@ -2446,3 +2446,86 @@ Stage Summary:
 - 3 NEVER rules preserved (0 violations each): never convert simulated to LIVE; never convert internal test to external audit; never convert pilot-ready to production-ready.
 - Honest state preserved throughout: honest=true, forcedToPass=false, productionAuthorized=false.
 - Remaining work (no further architecture versions): institutional validation, deployment, legal authorization, custody, bank onboarding, external audit, controlled pilot execution, Sharia certification, PFMI gap assessment, MTQ-PvP Engine implementation.
+
+---
+
+Task ID: V25-0-BANK-FUNDED-ISSUANCE-MODEL
+Agent: Bank-Funded Issuance Model Architect
+Task: Correct the v25.0 capital/issuance model to reflect bank-funded/prefunded institutional issuance (no version change, no architecture fork).
+
+Work Log:
+- Read worklog.md last 250 lines for context on prior 8-prompt Institutional Closure series, MBG amendment, and Third-Party Audit Incorporation (V25-0-AUDIT-INCORPORATION) just completed.
+- Read existing monetary-model-lock.ts (415 lines) to confirm canonical figures: P(RR<100%)=0.215432 (21.5432%), StressRR mean=1.0004, RR_CURRENT=1.20, ΔCapital_min=$15,815,000, MC: 250K paths, seed=42, 30-day horizon. PRESERVED in new module.
+- Read ilps.ts (680 lines) for the 5-layer ILPS structure: Layer 1 Settlement $2.7M, Layer 2 Redemption $16.2M, Layer 3 Emergency $10.8M, Layer 4 Structural $12.96M (now corrected to $13.0M canonical), Layer 5 External $5.4M. Identified double-counting risk (old $46M total + $23.8M Emergency+Structural = $69.8M = double counting).
+- Read corporate-pilot-model.ts (549 lines) for the bank-mediated flow, MODE_CONFIGS (PILOT/LIVE_PILOT/PRODUCTION), CorporateMTQSettlementAccount structure.
+- Read commercial-model.ts (430 lines) for cost model (PILOT $350K/month) and capital requirement categories (6 types).
+- Read blueprint §V25.0.A sections (§V25.0.A.0 through §V25.0.A.25) for existing audit incorporation structure. Confirmed the blueprint ended at line 74065 with "END OF MITHQAL v25.0 CANONICAL BLUEPRINT — FINAL INSTITUTIONAL EDITION (WITH THIRD-PARTY AUDIT INCORPORATION)".
+- Designed dual monetary model with HONEST separation:
+  * Model A (Current Reserve): 100% MITHQAL-owned reserves → P(RR<100%) = 21.5432% (PRESERVED), ΔCapital_min = $15.815M (PRESERVED).
+  * Model B (Bank-Funded Issuance): 80% bank-funded (bank credit risk ~0.5%) + 20% MITHQAL-owned structural/anchor (21.5432% PRESERVED) → blended P(RR<100%) ≈ 4.71% (lower, but NONZERO — bank credit risk is real). ΔCapital_min at system level = $0 (blended already below 5% threshold).
+- Created /home/z/my-project/src/lib/bank-funded-issuance-model.ts (2,232 lines). Exports:
+  * Section 1: MODULE_VERSION, TASK_ID, BANK_FUNDED_ISSUANCE_PRINCIPLE.
+  * Section 2: CapitalConceptType + CapitalConceptDefinition + FOUR_CAPITAL_CONCEPTS (4 entries A/B/C/D).
+  * Section 3: CANONICAL_MTQ_RESERVE_BACKING_BASE ($54M, NOT called monetary/corporate/operating/regulatory/emergency capital/fundraising).
+  * Section 4: CAPITAL_SOLVER_REFRAMED ($15.815M renamed "Minimum Additional Monetary Protection Capital", with 6 "not equivalent to" disclaimers).
+  * Section 5: MonetaryModelResult interface + runModelA_CurrentReserve() + runModelB_BankFundedIssuance() + compareModels().
+  * Section 6: KeyQuestionScenarioResult + runKeyQuestionTest() returning 8 scenarios A-H.
+  * Section 7: RESERVE_REQUIREMENTS_PRESERVED with 9 disciplines (all preserved=true under Model B).
+  * Section 8: LEGAL_ECONOMIC_CHAIN_OF_BACKING + BackingAssetType + BACKING_ASSET_TYPES (5 types) + BACKING_ASSET_METADATA_EXAMPLES.
+  * Section 9: BANK_ROLE (10 responsibilities) + MITHQAL_ROLE (12 responsibilities).
+  * Section 10: NO_DOUBLE_COUNTING_RULE + BackingAssetMetadata interface.
+  * Section 11: CapitalCategory + SIX_CAPITAL_CATEGORIES (6 entries with full metadata).
+  * Section 12: ILPS_CANONICAL_ACCOUNTING (total=$48.1M, emergency+structural=$23.8M subset, noDoubleCounting=true) + ILPS_RECONCILIATION_TABLE (explicit double-counting risk warning).
+  * Section 13: EMERGENCY_CAPITAL_CLASSIFICATION (5 sub-types, total $23.8M available, activation conditions).
+  * Section 14: CapitalSolverOutput interface + computeCapitalSolverOutput() returning 6 separate requirements with doNotAutoCombine=true flag.
+  * Section 15: SourcesAndUsesEntry + SOURCES_AND_USES_TABLE (7 rows) + SOURCES_AND_USES_CRITICAL_RULE.
+  * Section 16: ZERO_BUDGET_DEVELOPMENT_MODE with 9-stage Evidence Pipeline per category.
+  * Section 17: RiskControl interface + BANK_FUNDED_ISSUANCE_RISK_CONTROLS (16 controls, ALL failureAction="BLOCK") + BANK_FUNDED_RISK_CONTROL_RULE.
+  * Section 18: BankFailureScenario + BANK_FAILURE_SCENARIOS (5 scenarios: BANK_FAILURE/SUSPENSION/INSOLVENCY/LIQUIDITY_CRISIS/GATEWAY_OUTAGE).
+  * Section 19: CustodyLegalOwnershipEntry + CUSTODY_LEGAL_OWNERSHIP_MATRIX (7 entries covering all reserve asset types).
+  * Section 20: GOLD_RESERVE_DOCTRINE (keepGold=true, constitutionalAnchor=true, notAutomaticShariaCompliance=true).
+  * Section 21: SHARIA_STATUS (current=DESIGNED_FOR_INDEPENDENT_SHARIA_REVIEW, NOT=SHARIA_CERTIFIED).
+  * Section 22: BANK_GATEWAY_REFLECTION (canonical MBG flow + integration with bank-funded issuance model).
+  * Section 23: BankTier + BankEconomicModel + calculateBankEconomics() (3 tiers: TIER_1/TIER_2/TIER_3 with realistic bps, NPV, ROI, payback).
+  * Section 24: FINAL_CAPITAL_MODEL_STATUS string.
+  * Section 25: VERSION_CONTROL (noVersionChange=true, noArchitectureFork=true, noRenaming=true).
+  * Section 26: AcceptanceCriterion + computeAcceptanceCriteria() returning 18 criteria.
+  * Section 27: BankFundedIssuanceReport + generateBankFundedIssuanceReport() returning full executive report.
+- Created /home/z/my-project/src/app/api/bank-funded-issuance-model/route.ts (29 lines). GET handler returns generateBankFundedIssuanceReport() with try/catch error handling (500 status on failure).
+- Created /home/z/my-project/docs/blueprint/_v25-bank-funded-issuance-section.md (813 lines) — the markdown section content to append to the blueprint.
+- Created /home/z/my-project/scripts/append_bank_funded_issuance.py (70 lines) — idempotent Python script that:
+  * Checks for marker "§V25.0 — FINAL BANK-FUNDED / PREFUNDED ISSUANCE & CAPITAL RECONCILIATION".
+  * Updates INDEX (inserts new section link before "## v24.2.1 PRESERVED SECTIONS (Full Text Below)").
+  * Supersedes old END_MARKER (audit-incorporation-era) so the new combined end marker can take its place.
+  * Appends the new section at the end of the blueprint.
+  * Verified idempotent: second run printed "Section already exists — no changes made (idempotent)."
+- Ran the append script: blueprint grew from 74,065 → 74,882 lines (added 817 lines). Single §V25.0.B section appended with 28 sub-sections (§V25.0.B.0 through §V25.0.B.28).
+- Smoke test (bun runtime): verified all exports and report generation:
+  * Model A: P(RR<100%) = 21.5432% (PRESERVED exactly), StressRR = 1.0004 (PRESERVED), ΔCapital_min = $15,815,000 (PRESERVED).
+  * Model B: P(RR<100%) = 4.7086% (4.71% — reduced, NONZERO), RR blended = 1.04, StressRR blended = 0.9921, ΔCapital_min at system level = $0.
+  * Bank-funded share: $43.2M (80% of $54M). MITHQAL-owned structural/anchor: $10.8M (20%).
+  * ILPS reconciliation: total = $48,100,000 (corrected from $46M). Emergency+Structural subset = $23,800,000 (SUBSET, not additional). noDoubleCounting = true.
+  * Acceptance: 18/18 criteria met.
+  * 8 key-question scenarios (A-H), 16 risk controls (all BLOCK), 5 bank failure scenarios, 6 capital categories, 7 sources & uses rows, 7 custody legal ownership entries.
+  * Bank economics (TIER_1, $100M/month volume): integration $250K, net annual benefit $1.26M, payback 2.4 months, ROI 25.2x, NPV (5yr, 10% discount) positive.
+  * Honest state: honest=true, forcedToPass=false, productionAuthorized=false.
+  * Final status: APPROVED CANDIDATE FOR CONTROLLED TESTING — NOT PRODUCTION-AUTHORIZED (unchanged).
+  * Version: v25.0 (no v25.1 created).
+- Ran `bun run lint` (had to run `bun install` first — node_modules was missing). Lint output: 0 errors, 0 warnings.
+- Verified API route module loads and exports GET handler (typeof m.GET === 'function').
+
+Stage Summary:
+- New module: src/lib/bank-funded-issuance-model.ts (2,232 lines).
+- New API route: src/app/api/bank-funded-issuance-model/route.ts (29 lines).
+- New blueprint section file: docs/blueprint/_v25-bank-funded-issuance-section.md (813 lines).
+- New script: scripts/append_bank_funded_issuance.py (70 lines, idempotent).
+- Blueprint section §V25.0.B appended: blueprint grew from 74,065 to 74,882 lines (+817 lines).
+- Dual model: Model A (21.5432% preserved) vs Model B (bank-funded, blended P(RR<100%) ≈ 4.71% — lower for bank-funded portion; MITHQAL-owned structural/anchor still carries 21.5432%).
+- ILPS reconciliation: $48.1M total (corrected from $46M), Emergency+Structural ($23.8M) is SUBSET not additional — explicit double-counting warning in ILPS_RECONCILIATION_TABLE.
+- 6 capital categories separated (no auto-combining — doNotAutoCombine=true flag).
+- 5 bank failure scenarios documented (BANK_FAILURE/SUSPENSION/INSOLVENCY/LIQUIDITY_CRISIS/GATEWAY_OUTAGE) with jurisdictional notes (FDIC/SRB-BRRD/PRA-FSCS/CBUAE).
+- 16 bank-funded risk controls (ANY FAILURE = BLOCK, no governance override at smart-contract level).
+- 18 acceptance criteria (18/18 met).
+- Final status: APPROVED CANDIDATE FOR CONTROLLED TESTING — NOT PRODUCTION-AUTHORIZED (unchanged).
+- Honest state: bank-funded model REDUCES but does NOT ELIMINATE capital requirements (bank credit risk ~0.5% is NONZERO; 21.5432% PRESERVED for MITHQAL-owned portion).
+- No version change: v25.0 remains the FROZEN NORMATIVE ARCHITECTURE (no v25.1 created, no renaming, no architecture fork, Bank Gateway/Settlement Sidecar KEPT as core, wholesale B2B model PRESERVED).
