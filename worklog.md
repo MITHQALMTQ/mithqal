@@ -2801,3 +2801,34 @@ Stage Summary:
 - 0 lint errors
 - All fetch from existing API routes (HTTP 200 verified)
 - Honest state preserved in every component
+
+---
+Task ID: GAP1-GATEWAY-V1-ENDPOINTS
+Agent: Gateway V1 Endpoints Builder
+Task: Create 12 individual /gateway/v1/* API endpoint routes.
+
+Work Log:
+- Created 12 endpoint route files
+- All return SIMULATED status (no real bank contracted)
+- All include X-Endpoint-Status: SIMULATED header
+
+Stage Summary:
+- 12 files created in src/app/api/gateway/v1/
+- 0 lint errors
+- All endpoints return proper JSON with endpoint definition + SIMULATED status
+
+---
+Task ID: GAP2-INSTITUTIONAL-CLOSURE-DASHBOARD
+Agent: Institutional Closure Dashboard Builder
+Task: Build unified dashboard covering 15 v25.0 modules with tabbed interface.
+
+Work Log:
+- Created institutional-closure-dashboard.tsx
+- 15 tabs, each fetches from its API endpoint
+- Mounted in public-site.tsx after FinalPilotGateDashboard
+- 0 lint errors
+
+Stage Summary:
+- 1 new component file (~500 lines)
+- 15 API integrations
+- Tabbed interface for all v25.0 institutional closure modules

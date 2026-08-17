@@ -73,6 +73,7 @@ import { NonCustodialReserveDashboard } from "@/components/non-custodial-reserve
 import { BankFundedIssuanceDashboard } from "@/components/bank-funded-issuance-dashboard";
 import { FinalPilotGateDashboard } from "@/components/final-pilot-gate-dashboard";
 import { SCDeploymentClosureDashboard } from "@/components/sc-deployment-closure-dashboard";
+import { InstitutionalClosureDashboard } from "@/components/institutional-closure-dashboard";
 
 const Reveal = ({
   children,
@@ -819,7 +820,7 @@ function Reserves() {
 /* ---------------- Monetary Engine Compact (Audit Fix 1) ---------------- */
 
 /**
- * MonetaryEngineCompact — a compact, inline visualization of the v24.2.1
+ * MonetaryEngineCompact — a compact, inline visualization of the v25.0
  * Monetary Engine's currency basket. It is NOT the full interactive Engine
  * view — it shows the single core concept: Gold is the anchor → 8 sovereign
  * currencies contribute weighted pressure → MTQ is the synthesised output.
@@ -837,7 +838,7 @@ interface BasketCurrency {
   weight: number; // percentage value, e.g. 47.99
 }
 
-// Published v24.2.1 worked-example weights (Part III) — used until the first
+// Published v25.0 worked-example weights (Part III) — used until the first
 // successful /api/transparency response lands, and as a permanent fallback.
 const FALLBACK_BASKET: BasketCurrency[] = [
   { code: "USD", name: "US Dollar", weight: 47.99 },
@@ -1955,6 +1956,8 @@ export default function PublicSite() {
           4 REAL / 13 SIMULATED / 0 CONTRACTED / 0 LIVE / 33 ABSENT evidence,
           10 external dependencies, 10 recommended next actions. */}
       <FinalPilotGateDashboard />
+      {/* §V25.0 — Institutional Closure Dashboard (8-prompt series + supporting modules) */}
+      <InstitutionalClosureDashboard />
       {/* Task 14-a — Reserve Flow Simulator: interactive slider ($1K–$10M)
           showing exactly where every dollar of a transaction goes — mint
           fee, net to procurement, gold purchased, savings split, reserve
