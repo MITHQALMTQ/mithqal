@@ -84,7 +84,7 @@ export const INVARIANTS_PUBLIC = [
 /* ---- Anti-platform clause (Article V) — constitutionally constrained ---- */
 export const ANTI_PLATFORM = {
   intro:
-    "The Institution is a monetary authority, not a commercial platform. The anti-platform provisions are constitutionally constrained — they cannot be amended, interpreted away, or eroded through incremental expansion.",
+    "The Institution is a constitutional settlement institution, not a commercial platform. The anti-platform provisions are constitutionally constrained — they cannot be amended, interpreted away, or eroded through incremental expansion.",
   prohibited: [
     "Lending, credit & underwriting",
     "Exchange, brokerage & market-making",
@@ -230,7 +230,7 @@ export const INTEGRATION = [
 
 /* ---- Build-in-public status ---- */
 export const STATUS_ITEMS = [
-  { label: "Constitution", value: "v23", state: "Published — four-layer architecture", tone: "done" },
+  { label: "Constitution", value: "v25.0", state: "Frozen — FINAL INSTITUTIONAL EDITION", tone: "done" },
   { label: "Specification", value: "1.46M chars", state: "Public on GitHub", tone: "done" },
   { label: "GitHub repository", value: "Live", state: "Open source", tone: "done" },
   { label: "Entity A — Settlement Institution", value: "JOZOUR LLC (NJ)", state: "Active — formation phase", tone: "done" },
@@ -303,7 +303,7 @@ export const LEGAL_STATUS = {
   entityA: {
     name: "The Mithqal Institution",
     type: "Non-profit constitutional settlement institution",
-    role: "Operates the settlement function (mint/redeem MTQ against verified reserves). Governed by the Constitution v23 and the Monetary Council. Non-profit — purpose is settlement integrity, not yield.",
+    role: "Operates the settlement function (mint/redeem MTQ against verified reserves). Governed by the Constitution v25.0 and the Monetary Council. Non-profit — purpose is settlement integrity, not yield.",
     currentOperator: "JOZOUR LLC (formation-phase operator)",
     targetStructure: "Foundation (Entity A) — to be registered in a reputable jurisdiction in Phase 1",
     ein: "84-3470275",
@@ -329,8 +329,8 @@ export const LEGAL_STATUS = {
   // Constitutional + regulatory status (applies to Entity A)
   fincenMSB: "FinCEN Form 107 — In preparation (Entity A)",
   njMTL: "In progress (Entity A)",
-  constitutionalVersion: "v23 — Four-Layer Architecture (11-currency basket, digital liquidity sleeve)",
-  constitutionalStatus: "Constitutional Release Candidate — Pending Independent External Validation",
+  constitutionalVersion: "v25.0 — FINAL INSTITUTIONAL EDITION (non-custodial, bank-funded, gold-anchored)",
+  constitutionalStatus: "APPROVED CANDIDATE FOR CONTROLLED TESTING — NOT PRODUCTION-AUTHORIZED",
   // The two-entity separation is constitutionally mandated by Article VIII
   articleVIII: "Yield Separation — the settlement function and yield generation are absolutely separate. No assets, liabilities, or risks cross between Entity A and Entity B.",
   items: [
@@ -352,8 +352,8 @@ export const LEGAL_STATUS = {
     // Regulatory
     { label: "FinCEN MSB Registration", value: "FinCEN Form 107 (MSB) — preparation in progress; not yet filed", status: "In preparation" },
     { label: "NJ Money Transmitter License", value: "Application pending", status: "In progress" },
-    { label: "Constitutional Version", value: "v23 (four-layer architecture)", status: "Published" },
-    { label: "Constitutional Status", value: "Release Candidate", status: "Pending validation" },
+    { label: "Constitutional Version", value: "v25.0 (FINAL INSTITUTIONAL EDITION)", status: "Frozen" },
+    { label: "Constitutional Status", value: "APPROVED CANDIDATE FOR CONTROLLED TESTING", status: "NOT PRODUCTION-AUTHORIZED" },
     { label: "Article VIII — Yield Separation", value: "Absolute separation between Entity A and Entity B", status: "Constitutional invariant" },
   ],
 };
@@ -389,11 +389,11 @@ export const LAYER_ZERO = {
 
 /* ---- Formation Phase 0 Timeline ---- */
 export const PHASE_ZERO_TIMELINE = [
-  { milestone: "Constitution v23", status: "done", date: "August 2026" },
+  { milestone: "Constitution v25.0 (FINAL INSTITUTIONAL EDITION)", status: "done", date: "August 2026" },
   { milestone: "NJ LLC formation (JOZOUR LLC)", status: "done", date: "22 Oct 2019 (ID 0600463904)" },
   { milestone: "IRS EIN assigned", status: "done", date: "24 Oct 2019 (84-3470275)" },
   { milestone: "Testnet deployment (Monad Testnet, 9/9 on-chain tests PASS)", status: "done", date: "Live" },
-  { milestone: "Monetary Engine v23 (55 sections + v23 advisory metrics)", status: "done", date: "August 2026" },
+  { milestone: "Monetary Engine v25.0 (8-prompt institutional closure + MBG + non-custodial reserve + bank-funded issuance + final integrated architecture)", status: "done", date: "August 2026" },
   { milestone: "Institutional due-diligence audit (15-panel simulation)", status: "done", date: "29 July 2026" },
   { milestone: "Self-assessment corrected (honest scoring 7.5/10)", status: "done", date: "29 July 2026" },
   { milestone: "Legal pages (privacy, terms, risk-disclosure, cookies)", status: "done", date: "29 July 2026" },

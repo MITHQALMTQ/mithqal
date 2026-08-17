@@ -1417,7 +1417,7 @@ export function StressTestProof() {
       <div className="mx-auto w-full max-w-6xl">
         {/* Headline */}
         <Reveal>
-          <Eyebrow>Proof of Strength · v24.2.1 verified</Eyebrow>
+          <Eyebrow>Proof of Strength · v25.0 verified</Eyebrow>
           <h2
             id="s-proof-heading"
             className="font-display mt-4 text-3xl leading-tight text-balance sm:text-5xl"

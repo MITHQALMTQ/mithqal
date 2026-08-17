@@ -29,7 +29,7 @@ export const ENTITIES = [
   {
     tag: "A",
     name: "The Institution — Mithqal Foundation",
-    type: "Non-profit / neutral monetary authority",
+    type: "Non-profit / neutral constitutional settlement institution",
     purpose: "Holds the Constitution, the Council, reserve custody and the settlement contracts. Mints/redeems MTQ. This is the neutral rail — it cannot distribute profit or take equity investment without destroying neutrality.",
     fundedBy: "Initial reserve deposits from participants + ongoing fees + grants/donations",
     raiseHere: false,

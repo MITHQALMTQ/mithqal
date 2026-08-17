@@ -90,7 +90,7 @@ const en: Messages = {
 
   // ---- The Institution section ----
   "institution.eyebrow": "The Institution",
-  "institution.heading": "A monetary authority, not a platform",
+  "institution.heading": "A constitutional settlement institution, not a platform",
   "institution.body": "The Institution is not a software project, a blockchain application, or a product. It is a constitutional entity whose sole function is to issue and redeem a fully-reserved settlement unit. If the underlying technology is replaced, the Institution persists — because it is an institution, not a technology.",
   "institution.is.title": "Mithqal is",
   "institution.is.1": "A constitutional settlement institution",

@@ -1814,7 +1814,7 @@ function PublicFooter() {
               <BoxesIcon className="h-4 w-4" /> GitHub
             </a>
             <span className="inline-flex items-center gap-1.5">
-              <FileCheck className="h-4 w-4" /> Constitution v23
+              <FileCheck className="h-4 w-4" /> Constitution v25.0
             </span>
             {/* A5 — Powered by Monad badge. Links to the Monad Testnet explorer
                 so visitors can verify MTQ on-chain. */}
@@ -1837,8 +1837,8 @@ function PublicFooter() {
             © 2026 MITHQAL Constitutional Settlement Institution. All rights reserved.
           </p>
           <p className="text-xs leading-relaxed text-fg-muted">
-            <span className="font-medium text-gold">MITHQAL v23</span> — Constitutional Monetary Infrastructure Specification.
-            Four-layer architecture · 11-currency basket · Digital liquidity sleeve · Status: Constitutional Release Candidate — Pending Independent External Validation.
+            <span className="font-medium text-gold">MITHQAL v25.0</span> — FINAL INSTITUTIONAL EDITION — Canonical Blueprint.
+            Non-custodial · Bank-funded issuance · Gold-anchored · 5-entity corporate structure · 25 FV invariants · 35 integrated test scenarios. Status: APPROVED CANDIDATE FOR CONTROLLED TESTING — NOT PRODUCTION-AUTHORIZED.
           </p>
           <p className="text-xs leading-relaxed text-fg-muted">
             Operated through <span className="font-medium text-foreground">JOZOUR LLC</span>, a New Jersey limited liability company, USA.

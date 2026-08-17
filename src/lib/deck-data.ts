@@ -47,7 +47,7 @@ export const SLIDES: Slide[] = [
   {
     id: "institution",
     eyebrow: "The Institution",
-    title: "A monetary authority, not a platform.",
+    title: "A constitutional settlement institution, not a platform.",
     bullets: [
       "Issues & redeems MTQ against verified reserves only.",
       "100%+ reserve mandate — reserves never lent or rehypothecated.",

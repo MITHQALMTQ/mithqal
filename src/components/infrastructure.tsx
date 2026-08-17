@@ -246,8 +246,8 @@ export default function InfrastructureView() {
         <div className="relative mx-auto w-full max-w-6xl">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
             <div className="flex items-center gap-2">
-              <Badge className="glass border-gold/40 text-gold hover:bg-gold/10">v24.2.1 Constitutional Infrastructure</Badge>
-              <Badge className="glass border-line text-fg-muted hover:bg-ink-card">Release Candidate</Badge>
+              <Badge className="glass border-gold/40 text-gold hover:bg-gold/10">v25.0 FINAL INSTITUTIONAL EDITION</Badge>
+              <Badge className="glass border-amber-500/40 text-amber-600 dark:text-amber-400 hover:bg-amber-500/10">APPROVED CANDIDATE FOR CONTROLLED TESTING</Badge>
             </div>
             <div className="mt-6 flex items-center gap-4">
               <Logo className="h-14 w-14 shrink-0" />
@@ -448,7 +448,7 @@ export default function InfrastructureView() {
           <Separator className="my-8 bg-line" />
           <div className="flex items-center gap-2 rounded-xl border border-gold/30 bg-gold/[0.05] p-4 text-xs text-fg-muted">
             <Shield className="h-4 w-4 shrink-0 text-gold" />
-            <span>v24.2.1 Constitutional Release Candidate — Pending Independent External Validation. 55 of 57 sections implemented (per the engine header). The specification is the single source of truth.</span>
+            <span>v25.0 FINAL INSTITUTIONAL EDITION — APPROVED CANDIDATE FOR CONTROLLED TESTING — NOT PRODUCTION-AUTHORIZED. The specification is the single source of truth and the FROZEN NORMATIVE ARCHITECTURE.</span>
           </div>
         </div>
       )}
