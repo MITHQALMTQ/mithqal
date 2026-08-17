@@ -1855,123 +1855,154 @@ function PublicFooter() {
 
 /* ---------------- Shell ---------------- */
 
+const TABS = [
+  { id: "overview", label: "Overview", icon: "📋" },
+  { id: "constitution", label: "Constitution", icon: "⚖️" },
+  { id: "monetary", label: "Monetary Engine", icon: "⚙️" },
+  { id: "architecture", label: "v25.0 Architecture", icon: "🏗️" },
+  { id: "closure", label: "Institutional Closure", icon: "✅" },
+  { id: "commercial", label: "Commercial", icon: "📊" },
+  { id: "formation", label: "Formation", icon: "🚀" },
+] as const;
+
+type TabId = (typeof TABS)[number]["id"];
+
 export default function PublicSite() {
+  const [activeTab, setActiveTab] = useState<TabId>("overview");
+
   return (
     <div className="flex flex-col">
+      {/* Hero — always visible at top */}
       <SiteHero />
-      {/* LiveStateDashboard is now mounted INSIDE SiteHero (Audit Fix 2
-          redesign) so the live KPI bar is visible above the fold — see
-          LiveStateDashboard() return shape (a div, not a section). */}
-      <WhatItIs />
-      {/* Audit Fix 4 — Legal & Regulatory Status moved up: surfaces the
-          operating entity + constitutional version right after the "what is
-          Mithqal" framing, building institutional credibility early. */}
-      <LegalStatus />
-      <LayerZero />
-      <Objectives />
-      <Invariants />
-      <AntiPlatform />
-      <SettlementUnit />
-      <Reserves />
-      {/* Audit Fix 1 — Compact monetary-engine visualization between the
-          reserves overview and governance, so the reader sees the basket
-          mechanism right after the reserve structure that backs it. */}
-      <MonetaryEngineCompact />
-      {/* Task 3-e — Proof-of-Strength section: surfaces the v19.0.2 verified
-          stress-test results (20/20 scenarios, stability rank #3 of 14, 5
-          historical crises survived, 7 constitutional mechanisms) right
-          after the engine explainer so the reader's mental flow is
-          "what backs MTQ" → "how the basket works" → "proof it can't break". */}
-      <StressTestProof />
-      {/* Task 5-c — End-to-end workflow proof: surfaces the 5 verified E2E
-          trade scenarios (mint → transfer → redeem → verify, with live NAV,
-          FX rates, fees, and constitutional invariants at every checkpoint)
-          right after the stress-test proof so the reader's mental flow is
-          "proof it can't break" → "here's what real users actually do with
-          it". 5/5 scenarios passed · 48/48 invariants hold · 96-99% savings
-          vs traditional banking. */}
-      <E2EScenarios />
-      {/* Task 7-d — Live Readiness Dashboard: synthesizes the outputs of
-          the three Task-7 test suites (crypto-economic 7-a, financial
-          soundness 7-b, adversarial 7-c) plus the 5-b stress and E2E
-          suites into a single board the COO/CTO can present externally.
-          165 tests · 154 passed · 0 critical · conditionally ready. */}
-      <LiveReadinessDashboard />
-      {/* Task 14-a — Commercial Governance Dashboard: surfaces the four
-          constitutional entities (Foundation, Holding, Operations, Markets),
-          the 12-stage procurement workflow, weighted-median benchmark pricing,
-          12-criteria best-execution scoring, the 60/25/15 performance
-          participation split, compliance scores, and the immutable
-          HMAC-SHA256 audit trail. Chapter XX — Constitutional Commercial
-          Governance & Institutional Stewardship. */}
-      <CommercialGovernanceDashboard />
-      {/* Task 14-a — Commercial Transparency: public disclosure of every
-          fee, every revenue source, the 6 commercial principles, the
-          conflict-of-interest policy, the no-hidden-fees policy, and the
-          audit history. */}
-      <CommercialTransparency />
-      {/* Task 14-a — Institutional Economics: visual flow diagram showing
-          how funds move from participants → Operations → Markets → Reserve
-          → back to participants, plus entity responsibilities and reserve
-          integrity guardrails. */}
-      <InstitutionalEconomics />
-      {/* MITHQAL v25.0 FINAL ARCHITECTURAL AMENDMENT — MBG Dashboard:
-          The strategic final architecture: a bank-side settlement gateway /
-          sidecar that lets banks connect WITHOUT replacing their core banking
-          systems. "TRANSLATION, NOT TRANSFORMATION." 12 sections per §29
-          (Gateway Status, Connectivity, Pending Instructions, Settlements,
-          Reconciliation, MTQ Position, Compliance Attestations, JSG Status,
-          Incidents, Limits, Audit, DR Status). Integration state:
-          INTEGRATION-READY (0 banks contracted, 20 tests SIMULATED, 18
-          acceptance criteria met at spec level). */}
-      <MBGDashboard />
-      {/* §V25.0.D — Final Integrated Architecture Dashboard:
-          The frozen normative v25.0 architecture: 5 corporate entities,
-          7-layer MTQ model, DMCE (8 limits), FV11-FV25 (15 invariants),
-          35 integrated test scenarios, 12 /gateway/v1/* endpoints, 7x18
-          authority matrix, 44 acceptance criteria — all at spec level. */}
-      <FinalIntegratedArchitectureDashboard />
-      {/* §V25.0.C — Non-Custodial Reserve Architecture Dashboard:
-          Canonical distinction: CUSTODY != VERIFICATION != ISSUANCE
-          AUTHORIZATION != CANONICAL SUPPLY CONTROL. 5-actor control
-          matrix, RCAF + ABC schemas, 15-step issuance gate, 6 custody
-          prohibitions, FV11-FV17, Model A 21.5432% vs Model C 4.7086%. */}
-      <NonCustodialReserveDashboard />
-      {/* §V25.0.B — Bank-Funded Issuance Model Dashboard:
-          4 capital concepts (A/B/C/D), Model A 21.5432% vs Model B 4.7086%,
-          ILPS $48.1M (Emergency + Structural $23.8M is SUBSET), 6 capital
-          categories (NOT auto-combined), 7-row Sources & Uses table,
-          5 bank failure scenarios, 9-stage zero-budget evidence pipeline. */}
-      <BankFundedIssuanceDashboard />
-      {/* §V25.0.A — Smart-Contract Deployment Closure Dashboard:
-          37-row inventory matrix (by contract / risk / status), 9 verification
-          categories (128 tests, 114 passed, 14 blocked, 0 failed), 28 bytecode
-          certificates (4 chains), 5 supply cert properties (all CERTIFIED),
-          6 quarantined contracts (incl. Solana NON_CANONICAL), 9 deployment
-          gates (0 PRODUCTION, 2 BLOCKED, 7 TESTNET), 10-stage release train. */}
-      <SCDeploymentClosureDashboard />
-      {/* §V25.0 — Final Pilot Activation Gate Dashboard:
-          PILOT-READY (AMBER) — PRODUCTION-BLOCKED. 10 task gates, 10 standing
-          blockers (all realWorldEvidence=ABSENT), 3 NEVER rules (0 violations),
-          4 REAL / 13 SIMULATED / 0 CONTRACTED / 0 LIVE / 33 ABSENT evidence,
-          10 external dependencies, 10 recommended next actions. */}
-      <FinalPilotGateDashboard />
-      {/* §V25.0 — Institutional Closure Dashboard (8-prompt series + supporting modules) */}
-      <InstitutionalClosureDashboard />
-      {/* Task 14-a — Reserve Flow Simulator: interactive slider ($1K–$10M)
-          showing exactly where every dollar of a transaction goes — mint
-          fee, net to procurement, gold purchased, savings split, reserve
-          growth, and redemption path. */}
-      <ReserveFlowSimulator />
-      <Governance />
-      <Lifecycle />
-      <Eligibility />
-      <PhaseZeroTimeline />
-      <StatusBoard />
-      <ContactForm />
-      {/* PublicFooter removed — the global SiteFooter in layout.tsx now
-          handles legal links, contact, and the testnet-only disclaimer
-          on every view. This avoids duplicate footers on the Institution view. */}
+
+      {/* Modern sticky sub-navigation — 2026 glassmorphism design */}
+      <nav
+        className="sticky top-[60px] z-40 border-y border-border/40 bg-background/80 backdrop-blur-xl"
+        aria-label="Section navigation"
+      >
+        <div className="mx-auto flex max-w-7xl gap-1 overflow-x-auto px-4 py-2 sm:px-6 lg:px-8"
+          style={{ scrollbarWidth: "thin" }}
+        >
+          {TABS.map((tab) => {
+            const active = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => {
+                  setActiveTab(tab.id);
+                  window.scrollTo({ top: 120, behavior: "smooth" });
+                }}
+                className={`flex shrink-0 items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium transition-all duration-300 ${
+                  active
+                    ? "bg-primary/10 text-primary shadow-sm ring-1 ring-primary/20"
+                    : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                }`}
+                aria-current={active ? "page" : undefined}
+              >
+                <span className="text-base" aria-hidden="true">{tab.icon}</span>
+                <span className="hidden sm:inline">{tab.label}</span>
+                <span className="sm:hidden">{tab.label.split(" ")[0]}</span>
+              </button>
+            );
+          })}
+        </div>
+      </nav>
+
+      {/* Tab content — only render active tab's sections */}
+      <div key={activeTab} className="animate-in fade-in duration-500">
+        {activeTab === "overview" && (
+          <>
+            <WhatItIs />
+            <LegalStatus />
+            <StatusBoard />
+          </>
+        )}
+
+        {activeTab === "constitution" && (
+          <>
+            <LayerZero />
+            <Objectives />
+            <Invariants />
+            <AntiPlatform />
+            <Governance />
+            <Lifecycle />
+          </>
+        )}
+
+        {activeTab === "monetary" && (
+          <>
+            <SettlementUnit />
+            <Reserves />
+            <MonetaryEngineCompact />
+            <StressTestProof />
+            <E2EScenarios />
+          </>
+        )}
+
+        {activeTab === "architecture" && (
+          <>
+            <MBGDashboard />
+            <FinalIntegratedArchitectureDashboard />
+            <NonCustodialReserveDashboard />
+            <BankFundedIssuanceDashboard />
+          </>
+        )}
+
+        {activeTab === "closure" && (
+          <>
+            <SCDeploymentClosureDashboard />
+            <FinalPilotGateDashboard />
+            <InstitutionalClosureDashboard />
+            <LiveReadinessDashboard />
+          </>
+        )}
+
+        {activeTab === "commercial" && (
+          <>
+            <CommercialGovernanceDashboard />
+            <CommercialTransparency />
+            <InstitutionalEconomics />
+            <ReserveFlowSimulator />
+          </>
+        )}
+
+        {activeTab === "formation" && (
+          <>
+            <Eligibility />
+            <PhaseZeroTimeline />
+            <ContactForm />
+          </>
+        )}
+      </div>
+
+      {/* Back to top button */}
+      <BackToTop />
     </div>
+  );
+}
+
+/* ---------------- Back to Top ---------------- */
+
+function BackToTop() {
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const handler = () => setVisible(window.scrollY > 600);
+    window.addEventListener("scroll", handler, { passive: true });
+    return () => window.removeEventListener("scroll", handler);
+  }, []);
+
+  if (!visible) return null;
+
+  return (
+    <button
+      onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+      className="fixed bottom-6 right-6 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-all hover:scale-110 hover:shadow-xl"
+      aria-label="Back to top"
+    >
+      <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
+      </svg>
+    </button>
   );
 }
