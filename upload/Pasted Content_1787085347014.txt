@@ -1,0 +1,2106 @@
+# MITHQAL — MASTER IMPLEMENTATION PROMPT
+
+## v25.x Institutional Interoperability, Economic Resilience, Regulatory Readiness & Full-Stack Synchronization
+
+You are the **senior principal architect, CTO, CFO, banking-infrastructure architect, backend architect, database architect, security engineer, DevOps engineer, QA lead, and product implementation lead** for MITHQAL.
+
+Your task is to take the **latest implemented MITHQAL v25.0 blueprint and existing application codebase as the sole architectural baseline**, incorporate **all approved modifications and additions below**, implement them across the entire application and infrastructure, and ensure that the resulting system is fully synchronized across:
+
+**Blueprint → Web Application → Backend → Database/Turso → Git → Vercel**
+
+Do not create a parallel design.
+
+Do not partially implement the concepts.
+
+Do not merely update documentation.
+
+Do not change MITHQAL's core identity.
+
+The objective is to produce a coherent, production-grade implementation in which the blueprint, UX, APIs, database schema, policy engine, workflows, audit system, and deployment configuration all express the same architecture.
+
+---
+
+# 1. NON-NEGOTIABLE EXECUTION PRINCIPLES
+
+## 1.1 Read before modifying
+
+Before writing code:
+
+1. Read the latest MITHQAL v25.0 blueprint completely, section by section and line by line.
+2. Inspect the entire existing repository.
+3. Inspect all current:
+
+   * frontend pages;
+   * dashboards;
+   * backend services;
+   * API routes;
+   * database schemas;
+   * migrations;
+   * authentication;
+   * RBAC;
+   * policy-as-code;
+   * reserve modules;
+   * DMCE;
+   * reconciliation;
+   * audit logs;
+   * MTQ ledger;
+   * MBG;
+   * infrastructure;
+   * environment configuration;
+   * deployment configuration.
+4. Identify what already exists.
+5. Identify what is partially implemented.
+6. Identify what is missing.
+7. Do not duplicate existing functionality.
+8. Preserve valid existing functionality unless modification is required to support the approved architecture.
+
+Create an internal implementation matrix:
+
+```text
+BLUEPRINT REQUIREMENT
+→ EXISTING IMPLEMENTATION
+→ REQUIRED CHANGE
+→ FILES / SERVICES AFFECTED
+→ DATABASE IMPACT
+→ API IMPACT
+→ UI IMPACT
+→ TEST REQUIREMENT
+→ DEPLOYMENT IMPACT
+```
+
+Do not begin broad refactoring until this assessment is complete.
+
+---
+
+# 2. PRESERVE MITHQAL'S CORE IDENTITY
+
+Do NOT redesign MITHQAL into something else.
+
+MITHQAL remains:
+
+> **Neutral wholesale institutional settlement infrastructure.**
+
+MTQ remains:
+
+> **A neutral institutional cross-border settlement unit.**
+
+MITHQAL is NOT:
+
+* a central bank;
+* sovereign currency issuer;
+* CBDC;
+* commercial bank;
+* deposit-taking institution;
+* retail cryptocurrency;
+* consumer wallet;
+* crypto exchange;
+* speculative trading venue;
+* investment fund;
+* lending platform;
+* SWIFT replacement;
+* USD-backed stablecoin;
+* USD-pegged currency;
+* anti-dollar system;
+* permissionless blockchain network;
+* uncontrolled custody platform.
+
+Maintain the existing B2B/wholesale institutional model.
+
+---
+
+# 3. PRESERVE THE EXISTING BANK-SIDE ARCHITECTURE
+
+The existing v25 architecture remains the baseline:
+
+```text
+Corporate
+↓
+Existing Bank Account / Corporate Banking Environment
+↓
+Existing Bank Systems
+↓
+Existing Bank Interface
+↓
+MITHQAL Bank Gateway (MBG)
+↓
+MITHQAL Core
+↓
+MTQ Settlement
+↓
+Receiving Bank Gateway
+↓
+Receiving Bank
+↓
+Corporate
+```
+
+Maintain:
+
+> **TRANSLATION, NOT TRANSFORMATION**
+
+Banks must NOT be required to replace:
+
+* core banking;
+* customer accounts;
+* KYC/KYB;
+* AML/CFT;
+* sanctions systems;
+* treasury;
+* FX;
+* accounting;
+* SWIFT;
+* ISO 20022 infrastructure;
+* corporate banking portal.
+
+MITHQAL integrates around existing regulated infrastructure.
+
+---
+
+# 4. IMPLEMENT THE APPROVED NEW ECONOMIC ARCHITECTURE
+
+Implement the following additional architecture without changing the core identity.
+
+## 4.1 MTQ Neutrality Constitution
+
+Add a formal architectural/governance constraint:
+
+> No single sovereign currency, issuer, financial institution, jurisdiction, technology network, payment rail, reserve asset, stablecoin, custodian, or liquidity provider may become structurally indispensable to MTQ.
+
+Implement this concept both in:
+
+* blueprint;
+* governance documentation;
+* reserve policy;
+* risk engine;
+* data model;
+* dashboards;
+* monitoring;
+* policy-as-code.
+
+Create measurable neutrality indicators.
+
+---
+
+# 5. GEOPOLITICAL EXPOSURE MANAGEMENT
+
+Create a new institutional risk capability:
+
+# Geopolitical Exposure Management
+
+Track exposure across:
+
+* sovereign country;
+* currency;
+* bank;
+* banking group;
+* custodian;
+* liquidity provider;
+* payment network;
+* technology provider;
+* legal jurisdiction;
+* stablecoin issuer;
+* reserve asset issuer;
+* correspondent banking dependency;
+* sanctions regime.
+
+Do NOT treat numerical diversification as true diversification when entities are correlated.
+
+Example:
+
+```text
+Bank A = 8%
+Bank B = 7%
+Bank C = 6%
+```
+
+must also analyze whether all three depend on:
+
+* same jurisdiction;
+* same correspondent;
+* same custodian;
+* same payment rail;
+* same sovereign risk.
+
+Add:
+
+* country concentration score;
+* institution concentration score;
+* correlated exposure score;
+* geopolitical dependency score;
+* effective concentration score.
+
+Expose these in institutional risk dashboards.
+
+---
+
+# 6. SETTLEMENT SOVEREIGNTY
+
+Implement a formal:
+
+# Settlement Sovereignty Framework
+
+MITHQAL must support continued operation through multiple legitimate settlement and connectivity options.
+
+Examples:
+
+```text
+Primary rail
+Secondary rail
+Emergency rail
+```
+
+The framework must detect:
+
+* rail outage;
+* bank outage;
+* provider outage;
+* liquidity failure;
+* oracle failure;
+* token network outage;
+* jurisdiction-specific restriction.
+
+Then:
+
+```text
+Retry
+→ Alternate approved route
+→ Emergency approved route
+→ Safe halt
+```
+
+Do NOT bypass laws, sanctions, regulatory restrictions, or institution-imposed controls.
+
+This is resilience, not circumvention.
+
+---
+
+# 7. MULTI-ASSET + MULTI-RAIL ARCHITECTURE
+
+Implement both.
+
+## Multi-asset
+
+Support controlled interoperability with:
+
+* fiat;
+* bank money;
+* tokenised bank money;
+* CBDCs;
+* approved stablecoins;
+* approved gold-backed instruments;
+* approved commodity-related institutional assets.
+
+## Multi-rail
+
+Support architecture for:
+
+* SWIFT;
+* ISO 20022;
+* domestic RTGS;
+* domestic payment systems;
+* approved instant-payment rails;
+* tokenised deposit networks;
+* CBDC infrastructure;
+* approved institutional digital-asset settlement rails.
+
+Do not hard-code MITHQAL to any single rail.
+
+---
+
+# 8. ASSET CLASSIFICATION LAYER
+
+Create an authoritative asset classification system.
+
+Every asset must be classified independently as:
+
+```text
+RESERVE_ASSET
+INPUT_ASSET
+SETTLEMENT_ASSET
+LIQUIDITY_ASSET
+CONVERSION_ONLY
+PROHIBITED
+```
+
+An asset may have multiple permitted roles only when policy explicitly allows it.
+
+Do NOT assume:
+
+> input asset = reserve asset
+
+or:
+
+> settlement asset = reserve asset.
+
+---
+
+# 9. ASSET ELIGIBILITY REGISTRY
+
+Create a first-class:
+
+# Asset Eligibility Registry
+
+Every supported asset/currency/token must have structured metadata including:
+
+```text
+asset_id
+asset_name
+asset_type
+issuer
+issuer_country
+legal_classification
+jurisdiction
+permitted_jurisdictions
+supported_networks
+reserve_eligibility
+input_eligibility
+settlement_eligibility
+liquidity_eligibility
+risk_tier
+liquidity_tier
+haircut
+concentration_limit
+oracle_requirements
+sanctions_status
+issuer_status
+redemption_status
+custody_requirements
+approved_providers
+status
+effective_from
+effective_to
+```
+
+Statuses should include at minimum:
+
+```text
+ACTIVE
+WATCH
+RESTRICTED
+SUSPENDED
+PROHIBITED
+EMERGENCY
+```
+
+All asset admission must be policy driven.
+
+---
+
+# 10. MTQ ASSET INTEROPERABILITY GATEWAY
+
+Implement:
+
+# MTQ Asset Interoperability Gateway
+
+Do NOT create a crypto exchange.
+
+Its purpose is:
+
+```text
+External Asset
+↓
+Asset Eligibility
+↓
+Jurisdiction Check
+↓
+KYC/KYB/AML
+↓
+Sanctions
+↓
+Approved Provider Selection
+↓
+Quote / Pricing
+↓
+Conversion Execution
+↓
+Settlement Finality
+↓
+Backing Recognition
+↓
+DMCE
+↓
+MTQ Mint
+```
+
+MITHQAL orchestrates and validates.
+
+A regulated external institution executes regulated conversion.
+
+---
+
+# 11. AUTHORIZED EXTERNAL PARTICIPANT MODEL
+
+Support regulated counterparties such as:
+
+* participating bank;
+* regulated FX provider;
+* approved liquidity provider;
+* regulated CASP where relevant;
+* qualified custodian;
+* stablecoin issuer where legally applicable;
+* CBDC participant;
+* tokenised-deposit issuing bank.
+
+Create a provider registry including:
+
+```text
+provider_id
+entity_type
+jurisdictions
+licenses
+regulated_services
+approved_assets
+approved_corridors
+settlement_methods
+risk_rating
+limits
+status
+```
+
+No provider may execute an activity outside its configured legal/operational scope.
+
+---
+
+# 12. FINALITY-BEFORE-MINT
+
+This is a new constitutional-grade rule.
+
+Implement:
+
+> **NO FINAL SETTLEMENT = NO MTQ MINT**
+
+The mandatory sequence is:
+
+```text
+Asset Presented
+↓
+Compliance Passed
+↓
+Conversion Executed
+↓
+Settlement Finality Confirmed
+↓
+Backing Legally Recognized
+↓
+Reserve Evidence Confirmed
+↓
+DMCE Authorization
+↓
+MTQ Mint
+```
+
+Never mint MTQ based solely on:
+
+* instruction;
+* intent;
+* provisional transfer;
+* unconfirmed blockchain transaction;
+* pending bank transfer;
+* pending FX execution;
+* preliminary reserve statement.
+
+Implement this at:
+
+* backend workflow;
+* policy layer;
+* database state machine;
+* API;
+* UI;
+* audit trail;
+* tests.
+
+---
+
+# 13. STABLECOIN INTEROPERABILITY
+
+Add conditional interoperability with stablecoins.
+
+Initial supported examples:
+
+* USDC;
+* USDT;
+* other approved stablecoins only after explicit eligibility approval.
+
+Do NOT automatically whitelist stablecoins.
+
+For each stablecoin evaluate:
+
+* issuer;
+* legal status;
+* jurisdiction;
+* reserve model;
+* redemption;
+* custody;
+* sanctions;
+* network;
+* liquidity;
+* depeg behavior;
+* freeze capability;
+* regulatory eligibility.
+
+---
+
+# 14. STABLECOIN INPUTS ARE NOT AUTOMATIC MTQ RESERVES
+
+Implement this as a strict architectural rule:
+
+> **A stablecoin received as an input is not automatically an MTQ reserve asset.**
+
+Preferred workflow:
+
+```text
+USDC / USDT
+↓
+Authorized Conversion Provider
+↓
+Fiat / Eligible Backing Asset
+↓
+Protected Backing Cell
+↓
+Reserve Recognition
+↓
+DMCE
+↓
+MTQ Mint
+```
+
+Stablecoins should normally be treated as:
+
+```text
+INPUT / BRIDGE ASSETS
+```
+
+unless a separate approved legal/regulatory framework explicitly permits another treatment.
+
+---
+
+# 15. STABLECOIN DEPEG PROTECTION
+
+Implement dynamic controls for:
+
+* 1%;
+* 3%;
+* 5%;
+* 10%;
+* 20%;
+* severe depeg;
+* issuer failure;
+* freeze;
+* liquidity collapse;
+* chain outage.
+
+The system must NOT assume:
+
+```text
+1 USDT = 1 MTQ
+```
+
+or:
+
+```text
+1 USDC = 1 MTQ
+```
+
+unless the actual authorized settlement price supports it.
+
+Build:
+
+```text
+Reference Price
+Executable Price
+Bid
+Ask
+Spread
+Slippage
+Liquidity
+Haircut
+Net Eligible Value
+```
+
+into conversion calculations.
+
+---
+
+# 16. MTQ VALUATION ENGINE
+
+Create/extend a formal:
+
+# MTQ Valuation Engine
+
+Keep:
+
+> PAR = common accounting/reference unit
+
+but do NOT treat PAR as an automatic promise that:
+
+```text
+1 MTQ = 1 USD
+```
+
+For external conversion, calculate using:
+
+```text
+MTQ authoritative valuation
++
+external executable market/conversion price
++
+fees
++
+spread
++
+slippage
++
+market impact
++
+settlement cost
+```
+
+Persist the complete calculation and evidence.
+
+Every conversion must be reproducible after the fact.
+
+---
+
+# 17. BANK-HELD PROTECTED BACKING
+
+Strengthen the bank-backing model.
+
+Ordinary bank deposits must NOT automatically equal constitutional MTQ backing.
+
+Create a:
+
+# Protected Backing Cell (PBC)
+
+with explicit controls for:
+
+* identification;
+* legal control;
+* segregation/protection;
+* no unauthorized reuse;
+* no double counting;
+* encumbrance tracking;
+* reconciliation;
+* evidence;
+* insolvency treatment;
+* redemption claim;
+* jurisdictional legality.
+
+The system must distinguish:
+
+```text
+ORDINARY_BANK_DEPOSIT
+```
+
+from:
+
+```text
+PROTECTED_MTQ_BACKING
+```
+
+---
+
+# 18. RESERVE ARCHITECTURE
+
+Maintain:
+
+# 130% Strategic Reserve Target
+
+Do NOT reduce it merely because banks participate.
+
+Maintain the strategic baseline:
+
+```text
+80% Fiat
+18% Gold
+2% Digital Liquidity
+```
+
+but convert it from a rigid static allocation into:
+
+> **adaptive strategic target allocation**
+
+with controlled bands and dynamic rebalancing.
+
+Do not hard-code these percentages as immutable business logic.
+
+Store:
+
+```text
+target
+minimum
+maximum
+stress target
+emergency target
+```
+
+as governance-controlled policy.
+
+---
+
+# 19. RESERVE ASSET QUALITY TIERS
+
+Implement:
+
+```text
+TIER_A
+TIER_B
+TIER_C
+TIER_D_CONVERSION_ONLY
+PROHIBITED
+```
+
+The precise membership must be policy controlled.
+
+The reserve engine must calculate:
+
+> **Risk-Adjusted Eligible Backing**
+
+not merely:
+
+> nominal reserve balance.
+
+---
+
+# 20. RESERVE / LIQUIDITY SEPARATION
+
+Explicitly separate:
+
+1. Constitutional solvency reserve.
+2. Settlement liquidity.
+3. Emergency liquidity.
+4. Conversion liquidity.
+
+Never automatically count emergency credit lines as constitutional reserve.
+
+Create separate metrics and dashboards.
+
+---
+
+# 21. LIQUIDITY COVERAGE FRAMEWORK
+
+Implement a:
+
+# MTQ Liquidity Coverage Framework
+
+Track:
+
+* Immediate Settlement Coverage;
+* 1-day liquidity;
+* 7-day liquidity;
+* 30-day liquidity;
+* corridor liquidity;
+* conversion liquidity;
+* emergency liquidity;
+* provider concentration;
+* bank concentration.
+
+Use this in:
+
+* DMCE;
+* risk engine;
+* stress testing;
+* operational dashboards.
+
+---
+
+# 22. GEOPOLITICAL + CONCENTRATION-AWARE DMCE
+
+Upgrade DMCE.
+
+Minting capacity must depend on:
+
+```text
+Reserve Quantity
++
+Reserve Quality
++
+Liquidity
++
+Bank Exposure
++
+Custodian Exposure
++
+Country Exposure
++
+Currency Exposure
++
+Provider Exposure
++
+Settlement Risk
++
+Stablecoin Exposure
++
+Concentration
++
+Stress State
+```
+
+Therefore:
+
+> **MTQ minting capacity must be risk-adjusted eligible backing.**
+
+Not simply:
+
+```text
+available_balance × fixed_ratio
+```
+
+---
+
+# 23. EMERGENCY LIQUIDITY
+
+Create institutional support architecture for eventual arrangements with:
+
+* participating banks;
+* liquidity providers;
+* secured financing providers where legally permissible;
+* institutional FX providers.
+
+The system must distinguish:
+
+```text
+Reserve
+Liquidity Line
+Contingent Funding
+Emergency Liquidity
+```
+
+Do not blur these categories.
+
+---
+
+# 24. REBALANCING
+
+Preserve:
+
+* continuous monitoring;
+* daily target calculation;
+* trigger-based trading;
+* normal no-trade threshold around 2%;
+* dynamic adjustment based on volatility/liquidity/concentration/cost/stress.
+
+Rebalancing cost model must include:
+
+* FX spread;
+* dealer fee;
+* slippage;
+* market impact;
+* custody;
+* settlement;
+* taxes;
+* other execution costs.
+
+Post-trade reserve value must deduct actual/estimated costs.
+
+---
+
+# 25. MULTI-RAIL FALLBACK MATRIX
+
+Implement a configurable routing matrix:
+
+```text
+CORRIDOR
+→ PRIMARY RAIL
+→ SECONDARY RAIL
+→ EMERGENCY RAIL
+→ FAILURE CONDITIONS
+→ ROUTING ACTION
+```
+
+Examples:
+
+```text
+SWIFT unavailable
+Bank unavailable
+CBDC unavailable
+Token network unavailable
+LP unavailable
+Oracle unavailable
+Custodian unavailable
+```
+
+The system must fail safely.
+
+---
+
+# 26. CBDC INTEROPERABILITY
+
+Implement CBDC as:
+
+> jurisdiction-controlled institutional interoperability.
+
+Do NOT assume public/general corporate access.
+
+Model:
+
+```text
+CBDC
+↓
+Central-bank-authorized participant
+↓
+Bank / institutional gateway
+↓
+MITHQAL
+↓
+MTQ
+```
+
+All CBDC connections must be jurisdiction-specific.
+
+---
+
+# 27. TOKENISED BANK MONEY
+
+Add tokenised commercial-bank money / deposit-token interoperability as a first-class architecture.
+
+Support:
+
+```text
+Bank Money
+Tokenised Bank Money
+MTQ
+```
+
+with bank-controlled issuance, compliance and redemption.
+
+Do NOT equate tokenised deposits with stablecoins.
+
+Store legal/technical classification separately.
+
+---
+
+# 28. MTQ ↔ EXTERNAL ASSET REDEMPTION
+
+Implement:
+
+```text
+MTQ
+↓
+Redemption Authorization
+↓
+Compliance
+↓
+Approved Provider
+↓
+External Asset
+↓
+Bank / Authorized Institutional Account
+```
+
+The same eligibility and jurisdiction rules apply in reverse.
+
+No unconditional promises of:
+
+```text
+1 MTQ = 1 USDT
+1 MTQ = 1 USDC
+1 MTQ = 1 USD
+```
+
+---
+
+# 29. NO FORCED CONVERSION
+
+The architecture must allow institutions, where legally permitted, to:
+
+* hold local currency;
+* use MTQ for settlement only;
+* maintain MTQ treasury positions;
+* redeem MTQ;
+* retain other currencies/assets.
+
+MTQ must coexist with sovereign currencies.
+
+---
+
+# 30. LEGAL CLAIM / LIABILITY TRANSPARENCY
+
+Create a jurisdiction-aware legal classification framework for MTQ.
+
+Track:
+
+* legal nature;
+* ownership;
+* redemption;
+* reserve claim;
+* settlement finality;
+* creditor treatment;
+* insolvency treatment;
+* transferability;
+* pledgeability where applicable;
+* dispute resolution;
+* applicable law.
+
+Never hard-code one global legal classification as universally valid.
+
+---
+
+# 31. PROOF OF LIABILITIES
+
+Elevate Proof of Liabilities to a core institutional control.
+
+The system must reconcile:
+
+```text
+MITHQAL Canonical Ledger
+↕
+Bank MTQ Subledger
+↕
+Corporate MTQ Positions
+↕
+Reserve Ledger
+↕
+Proof of Liabilities
+```
+
+Maintain complete auditability.
+
+---
+
+# 32. INDEPENDENT ASSURANCE
+
+Add architecture for independent verification/assurance of:
+
+* reserves;
+* liabilities;
+* mint/burn;
+* reconciliation;
+* concentration;
+* stress metrics.
+
+The system must support evidence packages and auditor/regulator access without giving auditors operational control.
+
+---
+
+# 33. REGULATORY TRANSPARENCY API
+
+Create a privileged regulator/authorized-supervisor interface.
+
+Expose, according to legal permissions:
+
+```text
+Outstanding MTQ
+Reserve Coverage
+Reserve Composition
+Liability Composition
+Minting
+Burning
+Redemptions
+Bank Concentration
+Custodian Concentration
+Country Exposure
+Currency Exposure
+Liquidity
+Stress State
+Sanctions Events
+Operational Incidents
+```
+
+Implement strict RBAC and audit logging.
+
+---
+
+# 34. CORRIDOR CERTIFICATION
+
+Create:
+
+# MTQ Corridor Registry
+
+Every corridor has:
+
+```text
+Origin
+Destination
+Supported Assets
+Eligible Providers
+Primary Rail
+Secondary Rail
+Emergency Rail
+Legal Status
+Operational Status
+Liquidity Status
+Risk Rating
+Certification Status
+```
+
+Statuses:
+
+```text
+CERTIFIED
+PILOT
+RESTRICTED
+SUSPENDED
+NOT_AVAILABLE
+```
+
+Do not market MTQ as universally operational until specific corridors are actually validated.
+
+---
+
+# 35. INSTITUTIONAL INTEROPERABILITY STANDARD
+
+Create a formal internal standard for:
+
+* settlement instructions;
+* compliance attestations;
+* reserve attestations;
+* conversion confirmations;
+* finality;
+* reconciliation;
+* idempotency;
+* error handling;
+* disputes;
+* bank integration;
+* CBDC integration;
+* tokenised deposit integration.
+
+This should extend the existing MSAS / MTQ Settlement Instruction architecture rather than replace it.
+
+Preserve:
+
+* ISO 20022;
+* bank REST/API;
+* H2H;
+* SFTP;
+* treasury interfaces;
+* ERP connectivity.
+
+---
+
+# 36. INTERNAL COMPLEXITY MUST NOT BECOME UX COMPLEXITY
+
+Keep existing internal engines:
+
+* DMCE;
+* PBC;
+* FSCR;
+* RSS;
+* TTF;
+* RV;
+* DCAR;
+* TCOG;
+* SARA;
+* ILPS;
+* ERTF.
+
+But group them into four visible institutional control domains:
+
+```text
+1. Reserve Protection Engine
+2. Liquidity & Settlement Engine
+3. Risk & Stress Engine
+4. Compliance & Eligibility Engine
+```
+
+Do not remove underlying engines unless the existing implementation proves they are redundant.
+
+---
+
+# 37. USER EXPERIENCE
+
+Corporate customers should be able to see, where legally permitted:
+
+```text
+Bank Money
+USD
+EUR
+JPY
+etc.
+
+MTQ Institutional Position
+Available MTQ
+Reserved MTQ
+In-flight MTQ
+Settlement MTQ
+```
+
+For conversion:
+
+```text
+Input Asset
+Amount
+Provider
+Jurisdiction
+Executable Price
+Fees
+Slippage
+Net Eligible Value
+Expected MTQ
+Status
+Finality
+```
+
+For settlement:
+
+```text
+Source
+MTQ Amount
+Destination
+Receiving Currency
+Estimated Conversion
+Fees
+Settlement Status
+Compliance Status
+Finality Status
+```
+
+Do not expose consumer crypto concepts such as:
+
+* seed phrases;
+* gas;
+* wallet management;
+* chain switching;
+* consumer private-key workflows.
+
+---
+
+# 38. SECURITY AND POLICY ENFORCEMENT
+
+All new functionality must comply with the existing security architecture.
+
+Implement:
+
+* RBAC;
+* least privilege;
+* cryptographic signatures;
+* policy-as-code;
+* immutable audit trail;
+* idempotency;
+* replay protection;
+* approval workflows;
+* dual control for critical operations;
+* safe failure;
+* rate limits;
+* fraud controls;
+* provider authentication;
+* HSM/MPC integration where applicable.
+
+Critical rules must be enforced server-side, not merely hidden in the UI.
+
+---
+
+# 39. DATABASE / TURSO IMPLEMENTATION
+
+Bring the Turso database fully in line with the updated architecture.
+
+Inspect the current schema before changing it.
+
+Add normalized entities/tables for concepts such as:
+
+```text
+assets
+asset_eligibility
+asset_roles
+asset_networks
+asset_providers
+providers
+provider_licenses
+corridors
+corridor_routes
+settlement_rails
+reserve_cells
+reserve_assets
+protected_backing
+liquidity_positions
+liquidity_providers
+conversion_quotes
+conversion_executions
+conversion_finality
+mtq_mint_authorizations
+mtq_redemptions
+geopolitical_exposure
+concentration_metrics
+risk_snapshots
+stress_tests
+regulatory_views
+assurance_evidence
+legal_classifications
+policy_versions
+```
+
+Use names consistent with the existing schema conventions.
+
+Do NOT blindly create duplicate tables.
+
+Create proper:
+
+* foreign keys;
+* indexes;
+* constraints;
+* unique keys;
+* timestamps;
+* versioning;
+* audit references;
+* status transitions.
+
+All migrations must be deterministic and reproducible.
+
+---
+
+# 40. WEB APPLICATION IMPLEMENTATION
+
+Update every affected screen.
+
+At minimum, inspect and update:
+
+### Executive / institutional dashboards
+
+* MTQ overview;
+* reserve health;
+* liquidity;
+* geopolitical exposure;
+* concentration;
+* stress;
+* corridor status.
+
+### Treasury
+
+* MTQ positions;
+* conversion;
+* holdings;
+* settlement.
+
+### Reserve management
+
+* reserve composition;
+* protected backing;
+* reserve quality;
+* rebalancing;
+* coverage.
+
+### Interoperability
+
+* external assets;
+* providers;
+* conversion;
+* settlement rails;
+* corridors.
+
+### Bank Gateway
+
+* connections;
+* settlement instructions;
+* compliance attestations;
+* reconciliation;
+* bank-side status.
+
+### Compliance
+
+* eligibility;
+* jurisdiction;
+* sanctions;
+* provider qualification;
+* restricted corridors.
+
+### Regulatory
+
+* reporting;
+* proof of reserves;
+* proof of liabilities;
+* reconciliation;
+* assurance.
+
+### Administration
+
+* policies;
+* thresholds;
+* asset admission;
+* provider management;
+* corridor certification.
+
+Make UI:
+
+* institutional;
+* modern;
+* professional;
+* simple enough for beginners;
+* powerful enough for treasury professionals;
+* consistent across all pages.
+
+Do not create flashy crypto-style UX.
+
+---
+
+# 41. API IMPLEMENTATION
+
+Inspect current APIs and implement/update:
+
+```text
+/assets
+/assets/eligibility
+/providers
+/providers/eligibility
+/corridors
+/rails
+/conversions
+/conversions/quote
+/conversions/execute
+/conversions/finality
+/mtq/mint
+/mtq/redeem
+/reserves
+/reserves/protected-backing
+/liquidity
+/risk
+/geopolitical-exposure
+/concentration
+/stress
+/regulatory
+/assurance
+```
+
+Use the project's existing API conventions rather than inventing contradictory patterns.
+
+All write operations must be authenticated, authorized, idempotent where appropriate, and audited.
+
+---
+
+# 42. POLICY-AS-CODE
+
+Extend the existing OPA/Rego/policy architecture.
+
+Create policy decisions for:
+
+```text
+asset_admission
+provider_admission
+corridor_admission
+stablecoin_admission
+conversion_allowed
+mint_allowed
+redeem_allowed
+reserve_recognition
+bank_backing_recognition
+jurisdiction_allowed
+sanctions_allowed
+concentration_allowed
+stress_state
+settlement_route
+```
+
+Example:
+
+```text
+conversion_allowed = true
+ONLY IF
+
+asset_eligible
+AND provider_authorized
+AND jurisdiction_allowed
+AND compliance_passed
+AND sanctions_passed
+AND executable_price_valid
+AND settlement_finality_confirmed
+```
+
+Do not rely on application-level conditionals alone.
+
+---
+
+# 43. STRESS TEST ENGINE
+
+Implement automated quantitative stress testing for:
+
+### Stablecoins
+
+* 1%;
+* 3%;
+* 5%;
+* 10%;
+* 20%;
+* 50%;
+* 100%.
+
+### FX
+
+* 10%;
+* 20%;
+* 30%;
+* 50%.
+
+### Gold
+
+* 10%;
+* 20%;
+* 30%;
+* 50%.
+
+### Operational
+
+* bank outage;
+* LP failure;
+* custodian failure;
+* oracle failure;
+* chain outage;
+* rail outage;
+* sanctions event;
+* issuer freeze;
+* liquidity shock.
+
+The engine must show:
+
+```text
+Starting Reserve Ratio
+Shock
+Loss
+Remaining Reserve
+Remaining Coverage
+Liquidity Impact
+Minting Capacity
+Resulting State
+Required Action
+```
+
+Do not hard-code illustrative calculations as truth.
+
+The engine must calculate dynamically from live policy data.
+
+---
+
+# 44. SAFE STATES
+
+Implement explicit system states:
+
+```text
+NORMAL
+WATCH
+RESTRICTED
+EMERGENCY
+MINT_FROZEN
+SETTLEMENT_RESTRICTED
+SAFE_HALT
+```
+
+Each state must define:
+
+* allowed operations;
+* blocked operations;
+* required approvals;
+* automatic actions;
+* escalation;
+* recovery conditions.
+
+---
+
+# 45. TESTING
+
+Before deployment, execute:
+
+## Unit tests
+
+For every new service/function.
+
+## Integration tests
+
+For:
+
+* MBG;
+* MITHQAL Core;
+* Turso;
+* policy engine;
+* reserve engine;
+* conversion engine;
+* liquidity engine.
+
+## End-to-end tests
+
+At minimum:
+
+```text
+USD → MTQ
+EUR → MTQ
+JPY → MTQ
+USDC → MTQ
+USDT → MTQ
+CBDC mock → MTQ
+Tokenised deposit mock → MTQ
+Gold-backed eligible asset mock → MTQ
+
+MTQ → USD
+MTQ → EUR
+MTQ → JPY
+MTQ → USDC
+MTQ → USDT
+```
+
+Use test/sandbox adapters where live financial integrations are unavailable.
+
+## Failure tests
+
+Verify:
+
+```text
+No finality → no mint
+Oracle failure → safe halt
+Provider failure → reroute
+Bank failure → reroute/restrict
+Sanctions event → block
+Asset depeg → haircut/reject
+Reserve breach → mint freeze
+Database outage → safe behavior
+Duplicate instruction → idempotent handling
+Replay attack → rejected
+Unauthorized mint → rejected
+```
+
+---
+
+# 46. ACCOUNTING / RECONCILIATION TESTS
+
+Verify the five-way reconciliation:
+
+```text
+Canonical MTQ Ledger
+Bank MTQ Subledger
+Corporate MTQ Positions
+Reserve Ledger
+Proof of Liabilities
+```
+
+Every scenario must reconcile.
+
+No silent differences.
+
+Differences must generate:
+
+* alert;
+* incident;
+* affected position;
+* severity;
+* investigation record;
+* resolution workflow.
+
+---
+
+# 47. BLUEPRINT UPDATE
+
+After implementation is verified:
+
+Update the blueprint to a new version.
+
+Recommended:
+
+# MITHQAL v25.1
+
+Title:
+
+**MITHQAL v25.1 — Institutional Interoperability, Geopolitical Resilience & Multi-Rail Settlement Edition**
+
+The updated blueprint must document:
+
+* new Asset Classification Layer;
+* Asset Eligibility Registry;
+* MTQ Asset Interoperability Gateway;
+* stablecoin interoperability;
+* CBDC interoperability;
+* tokenised bank-money interoperability;
+* multi-rail architecture;
+* Settlement Sovereignty;
+* Geopolitical Exposure Management;
+* liquidity framework;
+* protected bank backing;
+* Finality-Before-Mint;
+* reserve quality tiers;
+* corridor certification;
+* regulatory transparency;
+* legal-claim framework;
+* independent assurance;
+* updated DMCE;
+* stress engine;
+* safe-state architecture.
+
+Do not remove the old v25.0 architecture unless explicitly superseded.
+
+Clearly mark:
+
+```text
+EXISTING
+ENHANCED
+NEW
+DEPRECATED
+```
+
+for major components.
+
+---
+
+# 48. DOCUMENTATION CONSISTENCY
+
+Search the complete repository for old language that conflicts with the new architecture.
+
+Examples:
+
+* MITHQAL as exchange;
+* MITHQAL directly custodying stablecoins;
+* USDT/USDC automatically equal MTQ;
+* MTQ automatically pegged to USD;
+* stablecoins automatically becoming reserve;
+* ordinary bank deposits automatically being 100% protected backing;
+* MITHQAL replacing SWIFT;
+* CBDC unrestricted access;
+* universal worldwide availability.
+
+Correct every conflicting occurrence in:
+
+* source code;
+* UI;
+* API docs;
+* comments;
+* configuration;
+* seed/demo data;
+* README;
+* technical documentation;
+* blueprint;
+* test fixtures.
+
+---
+
+# 49. GIT WORKFLOW
+
+Before committing:
+
+1. Run repository-wide formatting.
+2. Run lint.
+3. Run type checks.
+4. Run unit tests.
+5. Run integration tests.
+6. Run end-to-end tests.
+7. Run database migration validation.
+8. Run security checks.
+9. Run build.
+
+Then inspect:
+
+```bash
+git status
+git diff
+git diff --stat
+```
+
+Review all modified files.
+
+Remove:
+
+* debug code;
+* temporary files;
+* secrets;
+* generated artifacts that should not be committed;
+* test credentials;
+* local configuration.
+
+Create a clean intentional commit.
+
+Recommended commit message:
+
+```text
+feat(mithqal): implement v25.1 institutional interoperability and resilience architecture
+```
+
+Push the changes to the intended Git branch/repository.
+
+Do NOT overwrite unrelated work.
+
+---
+
+# 50. VERCEL DEPLOYMENT
+
+After Git is synchronized:
+
+1. Verify build configuration.
+2. Verify environment variables.
+3. Verify production database connection.
+4. Verify Turso credentials/configuration.
+5. Run production build.
+6. Deploy to Vercel.
+7. Verify deployment succeeded.
+8. Verify application health.
+9. Verify API routes.
+10. Verify database connectivity.
+11. Verify authentication.
+12. Verify critical institutional workflows.
+
+Do NOT expose secrets in:
+
+* frontend bundle;
+* source code;
+* logs;
+* commits;
+* API responses.
+
+---
+
+# 51. TURSO SYNCHRONIZATION
+
+Ensure:
+
+```text
+Git schema/migrations
+=
+application schema expectations
+=
+Turso production schema
+```
+
+Run migrations safely.
+
+Verify:
+
+* schema version;
+* migration history;
+* indexes;
+* foreign keys;
+* constraints;
+* data integrity.
+
+Do not use destructive migrations on production unless explicitly required and safely handled.
+
+Create backup/recovery safeguards before destructive operations.
+
+---
+
+# 52. FULL SYSTEM CONSISTENCY CHECK
+
+At the end, verify the following chain:
+
+```text
+BLUEPRINT
+   ↓
+BUSINESS RULES
+   ↓
+POLICY-AS-CODE
+   ↓
+BACKEND SERVICES
+   ↓
+API
+   ↓
+DATABASE / TURSO
+   ↓
+FRONTEND
+   ↓
+AUTH / RBAC
+   ↓
+AUDIT
+   ↓
+GIT
+   ↓
+VERCEL
+```
+
+Every layer must agree.
+
+There must be no:
+
+* orphaned feature;
+* UI-only feature;
+* backend-only feature;
+* schema mismatch;
+* undocumented endpoint;
+* undocumented policy;
+* blueprint/code contradiction;
+* deployment-only configuration;
+* local-only behavior.
+
+---
+
+# 53. FINAL IMPLEMENTATION AUDIT
+
+Before declaring completion, produce an internal audit table:
+
+| Requirement | Blueprint | Backend | DB/Turso | UI | Policy | Tests | Production |
+| ----------- | --------- | ------- | -------- | -- | ------ | ----- | ---------- |
+
+Every mandatory requirement must be marked:
+
+```text
+COMPLETE
+```
+
+Anything incomplete must be explicitly reported.
+
+Do not claim completion if any critical component is missing.
+
+---
+
+# 54. DO NOT INVENT REGULATORY AUTHORIZATION
+
+The software must never display language implying:
+
+* “globally regulated”;
+* “approved by central banks”;
+* “licensed worldwide”;
+* “universally compliant”;
+* “guaranteed reserve”;
+
+unless such status actually exists.
+
+Use:
+
+```text
+Jurisdiction-dependent
+Subject to applicable law
+Approved provider required
+Regulatory status configurable
+```
+
+where appropriate.
+
+The software is infrastructure.
+
+Legal permissions remain jurisdiction-specific.
+
+---
+
+# 55. FINAL PRODUCT POSITIONING
+
+The resulting product and documentation should consistently communicate:
+
+> **MITHQAL is neutral institutional settlement infrastructure designed to connect regulated forms of money and eligible settlement assets through compliant, bank-compatible, multi-rail interoperability.**
+
+And:
+
+> **MTQ is a neutral institutional settlement unit, not a replacement for sovereign currencies, banks, CBDCs, stablecoins, or SWIFT.**
+
+---
+
+# 56. FINAL PRIORITY ORDER
+
+When making implementation decisions, use this order:
+
+### Priority 1
+
+Legal/regulatory survivability
+
+### Priority 2
+
+Reserve and liability integrity
+
+### Priority 3
+
+Bank compatibility
+
+### Priority 4
+
+Settlement finality
+
+### Priority 5
+
+Liquidity and resilience
+
+### Priority 6
+
+Security
+
+### Priority 7
+
+Auditability/transparency
+
+### Priority 8
+
+Interoperability
+
+### Priority 9
+
+User experience
+
+### Priority 10
+
+Optimization / elegance
+
+Never sacrifice a higher-priority property to optimize a lower-priority one.
+
+---
+
+# 57. ABSOLUTE ARCHITECTURAL RULES
+
+Implement and enforce these as non-negotiable:
+
+```text
+NO CORE BANKING REPLACEMENT
+
+NO MITHQAL RETAIL EXCHANGE
+
+NO AUTOMATIC STABLECOIN → MTQ 1:1 ASSUMPTION
+
+NO STABLECOIN = AUTOMATIC RESERVE
+
+NO ORDINARY BANK DEPOSIT = AUTOMATIC PROTECTED BACKING
+
+NO FINALITY = NO MINT
+
+NO UNAUTHORIZED MINT
+
+NO UNCONTROLLED CUSTODY
+
+NO SINGLE-RAIL DEPENDENCY
+
+NO SINGLE-ASSET DEPENDENCY
+
+NO SINGLE-JURISDICTION DEPENDENCY
+
+NO SINGLE-BANK DEPENDENCY
+
+NO SINGLE-PROVIDER DEPENDENCY
+
+NO FORCED CURRENCY CONVERSION
+
+NO USD PEG
+
+NO SWIFT REPLACEMENT
+
+NO PERMISSIONLESS INSTITUTIONAL ACCESS
+
+NO UNSUPERVISED GLOBAL AVAILABILITY CLAIM
+```
+
+---
+
+# 58. EXECUTION MODE
+
+Execute this as a **full-stack architectural upgrade**, not a superficial feature addition.
+
+Do not stop after updating the UI.
+
+Do not stop after updating the blueprint.
+
+Do not stop after updating the database.
+
+Do not stop after Git commit.
+
+The work is complete only when:
+
+```text
+Blueprint
+↔
+Code
+↔
+Database
+↔
+Policies
+↔
+Frontend
+↔
+Tests
+↔
+Git
+↔
+Vercel
+```
+
+are all synchronized.
+
+At the end, provide a concise implementation report containing:
+
+1. Existing architecture confirmed.
+2. New architecture implemented.
+3. Files/services changed.
+4. Database/Turso migrations applied.
+5. Policy changes.
+6. UI changes.
+7. Tests passed.
+8. Git commit hash.
+9. Git push status.
+10. Vercel deployment URL/status.
+11. Production database status.
+12. Any remaining limitations or items requiring real-world regulatory/licensing execution.
+
+Do not fabricate deployment success, Git push success, Vercel success, Turso success, tests, licenses, or regulatory approvals. Report actual status only.
