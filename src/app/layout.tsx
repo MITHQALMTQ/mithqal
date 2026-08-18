@@ -7,6 +7,7 @@ import { ServiceWorkerRegister } from "@/components/service-worker-register";
 import { CommandPalette } from "@/components/command-palette";
 import { SiteFooter } from "@/components/site-footer";
 import { AiExplainer } from "@/components/ai-explainer";
+import { Analytics } from "@vercel/analytics/next";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -127,6 +128,7 @@ export default function RootLayout({
           <Toaster />
           <ServiceWorkerRegister />
         </Providers>
+        <Analytics />
       </body>
     </html>
   );
