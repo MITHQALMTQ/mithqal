@@ -179,7 +179,7 @@ const LAYER_1: Layer = {
       number: "Article VIII",
       title: "Yield Separation",
       purpose:
-        "The settlement function and yield generation are constitutionally separate. Reserves are never used for yield; the yield vehicle is a separate legal entity that never holds, lends or uses MTQ.",
+        "The settlement function and yield generation are constitutionally separate. Reserves are never used for yield; the technology company is a separate legal entity that never holds, lends or uses MTQ.",
     },
     {
       id: "l1-art9",

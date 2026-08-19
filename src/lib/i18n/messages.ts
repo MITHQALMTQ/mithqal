@@ -157,7 +157,7 @@ const en: Messages = {
   "legal.entityA.type": "Non-profit constitutional settlement institution",
   "legal.entityA.currentOperator": "Current operator",
   "legal.entityA.targetStructure": "Target structure",
-  "legal.entityB.name": "Entity B — Mithqal Yield Vehicle",
+  "legal.entityB.name": "Entity B — Mithqal Technology Company",
   "legal.entityB.type": "For-profit regulated investment fund",
   "legal.entityB.status": "Status",
   "legal.entityB.mtqExposure": "MTQ exposure",

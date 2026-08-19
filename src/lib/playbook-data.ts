@@ -44,7 +44,7 @@ export const ENTITIES = [
   },
   {
     tag: "C",
-    name: "The Yield Vehicle (later)",
+    name: "The Technology Company (later)",
     type: "Separate regulated investment fund",
     purpose: "Optional, constitutionally-separated vehicle for institutional investors seeking yield. Never holds, lends or uses MTQ. Fully separate governance, audit and balance sheet. Stage 4+ only.",
     fundedBy: "Institutional LP subscriptions (fiat only)",
