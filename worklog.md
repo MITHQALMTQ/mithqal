@@ -2961,3 +2961,314 @@ Stage Summary:
   huge home route (2010-line public-site + dozens of dashboards) + 5 concurrent closure-tab
   fetches. Server sometimes dies within ~20-30s. Not a code defect — verified the dashboard
   fully loads when the server survives the fetch window.
+
+---
+Task ID: 2-c
+Agent: Legal Liability Framework Builder
+Task: Build src/lib/legal-liability-framework.ts implementing §49 (13-dimension MTQLegalLiability, jurisdiction registry, 0 validated jurisdictions).
+
+Work Log:
+- Read /home/z/my-project/worklog.md (prior V25-2 final-reserve-spec + V25-2 verification entries; final lines around 2964) for MODULE_ID/honest-state conventions and §74 discipline.
+- Read /home/z/my-project/src/lib/mtq-final-reserve-spec.ts (head ~100 lines + tail report-builder) for MODULE_ID = "v25.2-...-1.0" pattern, HONEST_STATE object shape, finalStatus discipline, and generateXxxReport() returning { moduleId, dimensions, ..., honestState, finalStatus }.
+- Read /home/z/my-project/src/lib/jurisdiction-engine.ts (head ~80 + tail ~80 lines) to confirm existing jurisdiction handling: JurisdictionRecord has 13 fields per jurisdiction (code/name/mtqStatus/stablecoinStatus/custodyStatus/redemptionStatus/licensingRequired/amlKycRequired/sanctionsCheck/taxTreatment/dataRequirements/settlementStatus/tokenTradingRestricted/geoFenced/effectiveDate/source/reviewDate); JURISDICTION_REGISTRY is a Record<string, JurisdictionRecord>; getJurisdiction(code) returns null on unknown. New module is the LEGAL-characterization companion (orthogonal — does not duplicate regulatory status).
+- Created src/lib/legal-liability-framework.ts (724 lines) implementing §49 MTQ Legal & Economic Liability Framework:
+  * MODULE_ID = "v25.2-legal-liability-framework-1.0".
+  * LegalClassification type = "JURISDICTION_PENDING" | "LEGAL_OPINION_OBTAINED" | "VALIDATED" (default PENDING).
+  * MTQLegalLiability interface — 13 dimensions in canonical order: jurisdiction, legalNature, obligor, holderRights, redemption, settlementFinality, creditorTreatment, insolvencyTreatment, transferability, pledgeability, governingLaw, disputeResolution, licensingClassification; PLUS classification, legalOpinionsObtained, validated, evidenceState, source, lastReviewed (and jurisdictionName metadata).
+  * legalLiabilityHonestState() returns the §74 EXACT literal values: { LEGAL_MODEL_DESIGNED: true, LEGAL_REGISTRY_IMPLEMENTED: true, LEGAL_OPINIONS_OBTAINED: false, VALIDATED_JURISDICTIONS: 0 }.
+  * JURISDICTION_REGISTRY seeded with 8 jurisdictions (US, EU/EEA, UK, CH, SG, AE, SA, JP) — ALL with classification = "JURISDICTION_PENDING" and legalOpinionsObtained = false. Every legal-nature field includes "PENDING OPINION —" prefix and a SPECULATIVE_NOTE suffix ("speculative engineering triage, not legal advice"). No definitive classifications asserted.
+  * evidenceState helper pendingEvidenceState() returns a fully-null evidence ledger (no opinion artifact, no validator, no validation date) — supporting the §74 honest-state discipline.
+  * getJurisdictionLegalStatus(code) — returns the registry entry, or a conservative PENDING placeholder for unknown codes (NEVER null, NEVER invents a classification).
+  * LegalOpinion interface (issuer, date, artifact, dimensions, notes) — external opinion artifact shape.
+  * registerLegalOpinion(jurisdiction, opinion) — only transitions JURISDICTION_PENDING → LEGAL_OPINION_OBTAINED when ALL THREE evidence fields (issuer + date + artifact) are present. VALIDATED is terminal (cannot be reset by opinion). Missing-evidence opinion is a no-op (stays PENDING).
+  * ValidationEvidence interface (validator, date, artifact, notes).
+  * validateJurisdiction(jurisdiction, evidence) — only transitions LEGAL_OPINION_OBTAINED → VALIDATED when (a) a prior opinion exists AND (b) all three validation evidence fields are present. VALIDATED is terminal (idempotent return).
+  * listPendingJurisdictions() — returns all 8 seeded entries at fresh-load.
+  * listValidatedJurisdictions() — returns [] at fresh-load (validatedCount = 0).
+  * holderRightsSummary(jurisdiction), redemptionFramework(jurisdiction), insolvencyTreatment(jurisdiction) — return the dimension text plus a `definitive: boolean` flag (true only when VALIDATED). Until VALIDATED, all three are explicitly PENDING OPINION.
+  * LEGAL_LIABILITY_DIMENSIONS — exported readonly tuple of the 13 dimension names in canonical order.
+  * generateLegalLiabilityReport() — returns { moduleId, dimensions[13], jurisdictionRegistry, pendingCount, opinionObtainedCount, validatedCount, honestState, principle: "Never invent legal classifications", finalStatus }. At fresh load: pendingCount=8, opinionObtainedCount=0, validatedCount=0, finalStatus="LEGAL FRAMEWORK DESIGNED — ZERO JURISDICTIONS VALIDATED — PENDING EXTERNAL LEGAL OPINIONS".
+- Code style: pure TypeScript, JSDoc on every export, honest comments throughout (no indigo/blue — no UI in this file). Section banners (§49, §74) match the v25.2 module conventions.
+- Typecheck (npx tsc --noEmit src/lib/legal-liability-framework.ts): clean, 0 errors.
+- Lint (npx eslint src/lib/legal-liability-framework.ts): clean, 0 errors. (21 pre-existing lint errors in unrelated src/lib/use-wallet.ts are NOT in this file and are not affected by this change.)
+- Smoke test (bun runtime, fresh module load): MODULE_ID matches; honestState returns the 4 exact §74 values; registry size=8 (US/EU/UK/CH/SG/AE/SA/JP); pendingCount=8; validatedCount=0; opinionObtainedCount=0; unknown jurisdiction returns JURISDICTION_PENDING placeholder (never null); no-evidence opinion is a no-op; opinion-with-evidence transitions PENDING → LEGAL_OPINION_OBTAINED (NOT VALIDATED); validate-without-prior-opinion is a no-op; validate-with-prior-opinion-and-evidence transitions LEGAL_OPINION_OBTAINED → VALIDATED (full lifecycle verified); holderRights/redemption/insolvency summaries for non-validated jurisdiction return definitive=false; finalStatus surfaces "ZERO JURISDICTIONS VALIDATED".
+
+Stage Summary:
+- New module: src/lib/legal-liability-framework.ts (724 lines) — §49 MTQ Legal & Economic Liability Framework.
+- 13-dimension MTQLegalLiability interface fully implemented (jurisdiction / legalNature / obligor / holderRights / redemption / settlementFinality / creditorTreatment / insolvencyTreatment / transferability / pledgeability / governingLaw / disputeResolution / licensingClassification).
+- JURISDICTION_REGISTRY seeded with 8 jurisdictions (US, EU, UK, CH, SG, AE, SA, JP) — ALL JURISDICTION_PENDING, ALL legalOpinionsObtained=false, ALL evidenceState null.
+- VALIDATED COUNT = 0 (verified at fresh load via listValidatedJurisdictions() and generateLegalLiabilityReport().validatedCount).
+- §74 honest-state preserved exactly: LEGAL_MODEL_DESIGNED=true, LEGAL_REGISTRY_IMPLEMENTED=true, LEGAL_OPINIONS_OBTAINED=false, VALIDATED_JURISDICTIONS=0.
+- Critical principle enforced: NEVER invent legal classifications — every seeded text field is prefixed "PENDING OPINION —" and suffixed with "speculative engineering triage, not legal advice". Unknown jurisdictions return a conservative PENDING placeholder (never null, never invented).
+- Lifecycle transitions are one-way and evidence-gated: PENDING → LEGAL_OPINION_OBTAINED (requires issuer+date+artifact) → VALIDATED (requires validator+date+artifact AFTER prior opinion). VALIDATED is terminal.
+- Typecheck + lint clean on the new file. No API route / UI component / blueprint changes in this task — pure library module per task scope.
+
+---
+Task ID: 2-d
+Agent: Licensing Entity Matrix Builder
+Task: Build src/lib/licensing-entity-matrix.ts implementing §50 (9 activities × 8 jurisdictions, 0 licenses obtained).
+
+Work Log:
+- Read /home/z/my-project/worklog.md tail (last v25.2 entries: V25-2-FINAL-RESERVE-SPEC, V25-2-VERIFICATION) and head of src/lib/mtq-final-reserve-spec.ts to absorb MODULE_ID + HONEST_STATE patterns (designTimeSpec, finalStatus amber, "APPROVED CANDIDATE FOR CONTROLLED TESTING — NOT PRODUCTION-AUTHORIZED").
+- Read src/lib/v25-1-final-amendment.ts lines 660-769 to inspect the older LicensingRequirement interface + 6-entry UAE-only LICENSING_MATRIX (status set: NOT_ANALYZED / ANALYZED / LICENSE_OBTAINED / LICENSE_PENDING / NOT_REQUIRED; mithqalRole ∈ {INFRASTRUCTURE, ORCHESTRATION, VERIFICATION, NONE}). Used as baseline; superseded by this §V25.2 module per §49 reconciliation (expanded to 9×8=72 entries; status set replaced with REQUIRED_NOT_OBTAINED / PENDING_APPLICATION / OBTAINED / EXEMPT / PROHIBITED).
+- Created src/lib/licensing-entity-matrix.ts (784 lines):
+  * Header (§50 of master directive): describes the Activity→Jurisdiction→LegalActivity→RequiredLicense→ResponsibleEntity→MITHQAL Role→Bank Role→Custodian Role→LiquidityProvider Role→Status/Evidence mapping; states critical principle (technical implementation ≠ regulatory authorization); honest-state §74 declaration (licensingMatrixImplemented=true, licensesObtained=0); supersedes v25.1 status set per §49.
+  * MODULE_ID = "v25.2-licensing-entity-matrix-1.0".
+  * FinancialActivity type — 9 activities (banking, payment-services, custody, fx, digital-asset-casp, securities, commodity, cbdc-access, settlement-activities) + ACTIVITIES const tuple.
+  * JURISDICTIONS const tuple (US, UAE, UK, EU, SINGAPORE, SWITZERLAND, HONG_KONG, KSA) + Jurisdiction derived type (8 total).
+  * EntityRole type — exactly 8 values (MITHQAL, BANK, CUSTODIAN, LIQUIDITY_PROVIDER, FOUNDATION, OPERATING_CO, TECHNOLOGY_CO, HOLDING_CO) per task spec; JSDoc clarifies only MITHQAL exists today; JOZOUR LLC (NJ) is the actual operating entity; other commercial entities are PLANNED per org roadmap.
+  * LicensingStatus type — 5 values (REQUIRED_NOT_OBTAINED | PENDING_APPLICATION | OBTAINED | EXEMPT | PROHIBITED); DEFAULT_LICENSING_STATUS="REQUIRED_NOT_OBTAINED"; DEFAULT_EVIDENCE="NONE".
+  * LicensingMatrixEntry interface — 11 fields (activity, jurisdiction, legalActivity, requiredLicense, responsibleEntity:EntityRole, mithqalRole:string, bankRole, custodianRole, liquidityProviderRole, status:LicensingStatus, evidence:string).
+  * ACTIVITY_TEMPLATES — per-activity {legalActivity, responsibleEntity, mithqalRole, bankRole, custodianRole, liquidityProviderRole, requiredLicenseByJurisdiction[8]}. mithqalRole prefix is always one of {NONE, VERIFICATION, ORCHESTRATION, INFRASTRUCTURE} — NEVER "GUARANTOR"/"FINANCIAL_GUARANTOR". Per-jurisdiction requiredLicense text is realistic & specific (e.g. "Federal or state banking charter + BSA authorization (OCC / Federal Reserve / state DFI)" for US banking; "MiCAR CASP Authorization (Regulation (EU) 2023/1114)" for EU digital-asset-casp; "VARA VASP License (or ADGM / DCCA equivalent...)" for UAE CASP; "SAMA SARIE participant" for KSA settlement).
+  * buildMatrix() composes 9×8=72 entries, every entry status="REQUIRED_NOT_OBTAINED" + evidence="NONE".
+  * LICENSING_MATRIX exported (references same mutable backing array so registerLicenseObtained can mutate in place).
+  * Query/mutation API:
+    - getLicensingEntry(activity, jurisdiction) — throws if pair missing
+    - listByActivity(activity) — returns 8 entries
+    - listByJurisdiction(jurisdiction) — returns 9 entries
+    - registerLicenseObtained(activity, jurisdiction, evidence) — transitions to OBTAINED ONLY if evidence non-empty (empty/whitespace returns null, no mutation); returns updated entry or null
+    - countLicensesObtained() — returns 0 in default state
+    - assessActivityLegality(activity, jurisdiction) — returns {mayProceed, reason, status}; mayProceed=true ONLY if status is OBTAINED or EXEMPT; REQUIRED_NOT_OBTAINED/PENDING_APPLICATION/PROHIBITED all return false; reason string always reiterates "Technical implementation is NOT authorization" for the default case
+    - mithqalRoleForActivity(activity) — returns the (constant) mithqal role string for the activity
+  * licensingHonestState() — returns { licensingMatrixImplemented: true (literal), licensesObtained: countLicensesObtained() } — exact field names/values per §74.
+  * assertMithqalRoleInvariant() — runs at module load; verifies: (1) matrix size == 72; (2) unique (activity,jurisdiction) pairs; (3) all 72 pairs present; (4) per-entry: evidence non-empty, mithqalRole prefix ∈ ALLOWED_MITHQAL_ROLES, status == REQUIRED_NOT_OBTAINED at load; (5) licensesObtained == 0 at load. Throws on any violation.
+  * generateLicensingMatrixReport() — returns { moduleId, activities[9], jurisdictions[8], matrixEntries[72], licensesObtained=0, honestState, principle (full critical-principle text), finalStatus } where finalStatus = "IMPLEMENTED BLUEPRINT — 0 LICENSES OBTAINED — NOT REGULATORY-AUTHORIZED — NOT PRODUCTION-AUTHORIZED".
+  * No indigo/blue references (pure lib module; color palette lives in UI layer).
+- Smoke-tested via npx tsx (file _licensing_smoke.ts, deleted after): 72 entries, all default REQUIRED_NOT_OBTAINED/NONE; 0 GUARANTOR-role entries; 0 non-allowed-role-prefix entries; honestState = { licensingMatrixImplemented: true, licensesObtained: 0 }; registerLicenseObtained with "" or "   " → null, count unchanged (0); registerLicenseObtained with real evidence → OBTAINED, count → 1, assessActivityLegality → mayProceed=true; listByActivity('custody')=8, listByJurisdiction('UAE')=9; report finalStatus surfaced correctly. Per-jurisdiction license text verified diverse & realistic for all 8 jurisdictions on digital-asset-casp.
+- Type-checked: npx tsc --noEmit (strict) on the new file alone → 0 errors; project-wide tsc → 0 new errors attributable to licensing-entity-matrix.ts (337 pre-existing errors in unrelated files, unchanged baseline).
+
+Stage Summary:
+- New module: src/lib/licensing-entity-matrix.ts (784 lines) — §V25.2 §50 controlling Licensing/Entity Matrix.
+- 72 matrix entries (9 activities × 8 jurisdictions), ALL default status="REQUIRED_NOT_OBTAINED" + evidence="NONE".
+- Honest state (§74) EXACT: licensingMatrixImplemented=true, licensesObtained=0 (asserted by module-load invariant).
+- mithqalRole invariant enforced: MITHQAL role ∈ {NONE, VERIFICATION, ORCHESTRATION, INFRASTRUCTURE} for ALL 72 entries; NEVER "GUARANTOR"/"FINANCIAL_GUARANTOR".
+- Critical principle embedded in header, assessActivityLegality reason text, and report.principle: "Technical implementation is NOT regulatory authorization."
+- finalStatus = "IMPLEMENTED BLUEPRINT — 0 LICENSES OBTAINED — NOT REGULATORY-AUTHORIZED — NOT PRODUCTION-AUTHORIZED".
+- Supersedes v25.1 LicensingRequirement shape per §49 blueprint conflict reconciliation (status set + 6×1 → 9×8 expansion).
+- 0 lint/tsc errors in new file.
+
+---
+Task ID: 2-b
+Agent: Bank Default Resolution Builder
+Task: Build src/lib/bank-default-resolution.ts implementing §48 (8-state lifecycle, 11 contractual questions, honest state).
+
+Work Log:
+- Read /home/z/my-project/worklog.md (last ~200 lines): prior work ended at §V25.2 FINAL RESERVE SPEC verification (mtq-final-reserve-spec.ts ~820 lines controlling §V25.2 reserve math; dashboard fully verified end-to-end).
+- Read src/lib/mtq-final-reserve-spec.ts (head + report generator at lines 1080-1235) to learn MODULE_ID/HONEST_STATE/report-generator pattern (e.g., MODULE_ID = "v25.2-final-reserve-spec-1.0"; HONEST_STATE object with designTimeSpec:true + contracted=false booleans + finalStatus string + finalStatusColor:"AMBER"; generateFinalReserveSpecReport() returns structured report object).
+- Read src/lib/reserve-policy-spec.ts head (1-120): single source of truth pattern, as const exports, NO Date.now()/randomness, blueprint-supreme principle.
+- Read src/lib/final-pilot-activation-gate.ts head (1-120): HONESTY CONTRACT pattern (SIMULATED ≠ REAL/LIVE; PILOT-READY ≠ PRODUCTION-READY; honest dual-state AMBER), EvidenceClass type (REAL/SIMULATED/CONTRACTED/LIVE/ABSENT), ExecutiveReport interface.
+- Read src/lib/redemption-continuity.ts head (1-80): 6-state redemption-continuity framework precedent (NORMAL→ELEVATED→DEFENSIVE→STRESS→EMERGENCY→RESOLUTION) — informed the 8-state lifecycle design below.
+- Built src/lib/bank-default-resolution.ts (1045 lines, pure TypeScript, no React, full JSDoc):
+  * SECTION 0 (header): MODULE_ID = "v25.2-bank-default-resolution-1.0"; SPEC_VERSION; DIRECTIVE_SECTION = 48; PRINCIPLE = "MITHQAL is NOT the financial guarantor" stated non-negotiably in header.
+  * SECTION 1: BankDefaultState type (8 states: ACTIVE | RESTRICTED | LIQUIDITY_STRESS | SUSPENDED | DEFAULT | INSOLVENT | RESOLUTION | EXIT) + BANK_LIFECYCLE_ORDER array.
+  * SECTION 2: BankStateConfig interface with 9 behavioral dimensions (newIssuance, existingTransfer, redemption, backingStatus, liquidity, customerTreatment, receivingBankTreatment, reconciliation, resolutionProcedure) + BANK_STATE_CONFIGS fully populated for all 8 states. Each state's nine fields contain detailed contractual prose anchored to the controlling principle (chain neutrality, Protected Backing Cell segregation, cross-bank reconciliation protocol, MITHQAL-data-not-guarantor).
+  * SECTION 3: ContractualQuestion interface + CONTRACTUAL_QUESTIONS array (11 entries, IDs 1-11). Each entry has { id, question, answer, principle } — answers explicitly state the bank (not MITHQAL) owes the holder, the cell is earmarked customer property returned preferentially in insolvency, losses are absorbed by cell→equity→sub-debt→general creditors→deposit insurer (MITHQAL absorbs NONE), resolution authority is sovereign over the resolution tool selection, reconciliation is honest (shortfalls disclosed not covered).
+  * SECTION 4: BankTransitionSignals interface (7 signals: capitalAdequacyBreach, liquidityStress, regulatoryAction, defaultDeclared, insolvencyDeclared, resolutionTriggered, exitCompleted — extended with defaultDeclared beyond the 6 example signals in the spec for SUSPENDED→DEFAULT transition), BankLifecycleTransition interface, assessBankTransition(currentState, signals) function — forward-only transitions, SIGNAL_PRIORITY evaluated most-severe-first, only fires if target state is strictly further along than current state.
+  * SECTION 5: BankScenarioStep + BankScenarioResult interfaces, simulateBankDefaultScenario(startState, signalSequence) — walks through signal sequence, returns trace + cleanExit boolean.
+  * SECTION 6: BANK_DEFAULT_HONEST_STATE constant with 5 non-negotiable §74 fields (bankDefaultStateModelDesigned:true, bankDefaultOperationalWorkflow:true, bankDefaultContractValidated:false, bankDefaultLegalValidated:false, bankDefaultProductionReady:false) + bankDefaultHonestState() function returning the const + BANK_DEFAULT_FINAL_STATUS string + BANK_DEFAULT_FINAL_STATUS_COLOR="AMBER".
+  * SECTION 7: BankDefaultReport interface + generateBankDefaultReport() returning { moduleId, specVersion, directiveSection, principle, states[8], stateConfigs, contractualQuestions[11], honestState, finalStatus, finalStatusColor, transitionSignals, signalPriority }.
+- Smoke-tested via bun runtime (./smoke-bdr-test.ts): MODULE_ID="v25.2-bank-default-resolution-1.0"; PRINCIPLE="MITHQAL is NOT the financial guarantor"; 8 states correctly ordered; 8 state configs present; 11 contractual questions IDs 1-11; HONEST-STATE EXACT MATCH=true (all 5 fields match spec); all 8 forward transitions work (ACTIVE→RESTRICTED→LIQUIDITY_STRESS→SUSPENDED→DEFAULT→INSOLVENT→RESOLUTION→EXIT); EXIT stays EXIT on any signal; scenario simulation walks full ACTIVE→EXIT in 7 steps with 7 transitions and cleanExit=true.
+- Typecheck: bunx tsc --noEmit src/lib/bank-default-resolution.ts — 0 errors.
+- Lint: bunx eslint src/lib/bank-default-resolution.ts — 0 errors.
+- Color palette: amber/emerald/red/gray prose only — NO indigo/blue. (Module is pure TypeScript with no UI constants.)
+
+Stage Summary:
+- New module: src/lib/bank-default-resolution.ts (1045 lines) — §48 Bank Default & Resolution Framework fully implemented.
+- 8-state lifecycle: ACTIVE → RESTRICTED → LIQUIDITY_STRESS → SUSPENDED → DEFAULT → INSOLVENT → RESOLUTION → EXIT.
+- 9 behavioral dimensions per state (newIssuance, existingTransfer, redemption, backingStatus, liquidity, customerTreatment, receivingBankTreatment, reconciliation, resolutionProcedure) — fully populated in BANK_STATE_CONFIGS.
+- 11 contractual questions answered (CONTRACTUAL_QUESTIONS) with explicit principle per question.
+- Controlling principle stated non-negotiably: "MITHQAL is NOT the financial guarantor" (exported as PRINCIPLE constant and repeated in every state config and question answer where relevant).
+- assessBankTransition(currentState, signals) — forward-only, signal-priority-driven, returns { from, to, transitioned, trigger, reason, signals }.
+- simulateBankDefaultScenario(startState, signalSequence) — walks scenario, returns trace + cleanExit boolean.
+- bankDefaultHonestState() — returns 5 non-negotiable §74 fields with exact values (designed:true, workflow:true, contract:false, legal:false, production:false).
+- generateBankDefaultReport() — full structured report with all required fields.
+- HONEST STATE preserved: SPECIFIED, NOT CONTRACTED; APPROVED FOR INSTITUTIONAL ENGAGEMENT, NOT FOR PRODUCTION USE; finalStatusColor="AMBER".
+- 0 typecheck errors, 0 lint errors, smoke tests all pass.
+
+---
+Task ID: 2-e
+Agent: Three-Book Separation Builder
+Task: Build src/lib/three-book-separation.ts implementing §51 (3 books, anti-commingling, honest state).
+
+Work Log:
+- Read /home/z/my-project/worklog.md (last ~200 lines — V25-2-FINAL-RESERVE-SPEC at line 2883 onward: 50-section controlling spec, MODULE_ID pattern "v25.2-...-1.0", HONEST_STATE record with finalStatus="APPROVED CANDIDATE FOR CONTROLLED TESTING — NOT PRODUCTION-AUTHORIZED", §1 non-custodial principle: "The Protected Backing Cell is a bank-side identified/earmarked allocation", §3 RR_strategic=1.30 target, BackingBreakdown interface as the reserve primitive).
+- Read /home/z/my-project/src/lib/mtq-final-reserve-spec.ts head ~120 lines for the MODULE_ID constant pattern + HONEST_STATE object pattern + BackingBreakdown primitive + computeBackingBreakdown helper + PAR=1.00 reference value + §1 non-custodial framing ("MITHQAL does NOT: own the backing, custody it by default").
+- Verified src/lib/three-book-separation.ts does not already exist (LS src/lib — no three-book file present; nearest neighbors: canonical-supply-ledger.ts, corporate-settlement-account.ts, commercial-governance.ts).
+- Built /home/z/my-project/src/lib/three-book-separation.ts (975 lines) implementing §51 faithfully:
+  * MODULE_ID = "v25.2-three-book-separation-1.0" (matches the controlling-spec MODULE_ID naming convention).
+  * BookType discriminated union: "BOOK_A_CORPORATE" | "BOOK_B_BANK_MTQ_OBLIGATION" | "BOOK_C_PARTICIPANT_POSITION".
+  * BookAEntry interface — 8 §51 corporate fields (revenue, expenses, payroll, tax, technologyCosts, corporateAssets, corporateLiabilities, profitLoss) + bookType discriminator + entryId/timestamp/description.
+  * BookBEntry interface — 8 §51 bank-obligation fields (responsibleBank, applicableBacking, mtqOriginated, mtqOutstanding, redemptionObligations, liquidity, settlement, bankRisk) + discriminator.
+  * BookCEntry interface — 9 §51 participant fields (mtqBalance, availableMtq, reservedMtq, pendingMtq, sent, received, redemption, settlementHistory, bankMoneyLinkage) + discriminator.
+  * ThreeBookLedger interface { bookA: BookAEntry[]; bookB: BookBEntry[]; bookC: BookCEntry[] }.
+  * Canonical field-list constants BOOK_A_FIELDS / BOOK_B_FIELDS / BOOK_C_FIELDS for entry-schema reporting + cross-book field detection.
+  * createBookEntry(bookType, entry) — pure function, returns {ok, entryId, book, comminglingDetected, error}. TWO defensive layers: (1) discriminator mismatch check (entry.bookType must equal requested bookType), (2) detectCrossBookFields guard that scans for foreign-book fields (for untyped/API callers).
+  * attemptCommingling(type) — 4 ComminglingAttemptType values (CORPORATE_CASH_TO_MTQ_BACKING, BANK_OBLIGATION_TO_CORPORATE_REVENUE, CORPORATE_MTQ_TO_MITHQAL_ASSET, RESERVE_GAIN_TO_OPERATING_REVENUE). Every call returns {attempted:true, blocked:true, reason, bookViolated, illegalField}. runAllAntiComminglingTests() helper iterates all 4.
+  * reconcileBooks(ledger) — 4 ReconciliationCheck entries: (1) Book C Σ(MTQ) ≤ Book B Σ(MTQ outstanding) — participant positions are subset of bank obligation, gap is untracked participants; (2) Book B Σ(backing) ≥ 1.30 × Book B Σ(outstanding) — 130% strategic target met; (3) Book A profitLoss == revenue − expenses (no reserve-gain injection); (4) verifyNoCommingling returns 0 violations. Returns {reconciled, checks, commingled, notes}.
+  * verifyNoCommingling(ledger) — returns ComminglingViolation[] (HIGH/MEDIUM severity). Checks: Book A P&L mismatch (HIGH), Book B backing-without-liquidity (MEDIUM, off-book funding), Book C missing bankMoneyLinkage (MEDIUM). Empty array = clean.
+  * transferBetweenBooksAuthorized(ledger, fromBook, toBook, amount, authorization) — pure function. Requires signed authorization with scope covering both books. 4 forbidden pairs (A↔B, A↔C) blocked even with authorization. Only B↔C permitted with signed+scoped authorization (redemption settlement scenario). Returns {ok, transferred, fromBook, toBook, authorized, reason}.
+  * generateBookSummary(bookType, ledger) — returns BookSummary per book with entryCount, fieldSchemas, totals (sum of each field across entries; Book B includes responsibleBankCount + avgBankRisk; Book C includes linkedBankCount).
+  * buildReferenceThreeBookLedger() — illustrative SIMULATED ledger: Book A MITHQAL corporate cash $50M for salaries/infra (corporateAssets=50M, profitLoss=0=revenue−expenses); Book B Reference-Responsible-Bank $130M applicableBacking, $100M MTQ originated + outstanding (130% target met, bankRisk=0.18); Book C Reference-Corporate-Participant $10M MTQ balance, $9.5M available + $0.5M reserved, bankMoneyLinkage=Reference-Responsible-Bank. The $90M gap between Book B outstanding ($100M) and Book C Σ balance ($10M) is documented as "participants not tracked in this Book C slice".
+  * threeBookHonestState() — EXACT §74 values: {threeBookDesign:true, threeBookOperational:false, threeBookEnforced:false}. Returned as a ThreeBookHonestState interface with literal-type true/false fields so the exact values are enforced at compile time.
+  * generateThreeBookReport() — returns {moduleId, books[3], entrySchemas, antiComminglingTests[4], reconciliation, comminglingViolations, honestState, principle, finalStatus}. Principle: "The three books must reconcile but must NEVER be economically commingled." finalStatus: "APPROVED CANDIDATE FOR CONTROLLED TESTING — NOT PRODUCTION-AUTHORIZED".
+- Type-checked with `bunx tsc --noEmit src/lib/three-book-separation.ts` — fixed one error (TS2352 AnyBookEntry → Record<string,unknown> cast needed `as unknown as` intermediate). Clean compile, 0 errors.
+- Linted with `bunx eslint src/lib/three-book-separation.ts` — 0 errors, 0 warnings.
+- Smoke-tested with bun runtime (/tmp/smoke_three_book.ts): MODULE_ID prints "v25.2-three-book-separation-1.0"; reference ledger matches spec exactly ($50M Book A, $130M backing/$100M outstanding Book B, $10M Book C); honest state prints {threeBookDesign:true, threeBookOperational:false, threeBookEnforced:false}; all 4 anti-commingling tests print [ATTEMPTED][BLOCKED] with reasons; reconciliation prints reconciled=true commingled=false with 4 PASS checks (Book C Σ=$10M ≤ Book B Σ=$100M with gap=$90M explained; Book B backing $130M ≥ 1.30×$100M=$130M target; Book A profitLoss=0=revenue−expenses; 0 commingling violations); verifyNoCommingling returns 0 violations; createBookEntry rejects Book A entry inserted into Book B (ok=false, comminglingDetected=true) and accepts Book A→Book A (ok=true, entryId=TEST-001); transferBetweenBooksAuthorized B→C no auth blocked (ok=false); A→B signed+scoped forbidden path blocked (ok=false, reason="forbidden commingling path...Signed authorization cannot override §51"); B→C signed+scoped permitted path succeeds (ok=true, transferred=1000000, authorized=true); full report has 3 books, 4 antiComminglingTests all blocked=true, honestState correct, principle correct, finalStatus correct.
+
+Stage Summary:
+- New module: src/lib/three-book-separation.ts (975 lines) implementing §51 Three-Book Economic Separation.
+- 3 books defined with full field schemas (Book A 8 corporate fields, Book B 8 bank-obligation fields, Book C 9 participant fields) per §51 directive.
+- 4 anti-commingling tests (§83) — all return blocked=true with documented reasons:
+  1. CORPORATE_CASH_TO_MTQ_BACKING — Book A cash cannot serve as Book B bank backing (violates §1 non-custodial principle).
+  2. BANK_OBLIGATION_TO_CORPORATE_REVENUE — Book B obligation cannot be booked as Book A revenue.
+  3. CORPORATE_MTQ_TO_MITHQAL_ASSET — Book C participant MTQ cannot be capitalized as Book A corporateAssets.
+  4. RESERVE_GAIN_TO_OPERATING_REVENUE — bank-side reserve appreciation cannot flow into Book A revenue.
+- createBookEntry two-layer commingling rejection: discriminator mismatch + cross-book field detection.
+- reconcileBooks 4-check reconciliation: Book C ≤ Book B (subset), Book B backing ≥ 130% target, Book A profitLoss==revenue−expenses, 0 commingling violations.
+- transferBetweenBooksAuthorized: 4 forbidden pairs (A↔B, A↔C) blocked even with signed authorization; only B↔C permitted with explicit signed+scoped authorization.
+- Reference ledger: Book A $50M corp cash, Book B $130M backing/$100M outstanding, Book C $10M participant balance — all SIMULATED. Reconciles cleanly.
+- HONEST STATE (§74) EXACT: threeBookDesign=true, threeBookOperational=false, threeBookEnforced=false — encoded as literal-type interface fields so values are compile-time enforced.
+- finalStatus preserved: "APPROVED CANDIDATE FOR CONTROLLED TESTING — NOT PRODUCTION-AUTHORIZED" (unchanged from controlling §V25.2 spec).
+- 0 lint errors, 0 type errors, smoke test 100% PASS.
+
+---
+Task ID: 2-a
+Agent: Protected Backing Cell Builder
+Task: Build src/lib/protected-backing-cell.ts implementing §47 (17-field PBC, anti-double-count, AvailableBacking formula).
+
+Work Log:
+- Read /home/z/my-project/worklog.md tail (prior V25-2 final-reserve-spec + V25-2 verification + Task 2-c Legal Liability + Task 2-d Licensing Matrix entries) for MODULE_ID/honest-state conventions and §74 discipline; final line ~3048.
+- Read /home/z/my-project/src/lib/mtq-final-reserve-spec.ts: header + PART A (§1-6 institutional backing + PAR/RR_strategic) + PART B (§37-42 ReserveAsset primitive, computeCounterpartyAdjustment, computeMarketReserve, computeAdjustedReserve, computeStressReserve, computeNAVs, computeReserveRatio, computeFSCR) + buildReferenceReserveAssets + generateFinalReserveSpecReport to absorb (a) MODULE_ID pattern "v25.2-...-1.0", (b) HONEST_STATE shape with finalStatus="APPROVED CANDIDATE FOR CONTROLLED TESTING — NOT PRODUCTION-AUTHORIZED" + finalStatusColor="AMBER", (c) honest-state discipline (designTimeSpec/liveOracleFeeds/bankContracted all boolean; no real bank contracted), (d) Report shape { moduleId, ..., honestState, finalStatus }.
+- Read /home/z/my-project/src/lib/reserve-policy-spec.ts header + grep for evidence/honest patterns (RESERVE_RATIO_SPEC + VALID_MODES SIMULATION/SHADOW/LIVE/PAPER/INSTITUTIONAL_TEST/PRODUCTION) to confirm cross-module vocabulary; PBC module is self-contained but compatible.
+- Created src/lib/protected-backing-cell.ts (1133 lines) implementing §47 Protected Backing Cell:
+  * MODULE_ID = "v25.2-protected-backing-cell-1.0"; PBC_SECTION = 47.
+  * PBC_EVIDENCE_STATES — 13 entries: 7 canonical (DESIGNED, IMPLEMENTED, INTEGRATED, TESTED, SANDBOX_VALIDATED, INSTITUTIONALLY_VALIDATED, PRODUCTION_READY) + 6 *_PENDING variants (DESIGNED_PENDING, IMPLEMENTED_PENDING, INTEGRATED_PENDING, TESTED_PENDING, SANDBOX_VALIDATED_PENDING, INSTITUTIONALLY_VALIDATED_PENDING); PRODUCTION_READY has no PENDING variant (terminal). PBC_CANONICAL_EVIDENCE_STATES exported separately.
+  * Enumerated status types: LegalStatus (CLEARED|CONFIRMED|PENDING_REVIEW|DISPUTED|ENCUMBERED_LEGAL|LIQUIDATED); EncumbranceStatus (FREE|PARTIALLY_ENCUMBERED|ENCUMBERED|FROZEN|PLEDGED_TO_MITHQAL|PENDING_RELEASE); AllocationStatus (UNALLOCATED|ALLOCATED|PARTIALLY_ALLOCATED|RESERVED|RELEASED); AssetType (9 values incl fiat-cash/fiat-sovereign/gold-physical-allocated/tokenized-gold/silver/digital-stablecoin/digital-treasury/money-market-fund); CustodianTier (5); JurisdictionRisk (APPROVED|WATCH|SANCTIONED|UNKNOWN); StatusColor restricted to amber|emerald|red|gray (NO indigo/blue).
+  * ProtectedBackingAsset interface (type/name/currency?/isin?/tokenId?/chain?); ProtectedBackingAttestation interface (kind/attester/at/evidenceHash/simulated); ProtectedBackingEvidence interface (evidenceState/attestations/lastTransitionAt/simulated).
+  * ProtectedBackingCell interface — the 17 canonical fields in spec order (backingId, institutionId, asset, quantity, valuation, haircut, legalStatus, custodian, jurisdiction, encumbranceStatus, allocationStatus, utilizedAmount, availableAmount, evidence, verificationTimestamp, effectiveDate, expiry) PLUS operational companion fields (encumberedAmount, allocatedObligationIds[], custodianTier, jurisdictionRisk, simulated) needed to enforce the anti-double-count rule and compute AvailableBacking.
+  * PBC_FORMULA const = "AvailableBacking = RecognizedBacking − EncumberedBacking − AlreadyAllocatedBacking"; PBC_ANTI_DOUBLE_COUNT_RULE const explicitly stating max-one-mtqObligationId.
+  * computeAvailableBacking(cell): RecognizedBacking = valuation × (1 − haircut); EncumberedBacking = clamp(encumberedAmount, 0, recognized); AlreadyAllocatedBacking = clamp(utilizedAmount, 0, recognized); AvailableBacking = max(0, Recognized − Encumbered − AlreadyAllocated); returns {recognizedBacking, encumberedBacking, alreadyAllocatedBacking, availableBacking, nonNegative, formula}.
+  * createProtectedBackingCell(input): validates backingId/institutionId/asset.name non-empty; quantity & valuation positive; haircut in [0,1]; encumbrance consistency; effectiveDate < expiry; valid ISO timestamps; known §73 evidence state; on success returns cell with utilizedAmount=0, availableAmount computed, allocationStatus=UNALLOCATED, allocatedObligationIds=[], simulated defaults true (SIMULATED). Returns ok:false with errors[] otherwise.
+  * allocateBacking(cell, amount, mtqObligationId): ANTI-DOUBLE-COUNT — REJECTS if cell.allocatedObligationIds contains any id != mtqObligationId (returns ok:false with explicit "anti-double-count violation" reason); same-obligation top-up permitted; capacity check rejects if newUtilized > availableBacking; on success updates utilizedAmount/availableAmount/allocatedObligationIds/allocationStatus.
+  * releaseAllocation(cell, mtqObligationId): if cell supports the obligation, resets utilizedAmount to 0, removes the id from allocatedObligationIds, sets allocationStatus=RELEASED, recomputes availableAmount; returns ok:false with reason if obligation not found.
+  * verifyNoDoubleCount(cells): scans all cells; returns DoubleCountViolation[] for cells where distinct allocatedObligationIds.size > 1 (empty array on clean cells — independent audit pass, complementing the allocate-time enforcement).
+  * checkEncumbrance(cell): returns {encumbranceStatus, encumberedAmount, freeBeforeAllocation = Recognized − Encumbered, blocked (true if FROZEN or ENCUMBERED), note}.
+  * isEligibleAsBacking(cell): 10-rule eligibility gate — legalStatus ∈ {CLEARED, CONFIRMED}; evidenceState ≥ INTEGRATED; verificationTimestamp present & within 90 days & not future; expiry in future; effectiveDate not in future; custodianTier ∉ {TIER4_SELF_CUSTODY, TIER_UNKNOWN}; jurisdictionRisk == APPROVED; encumbranceStatus ∉ {FROZEN, ENCUMBERED}; haircut ∈ [0, 0.20]; quantity & valuation positive; allocatedObligationIds ≤ 1. Returns {status: ELIGIBLE|ELIGIBLE_WITH_CONDITIONS|PENDING_VERIFICATION|INELIGIBLE|EXPIRED|LIQUIDATED, color, reasons[]}.
+  * generateProtectedBackingEvidence(cells): bundles per-cell evidence records, aggregated totals (recognized/encumbered/alreadyAllocated/available), doubleCountViolations, eligibility per cell, honestState; returns ProtectedBackingEvidencePackage with module+section+formula+antiDoubleCountRule.
+  * protectedBackingHonestState(): returns the EXACT §74 literal { protectedBackingModelImplemented: true, protectedBackingLiveCells: 0 }.
+  * buildReferenceProtectedBackingCells(): returns 4 SIMULATED PBCs covering the three §42 core sleeves — (1) USD cash $65M at SIMULATED Tier-1 US bank (NY), (2) allocated physical gold 12,000 oz ≈ $23.4M at SIMULATED LBMA bullion custodian (London), (3) USDC $2.6M at SIMULATED regulated stablecoin issuer (NY), (4) US Treasury Bill $39M (3-month) at SIMULATED regulated US custody with $2M partial encumbrance. All evidenceState=TESTED, simulated=true, custodian strings prefixed "SIMULATED —", attestations marked simulated=true, liveCells=0 per §74.
+  * generateProtectedBackingCellReport(): returns { moduleId, section=47, schema[17 fields with type+description], formula, antiDoubleCountRule, evidenceStates[13], canonicalEvidenceStates[7], honestState, eligibilityRules[10], referenceCells[4], referenceCellsLive=0, finalStatus, finalStatusColor="amber" }. finalStatus = "APPROVED CANDIDATE FOR CONTROLLED TESTING — NOT PRODUCTION-AUTHORIZED (model implemented; 0 live cells; all reference cells SIMULATED)".
+  * Code style: pure TypeScript, no React, no "use client"; JSDoc on every exported function; SIMULATED values clearly marked (custodian strings prefixed "SIMULATED —", simulated=true flag on cell + attestation + evidence); NO indigo/blue (StatusColor restricted to amber/emerald/red/gray; no color literal in module uses indigo/blue).
+- Smoke-tested via npx tsx: MODULE_ID matches; 13 evidence states; 4 reference cells all ELIGIBLE (emerald); computeAvailableBacking on USD cash: recognized=65,000,000 encumbered=0 allocated=0 available=65,000,000; on gold: recognized=22,932,000 available=22,932,000 (2% haircut on $23.4M); on USDC: recognized=2,522,000 available=2,522,000 (3% haircut); on UST: recognized=38,610,000 encumbered=2,000,000 available=36,610,000 (1% haircut + partial encumbrance). Anti-double-count verified: allocateBacking(cell, 1M, "mtq-obligation-A") → ok:true; allocateBacking(cell, 500K, "mtq-obligation-B") → ok:false with "anti-double-count violation: backing pbc-usd-cash-001 is already allocated to MTQ obligation 'mtq-obligation-A'; cannot also support 'mtq-obligation-B'"; allocateBacking(cell, 500K, "mtq-obligation-A") → ok:true (top-up to 1.5M); releaseAllocation(cell, "mtq-obligation-A") → ok:true (utilizedAmount→0, allocationStatus→RELEASED). verifyNoDoubleCount on reference cells → 0 violations. Evidence package totals: recognized=$129,064,000, encumbered=$2,000,000, allocated=$0, available=$127,064,000. Report.schema.length=17, referenceCellsLive=0, honestState={protectedBackingModelImplemented:true, protectedBackingLiveCells:0}.
+- Typecheck: npx tsc --noEmit on the new file → 0 errors (after fixing one Set-iteration downlevelIteration issue by switching `[...distinct]` to `Array.from(distinct)`). Project-wide tsc → 0 new errors attributable to protected-backing-cell.ts (pre-existing errors only in src/shadow/ and other unrelated files).
+- Lint: bunx eslint src/lib/protected-backing-cell.ts → exit 0, 0 errors, 0 warnings.
+
+Stage Summary:
+- New module: src/lib/protected-backing-cell.ts (1133 lines) — §47 Protected Backing Cell.
+- 17-field ProtectedBackingCell interface implemented in canonical spec order (backingId, institutionId, asset, quantity, valuation, haircut, legalStatus, custodian, jurisdiction, encumbranceStatus, allocationStatus, utilizedAmount, availableAmount, evidence, verificationTimestamp, effectiveDate, expiry) + operational companion fields (encumberedAmount, allocatedObligationIds[], custodianTier, jurisdictionRisk, simulated).
+- §47 formula implemented: AvailableBacking = RecognizedBacking − EncumberedBacking − AlreadyAllocatedBacking (Recognized = valuation × (1 − haircut); Encumbered = clamp(encumberedAmount, 0, recognized); AlreadyAllocated = clamp(utilizedAmount, 0, recognized); result clamped to ≥0).
+- Anti-double-count rule enforced BOTH at mutation time (allocateBacking rejects cross-obligation allocation with explicit "anti-double-count violation" reason) AND via independent audit pass (verifyNoDoubleCount returns DoubleCountViolation[] for any cell with >1 distinct obligation). Same-obligation top-up permitted.
+- §73 evidence states: 13 entries (7 canonical + 6 *_PENDING; PRODUCTION_READY is terminal, no PENDING variant).
+- §74 honest state EXACT: protectedBackingModelImplemented=true, protectedBackingLiveCells=0 (asserted by protectedBackingHonestState() and surfaced in evidence package + report).
+- 4 SIMULATED reference cells (USD cash / allocated gold / USDC / 3-month UST); ALL liveCells=0, ALL evidenceState=TESTED (NOT PRODUCTION_READY), ALL custodians prefixed "SIMULATED —", ALL simulated=true.
+- Color discipline: StatusColor restricted to amber|emerald|red|gray; no indigo/blue anywhere in module.
+- finalStatus = "APPROVED CANDIDATE FOR CONTROLLED TESTING — NOT PRODUCTION-AUTHORIZED (model implemented; 0 live cells; all reference cells SIMULATED)"; finalStatusColor = "amber".
+- Typecheck + lint clean on the new file. No API route / UI / blueprint changes in this task — pure library module per task scope.
+
+---
+Task ID: 2-f
+Agent: Systemic Exposure Engine Builder
+Task: Build src/lib/systemic-exposure-engine.ts implementing §52 (13 dimensions, bank-vs-system-wide, honest state).
+
+Work Log:
+- Read /home/z/my-project/worklog.md (lines 2763-2962) for v25.2 final-reserve-spec context (50-section engine, 130% target, 80/18/2 backing, HONEST_STATE pattern).
+- Read /home/z/my-project/src/lib/mtq-final-reserve-spec.ts (lines 1-150 + 355-454 + 1195-1234) for MODULE_ID pattern ("v25.2-final-reserve-spec-1.0"), HONEST_STATE exact-field shape, and CONCENTRATION_POLICY object (preferredEffective=0.15, hardMaxEffective=0.20, usdEffectiveCeiling=0.35, minFloor=0.005, constitutionalSanityCeiling=0.60).
+- Inspected src/lib/custody-bank-concentration.ts (existing 6-axis concentration engine: legalEntity/parentGroup/jurisdiction/technology/vaultLocation/operationalDependency, 25% hard / 15% target caps) as reference for the broader 13-dimension generalization.
+- Built src/lib/systemic-exposure-engine.ts (~1295 lines) implementing §52:
+  * MODULE_ID = "v25.2-systemic-exposure-engine-1.0", SPEC_VERSION, DIRECTIVE_SECTION="§52", CONCENTRATION_DIMENSION_COUNT=13.
+  * ConcentrationDimension type — 13 dimensions: bank, banking-group, country, currency, custodian, correspondent, settlement-rail, liquidity-provider, stablecoin-issuer, technology-provider, geopolitical-correlation, operational-correlation, bank-exposure (§76).
+  * ALL_DIMENSIONS exported array; ExposureStatus type (within | near-breach | breach | unknown); classifyStatus helper.
+  * ExposureBucket interface { dimension, entityId, entityName, exposureAmount, exposurePct, preferredLimit, hardLimit, status, metadata?{parentGroup, jurisdiction, growthDelta, correlatedDimensions, note} }.
+  * SystemicExposureSnapshot interface { timestamp, dimensions: Record<13, ExposureBucket[]>, totalExposure, constraintsMet, violations, nearBreaches, concentrationScore }.
+  * BankVsSystemWideResult interface { bankId, bankName, individualLimitOk, individualExposurePct, individualLimit, systemWideConcentrationOk, growthCreatesExcessConcentration, projectedExposurePct, projectedSystemConcentrationScore, details, recommendation }.
+  * CONCENTRATION_LIMITS object (§76 exact values): preferredCurrencyExposure 0.15 / hardCurrencyExposure 0.20; preferredBankExposure 0.15 / hardBankExposure 0.20; preferredCustodianExposure 0.15 / hardCustodianExposure 0.20; preferredCountryExposure 0.20 / hardCountryExposure 0.25; plus 9 other dimensions' preferred/hard caps (banking-group, correspondent, settlement-rail 0.25/0.35, liquidity-provider 0.20/0.30, stablecoin-issuer 0.10/0.15, technology-provider, geopolitical/operational correlation 0.30/0.40, bank-exposure dimension).
+  * limitsForDimension(d) — dimension→{preferred,hard} lookup switch.
+  * SYSTEMIC_EXPOSURE_HONEST_STATE (§74 EXACT 4 fields): systemicRiskEngineDesigned=true, systemicRiskEngineImplemented=true, systemicRiskMonitoringLive=false, systemicRiskProductionValidated=false. Comment block explicitly warns: "do NOT claim live monitoring with zero live institutional data."
+  * Input interfaces: SystemicBankInput (bankId/bankName/bankingGroup/country/currency/custodian/correspondent/settlementRail/liquidityProvider/stablecoinIssuer/technologyProvider/exposureAmount/growthDelta/individualLimitPct/geopoliticalCorrelation/operationalCorrelation), SystemicAssetInput, SystemicCustodianInput, SystemicProviderInput.
+  * evaluateSystemicExposure(banks, assets, custodians, providers) — single-source-per-dimension design (banks→9 dimensions, assets→2, custodians→2) to prevent double-counting; totalExposure = max(bankTotal, assetTotal, custodianTotal, providerTotal). Each dimension aggregates its primary source and computes exposurePct = entityExposure/totalExposure, then classifies status.
+  * checkBankVsSystemWide(bankId, snapshot) — Question A (individual exposure vs hard cap) + Question B (project exposure by growthDelta, check would-breach-hard/preferred, plus existing system-wide violations touching this bank's parentGroup). Returns recommendation (REDUCE/HOLD/MONITOR/REMEDIATE/routine).
+  * enhancedDMCEInput(snapshot, bankId) — REFERENCE input bundle for §3 DMCE: bankExposurePct, bankGrowthDelta, bankHardLimit, bankPreferredLimit, systemConcentrationScore, systemWideViolations, systemWideNearBreaches, correlatedDimensions[]. note field explicitly states "this module does NOT recompute DMCE".
+  * detectConcentrationBreaches(snapshot) — returns all hard-limit violations sorted by exposurePct desc.
+  * computeSystemicConcentrationScore(snapshot) — HHI-style 0-1 score: per-dimension sum of squared exposurePct, averaged across populated dimensions. Interpretation bands: <0.15 diversified, 0.15-0.30 moderate, >0.30 high, >0.50 extreme.
+  * correlatedExposure(dimensionA, dimensionB, snapshot) — detects pairs of buckets across two dimensions that share entityId/parentGroup/jurisdiction. Returns combinedExposurePct sorted desc.
+  * buildReferenceSystemicSnapshot() — SIMULATED illustrative inputs: 4 banks (BANK-001/-002/-003/-004), 9 assets (6 currencies: USD/EUR/CHF/JPY/SAR/SGD + 2 stablecoin issuers Circle/Tether), 3 custodians (CUST-A/-B/-C), 2 liquidity providers (LP-A/-B). Total reserve $100M. At least one near-breach (BANK-002 18%, CUST-C 17%, Circle 12%, SAR 20%) and multiple actual breaches (BANK-001 25%, BANK-003 32%, BANK-004 25%, CUST-A 48%, CUST-B 35%, USD 23%, EUR 29%, SWIFT 82%, TECH-1 83%, LP-A 50%, LP-B 50%, CORR-1 57%, country CH 32%).
+  * systemicExposureHonestState() — fresh copy of the §74 honest-state object.
+  * generateSystemicExposureReport() — full executive report: { moduleId, specVersion, directiveSection, dimensions[13], dimensionCount, limits, snapshot, bankVsSystemWideResults, honestState, principle, finalStatus="APPROVED CANDIDATE FOR CONTROLLED TESTING — NOT PRODUCTION-AUTHORIZED" }.
+- Smoke-tested via bun runtime:
+  * MODULE_ID: v25.2-systemic-exposure-engine-1.0
+  * Dimensions: 13 (all populated)
+  * Honest state: {designed:true, implemented:true, monitoringLive:false, productionValidated:false}
+  * Reference snapshot: totalExposure=$100M, 24 hard-limit violations across 13 dimensions, 10 near-breaches, concentration score 0.3848 (high — intentionally concentrated reference scenario).
+  * Bank-vs-system-wide for all 4 banks: BANK-001 (Q-A BREACH 25%, REDUCE), BANK-002 (Q-A OK 18%, growth would breach 24%, HOLD), BANK-003 (Q-A BREACH 32%, REDUCE), BANK-004 (Q-A BREACH 25%, REDUCE).
+  * Enhanced DMCE input for BANK-002: bankExposurePct=18%, growthDelta=6pp, systemConcentrationScore=0.3848, 5 correlatedDimensions (banking-group, country, correspondent, settlement-rail, liquidity-provider — all matching parentGroup/jurisdiction).
+  * Correlated exposure bank↔custodian: AE bank+custodian combined 73%, SA combined 53%, CH combined 49%.
+- Refactored evaluateSystemicExposure to use single-source-per-dimension design (banks for 9 dimensions, assets for 2, custodians for 2) to prevent the double-counting bug that was producing nonsensical >100% exposure percentages. Providers input is reserved for forward-compat (bank attributional fields already drive the liquidity-provider dimension).
+- Added metadata propagation (parentGroup/jurisdiction/growthDelta) to all dimension buckets so correlatedExposure and enhancedDMCEInput can identify systemic linkages.
+- Verified `bunx tsc --noEmit -p tsconfig.json` reports 0 errors in src/lib/systemic-exposure-engine.ts (target=ES2020; Map iteration OK).
+- Lint check: pre-existing 21 errors all in src/lib/use-wallet.ts (setState-in-effect / refs-during-render) — none in the new file.
+
+Stage Summary:
+- New module: src/lib/systemic-exposure-engine.ts (~1295 lines) — §52 System-Wide Exposure & Concentration
+- 13 concentration dimensions implemented (bank, banking-group, country, currency, custodian, correspondent, settlement-rail, liquidity-provider, stablecoin-issuer, technology-provider, geopolitical-correlation, operational-correlation, bank-exposure)
+- 9 exported functions (evaluateSystemicExposure, checkBankVsSystemWide, enhancedDMCEInput, detectConcentrationBreaches, computeSystemicConcentrationScore, correlatedExposure, buildReferenceSystemicSnapshot, systemicExposureHonestState, generateSystemicExposureReport)
+- 6 exported interfaces (ConcentrationDimension type, ExposureBucket, SystemicExposureSnapshot, BankVsSystemWideResult, EnhancedDMCEInput, CorrelatedExposureResult) + 4 input interfaces
+- CONCENTRATION_LIMITS exports all 13 dimensions' preferred/hard caps (§76 exact: currency 0.15/0.20, bank 0.15/0.20, custodian 0.15/0.20, country 0.20/0.25)
+- Reference snapshot: 4 banks, 9 assets (6 currencies, 2 stablecoin issuers), 3 custodians, 2 liquidity providers, $100M total — multiple near-breaches + actual breaches demonstrated across 13 dimensions
+- HONEST STATE preserved per §74: design + implementation COMPLETE; live monitoring + production validation NOT claimed (systemicRiskMonitoringLive=false, systemicRiskProductionValidated=false)
+- DMCE boundary preserved: enhancedDMCEInput returns REFERENCE inputs only; this module does NOT recompute DMCE (owned by mtq-final-reserve-spec.ts)
+- 0 TypeScript errors in the new file under project tsconfig; pre-existing lint errors are unrelated (use-wallet.ts)
+- finalStatus = "APPROVED CANDIDATE FOR CONTROLLED TESTING — NOT PRODUCTION-AUTHORIZED"
+
+---
+Task ID: 6-P1-CLOSURE-MAIN
+Agent: P1 Closure Coordinator (main)
+Task: Build the 6 missing P1 critical-gap frameworks + finality strengthening + contradiction scan + §87 status report + dashboard + blueprint section. Execute the §95 final developer instruction.
+
+Work Log:
+- Dispatched 6 parallel subagents (2-a through 2-f) for the P1 frameworks; all returned successfully:
+  * 2-a protected-backing-cell.ts (1133 lines) — 17-field PBC, anti-double-count, 0 live cells
+  * 2-b bank-default-resolution.ts (1044 lines) — 8 states, 11 contractual Qs, NOT guarantor
+  * 2-c legal-liability-framework.ts (724 lines) — 13 dims, 8 jurisdictions ALL PENDING, 0 validated
+  * 2-d licensing-entity-matrix.ts (784 lines) — 72 entries ALL REQUIRED_NOT_OBTAINED, 0 licenses
+  * 2-e three-book-separation.ts (975 lines) — 3 books, 4 anti-commingling tests all blocked
+  * 2-f systemic-exposure-engine.ts (1295 lines) — 13 dimensions, monitoring NOT live
+- Built src/lib/finality-before-mint.ts (~280 lines): 7 enforcement layers all ENFORCED, 10 bypass routes all BLOCKED, finalityBypassRisk MITIGATED_AT_CODE_LEVEL (was HIGH), finalityLayersEnforced 3→7.
+- Built src/lib/contradiction-scan.ts (~280 lines): 17 patterns, scans all src/lib/*.ts, classifies matches as TRUE_CONTRADICTION vs FALSE_POSITIVE_PROHIBITION. Fixed classifier to recognize regex/pattern-definition context. Result: 0 unresolved (target met).
+- Built src/lib/implementation-status-report.ts (~290 lines): §87 status table (9 requirements), §74 honest state (all fields), §91 institutional gates (13, 0 passed), §90 acceptance criteria (19/23 met = 83%, honest).
+- Created 9 API routes (src/app/api/mtq-*/route.ts): protected-backing-cell, bank-default-resolution, legal-liability-framework, licensing-entity-matrix, three-book-separation, systemic-exposure-engine, finality-before-mint, contradiction-scan, implementation-status. All return HTTP 200 (verified).
+- Built src/components/p1-closure-dashboard.tsx (~430 lines): 9-section dashboard fetching all 9 endpoints, institutional amber/emerald/red palette, NO indigo/blue. Sections: §54 Finality (7 layers + 10 bypass tests), §47 PBC (17-field + reference cells), §48 Bank Default (8-state flow + 11 Qs), §49+§50 side-by-side (legal registry + licensing matrix), §51+§52 side-by-side (three-book + systemic), §77 Contradiction (17 patterns + 0 unresolved), §87 Status (acceptance progress + status table + gates + honest state), Closing.
+- Mounted P1ClosureDashboard in public-site.tsx closure tab (after FinalReserveSpecDashboard).
+- Created docs/blueprint/_v25_2_audit_closure_section.md (~323 lines) documenting all 13 sub-sections.
+- Created scripts/append_v25_2_audit_closure.py (idempotent). Ran it: blueprint 78,744 → 79,067 lines (+323). Re-ran: idempotent confirmed.
+- Verified via Agent Browser: opened http://localhost:3000/, clicked Institutional Closure tab, polled — P1 dashboard fully loaded at poll 1 (p1:true, fin:true, pbc:true, bank:true, con0:true, closing:true). All 9 API endpoints HTTP 200. §87 API confirms: 19/23 acceptance criteria met (83%), 0/13 institutional gates passed, finalityLayersEnforced=7/7, validatedJurisdictions=0, licensesObtained=0, honest=true, productionAuthorized=false.
+- Environmental note: dev server is OOM-prone (3.9GB RAM, no swap, no root to add swap) under the combined load of the huge home route + 9 concurrent dashboard fetches. Server sometimes dies within ~20-30s. Dashboard verified loaded before OOM occurs.
+
+Stage Summary:
+- 9 new modules delivered (~7,200 total lines):
+  * 6 P1 frameworks (§47-52): 5,955 lines
+  * finality-before-mint (§54): ~280 lines [3→7 layers, HIGH→MITIGATED]
+  * contradiction-scan (§77): ~280 lines [0 unresolved]
+  * implementation-status-report (§87): ~290 lines [19/23 acceptance, 0/13 gates]
+- 9 API routes (all HTTP 200)
+- 1 dashboard (p1-closure-dashboard.tsx, ~430 lines, mounted in closure tab)
+- Blueprint: §V25.2.AUDIT-CLOSURE appended (78,744 → 79,067 lines, +323, idempotent)
+- §95 final developer instruction executed:
+  1. Audited current implementation against all requirements ✓
+  2. Identified existing code satisfying each requirement ✓
+  3. Extended existing code (no duplicate systems) ✓
+  4. Reconciled historical config conflicts (§49, §75 — 0 unresolved) ✓
+  5. Implemented missing/weak controls (6 P1 + finality + contradiction) ✓
+  6. Ran validation suite (§84 bypass tests 10/10, §77 scan 0 unresolved, §87 19/23) ✓
+  7. Updated blueprint (§V25.2 + §V25.2.AUDIT-CLOSURE appended) ✓
+  8. Evidence-based status report (§87 — honest, no inflation) ✓
+- HONEST STATE preserved: NOT PRODUCTION-AUTHORIZED. 0/13 institutional gates passed. All 6 P1 frameworks are IMPLEMENTED at code level; institutional validation (legal opinions, licenses, bank contracts, pilot transactions) remains the gating requirement.
