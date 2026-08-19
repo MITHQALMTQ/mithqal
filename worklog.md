@@ -2832,3 +2832,20 @@ Stage Summary:
 - 1 new component file (~500 lines)
 - 15 API integrations
 - Tabbed interface for all v25.0 institutional closure modules
+
+---
+Task ID: PHASE3-V25-1-API-ENDPOINTS
+Agent: v25.1 API Endpoints Builder
+Task: Create 21 new /api/v25.1/* endpoints + discovery route.
+
+Work Log:
+- Created 22 route files (21 endpoints + 1 discovery)
+- All return SIMULATED status (no real bank/provider/asset contracted)
+- POST endpoints (3): conversions/execute, mtq/mint, mtq/redeem
+- GET endpoints (18): assets, assets/eligibility, providers, providers/eligibility, corridors, rails, conversions, conversions/quote, conversions/finality, reserves, reserves/protected-backing, liquidity, risk, geopolitical-exposure, concentration, stress, regulatory, assurance
+- Discovery route returns full v25.1 executive report
+
+Stage Summary:
+- 22 files created in src/app/api/v25.1/
+- 0 lint errors
+- All endpoints return v25.1 architecture data from the core module
