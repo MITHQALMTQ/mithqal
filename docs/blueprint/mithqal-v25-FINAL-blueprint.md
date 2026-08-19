@@ -77977,3 +77977,118 @@ This v25.1 amendment:
 
 <!-- §V25.1-END -->
 
+
+---
+
+# §V25.1.GOV — CONSTITUTIONAL GOVERNANCE CROSS-REFERENCE
+
+**Task ID:** V25-1-GOV-CROSS-REF
+**Date:** 2026-08-19
+**Purpose:** Cross-reference the constitutional governance provisions from the original Constitution (Part I, Articles I-XVII) with the v25.0/v25.1 architecture amendments.
+
+The original Constitution (preserved in the v19 archive at Articles I-XVII) contains governance provisions that remain constitutionally valid and binding. These provisions are NOT superseded by v25.0/v25.1 — they are the **constitutional layer** underneath the v25.0/v25.1 architecture.
+
+## §V25.1.GOV.1 — Decision Hierarchy (Article III — Preserved)
+
+When constitutional objectives conflict, the following 7-priority hierarchy governs:
+
+1. Constitutional Invariants — Absolute protection — Never overridable
+2. Solvency and Reserve Integrity — Reserves ≥ supply — Never overridable
+3. Redemption Certainty — Every unit redeemable — Never overridable
+4. Legal Compliance — Operate within law — Overridable only by Priorities 1-3
+5. Institutional Stability — Survive stress — Overridable only by Priorities 1-4
+6. Operational Efficiency — Cost-effective operations — Overridable only by Priorities 1-5
+7. Innovation — Evolve and improve — Overridable only by Priorities 1-6
+
+**Governing Principle:** No lower-priority objective may override a higher-priority objective.
+
+## §V25.1.GOV.2 — Amendment Philosophy (Article XII — Preserved)
+
+Every amendment must satisfy ALL of the following Five Criteria:
+
+1. Preserve Identity — The amendment must not change what the Institution fundamentally is
+2. Preserve Invariants — The amendment must not violate any constitutional invariant
+3. Improve Stability — The amendment must improve the Institution's stability
+4. Increase Institutional Trust — The amendment must increase trust in the Institution
+5. Never Reduce Redeemability — The amendment must not reduce the right to redeem
+
+If any criterion fails, the amendment is void regardless of vote count.
+
+## §V25.1.GOV.3 — Interpretation Clause (Article XIII — Preserved)
+
+Where ambiguity exists, interpretation shall favor:
+- Preservation of Constitutional Invariants
+- Institutional Stability
+- Solvency
+- Neutrality
+- Redeemability
+
+Rules of Construction:
+1. Narrow Construction of Exceptions
+2. Broad Construction of Protections
+3. Prohibition Against Circumvention
+4. Interpretation Serves Constitution
+
+## §V25.1.GOV.4 — Language Standards (Article XVI — Preserved + Enforced in UI)
+
+### Forbidden Words (Hype/Revolutionary/Future/Replacement/Dominance/Comparison)
+- best, largest, greatest, most advanced, leading, premier, ultimate, perfect
+- revolutionary, disruptive, game-changing, paradigm-shifting, unprecedented
+- future of finance, next generation, the future is here
+- replace, substitute, eliminate, supplant, supersede
+- dominate, world reserve, global reserve, hegemon, supremacy
+- next Bitcoin, crypto's answer to, blockchain's answer to
+
+### Required Words
+- constitutional, institutional, institutional-grade, framework, infrastructure
+- prudence, resilience, stability, neutrality, transparency, auditability
+- settlement, reserve, redemption, solvency, finality, verification, attestation
+
+### Enforcement
+These language standards are enforced in:
+- All UI text (src/components/*.tsx)
+- All API responses (src/app/api/*/route.ts)
+- All blueprint sections
+- All documentation
+- All external communications
+
+## §V25.1.GOV.5 — Five-Year Independent Review (Article XVII — Preserved)
+
+Every 5 years, an Independent Review Panel of 9 experts (3 economists, 3 technologists, 3 lawyers) assesses:
+
+1. Reserve Adequacy
+2. Algorithmic Performance
+3. Governance Effectiveness
+4. Regulatory Compliance
+5. Technological Security
+
+The Panel publishes a full report. The Council considers recommendations. Implementation follows constitutional processes. Constitutional invariants cannot be violated even for Panel recommendations.
+
+## §V25.1.GOV.6 — Emergency Governance (Article X — Preserved + Updated)
+
+If the Monetary Council fails to achieve quorum for 90 consecutive days:
+- Emergency Custodian appointed by Independent Review Panel
+- Limited powers: maintain reserves, honor redemptions, halt minting, convene new Council
+- Maximum duration: 180 days
+- Cannot change constitutional invariants, reserve composition, fees, or policy
+
+This is **supplemented** by the v25.1 Safe States framework (§44):
+- NORMAL → WATCH → RESTRICTED → EMERGENCY → MINT_FROZEN → SETTLEMENT_RESTRICTED → SAFE_HALT
+- Each state defines allowed/blocked operations, required approvals, automatic actions, escalation, recovery conditions
+
+## §V25.1.GOV.7 — Corporate Structure Update
+
+The original Constitution specified 2 entities (Entity A: Institution/non-profit + Entity B: Yield Vehicle/for-profit).
+
+**v25.0/v25.1 UPDATE:** The corporate structure is now 5 entities (per §V25.0.D.C):
+1. Founder/Shareholders
+2. MITHQAL Holding (for-profit parent)
+3. MITHQAL Operating Company (for-profit operator)
+4. MITHQAL Technology Company (for-profit technology/IP)
+5. MITHQAL Foundation (independent nonprofit — constitutional oversight)
+
+The Yield Vehicle (Entity B) is **superseded** by the Technology Company + Holding Company model. Article VIII (Yield Separation) is preserved as the principle of separation between the nonprofit constitutional layer and the for-profit commercial layer.
+
+---
+
+**END OF §V25.1.GOV — CONSTITUTIONAL GOVERNANCE CROSS-REFERENCE**

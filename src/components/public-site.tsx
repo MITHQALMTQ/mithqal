@@ -1368,7 +1368,7 @@ function LegalStatus() {
           </div>
         </div>
 
-        {/* Entity B — The Yield Vehicle (for-profit investment) */}
+        {/* Entity B — Technology Company (for-profit) */}
         <div className="mt-4 rounded-2xl border border-line bg-ink-card/40 p-6">
           <div className="flex items-start gap-3">
             <TrendingUp className="mt-0.5 h-6 w-6 shrink-0 text-fg-muted" />

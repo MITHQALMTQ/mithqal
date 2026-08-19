@@ -42,7 +42,7 @@ const PRESENTER_NOTES: Record<string, string> = {
   moat:
     "Credibility compounds. Each audit, each frozen clause, each Council seat filled is permanent. USDT/USDC structurally cannot copy this.",
   ask:
-    "Be explicit: this is Entity B equity. MTQ is never sold. Lead investors co-design the cap table. Target close: 3 months. Soft-circles open now.",
+    "Be explicit: this is Operating Company equity. MTQ is never sold. Lead investors co-design the cap table. Target close: 3 months. Soft-circles open now.",
   status:
     "Close on the Formation Committee. Ask for: advisor introductions, anchor candidate referrals, and pre-seed conversations. Then stop talking.",
 };

@@ -94,7 +94,7 @@ const FAQS: FaqItem[] = [
     id: "can-i-invest",
     question: "Can I invest in MTQ?",
     answer:
-      "No. MTQ is never sold unbacked. You can mint MTQ by depositing eligible reserves, or invest in the Operating Company (Entity B) via equity. The entire ICO/IDO/IEO playbook is forbidden by the Constitution — by constitutional invariant.",
+      "No. MTQ is never sold unbacked. You can mint MTQ by depositing eligible reserves, or invest in the Operating Company via equity. The entire ICO/IDO/IEO playbook is forbidden by the Constitution — by constitutional invariant.",
     category: "Operations",
     tags: ["invest", "ico", "equity", "fundraising"],
   },
@@ -182,7 +182,7 @@ const FAQS: FaqItem[] = [
     id: "is-this-ico",
     question: "Is this an ICO?",
     answer:
-      "No. The entire ICO/IDO/IEO playbook is forbidden by the Constitution — by constitutional invariant. Fundraising occurs through Entity B (equity), not through MTQ. MTQ is minted only against verified reserves; it is never sold unbacked to raise capital.",
+      "No. The entire ICO/IDO/IEO playbook is forbidden by the Constitution — by constitutional invariant. Fundraising occurs through the Operating Company (equity), not through MTQ. MTQ is minted only against verified reserves; it is never sold unbacked to raise capital.",
     category: "Operations",
     tags: ["ico", "ido", "ieo", "token sale", "fundraising"],
   },

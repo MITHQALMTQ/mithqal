@@ -344,7 +344,7 @@ function Hero() {
               { k: "Blueprint", v: "v24.2.1", s: "1.46M-char Constitution" },
               { k: "Capital", v: "Pre-seed", s: "Pre-institutional — founder dedication phase" },
               { k: "Entity", v: "JOZOUR LLC", s: "Registered (NJ, USA)" },
-              { k: "Target raise", v: "$0.25–8M", s: "Pre-seed → Seed (Entity B)" },
+              { k: "Target raise", v: "$0.25–8M", s: "Pre-seed → Seed (Operating Company)" },
             ].map((c) => (
               <div key={c.k} className="bg-ink-soft p-4 sm:p-5">
                 <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-fg-muted">
@@ -501,7 +501,7 @@ function ArchitectureSection() {
           <span className="gold-text">possible</span>
         </>
       }
-      intro="The Institution must stay neutral and non-profit — it cannot take equity or distribute profit without destroying itself. So we separate the monetary authority from the commercial engineering company. Investors buy into the company, not the institution. This is the single most important structural decision in the entire plan."
+      intro="The Institution must stay neutral and non-profit — it cannot take equity or distribute profit without destroying itself. So we separate the constitutional settlement institution from the commercial engineering company. Investors buy into the company, not the institution. This is the single most important structural decision in the entire plan."
     >
       <div className="grid gap-5 lg:grid-cols-3">
         {ENTITIES.map((e, i) => (
@@ -552,7 +552,7 @@ function ArchitectureSection() {
             {
               icon: Banknote,
               t: "Investors get real equity",
-              d: "Entity B is a normal company — shares, options, dividends, an eventual exit. Fundable by VCs and angels.",
+              d: "The Operating Company is a normal company — shares, options, dividends, an eventual exit. Fundable by VCs and angels.",
             },
             {
               icon: Layers,
@@ -657,7 +657,7 @@ function FundingSection() {
           <span className="gold-text">a token sale</span>
         </>
       }
-      intro="Every dollar enters the Operating Company (Entity B) as equity, or the Institution (Entity A) as a grant or reserve deposit. None of it mints MTQ. Ranked from most accessible at zero budget to the end-state of self-sustaining fee revenue."
+      intro="Every dollar enters the Operating Company as equity, or the Institution (Entity A) as a grant or reserve deposit. None of it mints MTQ. Ranked from most accessible at zero budget to the end-state of self-sustaining fee revenue."
     >
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {FUNDING_SOURCES.map((s, i) => (
@@ -741,7 +741,7 @@ const GANTT_PHASES: GanttPhase[] = [
     startMonth: 0,
     endMonth: 3,
     milestones: [
-      "Entity B incorporated",
+      "Operating Company incorporated",
       "Constitution published",
       "MTQ testnet live",
       "3–5 advisors",
@@ -949,7 +949,7 @@ function RoadmapSection() {
           <span className="gold-text">~30 months</span>
         </>
       }
-      intro="Built directly on the Constitution's own Institutional Lifecycle (Formation → Operation → Expansion). Each phase has one capital milestone, one structural milestone, and one KPI. Capital enters Entity B (equity) and Entity A (grants/reserves) — never as MTQ."
+      intro="Built directly on the Constitution's own Institutional Lifecycle (Formation → Operation → Expansion). Each phase has one capital milestone, one structural milestone, and one KPI. Capital enters the Operating Company (equity) and the Foundation (grants/reserves) — never as MTQ."
     >
       {/* Gantt — visual phase timeline at the top */}
       <GanttChart />

@@ -234,7 +234,7 @@ export const STATUS_ITEMS = [
   { label: "Specification", value: "1.46M chars", state: "Public on GitHub", tone: "done" },
   { label: "GitHub repository", value: "Live", state: "Open source", tone: "done" },
   { label: "Entity A — Settlement Institution", value: "JOZOUR LLC (NJ)", state: "Active — formation phase", tone: "done" },
-  { label: "Entity B — Yield Vehicle", value: "Not yet formed", state: "Planned Phase 1", tone: "next" },
+  { label: "Entity B — Technology Company", value: "Not yet formed", state: "Planned Phase 1", tone: "next" },
   { label: "Article VIII — Yield Separation", value: "Absolute", state: "Constitutional invariant", tone: "done" },
   { label: "FinCEN MSB registration (Entity A)", value: "In preparation; not yet filed", state: "pending", tone: "next" },
   { label: "Testnet (MTQ)", value: "Live simulator", state: "Phase 0", tone: "done" },
@@ -255,7 +255,7 @@ export const STATUS_ITEMS = [
  *     • Currently operating through JOZOUR LLC during the formation phase
  *     • Will be re-domiciled as a Foundation (Entity A) in Phase 1
  *
- *   Entity B — The Yield Vehicle (for-profit, regulated investment fund)
+ *   Entity B — Technology Company (for-profit, technology operator)
  *     • Separate regulated legal investment vehicle
  *     • Accepts fiat subscriptions only (never MTQ)
  *     • Invests in sukuk / asset-backed income instruments
@@ -315,16 +315,16 @@ export const LEGAL_STATUS = {
     nameControl: "JOZO",
     custodyAccount: "Custody Account A — segregated reserve custody (to be established with a qualified custodian in Phase 1)",
   },
-  // Entity B — The Yield Vehicle (for-profit investment)
+  // Entity B — Technology Company (for-profit technology operator)
   entityB: {
-    name: "Mithqal Yield Vehicle",
+    name: "Mithqal Technology Company",
     type: "For-profit regulated investment fund (separate legal entity)",
     role: "Accepts fiat subscriptions only, invests in sukuk / asset-backed income. Never holds, lends, stakes, or uses MTQ as collateral. Never commingles with Institution reserves.",
-    targetStructure: "Regulated investment fund or similar entity — to be licensed and supervised by competent securities authorities in Phase 1",
+    targetStructure: "Technology company (for-profit) or similar entity — to be licensed and supervised by competent securities authorities in Phase 1",
     status: "Not yet formed — targeted for Phase 1",
     governance: "Own board, own management, own auditors — independent of the Monetary Council",
     custodyAccount: "Custody Account B — separate from Institution reserves",
-    mtqExposure: "Zero — the yield vehicle never holds, lends, or accepts MTQ",
+    mtqExposure: "Zero — The Technology Company never holds, lends, or accepts MTQ",
   },
   // Constitutional + regulatory status (applies to Entity A)
   fincenMSB: "FinCEN Form 107 — In preparation (Entity A)",
@@ -345,8 +345,8 @@ export const LEGAL_STATUS = {
     { label: "Entity A — Sole Member", value: "Mohamed S. Eltonsy", status: "On file" },
     { label: "Entity A — Target Structure", value: "Foundation (re-domicile in Phase 1)", status: "Planned" },
     // Entity B items
-    { label: "Entity B — Yield Vehicle", value: "Mithqal Yield Vehicle (for-profit)", status: "Not yet formed" },
-    { label: "Entity B — Target Structure", value: "Regulated investment fund", status: "Planned Phase 1" },
+    { label: "Entity B — Technology Company", value: "Mithqal Technology Company (for-profit)", status: "Not yet formed" },
+    { label: "Entity B — Target Structure", value: "Technology company (for-profit)", status: "Planned Phase 1" },
     { label: "Entity B — MTQ Exposure", value: "Zero (never holds/lends/accepts MTQ)", status: "Constitutional invariant" },
     { label: "Entity B — Custody", value: "Custody Account B (separate from A)", status: "Planned" },
     // Regulatory
