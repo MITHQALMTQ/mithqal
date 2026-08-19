@@ -2849,3 +2849,32 @@ Stage Summary:
 - 22 files created in src/app/api/v25.1/
 - 0 lint errors
 - All endpoints return v25.1 architecture data from the core module
+
+---
+Task ID: PHASE4-5-V25-1-DASHBOARD-BLUEPRINT
+Agent: v25.1 Dashboard + Blueprint Builder
+Task: Build v25.1 UI dashboard + append §V25.1 to blueprint.
+
+Work Log:
+- Created v25-1-dashboard.tsx (1574 lines) — fetches GET /api/v25.1
+- Mounted in public-site.tsx architecture tab (after BankFundedIssuanceDashboard)
+- Appended §V25.1 to blueprint (1219 lines added; 76760 → 77979)
+- Created idempotent append script: scripts/append_v25_1.py
+- Blueprint section documents all 34 components (§4-§34), 4 UX domains (§36),
+  14 security requirements (§38), 28 DB tables (§39), 21 API endpoints (§41),
+  15 policy decisions (§42), stress scenarios (§43), 7 safe states (§44),
+  18 absolute rules (§57), honest state declaration, final status.
+- Dashboard surfaces 10 sections: header, 18 absolute rules, 8-asset registry,
+  finality-before-mint 8-step sequence, 10 depeg controls, 7 safe states,
+  reserve architecture with adaptive bands, 13 geopolitical dimensions,
+  8 multi-rail types + fallback matrix, closing final-status banner.
+- Color palette: amber/gold, emerald, red, gray — NO indigo/blue.
+
+Stage Summary:
+- 1 new UI component (src/components/v25-1-dashboard.tsx — 1574 lines)
+- 1 new idempotent script (scripts/append_v25_1.py — 322 lines)
+- Blueprint grew by 1219 lines (76760 → 77979)
+- 0 lint errors in new files (v25-1-dashboard.tsx passes clean; only
+  pre-existing setState errors in unrelated files)
+- All v25.1 architecture visible in UI + blueprint
+- /api/v25.1 returns HTTP 200 (verified in dev.log)

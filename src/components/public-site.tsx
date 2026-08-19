@@ -71,6 +71,7 @@ import { MBGDashboard } from "@/components/mbg-dashboard";
 import { FinalIntegratedArchitectureDashboard } from "@/components/final-integrated-architecture-dashboard";
 import { NonCustodialReserveDashboard } from "@/components/non-custodial-reserve-dashboard";
 import { BankFundedIssuanceDashboard } from "@/components/bank-funded-issuance-dashboard";
+import { V25_1Dashboard } from "@/components/v25-1-dashboard";
 import { FinalPilotGateDashboard } from "@/components/final-pilot-gate-dashboard";
 import { SCDeploymentClosureDashboard } from "@/components/sc-deployment-closure-dashboard";
 import { InstitutionalClosureDashboard } from "@/components/institutional-closure-dashboard";
@@ -1945,6 +1946,7 @@ export default function PublicSite() {
             <FinalIntegratedArchitectureDashboard />
             <NonCustodialReserveDashboard />
             <BankFundedIssuanceDashboard />
+            <V25_1Dashboard />
           </>
         )}
 
