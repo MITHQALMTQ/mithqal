@@ -75,6 +75,7 @@ import { V25_1Dashboard } from "@/components/v25-1-dashboard";
 import { FinalPilotGateDashboard } from "@/components/final-pilot-gate-dashboard";
 import { SCDeploymentClosureDashboard } from "@/components/sc-deployment-closure-dashboard";
 import { InstitutionalClosureDashboard } from "@/components/institutional-closure-dashboard";
+import { FinalReserveSpecDashboard } from "@/components/final-reserve-spec-dashboard";
 
 const Reveal = ({
   children,
@@ -1955,6 +1956,7 @@ export default function PublicSite() {
             <SCDeploymentClosureDashboard />
             <FinalPilotGateDashboard />
             <InstitutionalClosureDashboard />
+            <FinalReserveSpecDashboard />
             <LiveReadinessDashboard />
           </>
         )}

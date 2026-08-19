@@ -1,0 +1,2455 @@
+MITHQAL — MASTER FINAL IMPLEMENTATION, RECONCILIATION, CONTROL & BLUEPRINT UPDATE DIRECTIVE
+COO / CTO / CFO / CHIEF BANKING ARCHITECT / PROJECT MANAGER DIRECTIVE
+You are implementing the approved final corrections and reconciliation of the existing MITHQAL architecture.
+This is NOT a greenfield build.
+This is NOT permission to redesign MITHQAL.
+This directive exists to:
+reconcile the implementation with the existing blueprint;
+reconcile conflicting historical parameters;
+correct ownership and liability semantics;
+complete the six critical-gap frameworks;
+strengthen enforcement where the current implementation is only conceptual/API-level;
+preserve the existing bank architecture;
+preserve the existing MITHQAL/Foundation/Holding/Operating/Technology structure;
+preserve all correct constitutional principles;
+ensure the blueprint and implementation express exactly the same architecture;
+enforce strict evidence-state discipline;
+prevent accidental creation of a bank, exchange, custodian, reserve owner, or speculative financial vehicle;
+prepare the system for legal, banking, institutional and controlled-pilot validation.
+1. ABSOLUTE RULE — NO ARCHITECTURAL REDESIGN
+Do NOT replace the existing MITHQAL architecture unless the evidence demonstrates:
+legal impossibility;
+mathematically invalid design;
+impossible bank integration;
+fatal regulatory conflict;
+fatal security defect;
+fatal economic flaw;
+irreconcilable architectural contradiction.
+Otherwise:
+Extend, reconcile, strengthen and correct the existing architecture.
+Do not create parallel monetary architectures.
+Do not create competing reserve engines.
+Do not create competing bank integration layers.
+Do not create competing MTQ ledgers.
+Do not create duplicate governance structures.
+Do not create another conceptual version of the monetary architecture.
+2. ORGANIZATIONAL STRUCTURE — NON-NEGOTIABLE
+The organizational structure is:
+                         MITHQAL FOUNDATION
+                  Separate Individual Nonprofit
+                    Constitutional Steward
+                              │
+                              │
+                              │ Constitutional/
+                              │ Governance relationship
+                              │
+                              ▼
+                    MITHQAL HOLDING COMPANY
+                         For-Profit
+                              │
+                    ┌─────────┴─────────┐
+                    │                   │
+                    ▼                   ▼
+          MITHQAL OPERATING       MITHQAL TECHNOLOGY
+               COMPANY                 COMPANY
+2.1 MITHQAL Foundation
+The Foundation is:
+independent;
+nonprofit;
+separate from the Holding Company;
+not owned by the Holding Company;
+not a commercial subsidiary;
+constitutional steward.
+The Foundation is responsible for:
+constitutional stewardship;
+constitutional governance;
+standards oversight;
+independent aggregate oversight;
+constitutional amendment governance;
+Sharia-governance coordination where applicable.
+The Foundation MUST NOT:
+mint MTQ;
+authorize individual MTQ issuance;
+operate a bank;
+provide banking services;
+operate an exchange;
+buy/sell reserve assets as a commercial operator;
+transfer reserve assets;
+custody customer funds;
+custody MTQ backing;
+act as a liquidity provider;
+provide proprietary FX;
+receive private commercial profit distributions.
+Sharia governance must remain a governance/review function, not a substitute for:
+legal authorization;
+regulatory authorization;
+banking authorization;
+financial risk controls;
+technical authorization.
+3. MITHQAL HOLDING COMPANY
+The Holding Company:
+owns/controls the Operating Company;
+owns/controls the Technology Company;
+performs group-level ownership and governance;
+receives lawful subsidiary distributions where permitted;
+holds enterprise value in its subsidiaries.
+The Holding Company MUST NOT automatically:
+own MTQ backing;
+custody MTQ backing;
+guarantee MTQ;
+provide MTQ backing;
+act as a bank;
+act as a reserve manager;
+act as a liquidity provider;
+perform regulated financial activities merely by owning subsidiaries.
+4. MITHQAL OPERATING COMPANY
+The Operating Company is the institutional/commercial operating layer.
+It is responsible for:
+institutional operations;
+bank relationships;
+participant operations;
+settlement operations;
+corridor operations;
+institutional contracts;
+service delivery;
+commercial relationships;
+operational compliance activities where legally permitted;
+institutional support;
+commercial revenue.
+The Operating Company contains:
+MITHQAL MONETARY & RESERVE CONTROL DIVISION
+This division must be structurally separated from:
+sales;
+business development;
+bank relationship management;
+revenue-linked commercial functions.
+It is responsible for:
+backing-evidence monitoring;
+Protected Backing Cell monitoring;
+DMCE;
+system-wide exposure monitoring;
+custody evidence;
+certificates;
+reserve/backing reconciliation;
+proof-of-backing evidence;
+proof-of-liabilities evidence;
+systemic concentration;
+stress-state monitoring;
+liquidity monitoring.
+Commercial teams must have no authority to override Monetary & Reserve Control decisions.
+5. MITHQAL TECHNOLOGY COMPANY
+The Technology Company is responsible for:
+MITHQAL Core;
+MTQ ledger technology;
+MBG;
+APIs;
+workflow engine;
+policy engine;
+database;
+security;
+HSM/MPC integration;
+smart contracts where applicable;
+infrastructure;
+DevOps;
+observability;
+deployment;
+disaster recovery;
+software IP.
+The Technology Company must NOT:
+custody backing;
+act as a bank;
+guarantee MTQ;
+perform regulated financial activity merely because software supports the activity.
+6. FINAL MTQ POSITIONING
+MTQ MUST be described as:
+A neutral institutional cross-border settlement unit/instrument.
+Do NOT describe MTQ as:
+a sovereign currency;
+a central-bank currency;
+a CBDC;
+a USD-backed stablecoin;
+a USD peg;
+a BRICS currency;
+an anti-dollar currency;
+a retail cryptocurrency;
+an investment vehicle;
+a speculative token;
+an exchange-traded product;
+a bank;
+a replacement for commercial banks;
+a replacement for SWIFT.
+Corporates may use MTQ for:
+institutional settlement;
+treasury;
+cross-border payment;
+trade settlement;
+transaction denomination;
+where legally permitted.
+MITHQAL itself is NOT a trading venue.
+7. FINAL BANK/MITHQAL ECONOMIC RESPONSIBILITY MODEL
+The core model MUST remain:
+BANK / AUTHORIZED RESPONSIBLE INSTITUTION
+        =
+Financial backing +
+Banking obligation +
+Customer relationship +
+Bank liquidity +
+FX +
+Applicable redemption/settlement obligation
+
+MITHQAL
+        =
+Constitutional enforcement +
+Authorization +
+Settlement infrastructure +
+Verification +
+Reconciliation +
+Systemic risk control +
+Interoperability
+The responsible financial institution may be:
+participating bank;
+other authorized financial institution;
+where the jurisdiction legally permits the relevant structure.
+Do not hard-code "bank only" where the legal structure permits another regulated institutional obligor.
+8. MITHQAL IS NOT THE FINANCIAL GUARANTOR
+Implement permanent rules:
+MITHQAL_OWNS_MTQ_BACKING = FALSE
+
+MITHQAL_CUSTODIES_MTQ_BACKING_BY_DEFAULT = FALSE
+
+MITHQAL_FINANCIALLY_GUARANTEES_MTQ = FALSE
+MITHQAL may:
+define eligibility;
+verify evidence;
+calculate issuance capacity;
+enforce concentration rules;
+authorize issuance;
+operate settlement;
+reconcile;
+monitor risk.
+MITHQAL does NOT automatically:
+own backing;
+custody backing;
+fund backing;
+guarantee redemption from corporate funds;
+use operating capital as MTQ backing.
+9. BACKING CLASSIFICATION
+The implementation must permanently distinguish:
+QUALIFYING_INSTITUTIONAL_BACKING
+
+MITHQAL_VERIFICATION
+
+MITHQAL_RISK_VIEW
+
+MITHQAL_CORPORATE_CASH
+These must never be interchangeable.
+MITHQAL Corporate Cash
+Used for:
+salaries;
+development;
+infrastructure;
+legal;
+audit;
+cybersecurity;
+insurance;
+operating expenses;
+taxes;
+disaster recovery.
+It is NOT MTQ backing.
+10. MTQ ISSUANCE PRINCIPLE
+The definitive sequence is:
+Corporate
+   ↓
+Participating Bank / Authorized Responsible Institution
+   ↓
+KYC / KYB / AML / Sanctions
+   ↓
+Bank establishes applicable backing
+   ↓
+Protected Backing Evidence
+   ↓
+Bank requests MTQ issuance
+   ↓
+MBG
+   ↓
+MITHQAL Core
+   ↓
+Eligibility
+   ↓
+Jurisdiction
+   ↓
+Backing Verification
+   ↓
+Bank-Specific Risk
+   ↓
+System-Wide Risk
+   ↓
+Liquidity
+   ↓
+DMCE
+   ↓
+MITHQAL Monetary Authorization
+   ↓
+Finality Verification
+   ↓
+Deterministic Technical Mint
+Permanent rule:
+Bank requests. MITHQAL authorizes. Technical system executes.
+No:
+bank;
+human;
+Foundation;
+Holding Company;
+Operating Company;
+Technology Company
+may arbitrarily mint MTQ.
+11. BANK INTEGRATION — MBG
+Do NOT redesign MBG.
+Maintain:
+TRANSLATION, NOT TRANSFORMATION
+Canonical model:
+Corporate
+   ↓
+Existing Bank Portal
+   ↓
+Existing Bank Systems
+   ↓
+Existing Bank Interface
+   ↓
+MITHQAL Bank Gateway — MBG
+   ↓
+MITHQAL Core
+   ↓
+MTQ
+   ↓
+Receiving Bank MBG
+   ↓
+Receiving Bank
+   ↓
+Corporate
+The bank's existing systems remain authoritative for:
+core banking;
+customer accounts;
+KYC;
+KYB;
+AML/CFT;
+sanctions;
+FX;
+treasury;
+accounting;
+SWIFT;
+ISO 20022;
+existing payment rails.
+MITHQAL must not require core banking replacement.
+12. CUSTOMER-VISIBLE MTQ
+The customer SHOULD see MTQ where legally permitted.
+The bank portal can display:
+CORPORATE TREASURY
+
+JPY             ¥120M
+USD             $3.2M
+EUR             €1.8M
+MTQ             2.4M
+And:
+International Settlement
+
+Amount:              500,000 MTQ
+Settlement Unit:     MTQ
+Recipient:            U.S. Corporate
+Receiving Currency:  USD
+FX / Conversion:     Bank / Authorized Provider
+Settlement Status:   MTQ SETTLED
+Customer does NOT need:
+seed phrase;
+private key;
+crypto wallet;
+gas;
+chain selection;
+blockchain node management.
+13. MTQ CUSTOMER MODES
+Maintain:
+Mode A — Pass-Through Settlement
+JPY
+ ↓
+Bank
+ ↓
+MTQ
+ ↓
+Receiving Bank
+ ↓
+USD
+Customer can use MTQ without necessarily maintaining a substantial MTQ treasury position.
+Mode B — Institutional MTQ Treasury Holding
+Where permitted:
+Corporate
+ ↓
+Bank
+ ↓
+MTQ Institutional Position
+ ├── Hold
+ ├── Receive
+ ├── Send
+ ├── Settle
+ └── Redeem
+Availability depends on:
+jurisdiction;
+bank;
+customer type;
+product authorization;
+legal classification.
+14. SWIFT RELATIONSHIP
+Maintain:
+SWIFT / ISO 20022
+=
+Messaging / connectivity
+
+MITHQAL
+=
+Settlement infrastructure /
+interoperability /
+orchestration /
+policy enforcement
+
+MTQ
+=
+Neutral settlement unit
+MITHQAL is:
+SWIFT-compatible and complementary.
+Do NOT build or describe MITHQAL as:
+a SWIFT replacement.
+15. MULTI-RAIL
+Maintain support architecture for:
+SWIFT;
+ISO 20022;
+REST/API;
+host-to-host;
+SFTP;
+treasury;
+ERP;
+domestic payment rails;
+RTGS;
+tokenized deposit networks;
+CBDC infrastructure;
+approved digital settlement networks.
+MITHQAL should remain rail-neutral.
+16. RESERVE/BACKING POLICY — CURRENT CONTROL
+The current implementation target is:
+RR 
+strategic
+​	
+ =130%
+with:
+Fiat=80%
+Bullion=18%
+DigitalLiquidity=2%
+and:
+EmergencyResilience≤15%
+separate from the core.
+IMPORTANT:
+These are the current policy-candidate values pending the official quantitative-engine rerun and independent reproduction.
+Until that rerun succeeds:
+POLICY_STATUS = CANDIDATE
+MODEL_VALIDATION = PENDING
+Do not falsely label these statistically finalized immutable constitutional constants.
+17. CORE BACKING VS EMERGENCY RESILIENCE VS OPERATING CAPITAL
+These three categories MUST remain separate:
+A. Core institutional backing
+130% strategic target.
+B. Emergency resilience capacity
+Up to 15%, separate and non-double-counted.
+C. Ordinary operating capital
+Corporate funds for business operations.
+Never count:
+Operating Capital
+as:
+MTQ Backing
+18. 130% MATHEMATICS
+Let:
+S 
+t
+​	
+  = MTQ outstanding;
+PAR = accounting reference unit;
+L 
+t
+​	
+  = MTQ contractual liability.
+Then:
+L 
+t
+​	
+ =S 
+t
+​	
+ ×PAR
+Target:
+R 
+target
+​	
+ =1.30×L 
+t
+​	
+ 
+Example:
+S=100M
+PAR=1
+L=100M
+R 
+target
+​	
+ =130M
+19. RESERVE VALUATION
+Market value:
+R 
+m
+​	
+ = 
+a
+∑
+​	
+ Q 
+a
+​	
+ P 
+a
+​	
+ 
+Adjusted/prudential value:
+R 
+a
+​	
+ = 
+a
+∑
+​	
+ Q 
+a
+​	
+ P 
+a
+​	
+ (1−H 
+a
+​	
+ )C 
+a
+​	
+ 
+Stress value:
+R 
+l
+​	
+ = 
+a
+∑
+​	
+ Q 
+a
+​	
+ P 
+a
+​	
+ (1−H 
+a
+​	
+ )C 
+a
+​	
+ S 
+a
+​	
+ 
+where:
+Q 
+a
+​	
+  = quantity;
+P 
+a
+​	
+  = market price;
+H 
+a
+​	
+  = haircut;
+C 
+a
+​	
+  = counterparty/jurisdiction/operational adjustment;
+S 
+a
+​	
+  = stress factor.
+Coverage:
+RR= 
+L
+R 
+a
+​	
+ 
+​	
+ 
+Stress Coverage:
+FSCR= 
+L
+R 
+l
+​	
+ 
+​	
+ 
+No asset may be counted twice.
+20. CORE RESERVE COMPOSITION
+The current policy candidate is:
+80% Monetary / Fiat
+18% Bullion
+2% Digital Liquidity
+Within the 130% target this means:
+Fiat:
+130 × 80% = 104
+
+Bullion:
+130 × 18% = 23.4
+
+Digital:
+130 × 2% = 2.6
+21. FIAT STRUCTURE
+The 80% fiat sleeve is divided by function:
+50% of total core reserve
+=
+Front-Line Liquidity
+
+30% of total core reserve
+=
+Strategic Fiat / Currency Diversification
+Together:
+50%+30%=80%
+For 130 units:
+65=FrontLine
+39=StrategicFiat
+The duration constraint for applicable interest-bearing assets remains short-duration, with the existing policy constraint retained unless separately validated.
+22. FIAT RESERVE CURRENCY UNIVERSE
+Current Layer-A reserve-eligible currency universe:
+USD
+EUR
+CHF
+JPY
+GBP
+SGD
+AED
+SAR
+CNY
+CAD
+AUD
+CNY remains conditional under the currency-quality/admission mechanism.
+The Constitution must NOT permanently hard-code a fixed list of named reserve currencies.
+Currency admission must remain based on objective criteria including:
+liquidity;
+convertibility;
+international usage;
+market depth;
+settlement capability;
+monetary quality;
+volatility;
+geopolitical resilience;
+legal accessibility;
+operational resilience.
+23. LAYER-B SETTLEMENT-ONLY CURRENCIES
+The following are not automatically core reserve currencies:
+EGP
+INR
+KRW
+TRY
+BRL
+MXN
+ZAR
+IDR
+MYR
+THB
+plus future currencies that pass the settlement-admission process.
+Critical rule:
+SETTLEMENT_ELIGIBILITY
+≠
+RESERVE_ELIGIBILITY
+Example:
+EGP
+ ↓
+Egyptian Bank / Authorized FX Provider
+ ↓
+MTQ
+may be supported without adding EGP to the core reserve basket.
+24. CURRENCY DYNAMIC WEIGHTING
+For currency i:
+Structural score
+C 
+i
+​	
+ =0.50COFER 
+i
+​	
+ +0.40SWIFT 
+i
+​	
+ +0.10BIS 
+i
+​	
+ 
+Momentum
+M 
+i
+​	
+ (t)= 
+P 
+i
+​	
+ (t)
+P 
+i
+​	
+ (t−12m)
+​	
+ 
+Bound:
+0.95≤M 
+i
+​	
+ ≤1.05
+Mean reversion
+R 
+i
+​	
+ =1+0.05(LTA 
+i
+​	
+ −C 
+i
+​	
+ )
+Bound:
+0.98≤R 
+i
+​	
+ ≤1.02
+25. VOLATILITY ATTENUATION
+EWMA:
+σ 
+t
+2
+​	
+ =0.94σ 
+t−1
+2
+​	
+ +0.06r 
+t
+2
+​	
+ 
+where:
+r 
+t
+​	
+ =ln(P 
+t
+​	
+ /P 
+t−1
+​	
+ )
+and:
+σ 
+t
+​	
+ = 
+σ 
+t
+2
+​	
+ 
+​	
+ 
+Attenuation:
+A 
+t
+​	
+ = 
+⎩
+⎨
+⎧
+​	
+  
+1.00,
+1− 
+0.03
+σ 
+t
+​	
+ −0.02
+​	
+ ,
+0.50,
+​	
+  
+σ 
+t
+​	
+ ≤0.02
+0.02<σ 
+t
+​	
+ <0.05
+σ 
+t
+​	
+ ≥0.05
+​	
+ 
+Combined:
+K 
+i
+​	
+ =1+A 
+t
+​	
+ (M 
+i
+​	
+ R 
+i
+​	
+ −1)
+26. LIQUIDITY ADJUSTMENT
+Use:
+L 
+i
+​	
+ =1+0.02( 
+MAD
+Liquidity 
+i
+​	
+ −Median
+​	
+ )
+Clamp the liquidity adjustment to ±5%.
+27. RAW AND FINAL CURRENCY WEIGHTS
+W 
+raw,i
+​	
+ =C 
+i
+​	
+ K 
+i
+​	
+ L 
+i
+​	
+ 
+Normalize:
+W 
+i
+norm
+​	
+ = 
+∑ 
+j
+​	
+ W 
+raw,j
+​	
+ 
+W 
+raw,i
+​	
+ 
+​	
+ 
+Then apply:
+eligibility;
+concentration;
+stress;
+geopolitical exposure;
+jurisdiction;
+liquidity;
+bank exposure;
+custodian exposure;
+correlated exposure;
+systemic concentration;
+substitution rules;
+minimum-floor rules.
+Output:
+W 
+i
+final
+​	
+ 
+with:
+i
+∑
+​	
+ W 
+i
+final
+​	
+ =1
+28. CURRENCY CONCENTRATION
+Current operative policy:
+Preferred:
+W 
+i
+effective
+​	
+ ≤15%
+Hard maximum:
+W 
+i
+effective
+​	
+ ≤20%
+The hard 20% limit overrides:
+yield;
+momentum;
+liquidity;
+commercial convenience;
+optimization preference.
+If older code contains a 60% concentration limit, it MUST NOT override this 20% operating maximum.
+29. EFFECTIVE CURRENCY EXPOSURE
+Effective exposure must include:
+direct currency;
+economically pegged currency;
+synthetic/correlated exposure where material;
+relevant digital exposure.
+For example:
+USD 
+effective
+​	
+ =USD 
+direct
+​	
+ +AED 
+USD−linked
+​	
+ +SAR 
+USD−linked
+​	
+ +material USD correlated exposure
+Do not allow the system to evade concentration limits by separating economically linked exposures.
+30. CURRENCY FALL RESPONSE
+Do NOT create a simplistic rule:
+currency falls X% = sell X%.
+Instead the price movement changes:
+momentum;
+volatility;
+CQS;
+liquidity;
+concentration;
+geopolitical score;
+stress.
+For currency weight w 
+i
+​	
+  and decline d:
+RR 
+′
+ =RR(1−w 
+i
+​	
+ d)
+Before active rebalancing.
+Weight drift:
+w 
+i
+′
+​	
+ = 
+1−w 
+i
+​	
+ d
+w 
+i
+​	
+ (1−d)
+​	
+ 
+Then risk/eligibility/rebalancing rules determine what happens next.
+31. CURRENCY LIFECYCLE
+Maintain:
+ACTIVE
+WATCH
+REDUCE
+RESTRICTED
+SUSPENDED
+PROHIBITED
+EMERGENCY
+If a currency falls below the quality requirement, the system may:
+observe;
+reduce;
+restrict;
+suspend;
+substitute;
+remove.
+Do not react to price alone.
+Immediate suspension may occur due to:
+sanctions;
+capital controls;
+legal restriction;
+severe liquidity impairment;
+severe operational failure;
+severe geopolitical disqualification.
+32. CURRENCY REMOVAL
+If currency i is removed:
+W 
+i
+​	
+ =0
+Renormalize:
+W 
+j
+′
+​	
+ = 
+1−W 
+i
+​	
+ 
+W 
+j
+​	
+ 
+​	
+ 
+for remaining eligible currencies.
+The exit must be recorded for governance/audit purposes.
+33. BULLION STRUCTURE
+Core target:
+Bullion=18%
+Gold is:
+Primary constitutional monetary anchor.
+Bullion corridor:
+15%≤Bullion≤25%
+34. GOLD
+Preferred form:
+physical;
+allocated;
+segregated;
+qualified institutional custody;
+independently evidenced;
+legally controlled;
+appropriately insured;
+non-double-counted.
+Gold is not:
+sole backing;
+guaranteed-profit instrument;
+USD peg mechanism.
+For quantity Q 
+G
+​	
+  and price P 
+G
+​	
+ :
+R 
+G
+​	
+ =Q 
+G
+​	
+ P 
+G
+​	
+ 
+After haircut/counterparty adjustment:
+R 
+G,a
+​	
+ =Q 
+G
+​	
+ P 
+G
+​	
+ (1−H 
+G
+​	
+ )C 
+G
+​	
+ 
+Gold remains strategic and is protected in the liquidation waterfall.
+35. SILVER
+Silver is conditional.
+Current target:
+Silver=0%
+unless the resilience contribution becomes positive.
+Decision function:
+SDC 
+Ag
+​	
+ =NetResilienceGain−NetCost
+where:
+NetResilienceGain=CVaR 
+improvement
+​	
+ +StressRR 
+improvement
+​	
+ +LCR 
+improvement
+​	
+ 
+and:
+NetCost=ExecutionCost+CustodyCost+VolatilityPenalty+LiquidityPenalty
+If:
+SDC 
+Ag
+​	
+ >0
+silver may be admitted under approved limits.
+Maximum conditional silver allocation:
+3%
+Do not automatically restore historical mandatory silver allocation.
+36. TOKENIZED GOLD
+Tokenized gold is NOT automatically equivalent to physical bullion.
+For eligible tokenized gold use:
+TGRS=0.20PhysicalBacking+0.15LegalTitle+0.15Custody+0.10Redemption+0.10IssuerReliability+0.10OracleReliability+0.08Settlement+0.05Liquidity+0.05OperationalResilience+0.02Jurisdiction
+Eligibility:
+TGRS≥8.0
+Conditional:
+6.0≤TGRS<8.0
+Haircut:
+H 
+TG
+​	
+ =max(5%,5%+(10−TGRS)×0.5%)
+Do not hard-code any historical PAXG allocation into the current 18% bullion target.
+37. DIGITAL LIQUIDITY
+Current policy candidate:
+D 
+normal
+​	
+ =2%
+Operational ceiling:
+D 
+operational
+​	
+ ≤3%
+Constitutional maximum:
+D 
+max
+​	
+ =5%
+Emergency:
+D 
+emergency
+​	
+ →0%
+Digital liquidity is:
+operational settlement/redemption liquidity, not the constitutional monetary anchor.
+38. DIGITAL ASSET CATEGORIES
+Current candidates:
+USDC
+Primary digital liquidity candidate.
+USDP
+Secondary regulated USD digital liquidity.
+EURC
+EUR digital diversification.
+BUIDL
+Tokenized government liquidity.
+DAI
+Conditional / normal target 0%.
+USDT
+Normal core digital allocation 0%; currently excluded from the core digital reserve policy.
+IMPORTANT:
+Do not blindly implement historical individual target figures that exceed the 2% normal sleeve.
+The 2% total digital sleeve is the controlling policy center.
+Individual digital asset weights must be optimizer outputs constrained by the digital sleeve limit.
+39. DIGITAL QUALITY SCORE
+Use:
+DRQS 
+i
+​	
+ =0.20Issuer+0.15Reserve+0.15Redemption+0.15Depeg+0.10Jurisdiction+0.10Custody+0.10Operational+0.05Liquidity
+Core threshold:
+DRQS 
+i
+​	
+ ≥7.5
+Conditional:
+DRQS 
+i
+​	
+ ≥6.0
+Algorithmic stablecoins are excluded.
+40. STABLECOIN RISK-ADJUSTED EXPOSURE
+Nominal:
+SE= 
+R 
+a
+​	
+ 
+∑ 
+i
+​	
+ StablecoinValue 
+i
+​	
+ 
+​	
+ 
+Risk-adjusted:
+SAE= 
+R 
+a
+​	
+ 
+∑ 
+i
+​	
+ StablecoinValue 
+i
+​	
+ ×DRQS 
+i
+−1
+​	
+ ×StressFactor 
+i
+​	
+ 
+​	
+ 
+Use SAE in:
+digital allocation;
+DMCE;
+stress;
+systemic risk.
+41. STABLECOIN STRESS
+StressDRQS 
+i
+​	
+ =DRQS 
+i
+​	
+ (1−SF 
+i
+​	
+ )
+with:
+SF 
+i
+​	
+ =0.20Depeg+0.20Redemption+0.15Liquidity+0.15Counterparty+0.10Custody+0.10Jurisdiction+0.10SettlementDelay
+Use:
+EffectiveDRQS 
+i
+​	
+ =min(DRQS 
+i
+​	
+ ,StressDRQS 
+i
+​	
+ )
+for stressed optimization.
+42. STABLECOIN STATE MACHINE
+Use:
+NORMAL
+WATCH
+REDUCE
+SUSPEND
+SUBSTITUTE
+EMERGENCY EXIT
+Triggers may include:
+depeg;
+liquidity deterioration;
+redemption slowdown/failure;
+reserve opacity;
+issuer distress;
+regulatory action;
+sanctions;
+chain/settlement failure.
+Emergency exit may convert digital liquidity to eligible Tier-1 cash/monetary liquidity where permitted.
+43. USDT — FINAL TREATMENT
+USDT is:
+NOT:
+normal core MTQ digital backing;
+core monetary reserve;
+constitutional anchor;
+automatic reserve asset.
+USDT MAY be:
+external input;
+conversion input;
+bridge asset;
+institutional settlement asset;
+liquidity asset;
+when:
+jurisdiction permits;
+provider is authorized;
+issuer/network is eligible;
+KYC/KYB/AML/Sanctions pass;
+liquidity passes;
+depeg conditions pass;
+settlement finality is established.
+Canonical:
+USDT
+ ↓
+Asset Eligibility
+ ↓
+Jurisdiction
+ ↓
+Provider Authorization
+ ↓
+KYC/KYB/AML/Sanctions
+ ↓
+Pricing / RFQ
+ ↓
+Authorized Conversion
+ ↓
+Finality
+ ↓
+Bank / Institutional Value
+ ↓
+Backing Recognition if eligible
+ ↓
+DMCE
+ ↓
+MTQ
+Never assume:
+1USDT=1MTQ
+and never automatically use:
+1USDT=1USD
+for MTQ issuance.
+44. TOKENIZED BANK MONEY
+Maintain a separate category:
+Tokenized bank money / tokenized deposits ≠ stablecoins
+The architecture should support future institutional interoperability with:
+commercial bank tokenized deposits;
+permissioned bank money;
+central-bank reserves;
+atomic settlement.
+Do not assume implementation exists merely because the policy exists.
+Status must reflect actual implementation.
+45. CBDC
+CBDC support is:
+jurisdiction-controlled;
+permissioned;
+central-bank dependent.
+MITHQAL must not create universal CBDC access.
+CBDC interoperability requires:
+authorized participant;
+applicable central bank rules;
+legal validation;
+technical rail;
+settlement finality.
+46. ASSET-TO-MTQ GATEWAY
+Implement:
+Asset
+ ↓
+Identification
+ ↓
+Eligibility
+ ↓
+Jurisdiction
+ ↓
+Compliance
+ ↓
+Authorized Provider
+ ↓
+RFQ / Pricing
+ ↓
+Execution
+ ↓
+Settlement Finality
+ ↓
+Backing Recognition where applicable
+ ↓
+DMCE
+ ↓
+MTQ Mint
+MITHQAL orchestrates.
+Regulated third parties perform regulated conversion activities.
+MITHQAL must NOT become an exchange by implementing this gateway.
+47. PROTECTED BACKING CELL
+A ProtectedBackingCell must include at minimum:
+backing ID;
+institution ID;
+asset;
+quantity;
+valuation;
+haircut;
+legal status;
+custodian;
+jurisdiction;
+encumbrance status;
+allocation status;
+utilized amount;
+available amount;
+evidence;
+verification timestamp;
+effective date;
+expiry.
+Formula:
+AvailableBacking=RecognizedBacking−EncumberedBacking−AlreadyAllocatedBacking
+Same backing must never support multiple MTQ obligations.
+48. BANK DEFAULT & RESOLUTION FRAMEWORK
+Maintain states:
+ACTIVE
+RESTRICTED
+LIQUIDITY_STRESS
+SUSPENDED
+DEFAULT
+INSOLVENT
+RESOLUTION
+EXIT
+For each state define:
+new issuance;
+existing MTQ transfer;
+redemption;
+backing status;
+liquidity;
+customer treatment;
+receiving-bank treatment;
+reconciliation;
+resolution procedure.
+But distinguish:
+bankDefaultStateModelDesigned = true
+
+bankDefaultOperationalWorkflow = true
+
+bankDefaultContractValidated = false
+
+bankDefaultLegalValidated = false
+
+bankDefaultProductionReady = false
+Do not classify the state machine itself as a completed contractual default mechanism.
+The final contractual/legal framework must answer:
+Who owes the holder?
+Who owes the receiving bank?
+What is the holder's claim?
+What happens to existing MTQ?
+Can it continue transferring?
+Can it redeem?
+Who absorbs losses?
+What happens to backing?
+What does the resolution authority control?
+How is reconciliation performed?
+What is the customer treatment?
+MITHQAL is not the financial guarantor.
+49. MTQ LEGAL & ECONOMIC LIABILITY FRAMEWORK
+Create/maintain:
+MTQLegalLiability
+including:
+jurisdiction;
+legal nature;
+obligor;
+holder rights;
+redemption;
+settlement finality;
+creditor treatment;
+insolvency treatment;
+transferability;
+pledgeability;
+governing law;
+dispute resolution;
+licensing classification.
+States:
+LEGAL_MODEL_DESIGNED = true
+
+LEGAL_REGISTRY_IMPLEMENTED = true
+
+LEGAL_OPINIONS_OBTAINED = false
+
+VALIDATED_JURISDICTIONS = 0
+Never invent legal classifications.
+50. LICENSING / ENTITY MATRIX
+For every activity and jurisdiction map:
+Activity
+ ↓
+Jurisdiction
+ ↓
+Legal Activity
+ ↓
+Required License / Authorization
+ ↓
+Responsible Entity
+ ↓
+MITHQAL Role
+ ↓
+Bank Role
+ ↓
+Custodian Role
+ ↓
+Liquidity Provider Role
+ ↓
+Status / Evidence
+At minimum assess:
+banking;
+payment services;
+custody;
+FX;
+digital asset/CASP;
+securities;
+commodity;
+CBDC access;
+settlement activities.
+Never interpret technical implementation as regulatory authorization.
+51. THREE-BOOK ECONOMIC SEPARATION
+Maintain:
+Book A — MITHQAL Corporate
+Contains:
+revenue;
+expenses;
+payroll;
+tax;
+technology costs;
+corporate assets;
+corporate liabilities;
+profit/loss.
+Book B — Bank MTQ Obligation Ledger
+Contains:
+responsible bank/institution;
+applicable backing;
+MTQ originated;
+MTQ outstanding;
+redemption obligations;
+liquidity;
+settlement;
+bank risk.
+Book C — Corporate Participant Position
+Contains:
+MTQ balance;
+available MTQ;
+reserved MTQ;
+pending MTQ;
+sent;
+received;
+redemption;
+settlement history;
+bank-money linkage.
+These books must reconcile but must never be economically commingled.
+Status must currently be:
+threeBookDesign = true
+threeBookOperational = false
+threeBookEnforced = false
+until actual runtime/accounting enforcement exists.
+52. SYSTEM-WIDE EXPOSURE & CONCENTRATION
+Maintain:
+evaluateSystemicExposure()
+checkBankVsSystemWide()
+EnhancedDMCEInput
+The system must answer:
+Question A
+Is Bank A within its individual limit?
+Question B
+Does Bank A's growth create excessive system-wide concentration?
+Measure:
+bank;
+banking group;
+country;
+currency;
+custodian;
+correspondent;
+settlement rail;
+liquidity provider;
+stablecoin issuer;
+technology provider;
+geopolitical correlation;
+operational correlation.
+Status:
+systemicRiskEngineDesigned = true
+systemicRiskEngineImplemented = true
+systemicRiskMonitoringLive = false
+systemicRiskProductionValidated = false
+Do not claim live monitoring with zero live institutional data.
+53. DMCE
+DMCE must use, at minimum:
+qualifying backing;
+backing quality;
+haircut;
+bank exposure;
+system-wide exposure;
+liquidity;
+currency;
+country;
+custodian;
+provider;
+settlement risk;
+stablecoin risk;
+geopolitical risk;
+concentration;
+stress.
+Conceptually:
+DMCE=min(BackingCapacity,LiquidityCapacity,BankRiskCapacity,SystemicCapacity,CurrencyCapacity,CustodyCapacity,GeopoliticalCapacity,SettlementCapacity)
+DMCE represents risk-adjusted permitted issuance capacity, not headline backing.
+54. FINALITY-BEFORE-MINT
+Hard invariant:
+NO FINAL SETTLEMENT⇒NO MTQ MINT
+Current architecture has seven intended enforcement layers:
+API;
+workflow;
+policy engine;
+authorization;
+ledger/state machine;
+database/authoritative transaction-state protection;
+smart contract / authoritative settlement control where applicable.
+Current status must distinguish:
+finalityPolicyDefined = true
+
+finalityLayersDesigned = 7
+
+finalityLayersRequired = 7
+
+finalityLayersEnforced = 3
+
+finalityProductionReady = false
+
+finalityBypassRisk = HIGH
+Complete all required authoritative layers before production authorization.
+Test every known bypass path.
+55. FIVE-WAY RECONCILIATION
+Automate reconciliation between:
+MITHQAL Canonical Ledger
+        ↕
+Bank MTQ Subledger
+        ↕
+Corporate MTQ Position
+        ↕
+Institutional Backing Registry
+        ↕
+Proof of MTQ Liabilities
+Add:
+scheduling;
+exception detection;
+alerts;
+break resolution;
+escalation;
+audit logging;
+evidence package generation.
+56. PROOF OF BACKING / LIABILITIES
+Maintain:
+backing evidence;
+liabilities evidence;
+MTQ supply;
+mint;
+burn;
+redemption;
+backing utilization;
+encumbrance;
+concentration;
+reconciliation.
+No "proof" should be marked externally assured until an actual independent assurance process exists.
+57. REGULATORY OBSERVABILITY
+Implement:
+RBAC;
+regulator-specific permissions;
+read-only access where applicable;
+privacy restrictions;
+jurisdiction filters;
+audit logs;
+regulator-access evidence.
+Regulators should be able, where lawfully authorized, to inspect:
+MTQ outstanding;
+bank exposure;
+backing;
+coverage;
+liquidity;
+concentration;
+mint/burn;
+redemption;
+stress;
+sanctions events;
+incidents.
+58. LIQUIDITY SEPARATION
+Keep these separate:
+Institutional Backing
+Settlement Liquidity
+Emergency Liquidity
+Conversion Liquidity
+Operating Capital
+Do not count:
+ordinary credit line;
+emergency facility;
+conversion capacity;
+as qualifying MTQ backing unless the applicable policy explicitly permits it and legal enforceability/evidence requirements are met.
+59. LIQUIDITY ARCHITECTURE
+Maintain ILPS.
+It should measure:
+immediate liquidity;
+short-term liquidity;
+settlement liquidity;
+redemption liquidity;
+emergency liquidity;
+corridor liquidity.
+Liquidity facilities must be separately identified.
+60. REBALANCING
+Maintain:
+continuous monitoring;
+daily target calculation;
+trigger-based execution;
+normal approximate 2-percentage-point threshold.
+Hard triggers override ordinary tolerance:
+constitutional limit breach;
+eligibility loss;
+sanctions;
+severe depeg;
+severe liquidity impairment;
+solvency/stress breach;
+concentration breach.
+For discretionary rebalance:
+NetBenefit=RiskReductionBenefit−TotalTradeCost
+Execute only when:
+NetBenefit>0
+unless a hard rule requires action.
+61. TRANSACTION COST MODEL
+Maintain:
+FX spread;
+dealer/broker fee;
+slippage;
+market impact;
+custody;
+settlement;
+tax;
+other execution/lifecycle costs.
+Post-trade backing value must deduct actual costs.
+62. LIQUIDATION WATERFALL
+Preserve the strategic sequence:
+digital liquidity;
+cash;
+short-duration sovereign liquidity;
+non-USD FX;
+conditional silver;
+tokenized gold;
+physical gold last.
+Gold remains the constitutional anchor and is not ordinary front-line cash.
+63. GEOPOLITICAL RISK
+Monitor:
+country;
+jurisdiction;
+currency;
+bank;
+banking group;
+custodian;
+correspondent;
+provider;
+settlement rail;
+stablecoin issuer;
+technology provider;
+sanctions;
+capital controls;
+geopolitical events.
+Potential responses:
+reduce limits;
+freeze issuance;
+suspend asset;
+suspend corridor;
+reroute;
+activate fallback;
+move to safe state.
+64. SETTLEMENT SOVEREIGNTY / FALLBACK
+Maintain corridor configuration:
+Primary Rail
+Secondary Rail
+Emergency Rail
+Safe Halt
+Fallback routing does not need to be production-complete before the first controlled pilot unless required by that corridor, but the architecture must support it.
+65. CORPORATE MTQ ACCOUNTING
+The bank's corporate treasury interface should be able to display:
+MTQ balance;
+available;
+reserved;
+pending;
+received;
+sent;
+conversion;
+redemption;
+fees;
+valuation.
+Do not automatically call MTQ an ordinary bank deposit.
+Legal classification remains jurisdiction-dependent.
+66. PRICING / VALUATION
+Maintain:
+Market NAV
+NAV 
+m
+​	
+ = 
+S
+R 
+m
+​	
+ 
+​	
+ 
+Prudential NAV
+NAV 
+p
+​	
+ = 
+S
+R 
+a
+​	
+ 
+​	
+ 
+Stress NAV
+NAV 
+s
+​	
+ = 
+S
+R 
+l
+​	
+ 
+​	
+ 
+PAR remains an accounting/settlement reference.
+PAR must NOT become a hidden USD peg.
+67. PROFIT MODEL
+Operating Company
+Can earn lawful fees from:
+connectivity;
+settlement;
+reconciliation;
+institutional services;
+corridor services;
+enterprise integration;
+operational services.
+Technology Company
+Can earn lawful technology/infrastructure fees for:
+software;
+MBG;
+APIs;
+enterprise technology;
+infrastructure;
+technical support.
+Holding Company
+May receive lawful subsidiary distributions and enterprise value.
+Banks
+May earn:
+FX;
+banking fees;
+MTQ service fees;
+treasury;
+liquidity;
+custody where legally permitted.
+Liquidity Providers
+May earn:
+spreads;
+conversion fees;
+liquidity fees.
+Custodians
+May earn:
+custody;
+administration;
+reporting.
+Reserve appreciation and reserve trading gains are NOT MITHQAL commercial revenue.
+MITHQAL must not depend on:
+speculation;
+MTQ appreciation;
+leverage;
+retail trading;
+reserve investment profit;
+proprietary FX trading.
+68. THREE-BOOK ECONOMIC ISOLATION
+The following must remain separate:
+MITHQAL CORPORATE ECONOMICS
+        ≠
+BANK MTQ OBLIGATIONS
+        ≠
+CORPORATE MTQ POSITIONS
+No corporate profit is automatically reserve backing.
+No reserve gain is automatically MITHQAL revenue.
+No customer MTQ position is automatically MITHQAL corporate asset.
+69. ASSET ROLE SEPARATION
+Every asset must have independent classification:
+QUALIFYING_BACKING
+INPUT
+SETTLEMENT
+LIQUIDITY
+CONVERSION_ONLY
+PROHIBITED
+Never infer:
+input = reserve
+or:
+settlement = reserve.
+70. USDT FINAL RULE
+USDT:
+Core Digital Backing:
+NO
+
+Normal Digital Liquidity:
+NO
+
+External Input:
+CONDITIONALLY YES
+
+Conversion Bridge:
+CONDITIONALLY YES
+
+Institutional Settlement Asset:
+CONDITIONALLY YES
+Subject to:
+jurisdiction;
+provider;
+issuer;
+sanctions;
+liquidity;
+redemption;
+settlement;
+operational status.
+71. EGP FINAL RULE
+EGP:
+Core Reserve Currency:
+NOT AUTOMATICALLY
+
+Settlement Currency:
+YES, where legally/operationally supported
+
+Conversion Currency:
+YES, through authorized banks/providers
+The same structure applies to the other Layer-B settlement currencies.
+72. TOKENIZED DEPOSITS
+Do NOT classify tokenized deposits as stablecoins automatically.
+Maintain separate treatment for:
+bank-issued tokenized deposits;
+CBDC;
+stablecoins;
+bank money;
+MTQ.
+73. EVIDENCE-STATE DISCIPLINE
+Use exactly:
+DESIGNED
+IMPLEMENTED
+INTEGRATED
+TESTED
+SANDBOX_VALIDATED
+INSTITUTIONALLY_VALIDATED
+PRODUCTION_READY
+Also use:
+MODEL_VALIDATION_PENDING
+LEGAL_VALIDATION_PENDING
+LICENSING_VALIDATION_PENDING
+CONTRACT_VALIDATION_PENDING
+Never confuse code existence with validation.
+74. CURRENT HONEST STATE
+The system state must accurately reflect:
+honest = true
+
+productionAuthorized = false
+
+noMithqalOwnedReserve = true
+noMithqalFinancialGuarantee = true
+
+threeBookDesign = true
+threeBookOperational = false
+threeBookEnforced = false
+
+systemicRiskEngineDesigned = true
+systemicRiskEngineImplemented = true
+systemicRiskMonitoringLive = false
+systemicRiskProductionValidated = false
+
+finalityPolicyDefined = true
+finalityLayersDesigned = 7
+finalityLayersRequired = 7
+finalityLayersEnforced = 3
+finalityProductionReady = false
+finalityBypassRisk = HIGH
+
+legalRegistryImplemented = true
+legalOpinionsObtained = false
+validatedJurisdictions = 0
+
+licensingMatrixImplemented = true
+licensesObtained = 0
+
+bankDefaultStateModelDesigned = true
+bankDefaultOperationalWorkflow = true
+bankDefaultContractValidated = false
+bankDefaultLegalValidated = false
+bankDefaultProductionReady = false
+
+protectedBackingModelImplemented = true
+protectedBackingLiveCells = 0
+
+reserveConfigurationCanonical = true
+reserveConfigurationConflicts = false
+reservePolicyStatus = CANDIDATE_MODEL_VALIDATION_PENDING
+Only change a status when actual evidence supports it.
+75. LEGACY CONFIGURATION RECONCILIATION
+Search all code/configuration/blueprint references for conflicting:
+reserve targets;
+fiat targets;
+gold targets;
+silver targets;
+digital targets;
+currency caps;
+issuer caps;
+emergency reserve percentages;
+historical portfolios.
+Do NOT silently delete historical records.
+Instead:
+Historical / Traceability
+        ↓
+Explicitly Non-Controlling
+        ↓
+One Active Runtime Configuration
+The current active policy candidate is:
+130%
+80% Fiat
+18% Bullion
+2% Digital Liquidity
+15% Separate Emergency Resilience Capacity
+subject to model validation.
+76. FINAL CONFIGURATION SINGLE SOURCE OF TRUTH
+Create ONE authoritative policy configuration.
+At minimum:
+institutionalBackingTarget = 1.30
+
+fiatTarget = 0.80
+bullionTarget = 0.18
+digitalTarget = 0.02
+
+fiatMin = 0.70
+fiatMax = 0.85
+
+bullionMin = 0.15
+bullionMax = 0.25
+
+digitalMin = 0.00
+digitalOperationalMax = 0.03
+digitalConstitutionalMax = 0.05
+
+emergencyResilienceMax = 0.15
+
+preferredCurrencyExposure = 0.15
+hardCurrencyExposure = 0.20
+
+preferredBankExposure = 0.10–0.15
+hardBankExposure = 0.20
+
+preferredCustodianExposure = 0.15
+hardCustodianExposure = 0.20
+No other active configuration may override these without explicit governance.
+77. CONTRADICTION SCAN
+After implementation, search the entire project for contradictions:
+MITHQAL owns backing;
+MITHQAL guarantees MTQ;
+MITHQAL custody;
+Bank unrestricted minting;
+MTQ USD peg;
+MTQ retail;
+exchange functionality;
+SWIFT replacement;
+bank core replacement;
+stablecoin automatically reserve;
+settlement automatically reserve;
+liquidity automatically backing;
+Foundation mint authority;
+Holding Company backing;
+Technology Company financial authority;
+Operating Company proprietary reserve trading;
+historical reserve parameters overriding current policy candidate.
+The expected result is:
+ZERO unresolved architectural contradictions.
+78. TEST THE RESERVE ENGINE
+Run:
+130% base case
+Fiat shock
+10%, 20%, 30%, 50%.
+Gold shock
+10%, 20%, 30%, 50%.
+Digital shock
+10%, 50%, 100% loss of digital sleeve.
+Combined shock
+currency decline;
+gold decline;
+stablecoin failure;
+redemption stress;
+liquidity stress.
+Counterparty failure
+Bank.
+Custodian.
+Liquidity provider.
+Geopolitical shock
+Currency/jurisdiction/sanctions.
+The system must show:
+resulting R 
+a
+​	
+ ;
+resulting RR;
+resulting FSCR;
+DMCE capacity;
+affected weights;
+corrective action;
+whether minting is reduced/frozen.
+79. TEST CURRENCY DYNAMIC RESPONSE
+Test:
+normal conditions;
+rising volatility;
+falling currency;
+falling liquidity;
+CQS deterioration;
+CQS recovery;
+removal;
+substitution;
+renormalization;
+concentration breach;
+correlated exposure.
+Verify:
+i
+∑
+​	
+ W 
+i
+final
+​	
+ =1
+always.
+80. TEST DIGITAL RESPONSE
+Test:
+USDC
+1% depeg;
+3%;
+5%;
+10%;
+redemption delay;
+liquidity failure;
+issuer distress.
+USDT
+external input;
+1%;
+5%;
+10%;
+provider restriction;
+sanctions;
+conversion failure.
+Verify that:
+USDT cannot enter normal core digital backing without explicitly satisfying the approved admission framework.
+81. TEST GOLD
+Test:
+gold price falls 10%;
+20%;
+30%;
+50%.
+Verify:
+coverage;
+stress coverage;
+liquidity;
+liquidation waterfall;
+rebalancing.
+Do not automatically sell physical gold before more liquid layers.
+82. TEST BANK DEFAULT
+Test every state:
+ACTIVE
+→ LIQUIDITY_STRESS
+→ SUSPENDED
+→ DEFAULT
+→ INSOLVENT
+→ RESOLUTION
+→ EXIT
+Verify:
+issuance halt;
+existing MTQ status;
+transferability;
+redemption;
+backing;
+customer;
+receiving bank;
+reconciliation;
+resolution.
+83. TEST THREE-BOOK SEPARATION
+Attempt:
+corporate cash → MTQ backing without authorization;
+bank obligation → MITHQAL corporate revenue;
+corporate MTQ → MITHQAL asset;
+reserve gain → Operating Company revenue.
+All unauthorized commingling attempts must fail.
+84. TEST FINALITY
+Attempt every known mint-bypass route.
+The expected invariant is:
+Finality=FALSE⇒Mint=FALSE
+No hidden administrative/API/internal route may bypass the authoritative control.
+Emergency overrides, if any, must require explicit constitutional/emergency authorization and must be fully auditable.
+85. TEST BANK INTEGRATION
+MBG must be validated with:
+existing bank account;
+bank KYC/KYB;
+bank AML;
+sanctions;
+FX;
+treasury;
+accounting;
+MTQ subledger;
+MTQ settlement;
+receiving bank;
+reconciliation.
+The test must prove:
+core banking replacement is NOT required.
+86. TEST REGULATORY STATE
+Every jurisdiction must clearly show:
+LEGAL_STATUS
+LICENSE_STATUS
+PRODUCT_STATUS
+MTQ_HOLDING_STATUS
+SETTLEMENT_STATUS
+ASSET_STATUS
+Possible product state:
+ENABLED
+RESTRICTED
+PASS_THROUGH_ONLY
+TREASURY_ALLOWED
+BLOCKED
+PENDING
+87. IMPLEMENTATION STATUS REPORT
+After all modifications, return a table:
+Requirement	Design	Implementation	Integration	Testing	Institutional Validation	Production
+Never inflate any column.
+88. BLUEPRINT UPDATE
+After implementation, update the blueprint so it reflects exactly:
+Organizational structure
+Foundation
+    =
+Independent nonprofit constitutional steward
+
+Holding
+    =
+Owns Operating + Technology
+
+Operating
+    =
+Institutional/commercial operations
+
+Technology
+    =
+Technology infrastructure
+Banking
+Bank / Responsible Institution
+    =
+Customer + applicable backing + banking obligations
+
+MITHQAL
+    =
+Authorization + infrastructure + verification + settlement
+Reserve
+130% target candidate
+80% fiat
+18% bullion
+2% digital
+15% separate emergency resilience capacity
+Currency
+Layer A = reserve-eligible currencies
+Layer B = settlement-only currencies
+Digital
+USDC/USDP/EURC/BUIDL = current digital candidates
+DAI = conditional / 0%
+USDT = external interoperability, not normal core digital backing
+Gold
+Allocated physical gold = primary bullion anchor
+Silver = conditional
+Tokenized gold = separately assessed
+89. HOLDING / OPERATING / TECHNOLOGY ECONOMIC SEPARATION
+Document:
+Holding Company
+    ↓
+owns subsidiaries
+
+Operating Company
+    ↓
+operational/infrastructure-service revenue
+
+Technology Company
+    ↓
+technology/infrastructure revenue
+
+Foundation
+    ↓
+nonprofit constitutional function
+
+Reserve / MTQ backing
+    ↓
+NOT a MITHQAL corporate asset by default
+Do not commingle corporate economics with MTQ financial obligations.
+90. FINAL ACCEPTANCE CRITERIA
+Do not declare the amendment complete merely because code exists.
+The amendment is technically complete only when:
+Architecture
+all responsibilities are defined;
+no contradictions exist;
+single active reserve configuration exists.
+Banking
+MBG architecture remains correct;
+bank core remains authoritative;
+bank-side MTQ subledger works.
+Backing
+PBC is operational;
+backing is attributable;
+no double counting;
+evidence is verifiable.
+Risk
+bank-specific risk works;
+systemic risk works;
+geopolitical risk works.
+Accounting
+three-ledger separation is operational.
+Finality
+all required enforcement layers work;
+no bypass exists.
+Regulatory
+functions are mapped to responsible entities;
+jurisdictional legal status is explicitly identified;
+no unsupported regulatory claim exists.
+Testing
+stress tests run;
+reconciliation runs;
+default tests run;
+mint bypass tests run.
+91. INSTITUTIONAL VALIDATION GATES
+The project is NOT production authorized until:
+pilot-jurisdiction legal opinion exists;
+licensing/entity mapping is validated;
+bank contractual obligation framework exists;
+default/resolution framework is contractually validated;
+first bank integration succeeds;
+backing evidence exists;
+protected backing cell exists;
+three-book accounting is operational;
+finality enforcement is complete;
+sanctions screening is live;
+reconciliation operates;
+independent assurance framework is validated;
+controlled pilot transactions succeed.
+92. DO NOT ADD
+Do NOT add:
+retail MTQ;
+consumer wallet;
+direct retail minting;
+exchange;
+speculative trading;
+leverage;
+USD peg;
+proprietary reserve trading;
+MITHQAL-owned MTQ reserve;
+MITHQAL financial guarantee;
+universal stablecoin acceptance;
+universal CBDC access;
+BRICS dependency;
+SWIFT replacement;
+core banking replacement;
+unnecessary architecture engines;
+additional overlapping reserve models.
+93. FINAL ARCHITECTURE
+The final architecture MUST remain:
+                    MITHQAL FOUNDATION
+               Independent Nonprofit Entity
+                   Constitutional Steward
+                            │
+                            │
+                            ▼
+                 MITHQAL HOLDING COMPANY
+                            │
+                  ┌─────────┴─────────┐
+                  │                   │
+                  ▼                   ▼
+           OPERATING COMPANY    TECHNOLOGY COMPANY
+                  │                   │
+                  │                   ├── MITHQAL Core
+                  │                   ├── MBG
+                  │                   ├── Ledger
+                  │                   ├── APIs
+                  │                   ├── Security
+                  │                   └── Infrastructure
+                  │
+                  ├── Institutional Operations
+                  ├── Banking Operations
+                  ├── Settlement Operations
+                  ├── Commercial Operations
+                  └── Monetary & Reserve Control Division
+                            │
+                            ▼
+                           MBG
+                            │
+                            ▼
+                BANK / AUTHORIZED RESPONSIBLE
+                       INSTITUTION
+                            │
+          ┌─────────────────┼─────────────────┐
+          │                 │                 │
+      Customer          Backing           Liquidity
+      Banking          Obligation             FX
+          │                 │                 │
+          └─────────────────┼─────────────────┘
+                            ▼
+                           MTQ
+                            │
+                            ▼
+                     RECEIVING BANK
+                            │
+                            ▼
+                        CORPORATE
+94. FINAL NON-NEGOTIABLE PRINCIPLES
+Implement these as permanent architectural invariants:
+The Foundation is independent and nonprofit.
+The Holding Company owns the Operating Company and Technology Company.
+The Operating Company operates the institutional/commercial system.
+The Technology Company builds and operates the technology.
+Participating banks or other legally authorized responsible institutions carry the applicable MTQ financial backing and settlement obligations.
+MITHQAL does not own, custody, or financially guarantee MTQ backing merely because it operates the infrastructure.
+MITHQAL defines, verifies, authorizes, records, reconciles and enforces the MTQ framework.
+Bank requests. MITHQAL authorizes. Technical system executes.
+No final settlement = no MTQ mint.
+MTQ is a neutral institutional settlement unit.
+MTQ is not a USD peg.
+USDT is not normal core MTQ digital backing, but may be an external conversion/input asset under approved conditions.
+Layer-B currencies such as EGP may be settlement/conversion currencies without being reserve currencies.
+Gold is the primary constitutional bullion anchor.
+Silver is conditional.
+Digital liquidity is subordinate and replaceable.
+80/18/2 is the current policy center, pending official quantitative validation.
+130% is the current institutional backing/coverage policy candidate, not a MITHQAL-owned reserve.
+The separate 15% emergency resilience capacity must never be double-counted.
+Historical conflicting configurations remain traceable but have no active runtime authority.
+No code-only capability may be represented as institutionally validated.
+No technical capability may be represented as legally authorized without evidence.
+No bank relationship may be represented as a bank integration until an actual bank integration exists.
+No reserve claim may be represented as verified without institutional evidence.
+No production authorization until the defined legal, licensing, contractual, technical, risk, reconciliation and pilot gates are satisfied.
+95. FINAL DEVELOPER INSTRUCTION
+Implement the above without redesigning the existing architecture.
+First:
+audit the current implementation against every requirement above.
+Second:
+identify existing code that already satisfies each requirement.
+Third:
+extend existing code rather than creating duplicate systems.
+Fourth:
+reconcile all historical configuration conflicts.
+Fifth:
+implement only the actual missing/weak controls.
+Sixth:
+run the complete validation suite.
+Seventh:
+update the blueprint so the blueprint and implementation are synchronized.
+Eighth:
+return an evidence-based status report.
+For every requirement report:
+file;
+module;
+database table;
+API;
+policy;
+workflow;
+test;
+deployment state;
+evidence state.
+Do NOT claim completion merely because the code compiles.
+Do NOT claim production readiness merely because the application deploys.
+Do NOT claim legal validity merely because the legal data model exists.
+Do NOT claim bank readiness merely because MBG exists.
+Do NOT claim reserve validity merely because the reserve engine produces numbers.
+Do NOT inflate any readiness score.
