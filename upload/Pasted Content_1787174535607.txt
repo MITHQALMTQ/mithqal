@@ -1,0 +1,2172 @@
+# MITHQAL — MASTER INSTITUTIONAL BANKING, SETTLEMENT & INTEROPERABILITY AUDIT PROMPT
+
+## TITLE
+
+**MTQ ↔ USDT / USDC / FX / CBDC / Bank Money / Tokenised Deposits / Gold & Eligible Assets — Institutional Banking, Settlement, Economic & Implementation Gap Audit**
+
+---
+
+# ROLE
+
+You are my:
+
+* Chief Operating Officer (COO)
+* Chief Technology Officer (CTO)
+* Chief Financial Officer (CFO)
+* Chief Banking Architect
+* International Banking & Payments Expert
+* Monetary Systems Architect
+* Tokenomics Expert
+* Financial/Economic Strategist
+* Global Trade Settlement Expert
+* Institutional Risk & Treasury Expert
+* Blueprint Auditor
+* Regulatory/Banking-Structure Analyst
+* Enterprise Architecture Auditor
+* Project Manager
+
+You must be **independent, skeptical, and critical**.
+
+Do NOT simply agree with me.
+
+If my assumption is wrong, say:
+
+> **NO**
+
+and explain exactly why.
+
+If there is a stronger architecture, identify it.
+
+Do not optimize for making MITHQAL sound impressive.
+
+Optimize for:
+
+* real-world bank acceptance;
+* regulatory survivability;
+* economic soundness;
+* technical feasibility;
+* liquidity;
+* institutional trust;
+* interoperability;
+* operational resilience;
+* legal clarity;
+* scalability;
+* economic sustainability.
+
+---
+
+# ABSOLUTE AUDIT RULE
+
+## **DO NOT MAKE ARCHITECTURAL AMENDMENTS UNTIL THIS AUDIT HAS BEEN COMPLETED.**
+
+First determine what already exists.
+
+Only after the evidence-based audit is complete may recommendations be made.
+
+Do not silently redesign, simplify, replace, or reinterpret the existing architecture.
+
+---
+
+# PRIMARY SOURCE
+
+I am providing the **current MITHQAL blueprint and, where available, the current implementation/code/configuration/documentation**.
+
+Treat the supplied blueprint as the **primary source of truth for the existing MITHQAL architecture**.
+
+Treat implementation evidence as the primary source of truth for what is actually built.
+
+Do not invent capabilities.
+
+Do not infer implementation merely from terminology.
+
+Do not infer legal capability merely because something is technically possible.
+
+Do not infer regulatory permission merely because a workflow can be coded.
+
+---
+
+# AUDIT OBJECTIVE
+
+Determine precisely:
+
+1. What is actually implemented.
+2. What is clearly specified in the blueprint.
+3. What was previously agreed as the target architecture.
+4. What is technically possible.
+5. What is legally/regulatorily possible.
+6. What is theoretically possible but commercially impractical.
+7. What requires a separate license or regulated entity.
+8. What requires custody.
+9. What requires banking infrastructure.
+10. What requires a designated reserve/backing structure.
+11. What is duplicated.
+12. What is contradictory.
+13. What is missing.
+14. What should remain unchanged.
+15. What should be added only after the audit.
+16. What should explicitly NOT be added.
+
+---
+
+# I. FOUNDATIONAL MITHQAL ECONOMIC MODEL
+
+The audit must first establish whether the current blueprint consistently reflects the following separation.
+
+## MITHQAL
+
+MITHQAL is:
+
+> **constitutional + operating + interoperability + settlement infrastructure.**
+
+MITHQAL is NOT the financial guarantor of MTQ merely because it operates the infrastructure.
+
+## BANKING SYSTEM
+
+Participating banks / authorized financial institutions provide the financial substance associated with MTQ issuance and carry the applicable financial, banking, liquidity, customer and settlement obligations under the governing legal structure.
+
+## MTQ
+
+MTQ is:
+
+> **a neutral institutional cross-border settlement unit/instrument.**
+
+Do NOT describe MTQ as a "trading unit" in the sense of MITHQAL operating a trading venue.
+
+Corporates may use MTQ in connection with trade transactions, treasury and settlement where legally permitted, but MITHQAL itself is not a trading exchange.
+
+---
+
+# II. WHAT MITHQAL IS NOT
+
+Verify that the blueprint and implementation do not transform MITHQAL into:
+
+* a commercial bank;
+* a central bank;
+* a sovereign currency issuer;
+* a CBDC;
+* a retail cryptocurrency;
+* a USD-backed stablecoin;
+* a BRICS currency;
+* an anti-dollar instrument;
+* an investment fund;
+* a speculative token;
+* a crypto exchange;
+* a retail exchange;
+* a proprietary trading desk;
+* a universal FX dealer;
+* a universal custodian;
+* a reserve investment fund;
+* a replacement for SWIFT;
+* a replacement for commercial banks.
+
+Flag every provision that conflicts with these boundaries.
+
+---
+
+# III. MITHQAL / BANK / MTQ RESPONSIBILITY SEPARATION
+
+This is a **mandatory audit section**.
+
+For every major function, identify:
+
+* who owns;
+* who controls;
+* who operates;
+* who bears financial risk;
+* who bears legal liability;
+* who provides the asset;
+* who provides liquidity;
+* who authorizes;
+* who settles;
+* who verifies.
+
+At minimum, determine responsibility for:
+
+| Function                         | Expected Responsibility                                   |
+| -------------------------------- | --------------------------------------------------------- |
+| Constitutional rules             | MITHQAL constitutional governance                         |
+| MITHQAL operating infrastructure | MITHQAL                                                   |
+| MTQ ledger integrity             | MITHQAL                                                   |
+| Issuance authorization           | MITHQAL                                                   |
+| Technical mint execution         | MITHQAL infrastructure                                    |
+| Customer KYC/KYB                 | Participating bank / responsible regulated institution    |
+| AML/CFT                          | Participating bank / responsible regulated institution    |
+| Sanctions                        | Participating bank + applicable downstream controls       |
+| Customer bank funds              | Bank                                                      |
+| Bank FX                          | Bank / authorized FX provider                             |
+| MTQ financial backing            | Participating bank / designated responsible institution   |
+| Backing custody                  | Bank / qualified custodian / legally designated structure |
+| Banking liquidity                | Bank                                                      |
+| External FX conversion           | Bank / authorized FX provider / LP                        |
+| Stablecoin conversion            | Authorized regulated provider                             |
+| Gold custody                     | Qualified custodian / responsible institution             |
+| CBDC infrastructure              | Relevant central bank / authorized participant            |
+| MITHQAL operational obligations  | MITHQAL                                                   |
+| System-wide policy enforcement   | MITHQAL                                                   |
+| Bank-specific default            | Applicable bank/legal resolution framework                |
+| Network settlement coordination  | MITHQAL                                                   |
+| Customer relationship            | Bank                                                      |
+
+If the blueprint assigns responsibility differently, identify it.
+
+Do not assume the target model is already implemented.
+
+---
+
+# IV. MITHQAL MUST NOT BE THE BACKING OWNER BY DEFAULT
+
+Audit every occurrence of:
+
+* reserve;
+* backing;
+* collateral;
+* treasury;
+* custody;
+* asset ownership;
+* liquidity pool.
+
+For each occurrence determine whether it means:
+
+### A. MITHQAL-owned assets
+
+### B. Participating-bank backing
+
+### C. Qualified-custodian assets
+
+### D. Legally designated reserve structure
+
+### E. Liquidity facility
+
+### F. Risk/coverage calculation only
+
+### G. Ambiguous / undefined
+
+Flag ambiguity.
+
+The audit must specifically detect language that accidentally implies:
+
+> "MITHQAL owns or guarantees the MTQ backing."
+
+unless the blueprint explicitly establishes such a structure.
+
+---
+
+# V. MTQ LEGAL / ECONOMIC LIABILITY
+
+Determine whether the blueprint clearly establishes:
+
+* what MTQ represents;
+* who owes the MTQ-related obligation;
+* who is the obligor;
+* whether the obligation is bank-specific;
+* whether the obligation is network-wide;
+* who handles redemption;
+* who bears bank default risk;
+* who bears liquidity risk;
+* what happens in insolvency;
+* how creditor treatment works;
+* how settlement finality works;
+* whether the corporate holds an MTQ balance or a contractual bank representation of one.
+
+Do NOT invent the legal classification.
+
+If it is not resolved, mark it as:
+
+> **CRITICAL LEGAL GAP**
+
+---
+
+# VI. BANKING-SYSTEM MTQ OBLIGATION & DEFAULT FRAMEWORK
+
+This is a mandatory section.
+
+If banks are responsible for MTQ backing/obligations, verify whether the architecture defines:
+
+* originating-bank obligation;
+* receiving-bank obligation;
+* settlement obligation;
+* interbank claim;
+* redemption obligation;
+* default event;
+* bank insolvency;
+* bank resolution;
+* collateral;
+* protected backing;
+* liquidity support;
+* loss allocation;
+* settlement continuity;
+* affected customer treatment;
+* affected corporate treatment;
+* recovery;
+* reconciliation following default.
+
+Determine exactly what happens if:
+
+> **Bank A originates MTQ and then becomes insolvent.**
+
+Do not accept:
+
+> "Bank A is responsible"
+
+as sufficient.
+
+The complete contractual and settlement mechanism must be defined.
+
+---
+
+# VII. MTQ NEUTRALITY CONSTITUTION
+
+Verify whether the architecture explicitly prevents structural dependence on:
+
+* one sovereign currency;
+* one reserve currency;
+* one bank;
+* one banking group;
+* one custodian;
+* one country;
+* one jurisdiction;
+* one payment network;
+* one stablecoin;
+* one issuer;
+* one blockchain;
+* one cloud provider;
+* one technology provider;
+* one liquidity provider.
+
+Target principle:
+
+> **No single sovereign currency, issuer, financial institution, jurisdiction, technology network, or reserve/backing asset should become structurally indispensable to MTQ.**
+
+---
+
+# VIII. GEOPOLITICAL NEUTRALITY / EXPOSURE MANAGEMENT
+
+Verify whether risk is calculated by:
+
+* country;
+* jurisdiction;
+* currency;
+* bank;
+* banking group;
+* custodian;
+* correspondent;
+* liquidity provider;
+* payment network;
+* stablecoin issuer;
+* blockchain/network;
+* technology provider;
+* sanctions jurisdiction.
+
+Do not merely check ordinary concentration limits.
+
+Determine whether correlated exposure is recognized.
+
+Example:
+
+Three banks may appear diversified while sharing:
+
+* the same country;
+* same correspondent;
+* same custodian;
+* same payment rail.
+
+Determine whether the system recognizes this as correlated concentration.
+
+---
+
+# IX. CUSTOMER-VISIBLE MTQ ARCHITECTURE
+
+Verify whether the customer can see, where legally permitted:
+
+* MTQ balance;
+* MTQ settlement;
+* MTQ payment;
+* MTQ receipt;
+* MTQ treasury position;
+* MTQ conversion;
+* MTQ redemption;
+* settlement status.
+
+The target experience is:
+
+```text
+CORPORATE TREASURY
+
+JPY             ¥120M
+USD             $3.2M
+EUR             €1.8M
+MTQ             2.4M
+
+International Settlement
+
+Amount:              500,000 MTQ
+Settlement Unit:     MTQ
+Recipient:            U.S. Corporate
+Receiving Currency:  USD
+FX / Conversion:     Bank / Authorized Provider
+Status:               MTQ SETTLED
+```
+
+The customer should NOT need:
+
+* seed phrases;
+* consumer wallets;
+* gas;
+* private keys;
+* blockchain mechanics;
+* chain selection;
+* node management.
+
+Verify that explicit MTQ visibility does not require replacement of the bank's core system.
+
+---
+
+# X. TWO CUSTOMER MODES
+
+Verify whether the architecture supports:
+
+## Mode A — MTQ Pass-Through Settlement
+
+```text
+Local Currency
+      ↓
+Bank
+      ↓
+MTQ
+      ↓
+Receiving Bank
+      ↓
+Local Currency
+```
+
+The corporate uses MTQ for the transaction without necessarily maintaining a large MTQ treasury position.
+
+## Mode B — MTQ Treasury Holding
+
+Where legally and commercially permitted:
+
+```text
+Corporate
+   ↓
+Bank
+   ↓
+MTQ Institutional Position
+   ├── Hold
+   ├── Receive
+   ├── Send
+   ├── Settle
+   └── Redeem
+```
+
+Verify jurisdiction and bank permissioning.
+
+Do not assume universal corporate holding rights.
+
+---
+
+# XI. BANK INTEGRATION — MBG
+
+Audit the complete:
+
+> **MITHQAL BANK GATEWAY**
+
+architecture.
+
+Target:
+
+```text
+Corporate
+   ↓
+Existing Bank Portal
+   ↓
+Existing Bank Systems
+   ↓
+Existing Bank Interface
+   ↓
+MITHQAL Bank Gateway
+   ↓
+MITHQAL Core
+   ↓
+MTQ
+   ↓
+Receiving Bank Gateway
+   ↓
+Receiving Bank
+   ↓
+Corporate
+```
+
+Principle:
+
+> **TRANSLATION, NOT TRANSFORMATION.**
+
+Verify that MITHQAL does NOT require banks to replace:
+
+* core banking;
+* customer accounts;
+* KYC/KYB;
+* AML/CFT;
+* sanctions;
+* FX;
+* treasury;
+* accounting;
+* corporate banking;
+* existing payment infrastructure.
+
+Identify exactly what the bank must add.
+
+---
+
+# XII. BANK-SIDE MTQ SUBLEDGER
+
+Verify whether each participating bank has:
+
+* MTQ account/position representation;
+* MTQ subledger;
+* MTQ reconciliation;
+* customer position mapping;
+* issuance records;
+* redemption records;
+* settlement records.
+
+Determine whether the bank's MTQ records reconcile against:
+
+> **MITHQAL's canonical MTQ ledger.**
+
+---
+
+# XIII. SWIFT RELATIONSHIP
+
+Verify that the architecture consistently separates:
+
+### SWIFT / ISO 20022
+
+Messaging / connectivity / financial communication infrastructure.
+
+### MITHQAL
+
+Institutional settlement infrastructure, orchestration, policy enforcement and interoperability.
+
+### MTQ
+
+Neutral institutional settlement unit.
+
+Target:
+
+```text
+SWIFT / ISO 20022
+        ↓
+Bank
+        ↓
+MBG
+        ↓
+MITHQAL
+        ↓
+MTQ Settlement
+        ↓
+Receiving Bank
+```
+
+MITHQAL should be:
+
+> **SWIFT-compatible and complementary.**
+
+Flag any architecture that claims to replace SWIFT.
+
+---
+
+# XIV. MULTI-RAIL SETTLEMENT
+
+Verify support or architectural provision for:
+
+* SWIFT;
+* ISO 20022;
+* domestic RTGS;
+* domestic payment rails;
+* instant payment rails;
+* tokenised deposit networks;
+* CBDC infrastructure;
+* approved digital-asset settlement networks;
+* other regulated institutional rails.
+
+MITHQAL should be:
+
+> **rail-neutral.**
+
+---
+
+# XV. SETTLEMENT SOVEREIGNTY / FALLBACK
+
+Verify whether the architecture can safely respond to:
+
+* SWIFT outage;
+* bank outage;
+* liquidity-provider failure;
+* custodian failure;
+* blockchain/network failure;
+* cloud failure;
+* oracle failure;
+* sanctions restriction;
+* corridor suspension;
+* stablecoin freeze.
+
+For each critical corridor determine:
+
+* primary rail;
+* secondary rail;
+* emergency rail.
+
+Determine whether routing can fail safely.
+
+---
+
+# XVI. TOKENISED BANK MONEY
+
+This is a high-priority audit section.
+
+Determine whether the architecture supports:
+
+* tokenised deposits;
+* regulated deposit tokens;
+* commercial-bank tokenised money;
+* permissioned-bank ledgers;
+* atomic settlement;
+* PvP;
+* DvP;
+* interoperability with commercial-bank money.
+
+Determine whether support is:
+
+* implemented;
+* blueprint-specified;
+* partially specified;
+* technically possible;
+* missing.
+
+Do not infer this merely because MITHQAL supports blockchain or APIs.
+
+---
+
+# XVII. CBDC INTEROPERABILITY
+
+Verify support for jurisdiction-controlled CBDC integration.
+
+Check:
+
+* central-bank authorization;
+* participant eligibility;
+* domestic restrictions;
+* privacy;
+* finality;
+* settlement;
+* programmability;
+* API/rail integration;
+* legal restrictions.
+
+Do not assume universal CBDC interoperability.
+
+---
+
+# XVIII. ASSET CLASSIFICATION
+
+The audit must maintain four completely separate categories:
+
+## A. Qualifying MTQ Backing Assets
+
+Assets that may satisfy an applicable MTQ institutional backing standard.
+
+## B. MTQ Input Assets
+
+Assets that a participant can use to enter the MTQ ecosystem.
+
+## C. MTQ Settlement Assets
+
+Assets that can be used to complete an institutional settlement.
+
+## D. MTQ Liquidity Assets
+
+Assets used for liquidity and treasury purposes.
+
+These categories must not automatically overlap.
+
+For every asset determine its permitted role.
+
+---
+
+# XIX. ASSET ELIGIBILITY REGISTRY
+
+Verify whether an actual eligibility framework exists for:
+
+* asset ID;
+* issuer;
+* asset class;
+* legal classification;
+* jurisdiction;
+* permitted jurisdictions;
+* authorized provider;
+* approved network;
+* backing eligibility;
+* input eligibility;
+* settlement eligibility;
+* liquidity eligibility;
+* liquidity tier;
+* valuation;
+* haircut;
+* concentration limit;
+* sanctions status;
+* operational status;
+* emergency status.
+
+Determine whether this is:
+
+* actual data structure;
+* service;
+* policy;
+* smart contract logic;
+* configuration;
+* documentation only.
+
+---
+
+# XX. USDC → MTQ
+
+Audit the exact workflow:
+
+```text
+USDC
+ ↓
+Asset eligibility
+ ↓
+Jurisdiction
+ ↓
+KYC/KYB/AML
+ ↓
+Sanctions
+ ↓
+Authorized institutional provider
+ ↓
+Conversion
+ ↓
+Settlement finality
+ ↓
+Bank / qualifying backing structure
+ ↓
+MITHQAL verification
+ ↓
+DMCE
+ ↓
+MTQ
+```
+
+Verify:
+
+* custody;
+* issuer eligibility;
+* provider eligibility;
+* depeg handling;
+* conversion pricing;
+* finality;
+* redemption;
+* source of funds;
+* network restrictions.
+
+USDC must not automatically become MTQ backing merely because it is accepted as an input.
+
+---
+
+# XXI. USDT → MTQ
+
+Perform the same audit for USDT.
+
+Additionally test:
+
+* depeg;
+* issuer risk;
+* chain risk;
+* freeze risk;
+* sanctions;
+* jurisdiction;
+* liquidity;
+* provider eligibility;
+* redemption;
+* institutional custody;
+* source of funds.
+
+The system must NOT assume:
+
+> 1 USDT = 1 MTQ.
+
+Nor should it automatically assume:
+
+> 1 USDT = 1 USD
+
+for issuance purposes.
+
+Use the actual authorized institutional conversion value.
+
+---
+
+# XXII. STABLECOIN WHITELIST
+
+Verify whether stablecoins are controlled by:
+
+> **Asset + Issuer + Jurisdiction + Network + Provider**
+
+rather than a simple token name.
+
+The architecture must support:
+
+* approval;
+* suspension;
+* rejection;
+* emergency blocking;
+* jurisdiction-specific eligibility;
+* provider-specific eligibility.
+
+No unsupported stablecoin should enter the system simply because a technical connector exists.
+
+---
+
+# XXIII. FIAT → MTQ
+
+Audit:
+
+* USD;
+* EUR;
+* JPY;
+* GBP;
+* CHF;
+* AED;
+* SAR;
+* SGD;
+* other admitted currencies.
+
+Verify:
+
+* FX;
+* bank settlement;
+* backing;
+* accounting;
+* limits;
+* pricing;
+* conversion;
+* finality.
+
+Determine who legally performs the FX.
+
+---
+
+# XXIV. GOLD / COMMODITY → MTQ
+
+Distinguish between:
+
+* allocated physical gold;
+* custodied gold;
+* regulated gold-backed instruments;
+* tokenised gold;
+* commodity instruments;
+* funds;
+* unregulated tokens.
+
+For each asset determine:
+
+* legal title;
+* custody;
+* valuation;
+* liquidity;
+* conversion;
+* reserve/backing eligibility;
+* settlement eligibility.
+
+MITHQAL must not automatically become the custodian.
+
+---
+
+# XXV. ASSET-TO-MTQ GATEWAY
+
+Verify whether the architecture supports:
+
+```text
+External Asset
+      ↓
+Asset Identification
+      ↓
+Eligibility
+      ↓
+Jurisdiction Check
+      ↓
+Compliance
+      ↓
+Authorized Provider Selection
+      ↓
+RFQ / Price
+      ↓
+Execution
+      ↓
+Settlement Finality
+      ↓
+Qualifying Backing Recognition
+      ↓
+DMCE
+      ↓
+MTQ Mint
+```
+
+The gateway should preferably be:
+
+> **institutional interoperability orchestration**
+
+rather than:
+
+> a MITHQAL exchange.
+
+---
+
+# XXVI. FINALITY-BEFORE-MINT
+
+This is a hard invariant.
+
+Verify whether the implementation technically enforces:
+
+```text
+Asset / Funding Confirmed
+        ↓
+Compliance Passed
+        ↓
+Conversion Executed
+        ↓
+Settlement Finality Confirmed
+        ↓
+Backing Legally Recognized
+        ↓
+Evidence Confirmed
+        ↓
+DMCE
+        ↓
+MTQ Mint
+```
+
+Mandatory principle:
+
+> **NO FINAL SETTLEMENT = NO MTQ MINT**
+
+Determine exactly how this is enforced:
+
+* workflow engine;
+* state machine;
+* policy engine;
+* authorization layer;
+* ledger constraint;
+* reconciliation;
+* smart contract;
+* multi-signature authorization;
+* other mechanism.
+
+Documentation alone is not sufficient.
+
+---
+
+# XXVII. PROTECTED BANK BACKING
+
+Audit whether the architecture distinguishes ordinary bank deposits from protected backing.
+
+Verify:
+
+* identification;
+* segregation;
+* earmarking;
+* legal control;
+* non-double-use;
+* non-rehypothecation;
+* insolvency treatment;
+* creditor treatment;
+* redemption/settlement claim;
+* liquidity;
+* capital treatment;
+* evidence;
+* reconciliation;
+* auditability.
+
+Reject the assumption:
+
+> **"Bank has $100M deposit = risk-free MTQ backing."**
+
+Determine what makes the backing legally and economically recognizable.
+
+---
+
+# XXVIII. MITHQAL DOES NOT AUTOMATICALLY OWN OR CUSTODY BACKING
+
+The audit must specifically test whether the blueprint accidentally turns MITHQAL into:
+
+* reserve owner;
+* custodian;
+* reserve manager;
+* proprietary treasury;
+* financial guarantor.
+
+If the architecture requires any of those, identify the exact requirement and regulatory consequences.
+
+---
+
+# XXIX. 130% BACKING / COVERAGE STANDARD
+
+Audit the candidate:
+
+> **130% strategic institutional backing/coverage target**
+
+but do NOT automatically call it a MITHQAL-owned reserve.
+
+Determine:
+
+* who is subject to it;
+* who provides the backing;
+* how it is calculated;
+* whether it is per-bank or system-wide;
+* whether guarantees/collateral/liquidity lines count;
+* whether only qualifying assets count;
+* whether haircuts apply;
+* whether stress adjustments apply.
+
+Test the alternatives:
+
+* 105%;
+* 110%;
+* 115%;
+* 120%;
+* 130%.
+
+Do not choose one merely because it sounds conservative.
+
+Determine which is economically and legally sustainable.
+
+---
+
+# XXX. 80/18/2 STRATEGIC COMPOSITION
+
+Audit:
+
+* 80% fiat;
+* 18% gold;
+* 2% digital liquidity.
+
+Determine whether this is:
+
+* per institution;
+* aggregate;
+* strategic target;
+* minimum;
+* maximum;
+* adaptive range;
+* risk policy.
+
+Test whether the architecture correctly treats this as a **candidate strategic baseline rather than an immutable allocation**.
+
+Challenge it independently.
+
+---
+
+# XXXI. BACKING VS LIQUIDITY
+
+Explicitly separate:
+
+### Institutional backing
+
+Supports MTQ obligations.
+
+### Settlement liquidity
+
+Funds today's settlements.
+
+### Emergency liquidity
+
+Provides resilience during stress.
+
+### Conversion liquidity
+
+Supports asset conversion.
+
+Determine whether the blueprint incorrectly counts one as another.
+
+---
+
+# XXXII. REBALANCING
+
+Where actual backing/treasury rebalancing exists, determine:
+
+* who performs it;
+* who owns the assets;
+* who bears market risk;
+* who bears transaction costs;
+* who authorizes it;
+* how frequently targets are calculated;
+* trigger threshold;
+* FX spread;
+* dealer fee;
+* slippage;
+* market impact;
+* custody cost;
+* settlement cost;
+* taxes;
+* post-trade value.
+
+Target process:
+
+* continuous monitoring;
+* daily target calculation;
+* trigger-based execution;
+* dynamic thresholds.
+
+But do not assume MITHQAL itself performs the trades.
+
+---
+
+# XXXIII. ADVANCED CONTROL AUDIT
+
+Evaluate independently:
+
+* DMCE — Dynamic Minting Capacity Engine
+* PBC — Protected Backing Cell
+* FSCR — Forward Stress Coverage Ratio
+* RSS — Reserve Survivability Score
+* TTF — Time-to-Threshold
+* RV — Reserve Velocity
+* DCAR — Dynamic Currency Admission & Rotation
+* TCOG — Transaction-Cost Optimization Gate
+* SARA — State-Aware Reserve Allocation
+* ILPS — Institutional Liquidity Protection Stack
+* ERTF — Emergency / Resilience liquidity mechanisms
+
+For every component determine:
+
+1. implemented;
+2. blueprint specified;
+3. partial;
+4. conceptual;
+5. duplicated;
+6. redundant;
+7. necessary;
+8. unnecessary;
+9. should remain internal;
+10. could be consolidated.
+
+Do not remove functionality merely to simplify terminology.
+
+---
+
+# XXXIV. DMCE AUDIT
+
+Verify whether minting capacity depends on:
+
+* verified qualifying backing;
+* asset quality;
+* haircut;
+* bank exposure;
+* custodian exposure;
+* country risk;
+* currency risk;
+* liquidity;
+* stablecoin exposure;
+* provider risk;
+* stress;
+* outstanding MTQ obligations;
+* bank-specific limits;
+* system-wide limits.
+
+Target principle:
+
+> **Permitted MTQ issuance = risk-adjusted eligible institutional capacity, not a headline balance.**
+
+---
+
+# XXXV. SYSTEM-WIDE RISK VS BANK-SPECIFIC RISK
+
+Audit whether the architecture separately measures:
+
+### Bank-specific risk
+
+and:
+
+### Network-wide risk.
+
+A strong system must be able to answer:
+
+> "Bank A is within its limit, but does Bank A's growth create excessive system-wide concentration?"
+
+---
+
+# XXXVI. GEOPOLITICAL RISK ENGINE
+
+Verify whether the risk architecture can trigger responses to:
+
+* sanctions;
+* geopolitical conflict;
+* capital controls;
+* currency restrictions;
+* jurisdiction restrictions;
+* banking-system instability;
+* payment-network disruption.
+
+Determine whether policy can:
+
+* reduce limits;
+* freeze new issuance;
+* reroute;
+* suspend a corridor;
+* suspend an asset;
+* activate fallback routes.
+
+---
+
+# XXXVII. LIQUIDITY ARCHITECTURE
+
+Verify whether the system supports:
+
+* immediate settlement liquidity;
+* corridor liquidity;
+* emergency liquidity;
+* conversion liquidity;
+* institutional liquidity lines;
+* fallback providers;
+* liquidity escalation;
+* liquidity-provider failure.
+
+Determine whether liquidity facilities are incorrectly treated as MTQ backing.
+
+---
+
+# XXXVIII. FIVE-WAY RECONCILIATION
+
+Verify the reconciliation of:
+
+1. MITHQAL canonical ledger;
+2. Bank MTQ subledger;
+3. Corporate MTQ position;
+4. Institutional backing / backing registry;
+5. Proof of MTQ liabilities.
+
+For each verify:
+
+* frequency;
+* automation;
+* break detection;
+* exception handling;
+* resolution;
+* escalation;
+* audit trail;
+* settlement finality.
+
+---
+
+# XXXIX. PROOF OF BACKING / PROOF OF LIABILITIES
+
+Do not assess backing evidence alone.
+
+The architecture should provide evidence of:
+
+* qualifying backing;
+* MTQ liabilities;
+* coverage;
+* participant positions;
+* mint;
+* burn;
+* redemptions;
+* reconciliation;
+* encumbrance;
+* concentration.
+
+Determine whether independent assurance is supported.
+
+---
+
+# XL. INDEPENDENT ASSURANCE
+
+Determine whether the architecture supports independent verification of:
+
+* backing;
+* liabilities;
+* minting;
+* burning;
+* reconciliation;
+* protected backing cells;
+* banking evidence;
+* custody evidence;
+* policy enforcement.
+
+Do not assume internal MITHQAL reporting is sufficient for institutional trust.
+
+---
+
+# XLI. REGULATORY OBSERVABILITY
+
+Verify whether authorized regulators can obtain controlled visibility into:
+
+* MTQ outstanding;
+* bank-specific exposure;
+* qualifying backing;
+* coverage;
+* mint/burn;
+* redemption;
+* country exposure;
+* currency exposure;
+* bank concentration;
+* custodian concentration;
+* liquidity;
+* stress;
+* sanctions incidents;
+* operational incidents.
+
+This should be:
+
+> **permissioned + privacy-preserving + auditable.**
+
+---
+
+# XLII. MULTI-JURISDICTION ARCHITECTURE
+
+Audit the ability to support different legal policies across:
+
+* USA;
+* EU;
+* UK;
+* Singapore;
+* Hong Kong;
+* UAE;
+* Japan;
+* Egypt;
+* other strategic corridors.
+
+Target principle:
+
+> **Common global core + jurisdiction-specific policy/adapters.**
+
+The system must not assume that every jurisdiction permits identical MTQ activities.
+
+---
+
+# XLIII. CORPORATE MTQ HOLDING PERMISSION
+
+Verify whether the system supports jurisdiction-sensitive states such as:
+
+```text
+MTQ_PASS_THROUGH_ONLY
+
+MTQ_TREASURY_HOLDING_ALLOWED
+
+MTQ_TREASURY_HOLDING_RESTRICTED
+
+MTQ_PROHIBITED
+```
+
+and whether these states can be controlled by:
+
+* jurisdiction;
+* bank;
+* participant type;
+* product approval;
+* regulatory status.
+
+---
+
+# XLIV. CORRIDOR CERTIFICATION
+
+Determine whether corridors can be independently classified as:
+
+* certified;
+* pilot;
+* restricted;
+* suspended;
+* prohibited.
+
+Each corridor should define:
+
+* participating banks;
+* currencies;
+* settlement rails;
+* asset inputs;
+* conversion providers;
+* compliance;
+* liquidity;
+* limits;
+* fallback route.
+
+---
+
+# XLV. BANKING-SYSTEM INTEROPERABILITY
+
+Verify whether the architecture works with:
+
+* core banking;
+* payment systems;
+* treasury systems;
+* ERP;
+* corporate portals;
+* SWIFT;
+* ISO 20022;
+* host-to-host;
+* APIs;
+* SFTP;
+* tokenised deposit systems;
+* CBDC interfaces.
+
+Check the principle:
+
+> **Translation, not transformation.**
+
+---
+
+# XLVI. CUSTOMER ACCOUNTING / TREASURY
+
+Determine how the corporate's MTQ position is represented.
+
+Audit whether the bank can show:
+
+* MTQ balance;
+* available MTQ;
+* reserved MTQ;
+* pending settlement;
+* received MTQ;
+* sent MTQ;
+* conversion;
+* redemption;
+* fees;
+* valuation.
+
+Do not automatically classify MTQ as:
+
+> ordinary bank deposit.
+
+The legal treatment must be jurisdiction-specific.
+
+---
+
+# XLVII. PRICING / VALUATION
+
+Audit whether the architecture distinguishes:
+
+### PAR
+
+Accounting/reference convention.
+
+from:
+
+### Executable value
+
+Actual conversion/settlement value.
+
+Pricing should consider:
+
+* FX;
+* bid/ask;
+* spread;
+* fees;
+* slippage;
+* liquidity;
+* market impact;
+* reserve/banking valuation;
+* provider quote;
+* stress.
+
+Prevent accidental:
+
+> MTQ = USD peg.
+
+---
+
+# XLVIII. MTQ REDEMPTION
+
+Audit:
+
+* redemption request;
+* authorization;
+* burn;
+* bank/provider conversion;
+* final settlement;
+* customer receipt;
+* fees;
+* timing;
+* failed redemption;
+* bank default;
+* liquidity shortage.
+
+Determine who legally performs redemption.
+
+Do not assume MITHQAL itself must pay out the underlying currency.
+
+---
+
+# XLIX. PvP / DvP / ATOMIC SETTLEMENT
+
+Verify whether the architecture supports:
+
+* Payment-versus-Payment;
+* Delivery-versus-Payment;
+* atomic settlement;
+* conditional settlement;
+* synchronized multi-leg settlement.
+
+Test:
+
+```text
+MTQ Leg
++
+FX Leg
++
+Bank Money / CBDC / Tokenised Deposit Leg
+```
+
+Determine whether settlement risk is minimized.
+
+---
+
+# L. NO MITHQAL EXCHANGE
+
+Verify that MITHQAL does not accidentally become:
+
+* retail exchange;
+* crypto exchange;
+* uncontrolled OTC marketplace;
+* speculative trading venue.
+
+Determine whether external conversion is performed by:
+
+* bank;
+* FX provider;
+* liquidity provider;
+* regulated digital-asset provider;
+* custodian;
+* other authorized institution.
+
+MITHQAL should preferably orchestrate rather than act as universal dealer.
+
+---
+
+# LI. NO AUTOMATIC STABLECOIN RESERVE STATUS
+
+Explicitly verify:
+
+```text
+USDC / USDT / Other Stablecoin
+          ≠
+MTQ Qualifying Backing
+```
+
+unless the specific asset satisfies the formal legal and economic eligibility requirements.
+
+Stablecoins may be:
+
+* input assets;
+* settlement assets;
+* liquidity assets;
+
+without automatically becoming qualifying MTQ backing.
+
+---
+
+# LII. RESILIENCE TESTING
+
+Perform quantitative and structural stress tests for:
+
+### USDT
+
+1%, 3%, 5%, 10%, 20%, 50%, 100% loss/depeg.
+
+### USDC
+
+same scenarios.
+
+### FX
+
+10%, 20%, 30%, 50%.
+
+### Gold
+
+10%, 20%, 30%, 50%.
+
+### Bank
+
+single-bank failure.
+
+### Custodian
+
+failure.
+
+### Liquidity provider
+
+failure.
+
+### Oracle
+
+failure.
+
+### Blockchain/network
+
+failure.
+
+### SWIFT
+
+outage.
+
+### CBDC
+
+outage.
+
+### Sanctions event
+
+asset/provider/corridor blocked.
+
+For every stress:
+
+Determine:
+
+* does issuance stop?
+* does existing MTQ remain valid?
+* does settlement continue?
+* what party bears the loss?
+* does MITHQAL bear any financial loss?
+* what banking mechanism absorbs the event?
+* what happens to the customer's MTQ?
+* what is the recovery mechanism?
+
+---
+
+# LIII. MATHEMATICAL AUDIT
+
+Verify:
+
+* backing ratio;
+* issuance capacity;
+* haircuts;
+* minting;
+* burn;
+* redemption;
+* concentration;
+* rebalancing;
+* liquidity;
+* stress thresholds;
+* fees;
+* transaction costs.
+
+Test the candidate:
+
+> **130% institutional backing/coverage**
+
+against relevant loss scenarios.
+
+Confirm that liquidity lines are not automatically counted as qualifying backing.
+
+---
+
+# LIV. ECONOMIC / PROFIT MODEL
+
+Audit whether the system's economics correctly separate:
+
+## MITHQAL revenue
+
+Potential:
+
+* institutional connectivity;
+* MBG;
+* settlement;
+* enterprise API;
+* reconciliation;
+* compliance technology;
+* reporting;
+* corridor certification;
+* enterprise services.
+
+## Bank revenue
+
+Potential:
+
+* FX spread;
+* banking service fees;
+* MTQ service;
+* treasury;
+* liquidity;
+* custody where permitted.
+
+## Liquidity provider revenue
+
+Potential:
+
+* spread;
+* conversion fee;
+* liquidity premium.
+
+## Custodian revenue
+
+Potential:
+
+* custody;
+* administration;
+* reporting.
+
+## Corporate economics
+
+Potential:
+
+* lower transaction friction;
+* faster settlement;
+* reduced trapped liquidity;
+* reduced reconciliation cost;
+* treasury efficiency.
+
+Verify that MITHQAL's core economics do NOT depend primarily on:
+
+* MTQ speculation;
+* price appreciation;
+* leverage;
+* retail trading;
+* reserve yield;
+* proprietary trading.
+
+---
+
+# LV. THREE-BOOK ECONOMIC SEPARATION
+
+Verify whether the architecture separates:
+
+## Book A — MITHQAL Corporate
+
+* revenue;
+* expenses;
+* tax;
+* retained earnings;
+* profit.
+
+## Book B — Bank / Institutional MTQ Obligations
+
+* qualifying backing;
+* MTQ obligations;
+* bank liquidity;
+* settlement;
+* bank economics.
+
+## Book C — Corporate Participant Positions
+
+* bank money;
+* MTQ;
+* FX;
+* settlement positions.
+
+Do not allow these books to be conceptually or operationally mixed.
+
+---
+
+# LVI. REGULATED ENTITY / LICENSING AUDIT
+
+For every function determine whether it requires:
+
+* banking license;
+* payment license;
+* custody license;
+* crypto-asset/CASP authorization;
+* FX authorization;
+* securities/commodity authorization;
+* trust/custody structure;
+* local subsidiary;
+* regulated JV;
+* central-bank authorization.
+
+Identify which entity performs the activity.
+
+MITHQAL must not inherit a regulated activity accidentally merely because the technology can facilitate it.
+
+---
+
+# LVII. ADVANCED ENGINE CONSOLIDATION AUDIT
+
+Evaluate whether:
+
+* DMCE;
+* FSCR;
+* RSS;
+* TTF;
+* RV;
+* DCAR;
+* TCOG;
+* SARA;
+* ILPS;
+* ERTF;
+* PBC
+
+overlap substantially.
+
+For each determine:
+
+* independent necessity;
+* duplicate function;
+* implementation cost;
+* operational value;
+* whether it should remain an internal component;
+* whether it can be grouped into larger engines.
+
+Possible internal groupings to evaluate:
+
+### Reserve / Backing Protection Engine
+
+### Liquidity & Settlement Engine
+
+### Risk & Stress Engine
+
+### Compliance & Eligibility Engine
+
+Do not consolidate purely for cosmetic simplicity.
+
+---
+
+# LVIII. CONTRADICTION AUDIT
+
+Search the entire blueprint and implementation for contradictions such as:
+
+* non-custodial vs custody;
+* MITHQAL does not guarantee backing vs MITHQAL guarantees MTQ;
+* bank-backed vs MITHQAL-backed;
+* neutral MTQ vs USD peg;
+* settlement infrastructure vs exchange;
+* institutional-only vs retail;
+* no speculative role vs trading/yield;
+* bank-mediated issuance vs unrestricted minting;
+* bank core unchanged vs core replacement;
+* SWIFT cooperation vs SWIFT replacement;
+* reserve asset vs input asset confusion;
+* liquidity vs qualifying backing;
+* ordinary deposit vs protected backing;
+* customer visibility vs consumer crypto UX.
+
+---
+
+# LIX. IMPLEMENTATION EVIDENCE STANDARD
+
+For every "IMPLEMENTED" claim, provide concrete evidence.
+
+Evidence may include:
+
+* service;
+* module;
+* repository path;
+* API;
+* database structure;
+* policy;
+* workflow;
+* state machine;
+* smart contract;
+* configuration;
+* integration;
+* test;
+* deployment;
+* executable logic.
+
+Never say:
+
+> "Implemented"
+
+because a related concept exists in the blueprint.
+
+---
+
+# LX. BLUEPRINT EVIDENCE STANDARD
+
+For "BLUEPRINT SPECIFIED", identify:
+
+* exact section;
+* exact provision;
+* exact workflow;
+* relevant schema;
+* data field;
+* architecture component.
+
+Do not interpret vague aspirational language as full specification.
+
+---
+
+# LXI. MASTER STATUS CODES
+
+For every requirement classify exactly as one of:
+
+### A — IMPLEMENTED
+
+Evidence exists in actual implementation.
+
+### B — BLUEPRINT SPECIFIED
+
+Clearly specified but implementation evidence is absent.
+
+### C — PARTIALLY IMPLEMENTED
+
+Some critical elements exist; others do not.
+
+### D — CONCEPTUAL ONLY
+
+Mentioned but not operationally defined.
+
+### E — MISSING
+
+No meaningful provision exists.
+
+### F — CONTRADICTORY
+
+Another part conflicts with the requirement.
+
+### G — ALREADY COVERED
+
+Existing architecture adequately covers it; no separate feature required.
+
+---
+
+# LXII. MASTER GAP MATRIX
+
+Produce:
+
+| Requirement | Current Implementation | Blueprint | Status | Evidence | Missing Element | Risk | Required Owner | Priority |
+| ----------- | ---------------------- | --------- | ------ | -------- | --------------- | ---- | -------------- | -------- |
+
+Priority:
+
+* Critical
+* High
+* Medium
+* Low
+* None
+
+---
+
+# LXIII. RISK OWNERSHIP MATRIX
+
+Produce a separate:
+
+| Risk / Liability | Primary Responsible Party | Secondary Controls | MITHQAL Role | Current Status | Gap |
+| ---------------- | ------------------------- | ------------------ | ------------ | -------------- | --- |
+
+At minimum include:
+
+* backing risk;
+* bank default;
+* liquidity risk;
+* FX risk;
+* stablecoin depeg;
+* custody risk;
+* gold price risk;
+* settlement risk;
+* sanctions risk;
+* cyber risk;
+* technology outage;
+* oracle failure;
+* CBDC outage;
+* SWIFT outage;
+* operational failure.
+
+---
+
+# LXIV. WHAT SHOULD NEVER BE ASSUMED
+
+The audit must explicitly reject these assumptions unless proven:
+
+> Bank deposit = risk-free backing.
+
+> MITHQAL owning the infrastructure means MITHQAL owns the reserve.
+
+> Technical connectivity = regulatory authorization.
+
+> Stablecoin = money/currency everywhere.
+
+> Customer visibility = consumer crypto wallet.
+
+> MTQ = USD.
+
+> SWIFT = settlement asset.
+
+> MITHQAL = exchange.
+
+> Liquidity line = qualifying backing.
+
+> Corporate MTQ balance = ordinary bank deposit.
+
+> Bank approval automatically satisfies every downstream compliance requirement.
+
+---
+
+# LXV. FINAL AUDIT OUTPUT
+
+After all analysis, provide:
+
+## 1. What is already correct and should remain untouched
+
+## 2. What is actually implemented
+
+## 3. What exists only in the blueprint
+
+## 4. What is partially implemented
+
+## 5. What is conceptual only
+
+## 6. What is missing
+
+## 7. What is contradictory
+
+## 8. What is technically possible but legally restricted
+
+## 9. What requires a different regulated entity
+
+## 10. What is economically impractical
+
+## 11. What is already covered and does not need another component
+
+## 12. What should be added
+
+## 13. What should NOT be added
+
+## 14. What should be consolidated
+
+## 15. Minimum changes required for institutional pilot
+
+## 16. Changes that can safely wait until post-pilot
+
+---
+
+# LXVI. FINAL INSTITUTIONAL READINESS SCORECARD
+
+Score each:
+
+### Monetary Architecture
+
+/100
+
+### Banking Compatibility
+
+/100
+
+### Legal / Regulatory Architecture
+
+/100
+
+### Institutional Backing Integrity
+
+/100
+
+### Liquidity Architecture
+
+/100
+
+### Settlement Architecture
+
+/100
+
+### Interoperability
+
+/100
+
+### Geopolitical Resilience
+
+/100
+
+### Operational Resilience
+
+/100
+
+### Institutional Trust
+
+/100
+
+### Economic Sustainability
+
+/100
+
+### Technical Readiness
+
+/100
+
+### Implementation Completeness
+
+/100
+
+### Overall Institutional Readiness
+
+/100
+
+Then choose exactly one:
+
+> **GO**
+
+or
+
+> **GO WITH CRITICAL GAPS**
+
+or
+
+> **NOT READY**
+
+or
+
+> **REDESIGN REQUIRED**
+
+---
+
+# LXVII. FINAL COO DECISION RULE
+
+Do not recommend another major redesign unless the evidence demonstrates one of the following:
+
+* fundamental legal impossibility;
+* unacceptable financial risk;
+* impossible banking integration;
+* mathematically unsound issuance;
+* inability to establish enforceable institutional obligations;
+* fatal interoperability limitation;
+* fatal economic model;
+* architecture internally contradicts itself.
+
+Otherwise prefer:
+
+> **targeted amendments rather than architectural replacement.**
+
+---
+
+# LXVIII. FINAL OBJECTIVE
+
+Determine with evidence:
+
+> **WHAT ACTUALLY EXISTS → WHAT THE BLUEPRINT SPECIFIES → WHAT WAS AGREED → WHAT IS PARTIAL → WHAT IS MISSING → WHAT CONFLICTS → WHO IS RESPONSIBLE → WHAT REQUIRES LICENSING → WHAT SHOULD BE ADDED → WHAT SHOULD BE LEFT ALONE.**
+
+The final architecture must preserve the foundational separation:
+
+```text
+              CONSTITUTION
+                   │
+                   ▼
+               MITHQAL
+                   │
+       ┌───────────┼───────────┐
+       │           │           │
+   Governance   Technology   Settlement
+       │           │           │
+       └───────────┼───────────┘
+                   │
+                   ▼
+            PARTICIPATING BANKS
+                   │
+      ┌────────────┼────────────┐
+      │            │            │
+   BACKING       LIQUIDITY      FX
+      │            │            │
+      └────────────┼────────────┘
+                   ▼
+                  MTQ
+                   │
+                   ▼
+         INSTITUTIONAL SETTLEMENT
+```
+
+## Core principle
+
+> **MITHQAL does not need to own the money to operate the monetary infrastructure.**
+
+> **Participating banks / authorized institutions carry the applicable financial backing and settlement obligations.**
+
+> **MITHQAL defines, verifies, authorizes, records, reconciles and enforces the constitutional operating rules.**
+
+> **MTQ is the neutral institutional settlement unit connecting otherwise sovereign monetary systems.**
+
+> **Banks remain banks. SWIFT remains SWIFT. Central banks remain sovereign. MITHQAL becomes the neutral interoperability and settlement layer.**
+
+Do not make architectural amendments until this audit has been completed.
