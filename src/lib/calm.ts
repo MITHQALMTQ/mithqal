@@ -52,7 +52,7 @@ const STATE_CONFIG: Record<ReserveState, {
   feeBps: number;
   feeRange: string;
 }> = {
-  NORMAL:     { rrTarget: 1.20, feeBps: 5,   feeRange: "0.05%" },
+  NORMAL:     { rrTarget: 1.30, feeBps: 5,   feeRange: "0.05%" },
   CAUTION:    { rrTarget: 1.22, feeBps: 15,  feeRange: "0.10–0.20%" },
   DEFENSIVE:  { rrTarget: 1.23, feeBps: 25,  feeRange: "0.20–0.25%" },
   STRESS:     { rrTarget: 1.25, feeBps: 37,  feeRange: "0.25–0.50%" },

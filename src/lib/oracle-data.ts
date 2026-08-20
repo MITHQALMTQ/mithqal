@@ -60,7 +60,7 @@ export interface OracleSnapshot {
   fxAgo1d: Record<string, number>;
 }
 
-// The 8 eligible basket currencies per the v24.2.1 worked example (Part III).
+// The 11 eligible basket currencies per the §V25.2 specification.
 // §12: all 8 are at "full" lifecycle status (fully included in the basket),
 // admitted on 2024-01-01 (placeholder genesis date).
 export const BASE_CURRENCIES: CurrencyData[] = [
@@ -72,6 +72,9 @@ export const BASE_CURRENCIES: CurrencyData[] = [
   { code: "CHF", name: "Swiss Franc",     fx: 1.12,    cofer: 0.008, swift: 0.040, bis: 0.020, lta: 0.0230, lifecycleStatus: "full", admittedDate: "2024-01-01" },
   { code: "AUD", name: "Australian Dollar", fx: 0.66,  cofer: 0.005, swift: 0.035, bis: 0.020, lta: 0.0160, lifecycleStatus: "full", admittedDate: "2024-01-01" },
   { code: "CAD", name: "Canadian Dollar", fx: 0.73,    cofer: 0.005, swift: 0.025, bis: 0.025, lta: 0.0130, lifecycleStatus: "full", admittedDate: "2024-01-01" },
+  { code: "SGD", name: "Singapore Dollar", fx: 0.74,    cofer: 0.018, swift: 0.022, bis: 0.015, lta: 0.0180, lifecycleStatus: "full", admittedDate: "2024-01-01" },
+  { code: "AED", name: "UAE Dirham",        fx: 0.272,  cofer: 0.008, swift: 0.010, bis: 0.005, lta: 0.0080, lifecycleStatus: "full", admittedDate: "2024-01-01" },
+  { code: "SAR", name: "Saudi Riyal",       fx: 0.266,  cofer: 0.007, swift: 0.008, bis: 0.004, lta: 0.0070, lifecycleStatus: "full", admittedDate: "2024-01-01" },
 ];
 
 const BASE_GOLD = 1850; // USD/oz

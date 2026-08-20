@@ -56,7 +56,7 @@ const DIGITAL_ASSETS = [
 ];
 
 // Target total R_a with 20% buffer
-const TARGET_RA = 63_000_000; // $54M × 1.167 ≈ $63M
+const TARGET_RA = 70_200_000 // §V25.2; // $54M × 1.167 ≈ $63M
 
 const BASELINE_SUPPLY = 54_000_000;
 const FALLBACK_SILVER_USD = 58.76;

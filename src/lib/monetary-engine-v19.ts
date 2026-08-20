@@ -165,7 +165,7 @@ export function computeReserveRatio(
     adjustedReserve: reserves.adjusted,
     marketReserve: reserves.market,
     compliant: fpGte(ratio, fp(1.00)),
-    policyTarget: fpGte(ratio, fp(1.02)),
+    policyTarget: fpGte(ratio, fp(1.30)) // §V25.2,
   };
 }
 
@@ -316,7 +316,7 @@ export const GAMMA = 0.10; // BIS weight
 export const L_MOMENTUM = 0.05; // §15 momentum clamp ±5%
 export const L_REVERSION = 0.02; // §16 mean reversion clamp ±2%
 export const ETA = 0.05; // §16 mean reversion speed
-export const L_MAX = 0.60; // §21 concentration cap
+export const L_MAX = 0.20; // §V25.2 concentration hard cap (20%)
 export const W_MIN = 0.005; // §22 minimum floor (0.5%)
 export const V_NORMAL = 0.02; // §17 normal volatility threshold 2%
 export const V_HIGH = 0.05; // §17 high volatility threshold 5%
