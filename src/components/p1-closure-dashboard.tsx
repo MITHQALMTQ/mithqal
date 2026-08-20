@@ -229,7 +229,7 @@ export function P1ClosureDashboard() {
               <div className="grid grid-cols-2 gap-1 text-[10px] md:grid-cols-5">
                 {Object.entries(bdr.data.honestState ?? {}).filter(([k]) => k !== "finalStatus" && k !== "finalStatusColor" && k !== "principle").map(([k, v]: any) => (
                   <div key={k} className="rounded border border-gray-200 p-1">
-                    <div className="text-gray-500">{k}</div>
+                    <div className="text-gray-500">{String(k)}</div>
                     <StateBadge ok={v === true} label={String(v)} />
                   </div>
                 ))}
@@ -309,10 +309,10 @@ export function P1ClosureDashboard() {
               <div className="space-y-2">
                 <div className="grid grid-cols-3 gap-1 text-[10px]">
                   {(tbs.data.books ?? []).map((b: any) => (
-                    <div key={b.id} className="rounded border border-amber-200 bg-amber-50/40 p-1.5">
-                      <div className="font-semibold text-amber-800">{(b.id || "").replace("BOOK_", "").replace("_", " ")}</div>
-                      <div className="text-[9px] text-gray-600">{b.name}</div>
-                      <div className="text-[9px] text-gray-500">{b.fieldCount} fields</div>
+                    <div key={b.bookType || b.id || Math.random()} className="rounded border border-amber-200 bg-amber-50/40 p-1.5">
+                      <div className="font-semibold text-amber-800">{String((b.bookType || b.id || "")).replace("BOOK_", "").replace("_", " ")}</div>
+                      <div className="text-[9px] text-gray-600">{String(b.bookName || b.name || "")}</div>
+                      <div className="text-[9px] text-gray-500">{String(b.entryCount || b.fieldCount || 0)} entries</div>
                     </div>
                   ))}
                 </div>

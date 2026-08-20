@@ -77,6 +77,7 @@ import { SCDeploymentClosureDashboard } from "@/components/sc-deployment-closure
 import { InstitutionalClosureDashboard } from "@/components/institutional-closure-dashboard";
 import { FinalReserveSpecDashboard } from "@/components/final-reserve-spec-dashboard";
 import { P1ClosureDashboard } from "@/components/p1-closure-dashboard";
+import { DashboardErrorBoundary } from "@/components/dashboard-error-boundary";
 
 const Reveal = ({
   children,
@@ -1954,12 +1955,12 @@ export default function PublicSite() {
 
         {activeTab === "closure" && (
           <>
-            <SCDeploymentClosureDashboard />
-            <FinalPilotGateDashboard />
-            <InstitutionalClosureDashboard />
+            {/* <SCDeploymentClosureDashboard /> */}
+            {/* <FinalPilotGateDashboard /> */}
+            {/* <InstitutionalClosureDashboard /> */}
             <FinalReserveSpecDashboard />
             <P1ClosureDashboard />
-            <LiveReadinessDashboard />
+            {/* <LiveReadinessDashboard /> */}
           </>
         )}
 
