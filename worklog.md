@@ -3272,3 +3272,29 @@ Stage Summary:
   7. Updated blueprint (§V25.2 + §V25.2.AUDIT-CLOSURE appended) ✓
   8. Evidence-based status report (§87 — honest, no inflation) ✓
 - HONEST STATE preserved: NOT PRODUCTION-AUTHORIZED. 0/13 institutional gates passed. All 6 P1 frameworks are IMPLEMENTED at code level; institutional validation (legal opinions, licenses, bank contracts, pilot transactions) remains the gating requirement.
+
+---
+Task ID: COO-GITHUB-VERCEL-TURSO-SYNC
+Agent: COO + Project Manager (main)
+Task: Ensure all §V25.2 work is pushed and implemented to GitHub, Vercel, and Turso; all three connected and working with no errors; fix any errors.
+
+Work Log:
+- AUDIT: Checked git status, remotes, env vars, Turso config, Vercel config.
+  * GitHub remote: MITHQALMTQ/mithqal.git (token embedded in URL) — working
+  * Vercel project: prj_x0EThaKg2ERihhF5kYMDqilWBINS (linked, orgId team_bVAdJfvsNGW6Os3KxkhvHoq8)
+  * Turso URL: libsql://mithqal-db-fortleem.aws-us-east-1.turso.io (from .env.example and .env.encrypted)
+  * Local .env had only DATABASE_URL=file:/home/z/my-project/db/custom.db (local file DB, not Turso cloud)
+- GITHUB FIX: Found 3 local commits (including all §V25.2 work — commit 9f61e13 with 24 files/8599 insertions) were NOT pushed to origin/main. Pushed successfully: f3a7293..9f61e13 main -> main. Verified: 0 unpushed commits, 10/10 §V25.2 files on GitHub.
+- ENV RESTORATION: Decrypted .env.encrypted using SHA-256 of GitHub token as password (per RESTORE-ENV.md instructions). Restored full .env with 29 env vars including DATABASE_URL (Turso cloud), DATABASE_AUTH_TOKEN (348-char JWT), VERCEL_TOKEN, GITHUB_TOKEN, and all other credentials.
+- TURSO DIAGNOSIS: Tested Turso cloud DB connection with restored credentials. Cloud DB returns HTTP 502: "no route configured for host mithqal-db-fortleem.aws-us-east-1.turso.io". Root cause: the Turso database hostname is no longer routed on the Turso platform (platform-side issue, not a token issue — JWT has no exp claim, so not expired). Cannot fix from sandbox without Turso platform API token (separate from database JWT) or browser-based Turso CLI login.
+- TURSO LOCAL FALLBACK: Created .env.local with DATABASE_URL=file:/home/z/my-project/db/custom.db to override the unreachable Turso URL for local development. Ran prisma db push — local schema in sync (15 tables). /api/transparency (which was 500 with Turso URL) now returns 200 with local file DB. Added .env.local to .gitignore.
+- VERCEL DEPLOY: Deployed latest code to Vercel production via CLI (npx vercel --token $VERCEL_TOKEN --prod). Build completed in 24s, deployed in 49s. Production URL: https://my-project-wine-three-35.vercel.app (verified alias). Vercel-GitHub auto-deploy also confirmed working (git-source deployment READY). Verified on Vercel: all 10 §V25.2 API endpoints return HTTP 200.
+- VERCEL-GITHUB INTEGRATION: Confirmed connected (provider: github, repo: mithqal, branch: main). Push to GitHub triggers Vercel auto-deploy (verified in deployment history: git-source deployment READY alongside cli-source deployment).
+- COMMITTED .gitignore update (ensure .env.local is gitignored): commit c60e7eb, pushed to GitHub.
+
+Stage Summary:
+- ✅ GITHUB: Fully synced. All §V25.2 code (9 modules, 9 API routes, dashboard, blueprint sections, scripts) committed and pushed. 0 unpushed commits. 10/10 §V25.2 files confirmed on GitHub.
+- ✅ VERCEL: Production deployed at https://my-project-wine-three-35.vercel.app. All 10 §V25.2 APIs return HTTP 200 on Vercel. Home route loads in 0.05s. Git integration connected (auto-deploys on push to main). §87 implementation status report live: 19/23 acceptance criteria met (83%), 7/7 finality layers enforced, 0/13 institutional gates passed (honest).
+- ⚠️ TURSO: Cloud DB (libsql://mithqal-db-fortleem.aws-us-east-1.turso.io) is UNREACHABLE — "no route configured for host" (platform-side issue). This is NOT a token issue (JWT has no expiry). Fix requires Turso dashboard access (app.turso.tech) to either fix the existing DB routing or create a new DB and update the DATABASE_URL env var on Vercel. Local dev uses local file DB fallback (working, 15 tables, schema in sync).
+- All three platforms are CONNECTED: GitHub → (auto-deploy) → Vercel → (env var) → Turso. The only error is the Turso cloud DB routing, which is a Turso platform-side issue requiring dashboard access to fix.
+- The §V25.2 compliance/risk/audit modules work on ALL platforms because they are pure computation (no DB dependency). DB-dependent routes (/api/transparency) fail on Vercel (Turso unreachable) but work on local dev (file DB fallback).
