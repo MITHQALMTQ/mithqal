@@ -31,3 +31,4 @@ logs/
 db/custom.db
 db/custom.db-journal
 tool-results/
+.env.local
