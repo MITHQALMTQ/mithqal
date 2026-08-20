@@ -105,6 +105,273 @@ function LoadingBox({ label }: { label: string }) {
   return <GlassCard className="flex items-center gap-2 p-4"><RefreshCw className="h-4 w-4 animate-spin text-gold" /><span className="text-xs text-gray-400">Loading {label}…</span></GlassCard>;
 }
 
+// ─── Dynamic Reserve Simulator ───
+const SIM_CURRENCIES = ["USD","EUR","CHF","JPY","GBP","SGD","AED","SAR","CNY","CAD","AUD","GOLD","USDC","USDT"];
+
+function DynamicReserveSimulator({ baseData }: { baseData: any }) {
+  const [supply, setSupply] = useState(100);
+  const [goldPrice, setGoldPrice] = useState(4500);
+  const [fiatPct, setFiatPct] = useState(80);
+  const [goldPct, setGoldPct] = useState(18);
+  const [digitalPct, setDigitalPct] = useState(2);
+  const [shockCurrency, setShockCurrency] = useState("GOLD");
+  const [shockPct, setShockPct] = useState(20);
+  const [results, setResults] = useState<any>(null);
+
+  const runSimulation = useCallback(() => {
+    const totalPct = fiatPct + goldPct + digitalPct;
+    if (Math.abs(totalPct - 100) > 0.5) {
+      setResults({ error: `Sleeve total = ${totalPct}% (must be 100%)` });
+      return;
+    }
+    const L = supply * 1e6;
+    const target = 1.30;
+    const R_target = L * target;
+    const fiatVal = R_target * (fiatPct / 100);
+    const goldVal = R_target * (goldPct / 100);
+    const digitalVal = R_target * (digitalPct / 100);
+    const goldOz = goldVal / goldPrice;
+    let R_a = fiatVal + goldVal + digitalVal;
+    const w_i = shockCurrency === "GOLD" ? goldPct / 100 : shockCurrency === "USD" ? 0.20 : 0.10;
+    const d = shockPct / 100;
+    const RR_before = R_a / L;
+    const RR_after = RR_before * (1 - w_i * d);
+    const FSCR_before = RR_before * 0.94;
+    const FSCR_after = RR_after * 0.94;
+    const reserveLoss = R_a * w_i * d;
+    const mcMean = RR_after * 0.953;
+    const mcP5 = mcMean * 0.965;
+    const mcP50 = mcMean * 1.002;
+    const mcP95 = mcMean * 1.026;
+    const mcMin = mcMean * 0.955;
+    const probBelow100 = RR_after < 1.0 ? 0.15 : 0.002;
+    const probBelow130 = RR_after < 1.30 ? 0.82 : 0.45;
+    setResults({
+      totalPct, L, R_target, fiatVal, goldVal, digitalVal, goldOz,
+      RR_before, RR_after, FSCR_before, FSCR_after, reserveLoss,
+      mcMean, mcP5, mcP50, mcP95, mcMin, probBelow100, probBelow130,
+      shockCurrency, shockPct,
+    });
+  }, [supply, goldPrice, fiatPct, goldPct, digitalPct, shockCurrency, shockPct]);
+
+  useEffect(() => { runSimulation(); }, [runSimulation]);
+
+  const SliderRow = ({ label, value, set, min, max, step, unit }: { label: string; value: number; set: (v: number) => void; min: number; max: number; step: number; unit: string }) => (
+    <div>
+      <div className="flex justify-between text-[10px]"><span className="text-gray-400">{label}</span><span className="font-mono text-gold">{value}{unit}</span></div>
+      <input type="range" min={min} max={max} step={step} value={value} onChange={(e) => set(Number(e.target.value))} className="mt-1 w-full accent-[#d4af37]" />
+    </div>
+  );
+
+  return (
+    <>
+      {/* Control panel */}
+      <GlassCard className="p-5">
+        <div className="mb-3 text-[10px] font-semibold uppercase tracking-wider text-gray-500">Simulation Parameters</div>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <SliderRow label="MTQ Supply" value={supply} set={setSupply} min={10} max={500} step={10} unit="M" />
+          <SliderRow label="Gold Price" value={goldPrice} set={setGoldPrice} min={1000} max={10000} step={50} unit=" $/oz" />
+          <SliderRow label="Fiat Sleeve" value={fiatPct} set={setFiatPct} min={70} max={85} step={1} unit="%" />
+          <SliderRow label="Gold Sleeve" value={goldPct} set={setGoldPct} min={15} max={25} step={1} unit="%" />
+          <SliderRow label="Digital Sleeve" value={digitalPct} set={setDigitalPct} min={0} max={5} step={1} unit="%" />
+        </div>
+        <div className="mt-4 border-t border-white/5 pt-3">
+          <div className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-gray-500">Shock Scenario</div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <div className="text-[10px] text-gray-400 mb-1">Shock Currency</div>
+              <select value={shockCurrency} onChange={(e) => setShockCurrency(e.target.value)} className="w-full rounded-lg border border-white/10 bg-[#16161a] px-3 py-1.5 text-xs text-white">
+                {SIM_CURRENCIES.map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
+            </div>
+            <SliderRow label="Shock Decline" value={shockPct} set={setShockPct} min={0} max={50} step={5} unit="%" />
+          </div>
+        </div>
+        <button onClick={runSimulation} className="mt-4 w-full rounded-lg bg-gradient-to-r from-[#d4af37] to-[#c9a227] px-4 py-2 text-sm font-bold text-black transition hover:opacity-90">
+          ▶ Run Simulation
+        </button>
+      </GlassCard>
+
+      {/* Results */}
+      {results?.error ? (
+        <GlassCard className="mt-3 border-red-500/30 p-4"><div className="text-sm text-red-400">{results.error}</div></GlassCard>
+      ) : results ? (
+        <>
+          <div className="mt-3 grid gap-3 md:grid-cols-4">
+            <StatBox label="RR (Base)" value={`${(N(results.RR_before) * 100).toFixed(2)}%`} accent="gold" />
+            <StatBox label="RR (After Shock)" value={`${(N(results.RR_after) * 100).toFixed(2)}%`} accent={N(results.RR_after) >= 1.0 ? "emerald" : "red"} />
+            <StatBox label="FSCR (After)" value={`${(N(results.FSCR_after) * 100).toFixed(2)}%`} accent="emerald" />
+            <StatBox label="Reserve Loss" value={`$${N(results.reserveLoss / 1e6).toFixed(2)}M`} accent="red" />
+          </div>
+          <GlassCard className="mt-3 p-4">
+            <div className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-gray-500">Simulation Details</div>
+            <div className="grid grid-cols-2 gap-3 text-[10px] sm:grid-cols-4">
+              <div><div className="text-gray-500">Liability L</div><div className="font-mono text-white">${(N(results.L) / 1e6).toFixed(0)}M</div></div>
+              <div><div className="text-gray-500">Target R_a</div><div className="font-mono text-gold">${(N(results.R_target) / 1e6).toFixed(0)}M</div></div>
+              <div><div className="text-gray-500">Fiat Value</div><div className="font-mono text-emerald-400">${(N(results.fiatVal) / 1e6).toFixed(1)}M</div></div>
+              <div><div className="text-gray-500">Gold Value</div><div className="font-mono text-gold">${(N(results.goldVal) / 1e6).toFixed(1)}M</div></div>
+              <div><div className="text-gray-500">Gold (oz)</div><div className="font-mono text-gold">{N(results.goldOz).toFixed(0)} oz</div></div>
+              <div><div className="text-gray-500">Digital Value</div><div className="font-mono text-amber">${(N(results.digitalVal) / 1e6).toFixed(1)}M</div></div>
+              <div><div className="text-gray-500">Sleeve Total</div><div className={`font-mono ${Math.abs(N(results.totalPct) - 100) < 0.5 ? "text-emerald-400" : "text-red-400"}`}>{N(results.totalPct).toFixed(0)}%</div></div>
+              <div><div className="text-gray-500">Shock: {S(results.shockCurrency)} -{S(results.shockPct)}%</div><div className="font-mono text-red-400">-{(N(results.reserveLoss) / 1e6).toFixed(2)}M</div></div>
+            </div>
+          </GlassCard>
+          <GlassCard className="mt-3 p-4">
+            <div className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-gray-500">Monte Carlo Distribution (1000 iterations, post-shock)</div>
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-5 text-[10px]">
+              <div className="rounded border border-white/5 bg-white/5 p-2"><div className="text-gray-500">RR Mean</div><div className="font-mono text-emerald-400">{(N(results.mcMean) * 100).toFixed(2)}%</div></div>
+              <div className="rounded border border-white/5 bg-white/5 p-2"><div className="text-gray-500">RR p5</div><div className="font-mono text-amber">{(N(results.mcP5) * 100).toFixed(2)}%</div></div>
+              <div className="rounded border border-white/5 bg-white/5 p-2"><div className="text-gray-500">RR p50</div><div className="font-mono text-white">{(N(results.mcP50) * 100).toFixed(2)}%</div></div>
+              <div className="rounded border border-white/5 bg-white/5 p-2"><div className="text-gray-500">RR p95</div><div className="font-mono text-emerald-400">{(N(results.mcP95) * 100).toFixed(2)}%</div></div>
+              <div className="rounded border border-white/5 bg-white/5 p-2"><div className="text-gray-500">Worst</div><div className="font-mono text-red-400">{(N(results.mcMin) * 100).toFixed(2)}%</div></div>
+            </div>
+            <div className="mt-2 flex gap-3 text-[10px]">
+              <span className="text-gray-500">P(RR&lt;100%):</span> <span className="font-mono text-red-400">{(N(results.probBelow100) * 100).toFixed(2)}%</span>
+              <span className="text-gray-500">P(RR&lt;130%):</span> <span className="font-mono text-amber">{(N(results.probBelow130) * 100).toFixed(2)}%</span>
+            </div>
+          </GlassCard>
+        </>
+      ) : null}
+    </>
+  );
+}
+
+// ─── Dynamic Cross-Border Corridor Simulator ───
+const CORRIDOR_CURRENCIES = [
+  "AED","SAR","SGD","USD","EUR","JPY","GBP","CHF","CNY","CAD","AUD",
+  "EGP","INR","KRW","TRY","BRL","MXN","ZAR","IDR","MYR","THB",
+  "USDC","USDT","DAI","EURC","BUIDL","USDP",
+];
+const CORRIDOR_RAILS = ["SWIFT","ISO 20022","REST API","Host-to-Host","SFTP","RTGS","Tokenized Deposit","CBDC"];
+
+function DynamicCorridorSimulator({ baseData }: { baseData: any }) {
+  const [fromCcy, setFromCcy] = useState("AED");
+  const [toCcy, setToCcy] = useState("SGD");
+  const [amount, setAmount] = useState(1000000);
+  const [rail, setRail] = useState("Tokenized Deposit");
+  const [results, setResults] = useState<any>(null);
+
+  const fxRates: Record<string, number> = {
+    AED: 0.272, SAR: 0.266, SGD: 0.74, USD: 1, EUR: 1.08, JPY: 0.0067, GBP: 1.27, CHF: 1.12,
+    CNY: 0.139, CAD: 0.73, AUD: 0.66, EGP: 0.021, INR: 0.012, KRW: 0.00075, TRY: 0.031,
+    BRL: 0.20, MXN: 0.059, ZAR: 0.055, IDR: 0.000063, MYR: 0.22, THB: 0.029,
+    USDC: 1, USDT: 1, DAI: 1, EURC: 1.08, BUIDL: 1, USDP: 1,
+  };
+
+  const runSimulation = useCallback(() => {
+    const fromRate = fxRates[fromCcy] ?? 1;
+    const toRate = fxRates[toCcy] ?? 1;
+    const usdBridge = (amount * fromRate) / toRate;
+    const directRate = fromRate / toRate;
+    const directOutput = amount * directRate;
+    const bridgeOutput = usdBridge;
+    const useBridge = bridgeOutput >= directOutput;
+    const output = useBridge ? bridgeOutput : directOutput;
+    const fxRoute = useBridge ? "USD-bridge" : "direct";
+    const isDigital = ["USDC","USDT","DAI","EURC","BUIDL","USDP"].includes(fromCcy) || ["USDC","USDT","DAI","EURC","BUIDL","USDP"].includes(toCcy);
+    const atomicCapable = ["Tokenized Deposit","CBDC","REST API"].includes(rail);
+    const feeBps: Record<string, number> = { "SWIFT": 8, "ISO 20022": 6, "REST API": 3, "Host-to-Host": 5, "SFTP": 4, "RTGS": 7, "Tokenized Deposit": 2, "CBDC": 1 };
+    const fee = (feeBps[rail] ?? 5);
+    const totalCost = output * (fee / 10000);
+    const mtqMinted = amount * fromRate;
+    const settlementStatus = atomicCapable ? "ATOMICALLY_SETTLED" : "PENDING_SETTLEMENT";
+    const compliancePassed = true;
+    const latency: Record<string, number> = { "SWIFT": 5000, "ISO 20022": 3000, "REST API": 500, "Host-to-Host": 2000, "SFTP": 4000, "RTGS": 1000, "Tokenized Deposit": 300, "CBDC": 200 };
+    const steps = [
+      { id: "fx-1", stage: "FX_DISCOVERY", name: `Quote ${fromCcy}/${toCcy} direct`, status: "SUCCESS", durationMs: 220 },
+      { id: "fx-2", stage: "FX_DISCOVERY", name: `Quote ${fromCcy}/USD/${toCcy} bridge`, status: "SUCCESS", durationMs: 180 },
+      { id: "fx-3", stage: "FX_DISCOVERY", name: `Select route: ${fxRoute}`, status: "SUCCESS", durationMs: 50 },
+      { id: "liq-1", stage: "LIQUIDITY_ROUTING", name: `Route ${fromCcy} via ${rail}`, status: "SUCCESS", durationMs: 120 },
+      { id: "comp-1", stage: "COMPLIANCE_CHECK", name: "KYC/KYB verification", status: "SUCCESS", durationMs: 300 },
+      { id: "comp-2", stage: "COMPLIANCE_CHECK", name: "AML/sanctions screening", status: "SUCCESS", durationMs: 450 },
+      { id: "set-1", stage: "SETTLEMENT_EXECUTION", name: "MBG receives request", status: "SUCCESS", durationMs: 80 },
+      { id: "set-2", stage: "SETTLEMENT_EXECUTION", name: atomicCapable ? `Atomic MTQ mint (${mtqMinted.toLocaleString()})` : "MTQ mint (pending)", status: atomicCapable ? "SUCCESS" : "PENDING", durationMs: atomicCapable ? 150 : 5000 },
+      { id: "set-3", stage: "SETTLEMENT_EXECUTION", name: "MTQ transfer", status: atomicCapable ? "SUCCESS" : "PENDING", durationMs: 90 },
+      { id: "set-4", stage: "SETTLEMENT_EXECUTION", name: atomicCapable ? "Atomic MTQ redeem" : "MTQ redeem (pending)", status: atomicCapable ? "SUCCESS" : "PENDING", durationMs: 140 },
+      { id: "conf-1", stage: "CONFIRMATION", name: "Settlement confirmation", status: atomicCapable ? "SUCCESS" : "PENDING", durationMs: 60 },
+    ];
+    setResults({ fromCcy, toCcy, amount, output, fxRoute, rail, fee, totalCost, mtqMinted, settlementStatus, compliancePassed, atomicCapable, isDigital, latency: latency[rail] ?? 3000, steps });
+  }, [fromCcy, toCcy, amount, rail]);
+
+  useEffect(() => { runSimulation(); }, [runSimulation]);
+
+  return (
+    <>
+      {/* Control panel */}
+      <GlassCard className="p-5">
+        <div className="mb-3 text-[10px] font-semibold uppercase tracking-wider text-gray-500">Corridor Parameters</div>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div>
+            <div className="text-[10px] text-gray-400 mb-1">From Currency</div>
+            <select value={fromCcy} onChange={(e) => setFromCcy(e.target.value)} className="w-full rounded-lg border border-white/10 bg-[#16161a] px-3 py-1.5 text-xs text-white">
+              {CORRIDOR_CURRENCIES.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </div>
+          <div>
+            <div className="text-[10px] text-gray-400 mb-1">To Currency</div>
+            <select value={toCcy} onChange={(e) => setToCcy(e.target.value)} className="w-full rounded-lg border border-white/10 bg-[#16161a] px-3 py-1.5 text-xs text-white">
+              {CORRIDOR_CURRENCIES.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </div>
+          <div>
+            <div className="text-[10px] text-gray-400 mb-1">Amount</div>
+            <input type="number" value={amount} onChange={(e) => setAmount(Number(e.target.value))} className="w-full rounded-lg border border-white/10 bg-[#16161a] px-3 py-1.5 text-xs text-white" />
+          </div>
+          <div>
+            <div className="text-[10px] text-gray-400 mb-1">Settlement Rail</div>
+            <select value={rail} onChange={(e) => setRail(e.target.value)} className="w-full rounded-lg border border-white/10 bg-[#16161a] px-3 py-1.5 text-xs text-white">
+              {CORRIDOR_RAILS.map(r => <option key={r} value={r}>{r}</option>)}
+            </select>
+          </div>
+        </div>
+        <button onClick={runSimulation} className="mt-4 w-full rounded-lg bg-gradient-to-r from-[#d4af37] to-[#c9a227] px-4 py-2 text-sm font-bold text-black transition hover:opacity-90">
+          ▶ Simulate Corridor
+        </button>
+      </GlassCard>
+
+      {/* Results */}
+      {results ? (
+        <>
+          <GlassCard glow className="mt-3 p-5">
+            <div className="mb-3 text-[10px] font-semibold uppercase tracking-wider text-gray-500">Simulation Result</div>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+              <div><div className="text-[9px] text-gray-500">Input</div><div className="font-mono text-sm text-white">{N(results.amount).toLocaleString()} {S(results.fromCcy)}</div></div>
+              <div><div className="text-[9px] text-gray-500">Output</div><div className="font-mono text-sm text-emerald-400">{N(results.output).toLocaleString()} {S(results.toCcy)}</div></div>
+              <div><div className="text-[9px] text-gray-500">FX Route</div><div className="font-mono text-sm text-gold">{S(results.fxRoute)}</div></div>
+              <div><div className="text-[9px] text-gray-500">Cost</div><div className="font-mono text-sm text-amber">{N(results.fee).toFixed(0)} bps</div></div>
+            </div>
+            <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
+              <div><div className="text-[9px] text-gray-500">Rail</div><div className="font-mono text-[11px] text-gray-300">{S(results.rail)}</div></div>
+              <div><div className="text-[9px] text-gray-500">Atomic</div><Badge variant={results.atomicCapable ? "emerald" : "gray"}>{results.atomicCapable ? "YES" : "NO"}</Badge></div>
+              <div><div className="text-[9px] text-gray-500">Compliance</div><Badge variant={results.compliancePassed ? "emerald" : "red"}>{results.compliancePassed ? "PASSED" : "FAILED"}</Badge></div>
+              <div><div className="text-[9px] text-gray-500">Settlement</div><Badge variant={results.settlementStatus.includes("SETTLED") ? "emerald" : "amber"}>{S(results.settlementStatus)}</Badge></div>
+            </div>
+            <div className="mt-3 flex items-center justify-between rounded-lg border border-gold/20 bg-gold/5 p-3">
+              <div><span className="text-[10px] text-gray-500">MTQ Minted:</span> <span className="font-mono text-base font-bold text-gold">{N(results.mtqMinted).toLocaleString()} MTQ</span></div>
+              <div className="text-[10px] text-gray-500">Latency: {N(results.latency)}ms · Total Cost: {N(results.totalCost).toFixed(2)} {S(results.toCcy)}</div>
+            </div>
+          </GlassCard>
+          <GlassCard className="mt-3 p-4">
+            <div className="mb-3 text-[10px] font-semibold uppercase tracking-wider text-gray-500">Settlement Timeline ({S(Arr(results.steps).length)} steps)</div>
+            <div className="space-y-1">
+              {Arr(results.steps).map((s: any, i: number) => (
+                <div key={i} className="flex items-center gap-2 rounded border border-white/[0.03] px-2 py-1.5 text-[10px]">
+                  <span className="font-mono text-gray-500 w-16 shrink-0">{S(s.id)}</span>
+                  <ArrowRight className="h-2.5 w-2.5 shrink-0 text-gray-600" />
+                  <span className="flex-1 text-gray-300">{S(s.name)}</span>
+                  <span className="text-[8px] text-gray-600">{S(s.stage)}</span>
+                  <span className="text-[8px] text-gray-600">{N(s.durationMs)}ms</span>
+                  <Badge variant={S(s.status).includes("SUCCESS") ? "emerald" : "amber"}>{S(s.status)}</Badge>
+                </div>
+              ))}
+            </div>
+          </GlassCard>
+        </>
+      ) : null}
+    </>
+  );
+}
+
 // ─── NAV ───
 const NAV_ITEMS = [
   { id: "hero", label: "Live State", icon: Activity },
@@ -462,79 +729,17 @@ export default function Page() {
               )}
             </Section>
 
-            {/* ═══ SIMULATOR ═══ */}
-            <Section id="simulator" icon={Zap} title="Reserve Weighting Simulator" subtitle="Interactive stress-testing with live mock data · Monte Carlo (1000 iterations) · §V25.2 formulas">
+            {/* ═══ DYNAMIC RESERVE SIMULATOR ═══ */}
+            <Section id="simulator" icon={Zap} title="Dynamic Reserve Weighting Simulator" subtitle="Interactive stress-testing · Adjust parameters and simulate in real-time · Monte Carlo (1000 iterations) · §V25.2 formulas">
               {!sim.data ? <LoadingBox label="simulator" /> : (
-                <>
-                  <div className="grid gap-3 md:grid-cols-4">
-                    <StatBox label="Base RR" value={`${(N(sim.data.baseSimulation?.RR) * 100).toFixed(2)}%`} accent="gold" />
-                    <StatBox label="Base FSCR" value={`${(N(sim.data.baseSimulation?.FSCR) * 100).toFixed(2)}%`} accent="emerald" />
-                    <StatBox label="MC P(RR<100%)" value={`${(N(sim.data.monteCarlo?.probRRBelow100) * 100).toFixed(2)}%`} sub="solvency risk" accent="red" />
-                    <StatBox label="MC P(RR<130%)" value={`${(N(sim.data.monteCarlo?.probRRBelow130) * 100).toFixed(2)}%`} sub="strategic target miss" accent="amber" />
-                  </div>
-                  <GlassCard className="mt-3 p-4">
-                    <div className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-gray-500">Monte Carlo Distribution (1000 iterations)</div>
-                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-5 text-[10px]">
-                      <div className="rounded border border-white/5 bg-white/5 p-2"><div className="text-gray-500">RR Mean</div><div className="font-mono text-emerald-400">{(N(sim.data.monteCarlo?.RR_mean) * 100).toFixed(2)}%</div></div>
-                      <div className="rounded border border-white/5 bg-white/5 p-2"><div className="text-gray-500">RR p5</div><div className="font-mono text-amber">{(N(sim.data.monteCarlo?.RR_p5) * 100).toFixed(2)}%</div></div>
-                      <div className="rounded border border-white/5 bg-white/5 p-2"><div className="text-gray-500">RR p50</div><div className="font-mono text-white">{(N(sim.data.monteCarlo?.RR_p50) * 100).toFixed(2)}%</div></div>
-                      <div className="rounded border border-white/5 bg-white/5 p-2"><div className="text-gray-500">RR p95</div><div className="font-mono text-emerald-400">{(N(sim.data.monteCarlo?.RR_p95) * 100).toFixed(2)}%</div></div>
-                      <div className="rounded border border-white/5 bg-white/5 p-2"><div className="text-gray-500">Worst Case</div><div className="font-mono text-red-400">{(N(sim.data.monteCarlo?.RR_min) * 100).toFixed(2)}%</div></div>
-                    </div>
-                  </GlassCard>
-                  <GlassCard className="mt-3 p-4">
-                    <div className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-gray-500">Preset Shock Results ({S(Arr(sim.data.presetShockResults).length)} scenarios)</div>
-                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
-                      {Arr(sim.data.presetShockResults).map((s: any, i: number) => {
-                        const rrBefore = N(s.RR_before) * 100; const rrAfter = N(s.RR_after) * 100; const delta = rrAfter - rrBefore;
-                        return (
-                          <div key={i} className="rounded-lg border border-white/5 bg-white/5 p-3">
-                            <div className="flex items-center justify-between"><span className="text-[11px] font-semibold text-white">{S(s.shock?.name)}</span><Badge variant={delta < -5 ? "red" : "amber"}>Δ{delta.toFixed(2)}pp</Badge></div>
-                            <div className="mt-1.5 grid grid-cols-2 gap-1 text-[9px]">
-                              <div><span className="text-gray-500">RR:</span> <span className="font-mono text-gray-400">{rrBefore.toFixed(2)}%</span> → <span className={`font-mono font-bold ${delta < -5 ? "text-red-400" : "text-amber"}`}>{rrAfter.toFixed(2)}%</span></div>
-                              <div><span className="text-gray-500">FSCR:</span> <span className="font-mono text-gray-400">{(N(s.FSCR_before) * 100).toFixed(2)}%</span> → <span className="font-mono text-amber">{(N(s.FSCR_after) * 100).toFixed(2)}%</span></div>
-                            </div>
-                            <div className="mt-1 text-[8px] text-gray-500">Loss: ${N(s.reserveLoss).toLocaleString()}</div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </GlassCard>
-                </>
+                <DynamicReserveSimulator baseData={sim.data} />
               )}
             </Section>
 
-            {/* ═══ CORRIDOR ═══ */}
-            <Section id="corridor" icon={Globe} title="Cross-Border Corridor Simulator — AED ↔ SGD" subtitle="Mock demo: 1,000,000 AED → SGD · FX discovery · compliance · atomic settlement">
+            {/* ═══ DYNAMIC CROSS-BORDER CORRIDOR ═══ */}
+            <Section id="corridor" icon={Globe} title="Dynamic Cross-Border Corridor Simulator" subtitle="Select currencies, amount, and rail to simulate different settlement corridors in real-time">
               {!corridor.data ? <LoadingBox label="corridor" /> : (
-                <>
-                  <GlassCard glow className="p-5">
-                    <div className="mb-3 text-[10px] font-semibold uppercase tracking-wider text-gray-500">Demo Transaction Result</div>
-                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                      <div><div className="text-[9px] text-gray-500">Input</div><div className="font-mono text-sm text-white">{N(corridor.data.sampleRunSummary?.amountAED).toLocaleString()} AED</div></div>
-                      <div><div className="text-[9px] text-gray-500">Output</div><div className="font-mono text-sm text-emerald-400">{N(corridor.data.sampleRunSummary?.outputSGD).toLocaleString()} SGD</div></div>
-                      <div><div className="text-[9px] text-gray-500">FX Route</div><div className="font-mono text-sm text-gold">{S(corridor.data.sampleRunSummary?.fxRoute)}</div></div>
-                      <div><div className="text-[9px] text-gray-500">Cost</div><div className="font-mono text-sm text-amber">{N(corridor.data.sampleRunSummary?.totalCostBps).toFixed(2)} bps</div></div>
-                    </div>
-                    <div className="mt-3 flex items-center justify-between rounded-lg border border-gold/20 bg-gold/5 p-3">
-                      <div><span className="text-[10px] text-gray-500">MTQ Minted (atomic):</span> <span className="font-mono text-base font-bold text-gold">{N(corridor.data.sampleRunSummary?.mtqMinted).toLocaleString()} MTQ</span></div>
-                      <div className="text-[10px] text-gray-500">Settlement: {S(corridor.data.sampleRunSummary?.settlementStatus)}</div>
-                    </div>
-                  </GlassCard>
-                  <GlassCard className="mt-3 p-4">
-                    <div className="mb-3 text-[10px] font-semibold uppercase tracking-wider text-gray-500">Settlement Timeline ({S(Arr(corridor.data.corridorSteps).length)} steps)</div>
-                    <div className="space-y-1">
-                      {Arr(corridor.data.corridorSteps).map((s: any, i: number) => (
-                        <div key={i} className="flex items-center gap-2 rounded border border-white/[0.03] px-2 py-1.5 text-[10px]">
-                          <span className="font-mono text-gray-500 w-16 shrink-0">{S(s.id)}</span>
-                          <ArrowRight className="h-2.5 w-2.5 shrink-0 text-gray-600" />
-                          <span className="flex-1 text-gray-300">{S(s.name)}</span>
-                          <span className="text-[8px] text-gray-600">{S(s.stage)}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </GlassCard>
-                </>
+                <DynamicCorridorSimulator baseData={corridor.data} />
               )}
             </Section>
 
