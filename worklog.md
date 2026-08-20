@@ -3298,3 +3298,25 @@ Stage Summary:
 - ⚠️ TURSO: Cloud DB (libsql://mithqal-db-fortleem.aws-us-east-1.turso.io) is UNREACHABLE — "no route configured for host" (platform-side issue). This is NOT a token issue (JWT has no expiry). Fix requires Turso dashboard access (app.turso.tech) to either fix the existing DB routing or create a new DB and update the DATABASE_URL env var on Vercel. Local dev uses local file DB fallback (working, 15 tables, schema in sync).
 - All three platforms are CONNECTED: GitHub → (auto-deploy) → Vercel → (env var) → Turso. The only error is the Turso cloud DB routing, which is a Turso platform-side issue requiring dashboard access to fix.
 - The §V25.2 compliance/risk/audit modules work on ALL platforms because they are pure computation (no DB dependency). DB-dependent routes (/api/transparency) fail on Vercel (Turso unreachable) but work on local dev (file DB fallback).
+
+---
+Task ID: COO-CREDENTIALS-REFRESH-DEPLOY
+Agent: COO + Project Manager (main)
+Task: Configure new Turso/Discord/GitHub/Vercel credentials. Delete Vercel deployments not at mithqal.vercel.app. Ensure all three platforms connected and working.
+
+Work Log:
+- Wrote comprehensive .env with all new credentials (56 lines): DATABASE_URL (new mtq-fortleem Turso DB), DATABASE_AUTH_TOKEN, TURSO_API_TOKEN, GITHUB_TOKEN, VERCEL_TOKEN, DISCORD_BOT_TOKEN, DISCORD_APP_ID, NEXTAUTH_SECRET, SMTP, etc.
+- TURSO: Configured via REST API (api.turso.tech). Listed 4 databases (aurienta, cirkle, mtq, sgtx). Database is named "mtq" (hostname mtq-fortleem.aws-us-east-1.turso.io). Generated database auth token via POST /v1/databases/mtq/auth/tokens. Tested connection: ✅ CONNECTED (44 tables — full v25.1 schema including protected_backing, mtq_mint_authorizations, reserve_cells, etc.). Ran prisma db push — schema in sync. Updated .env DATABASE_AUTH_TOKEN with the DB-specific token (EdDSA JWT, distinct from the platform RS256 API token).
+- GITHUB: Updated remote URL with new token (ghp_AT6s6px...). Committed re-encrypted .env.encrypted (2912 bytes, +944 from old). Pushed 2 commits (3d331af): env refresh + gitignore. Verified: 0 unpushed commits, synced with origin/main.
+- DISCORD: Installed discord.js deps. Started bot (mini-services/discord-bot, port 3004). Bot logged in as MithqalMTQ#8586 (App ID 1534862703007629385). Connected to 1 guild ("MITHQAL — Constitutional Monetary Institution"). Registered 5 slash commands (/help /status /oracle /nav /reserve). Auto-detected #general as notify channel. Health endpoint: {"ok":true,"bot":{"ready":true,"tag":"MithqalMTQ#8586"},"guilds":1,"notifyChannel":"general"}.
+- VERCEL CLEANUP: Listed 5 Vercel projects (my-project, mithqal, aurienta, sgtx, cirkle). Per COO directive "delete if deployed on different vercel url other than mithqal.vercel.app": deleted my-project project (was at my-project-*.vercel.app, not canonical URL) — HTTP 204. Left aurienta/sgtx/cirkle (separate non-MTQ projects).
+- VERCEL DEPLOY: Updated .vercel/project.json to point to mithqal project (prj_SrfvqPNzATQizbErM63pIzDlbzEI). Updated Vercel env vars: deleted old DATABASE_URL + DATABASE_AUTH_TOKEN, created new ones pointing to libsql://mtq-fortleem.aws-us-east-1.turso.io + new DB auth token. Deployed via `vercel --prod`. Production aliased to https://mithqal.vercel.app (47s build).
+- VERCEL VERIFICATION: mithqal.vercel.app home HTTP 200 (0.05s). All 10 §V25.2 APIs return HTTP 200. DB-dependent routes now work on Vercel: /api/transparency → 200, /api/nav → 200 (NAV_m=1.1382, RR=110.88%, goldUsd=$4493.97 — real Turso DB data). Git integration confirmed (github → mithqal, branch: main, auto-deploys on push).
+
+Stage Summary:
+- ✅ GITHUB: Fully synced with new token. Last commit 3d331af pushed. .env.encrypted re-encrypted with SHA-256 of new GitHub token.
+- ✅ VERCEL: Canonical production URL https://mithqal.vercel.app LIVE. All 10 §V25.2 APIs + DB-dependent routes return HTTP 200. my-project (wrong URL) deleted. Git auto-deploy connected.
+- ✅ TURSO: New mtq-fortleem DB (44 tables) connected and working on both local dev + Vercel production. Schema in sync. DB auth token generated via platform API.
+- ✅ DISCORD: Bot MithqalMTQ#8586 live on port 3004. 5 slash commands registered. Connected to MITHQAL guild. #general notify channel auto-detected.
+- All four platforms connected and working: GitHub → (auto-deploy) → Vercel (mithqal.vercel.app) → (env var) → Turso (mtq-fortleem, 44 tables). Discord bot running alongside.
+- ZERO errors remaining. All §V25.2 code is live on mithqal.vercel.app with real DB data.
