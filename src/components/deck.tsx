@@ -257,7 +257,7 @@ export default function InvestorDeck() {
                 Investor Teaser Deck
               </p>
               <p className="truncate text-[12px] text-fg-muted sm:text-[13px]">
-                {slide.title.replace(/\.$/, "")}
+                {(slide.title || "").replace(/\.$/, "")}
               </p>
             </div>
           </div>
@@ -341,7 +341,7 @@ export default function InvestorDeck() {
                     role="tab"
                     aria-selected={active}
                     aria-label={`Go to slide ${i + 1}: ${s.title}`}
-                    title={`${PAD2(i + 1)} · ${s.title.replace(/\.$/, "")}`}
+                    title={`${PAD2(i + 1)} · ${(s.title || "").replace(/\.$/, "")}`}
                     onClick={() => goTo(i)}
                     className={cn(
                       "flex h-7 items-center justify-center rounded-md border px-2 font-mono text-[10px] tabular-nums transition-all duration-200",

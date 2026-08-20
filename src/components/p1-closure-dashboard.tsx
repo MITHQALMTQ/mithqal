@@ -252,7 +252,7 @@ export function P1ClosureDashboard() {
           <CardContent>
             {!llf.data ? llf.err ? <ErrCard label="§49" err={llf.err} /> : <Loading label="§49 Legal" /> : (
               <div className="max-h-48 overflow-y-auto rounded border border-gray-200 text-[10px]">
-                {(llf.data.jurisdictionRegistry ?? []).map((j: any) => (
+                {(Object.values(llf.data.jurisdictionRegistry ?? {})).map((j: any) => (
                   <div key={j.jurisdiction} className="border-b border-gray-100 px-2 py-1">
                     <div className="flex justify-between"><span className="font-semibold text-gray-800">{j.jurisdiction}</span>
                       <span className="rounded bg-amber-100 px-1 text-[9px] text-amber-700">{j.classification}</span>
@@ -310,7 +310,7 @@ export function P1ClosureDashboard() {
                 <div className="grid grid-cols-3 gap-1 text-[10px]">
                   {(tbs.data.books ?? []).map((b: any) => (
                     <div key={b.id} className="rounded border border-amber-200 bg-amber-50/40 p-1.5">
-                      <div className="font-semibold text-amber-800">{b.id.replace("BOOK_", "").replace("_", " ")}</div>
+                      <div className="font-semibold text-amber-800">{(b.id || "").replace("BOOK_", "").replace("_", " ")}</div>
                       <div className="text-[9px] text-gray-600">{b.name}</div>
                       <div className="text-[9px] text-gray-500">{b.fieldCount} fields</div>
                     </div>
@@ -460,7 +460,7 @@ export function P1ClosureDashboard() {
                   {(stat.data.institutionalValidationGates ?? []).map((g: any) => (
                     <div key={g.id} className="flex items-center justify-between border-b border-gray-100 px-2 py-0.5">
                       <span className="text-gray-600"><b>{g.id}</b> {g.gate}</span>
-                      <StateBadge ok={g.status === "INSTITUTIONALLY_VALIDATED" || g.status === "PRODUCTION_READY"} label={g.status.replace("_PENDING", "")} />
+                      <StateBadge ok={g.status === "INSTITUTIONALLY_VALIDATED" || g.status === "PRODUCTION_READY"} label={(g.status || "").replace("_PENDING", "")} />
                     </div>
                   ))}
                 </div>

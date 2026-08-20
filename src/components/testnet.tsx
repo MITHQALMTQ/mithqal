@@ -852,7 +852,7 @@ export default function TestnetDashboard() {
                   <span className="font-mono text-[9px] opacity-70">
                     {c.chainId}
                   </span>
-                  <span>{c.name.replace(" Testnet", "")}</span>
+                  <span>{(c.name || "").replace(" Testnet", "")}</span>
                   {isActive && (
                     <span className="ml-0.5 h-1.5 w-1.5 rounded-full bg-gold" aria-hidden="true" />
                   )}

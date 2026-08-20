@@ -300,7 +300,7 @@ export default function TestnetAudit() {
                     >
                       <div className="min-w-0">
                         <span className="block text-[10px] font-semibold uppercase tracking-wider text-fg-muted">
-                          {key.replace(/([A-Z])/g, " $1").replace(/^./, (c) => c.toUpperCase())}
+                          {(key || "").replace(/([A-Z])/g, " $1").replace(/^./, (c) => c.toUpperCase())}
                         </span>
                         <span
                           className={

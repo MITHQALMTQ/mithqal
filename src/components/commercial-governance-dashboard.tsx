@@ -566,7 +566,7 @@ function EntitiesTab({ entities }: { entities: ConstitutionalEntity[] }) {
                   </span>
                 </CardTitle>
                 <CardDescription className="text-xs uppercase tracking-wider text-fg-muted">
-                  {e.type.replace("-", " ")}
+                  {(e.type || "").replace("-", " ")}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
@@ -693,7 +693,7 @@ function RevenueTab({ summary }: { summary: RevenueSummary }) {
                 <div key={cat} className="space-y-1">
                   <div className="flex items-center justify-between text-xs">
                     <span className="font-medium uppercase tracking-wider text-foreground">
-                      {cat.replace(/_/g, " ")}
+                      {(cat || "").replace(/_/g, " ")}
                     </span>
                     <span className="font-mono tabular-nums text-fg-muted">
                       {fmtUsdFull(v)}

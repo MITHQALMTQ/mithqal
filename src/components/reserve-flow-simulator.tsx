@@ -604,7 +604,7 @@ function AllocationRow({
       <div className="mt-2">
         <Progress
           value={Math.min(100, pct)}
-          className={`h-1.5 bg-ink-soft ${color.replace("bg-", "[&_[data-slot=progress-indicator]]:bg-")}`}
+          className={`h-1.5 bg-ink-soft ${(color || "").replace("bg-", "[&_[data-slot=progress-indicator]]:bg-")}`}
         />
       </div>
       <div className="mt-1 flex items-center justify-between text-[10px] uppercase tracking-wider text-fg-muted">
