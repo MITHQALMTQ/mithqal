@@ -1,289 +1,605 @@
 "use client";
 
-import { useSyncExternalStore, useEffect } from "react";
-import { useSession } from "next-auth/react";
-import { motion, AnimatePresence } from "framer-motion";
+/* ════════════════════════════════════════════════════════════
+ * MITHQAL §V25.2 — Institutional Command Center
+ * Rebuilt with institutional engagement links
+ * ════════════════════════════════════════════════════════════ */
+
+import { useEffect, useState, useCallback } from "react";
+import { motion } from "framer-motion";
+import Link from "next/link";
 import {
-  Landmark, Eye, Network, ShieldCheck, Presentation, BookOpen, LayoutDashboard,
+  Landmark, Shield, Lock, Coins, Cpu, Scale, Network,
+  AlertTriangle, CheckCircle2, XCircle, Activity, Building2,
+  Layers, Zap, Globe, ArrowRight, Mail, RefreshCw, Banknote,
 } from "lucide-react";
-import Playbook from "@/components/playbook";
-import PublicSite from "@/components/public-site";
-import TransparencyDashboard from "@/components/transparency";
-import InfrastructureView from "@/components/infrastructure";
-import TestnetAudit from "@/components/testnet-audit";
-import InvestorDeck from "@/components/deck";
-import FAQ from "@/components/faq";
-import { OperatingSystem } from "@/components/operating-system";
-import { MonetaryEngineExplained } from "@/components/monetary-engine-explained";
-import AdminConsole from "@/components/admin";
-import TestnetDashboard from "@/components/testnet";
-import ConstitutionDocs from "@/components/constitution";
-import { LiveStatus } from "@/components/live-status";
-import { CommandPalette } from "@/components/command-palette";
-import { useLanguage } from "@/components/language-provider";
-import { LanguageSwitcher } from "@/components/language-switcher";
-import { ThemeToggle } from "@/components/theme-toggle";
 
-/* ============================================================
- * v25.0 — Unified Navigation System
- * ------------------------------------------------------------
- * Replaces the old 12-button + 7-sub-tab dual navigation
- * with a SINGLE clean navigation bar.
- *
- * 7 primary views (down from 12):
- *   1. Home       — Institution overview + all v25.0 dashboards
- *   2. Transparency — Live data + proofs
- *   3. Engine     — Monetary engine explainer
- *   4. Infrastructure — v25.0 technical architecture
- *   5. Testnet    — MTQ simulator + audit
- *   6. Resources  — Constitution + Deck + FAQ + Playbook
- *   7. Admin      — Admin console (auth gated)
- * ============================================================ */
+// ─── Defensive helpers ───
+const S = (v: unknown): string => {
+  if (v === null || v === undefined) return "";
+  if (typeof v === "string") return v;
+  if (typeof v === "number" || typeof v === "boolean") return String(v);
+  try { return JSON.stringify(v); } catch { return String(v); }
+};
+const N = (v: unknown): number => (typeof v === "number" && isFinite(v) ? v : 0);
+const Arr = (v: unknown): any[] => {
+  if (Array.isArray(v)) return v;
+  if (v && typeof v === "object") return Object.values(v);
+  return [];
+};
+const fmtPct = (v: unknown, dp = 2) => `${(N(v) * 100).toFixed(dp)}%`;
+const fmtUSDm = (v: unknown) => `$${(N(v) / 1e6).toFixed(2)}M`;
+const fmtUSD = (v: unknown) => `$${N(v).toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
 
-type View = "home" | "transparency" | "engine" | "infrastructure" | "testnet" | "resources" | "admin";
+// ─── Data hooks ───
+function useFetch<T = any>(url: string) {
+  const [data, setData] = useState<T | null>(null);
+  const [err, setErr] = useState<string | null>(null);
+  useEffect(() => {
+    let c = false;
+    const go = (a = 0) => {
+      fetch(url).then(r => r.json()).then(j => {
+        if (!c && j.ok !== false) setData(j);
+        else if (!c && a < 3) setTimeout(() => go(a + 1), 1200 * (a + 1));
+        else if (!c) setErr("failed");
+      }).catch(() => { if (!c && a < 3) setTimeout(() => go(a + 1), 1200 * (a + 1)); else if (!c) setErr("error"); });
+    };
+    go();
+    return () => { c = true; };
+  }, [url]);
+  return { data, err };
+}
 
-const STORAGE_KEY = "mithqal.view";
-const CHANGE_EVENT = "mithqal:view-change";
-const DEFAULT_VIEW: View = "home";
+// ─── UI primitives ───
+function GlassCard({ children, className = "", glow = false }: { children: React.ReactNode; className?: string; glow?: boolean }) {
+  return <div className={`${glow ? "glass-gold" : "glass"} rounded-2xl ${className}`}>{children}</div>;
+}
 
-type ViewDef = { id: View; label: string; icon: typeof Landmark; short: string };
+function Badge({ children, variant = "gray" }: { children: React.ReactNode; variant?: "emerald" | "amber" | "red" | "gold" | "gray" }) {
+  const colors: Record<string, string> = {
+    emerald: "border-emerald-500/30 bg-emerald-500/10 text-emerald-400",
+    amber: "border-amber-500/30 bg-amber-500/10 text-amber-400",
+    red: "border-red-500/30 bg-red-500/10 text-red-400",
+    gold: "border-gold/30 bg-gold/10 text-gold",
+    gray: "border-white/10 bg-white/5 text-gray-400",
+  };
+  return <span className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${colors[variant]}`}>{children}</span>;
+}
 
-const VIEWS: ViewDef[] = [
-  { id: "home", label: "Home", icon: Landmark, short: "Home" },
-  { id: "transparency", label: "Transparency", icon: Eye, short: "Data" },
-  { id: "engine", label: "Monetary Engine", icon: Network, short: "Engine" },
-  { id: "infrastructure", label: "Architecture", icon: ShieldCheck, short: "Arch" },
-  { id: "testnet", label: "Testnet", icon: Presentation, short: "Test" },
-  { id: "resources", label: "Resources", icon: BookOpen, short: "Docs" },
-  { id: "admin", label: "Admin", icon: LayoutDashboard, short: "Admin" },
+function StatBox({ label, value, sub, accent = "gold" }: { label: string; value: string; sub?: string; accent?: "gold" | "emerald" | "amber" | "red" }) {
+  const colors: Record<string, string> = { gold: "text-gold", emerald: "text-emerald-400", amber: "text-amber-400", red: "text-red-400" };
+  return (
+    <GlassCard className="p-4">
+      <div className="text-[10px] font-semibold uppercase tracking-wider text-gray-500">{label}</div>
+      <div className={`mt-1 font-display text-2xl font-bold ${colors[accent]}`}>{value}</div>
+      {sub && <div className="mt-0.5 text-[10px] text-gray-500">{sub}</div>}
+    </GlassCard>
+  );
+}
+
+function Section({ id, icon: Icon, title, subtitle, children }: { id: string; icon: any; title: string; subtitle?: string; children: React.ReactNode }) {
+  return (
+    <motion.section
+      id={id}
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-80px" }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
+      className="scroll-mt-20"
+    >
+      <div className="mb-6 flex items-center gap-3">
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-gold/20 bg-gold/5">
+          <Icon className="h-5 w-5 text-gold" />
+        </div>
+        <div>
+          <h2 className="font-display text-xl font-bold text-white">{title}</h2>
+          {subtitle && <p className="text-[11px] text-gray-500">{subtitle}</p>}
+        </div>
+      </div>
+      {children}
+    </motion.section>
+  );
+}
+
+function LoadingBox({ label }: { label: string }) {
+  return <GlassCard className="flex items-center gap-2 p-4"><RefreshCw className="h-4 w-4 animate-spin text-gold" /><span className="text-xs text-gray-400">Loading {label}…</span></GlassCard>;
+}
+
+// ─── NAV ───
+const NAV_ITEMS = [
+  { id: "hero", label: "Live State", icon: Activity },
+  { id: "reserve", label: "Reserve Architecture", icon: Shield },
+  { id: "currency", label: "Currency Engine", icon: Network },
+  { id: "gold", label: "Gold & Bullion", icon: Scale },
+  { id: "digital", label: "Digital Liquidity", icon: Cpu },
+  { id: "finality", label: "Finality Gate", icon: Lock },
+  { id: "p1", label: "P1 Frameworks", icon: Building2 },
+  { id: "status", label: "Implementation Status", icon: CheckCircle2 },
+  { id: "simulator", label: "Reserve Simulator", icon: Zap },
+  { id: "corridor", label: "AED↔SGD Corridor", icon: Globe },
 ];
 
-const VALID_VIEWS: View[] = ["home", "transparency", "engine", "infrastructure", "testnet", "resources", "admin"];
-
-/* ---- localStorage-backed view state ---- */
-
-function subscribe(cb: () => void) {
-  if (typeof window === "undefined") return () => {};
-  window.addEventListener("storage", cb);
-  window.addEventListener(CHANGE_EVENT, cb);
-  return () => {
-    window.removeEventListener("storage", cb);
-    window.removeEventListener(CHANGE_EVENT, cb);
-  };
-}
-
-function getSnapshot(): View {
-  const v = window.localStorage.getItem(STORAGE_KEY);
-  return (VALID_VIEWS as string[]).includes(v ?? "") ? (v as View) : DEFAULT_VIEW;
-}
-
-function getServerSnapshot(): View {
-  return DEFAULT_VIEW;
-}
-
-function writeView(v: View) {
-  try {
-    window.localStorage.setItem(STORAGE_KEY, v);
-  } catch { /* ignore */ }
-  window.dispatchEvent(new Event(CHANGE_EVENT));
-}
-
-/* ---- Resources sub-navigation state ---- */
-type ResourcePage = "constitution" | "deck" | "faq" | "playbook";
-
-/* ---- Main Page Component ---- */
-
+// ════════════════════════════════════════════════════════════
+// MAIN PAGE
+// ════════════════════════════════════════════════════════════
 export default function Page() {
-  const view = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  const reserve = useFetch("/api/mtq-final-reserve");
+  const nav = useFetch("/api/nav");
+  const finality = useFetch("/api/mtq-finality-before-mint");
+  const status = useFetch("/api/mtq-implementation-status");
+  const pbc = useFetch("/api/mtq-protected-backing-cell");
+  const bankDefault = useFetch("/api/mtq-bank-default-resolution");
+  const legal = useFetch("/api/mtq-legal-liability-framework");
+  const licensing = useFetch("/api/mtq-licensing-entity-matrix");
+  const threeBook = useFetch("/api/mtq-three-book-separation");
+  const systemic = useFetch("/api/mtq-systemic-exposure-engine");
+  const contradiction = useFetch("/api/mtq-contradiction-scan");
+  const sim = useFetch("/api/reserve-simulator");
+  const corridor = useFetch("/api/corridor");
 
-  // Support deep-linking via ?view=<id>
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const params = new URLSearchParams(window.location.search);
-    const q = params.get("view");
-    if (q && (VALID_VIEWS as string[]).includes(q)) {
-      writeView(q as View);
-      const url = new URL(window.location.href);
-      url.searchParams.delete("view");
-      window.history.replaceState({}, "", url.toString());
-    }
+  const scrollTo = useCallback((id: string) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
   }, []);
 
-  const setView = (v: View) => {
-    writeView(v);
-    if (typeof window !== "undefined") {
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
-  };
-
   return (
-    <div className="print-page flex min-h-screen flex-col overflow-x-hidden bg-ink text-foreground">
-      <UnifiedNav view={view} setView={setView} />
-      <CommandPalette />
-      <main id="main-content" className="flex-1">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={view}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.3, ease: "easeOut" }}
-          >
-            {view === "home" && <PublicSite />}
-            {view === "transparency" && <TransparencyDashboard />}
-            {view === "engine" && <MonetaryEngineExplained />}
-            {view === "infrastructure" && <InfrastructureView />}
-            {view === "testnet" && <TestnetDashboard />}
-            {view === "admin" && <AdminConsole />}
-            {view === "resources" && <ResourcesHub />}
-          </motion.div>
-        </AnimatePresence>
-      </main>
-    </div>
-  );
-}
-
-/* ---- Resources Hub (combines Constitution + Deck + FAQ + Playbook) ---- */
-
-function ResourcesHub() {
-  const [page, setPage] = useSyncExternalStore(
-    () => () => {},
-    () => (typeof window !== "undefined" ? (window.localStorage.getItem("mithqal.resource") as ResourcePage) || "constitution" : "constitution"),
-    () => "constitution" as ResourcePage
-  );
-
-  const setResourcePage = (p: ResourcePage) => {
-    try { window.localStorage.setItem("mithqal.resource", p); } catch { /* ignore */ }
-    window.dispatchEvent(new Event("mithqal:view-change"));
-    setPage(p);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
-  const resourceTabs: { id: ResourcePage; label: string }[] = [
-    { id: "constitution", label: "Constitution" },
-    { id: "deck", label: "Investor Deck" },
-    { id: "faq", label: "FAQ" },
-    { id: "playbook", label: "Playbook" },
-  ];
-
-  return (
-    <div className="flex flex-col">
-      {/* Sub-navigation for Resources */}
-      <nav className="sticky top-[60px] z-40 border-y border-border/40 bg-background/80 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-7xl gap-1 overflow-x-auto px-4 py-2 sm:px-6 lg:px-8"
-          style={{ scrollbarWidth: "thin" }}
-        >
-          {resourceTabs.map((tab) => {
-            const active = page === tab.id;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setResourcePage(tab.id)}
-                className={`flex shrink-0 items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium transition-all duration-300 ${
-                  active
-                    ? "bg-primary/10 text-primary shadow-sm ring-1 ring-primary/20"
-                    : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
-                }`}
-                aria-current={active ? "page" : undefined}
-              >
-                {tab.label}
-              </button>
-            );
-          })}
+    <div className="min-h-screen">
+      {/* ─── HEADER ─── */}
+      <header className="sticky top-0 z-50 border-b border-white/5 bg-[#0a0a0b]/80 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
+          <div className="flex items-center gap-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-gold to-gold-soft">
+              <Landmark className="h-4 w-4 text-black" />
+            </div>
+            <div>
+              <div className="font-display text-sm font-bold text-white">MITHQAL</div>
+              <div className="text-[9px] text-gray-500">§V25.2 Institutional Command Center</div>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <Link href="/institutional-engagement"><Badge variant="gold">Institutional Engagement</Badge></Link>
+            <Link href="/institutional-readiness"><Badge variant="amber">Pilot Readiness</Badge></Link>
+            <Badge variant="amber">NOT PRODUCTION-AUTHORIZED</Badge>
+          </div>
         </div>
-      </nav>
+      </header>
 
-      <div key={page} className="animate-in fade-in duration-500">
-        {page === "constitution" && <ConstitutionDocs />}
-        {page === "deck" && <InvestorDeck />}
-        {page === "faq" && <FAQ />}
-        {page === "playbook" && <PlaybookGate />}
+      <div className="mx-auto flex max-w-7xl">
+        {/* ─── SIDEBAR NAV ─── */}
+        <nav className="sticky top-[57px] hidden h-[calc(100vh-57px)] w-56 shrink-0 flex-col gap-1 overflow-y-auto p-4 lg:flex">
+          {NAV_ITEMS.map((item) => (
+            <button key={item.id} onClick={() => scrollTo(item.id)} className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs text-gray-400 transition hover:bg-white/5 hover:text-gold">
+              <item.icon className="h-3.5 w-3.5" />
+              {item.label}
+            </button>
+          ))}
+          <div className="my-2 border-t border-white/5" />
+          <Link href="/institutional-engagement" className="flex items-center gap-2 rounded-lg border border-gold/20 bg-gold/5 px-3 py-2 text-xs text-gold transition hover:bg-gold/10">
+            <Building2 className="h-3.5 w-3.5" />
+            Institutional Engagement →
+          </Link>
+          <Link href="/institutional-readiness" className="flex items-center gap-2 rounded-lg border border-amber-500/20 bg-amber-500/5 px-3 py-2 text-xs text-amber-400 transition hover:bg-amber-500/10">
+            <CheckCircle2 className="h-3.5 w-3.5" />
+            Pilot Readiness →
+          </Link>
+          <a href="mailto:meltonsy@icloud.com" className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs text-gray-400 transition hover:bg-white/10">
+            <Mail className="h-3.5 w-3.5" />
+            Email MITHQAL
+          </a>
+          <div className="mt-auto pt-4">
+            <div className="rounded-lg border border-gold/10 bg-gold/5 p-3 text-[9px] text-gray-500">
+              <div className="mb-1 font-semibold text-gold">Honest State</div>
+              <div>honest: true</div>
+              <div>productionAuthorized: false</div>
+              <div>gates: 0/13</div>
+              <div>finality: 7/7</div>
+            </div>
+          </div>
+        </nav>
+
+        {/* ─── MAIN CONTENT ─── */}
+        <main className="min-w-0 flex-1 px-4 py-6 sm:px-6 lg:px-8">
+          <div className="space-y-16">
+            {/* ═══ HERO: LIVE STATE ═══ */}
+            <Section id="hero" icon={Activity} title="Live Monetary State" subtitle="Auto-refreshing from /api/nav + /api/oracle">
+              {!nav.data ? <LoadingBox label="live data" /> : (
+                <>
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                    <StatBox label="NAV (Market)" value={`$${N(nav.data.navM).toFixed(4)}`} sub="R_m / S" accent="gold" />
+                    <StatBox label="NAV (Prudential)" value={`$${N(nav.data.navL).toFixed(4)}`} sub="R_a / S" accent="emerald" />
+                    <StatBox label="Reserve Ratio" value={`${N(nav.data.reserveRatio).toFixed(2)}%`} sub="RR = R_a / L" accent={N(nav.data.reserveRatio) >= 130 ? "emerald" : N(nav.data.reserveRatio) >= 105 ? "amber" : "red"} />
+                    <StatBox label="Gold Price" value={`$${N(nav.data.goldUsd).toFixed(2)}`} sub="XAU/USD spot" accent="gold" />
+                  </div>
+                  <GlassCard className="mt-3 p-4">
+                    <div className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-gray-500">Live FX Rates ({Arr(Object.keys(nav.data.fxRates || {})).length} currencies)</div>
+                    <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
+                      {Object.entries(nav.data.fxRates || {}).map(([k, v]: any) => (
+                        <div key={k} className="rounded-lg border border-white/5 bg-white/5 px-2 py-1.5 text-center">
+                          <div className="text-[9px] text-gray-500">{k}</div>
+                          <div className="font-mono text-xs text-gray-300">{N(v).toFixed(4)}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </GlassCard>
+                </>
+              )}
+            </Section>
+
+            {/* ═══ RESERVE ARCHITECTURE ═══ */}
+            <Section id="reserve" icon={Shield} title="Reserve Architecture — §V25.2" subtitle="130% institutional backing target · 80% fiat / 18% gold / 2% digital">
+              {!reserve.data ? <LoadingBox label="reserve architecture" /> : (
+                <>
+                  <div className="grid gap-3 md:grid-cols-3">
+                    <GlassCard glow className="p-5"><div className="flex items-center justify-between"><Coins className="h-5 w-5 text-emerald-400" /><Badge variant="emerald">80%</Badge></div><div className="mt-2 font-display text-2xl font-bold text-emerald-400">{fmtUSDm(reserve.data.exampleBacking?.fiat)}</div><div className="mt-1 text-[10px] text-gray-500">Front-line: {fmtUSDm(reserve.data.exampleBacking?.frontlineFiat)} · Strategic: {fmtUSDm(reserve.data.exampleBacking?.strategicFiat)}</div></GlassCard>
+                    <GlassCard glow className="p-5"><div className="flex items-center justify-between"><Scale className="h-5 w-5 text-gold" /><Badge variant="gold">18%</Badge></div><div className="mt-2 font-display text-2xl font-bold text-gold">{fmtUSDm(reserve.data.exampleBacking?.gold)}</div><div className="mt-1 text-[10px] text-gray-500">Constitutional anchor · Corridor 15-25%</div></GlassCard>
+                    <GlassCard glow className="p-5"><div className="flex items-center justify-between"><Cpu className="h-5 w-5 text-amber" /><Badge variant="amber">2%</Badge></div><div className="mt-2 font-display text-2xl font-bold text-amber">{fmtUSDm(reserve.data.exampleBacking?.digital)}</div><div className="mt-1 text-[10px] text-gray-500">Normal ≤2% · Operational ≤3% · Max 5%</div></GlassCard>
+                  </div>
+                  <div className="mt-3 grid gap-3 md:grid-cols-2">
+                    <GlassCard className="flex items-center justify-between p-5"><div><div className="text-[10px] uppercase tracking-wider text-gray-500">Total Strategic Backing</div><div className="font-display text-3xl font-bold text-white">{fmtUSDm(reserve.data.exampleBacking?.totalStrategicBacking)}</div></div><div className="text-right"><div className="text-[10px] uppercase tracking-wider text-gray-500">Target</div><div className="font-display text-2xl font-bold text-gold">130%</div></div></GlassCard>
+                    <GlassCard className="flex items-center justify-between p-5 border-amber-500/20"><div><div className="text-[10px] uppercase tracking-wider text-gray-500">Emergency Resilience Capacity</div><div className="font-display text-2xl font-bold text-amber">≤ 15%</div></div><div className="text-right text-[10px] text-gray-500">SEPARATE from core · not double-counted</div></GlassCard>
+                  </div>
+                  <GlassCard className="mt-3 p-4">
+                    <div className="mb-3 text-[10px] font-semibold uppercase tracking-wider text-gray-500">Reserve Valuation (S = $100M example)</div>
+                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                      <div><div className="text-[9px] text-gray-500">Liability L</div><div className="font-mono text-sm text-white">{fmtUSD(reserve.data.exampleReserve?.liability)}</div></div>
+                      <div><div className="text-[9px] text-gray-500">Market R_m</div><div className="font-mono text-sm text-gray-300">{fmtUSD(reserve.data.exampleReserve?.marketReserve)}</div></div>
+                      <div><div className="text-[9px] text-gray-500">Adjusted R_a</div><div className="font-mono text-sm text-emerald-400">{fmtUSD(reserve.data.exampleReserve?.adjustedReserve)}</div></div>
+                      <div><div className="text-[9px] text-gray-500">Stress R_l</div><div className="font-mono text-sm text-red-400">{fmtUSD(reserve.data.exampleReserve?.stressReserve)}</div></div>
+                    </div>
+                    <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                      <div><div className="text-[9px] text-gray-500">NAV_m</div><div className="font-mono text-sm text-gray-300">{N(reserve.data.exampleReserve?.navs?.NAV_m).toFixed(4)}</div></div>
+                      <div><div className="text-[9px] text-gray-500">NAV_l (prud.)</div><div className="font-mono text-sm text-emerald-400">{N(reserve.data.exampleReserve?.navs?.NAV_l).toFixed(4)}</div></div>
+                      <div><div className="text-[9px] text-gray-500">NAV_s (stress)</div><div className="font-mono text-sm text-red-400">{N(reserve.data.exampleReserve?.navs?.NAV_s).toFixed(4)}</div></div>
+                      <div><div className="text-[9px] text-gray-500">RR Status</div><div className="text-sm font-semibold text-amber">{S(reserve.data.exampleReserve?.reserveRatio?.status)}</div></div>
+                    </div>
+                  </GlassCard>
+                </>
+              )}
+            </Section>
+
+            {/* ═══ CURRENCY ENGINE ═══ */}
+            <Section id="currency" icon={Network} title="Currency Weight Engine" subtitle="11 currencies · C = 0.50·COFER + 0.40·SWIFT + 0.10·BIS · 20% hard cap · proportional normalization">
+              {!reserve.data ? <LoadingBox label="currency engine" /> : (
+                <>
+                  <div className="grid gap-3 md:grid-cols-3">
+                    <StatBox label="Currency Sum" value={N(reserve.data.currencyWeights?.sum).toFixed(6)} sub="Σ W_i = 1.0" accent="emerald" />
+                    <StatBox label="USD Effective" value={fmtPct(reserve.data.usdExposure?.usdEffective)} sub={`Ceiling: ${fmtPct(reserve.data.usdExposure?.ceiling, 0)}`} accent={reserve.data.usdExposure?.breached ? "red" : "emerald"} />
+                    <StatBox label="Constraints Met" value={reserve.data.currencyWeights?.constraintsMet ? "YES" : "NO"} sub="20% cap + 35% USD-eff" accent={reserve.data.currencyWeights?.constraintsMet ? "emerald" : "red"} />
+                  </div>
+                  <GlassCard className="mt-3 overflow-hidden p-0">
+                    <table className="w-full text-[11px]">
+                      <thead className="border-b border-white/5 bg-white/[0.02]">
+                        <tr className="text-gray-500">
+                          <th className="px-3 py-2 text-left font-medium">CCY</th>
+                          <th className="px-3 py-2 text-right font-medium">C</th>
+                          <th className="px-3 py-2 text-right font-medium">M</th>
+                          <th className="px-3 py-2 text-right font-medium">R</th>
+                          <th className="px-3 py-2 text-right font-medium">σ</th>
+                          <th className="px-3 py-2 text-right font-medium">A</th>
+                          <th className="px-3 py-2 text-right font-medium">K</th>
+                          <th className="px-3 py-2 text-right font-medium">L</th>
+                          <th className="px-3 py-2 text-right font-medium">Final W</th>
+                          <th className="px-3 py-2 text-center font-medium">20% Cap</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {Arr(reserve.data.currencyWeights?.results).map((c: any, i: number) => (
+                          <tr key={i} className="border-b border-white/[0.03] hover:bg-gold/[0.03]">
+                            <td className="px-3 py-1.5 font-semibold text-white">{S(c.currency)}</td>
+                            <td className="px-3 py-1.5 text-right font-mono text-gray-400">{N(c.C).toFixed(4)}</td>
+                            <td className="px-3 py-1.5 text-right font-mono text-gray-400">{N(c.M).toFixed(4)}</td>
+                            <td className="px-3 py-1.5 text-right font-mono text-gray-400">{N(c.R).toFixed(4)}</td>
+                            <td className="px-3 py-1.5 text-right font-mono text-gray-500">{N(c.sigma).toFixed(4)}</td>
+                            <td className="px-3 py-1.5 text-right font-mono text-gray-500">{N(c.A).toFixed(3)}</td>
+                            <td className="px-3 py-1.5 text-right font-mono text-gray-400">{N(c.K).toFixed(4)}</td>
+                            <td className="px-3 py-1.5 text-right font-mono text-gray-500">{N(c.L).toFixed(4)}</td>
+                            <td className="px-3 py-1.5 text-right font-mono font-bold text-gold">{fmtPct(c.finalWeight)}</td>
+                            <td className="px-3 py-1.5 text-center">{c.concentrationCapped ? <span className="text-red-400">●</span> : <span className="text-emerald-400">○</span>}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </GlassCard>
+                  <div className="mt-2 flex flex-wrap gap-2 text-[9px] text-gray-500">
+                    <span>C = structural weight (0.50 COFER + 0.40 SWIFT + 0.10 BIS)</span>
+                    <span>· M = momentum (±5%) · R = mean-reversion (±2%)</span>
+                    <span>· σ = EWMA vol (λ=0.94) · A = attenuation (0.5-1.0)</span>
+                    <span>· K = combined · L = liquidity (±5%)</span>
+                    <span className="text-red-400">● = capped at 20% hard limit</span>
+                  </div>
+                  <GlassCard className="mt-3 p-4">
+                    <div className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-gray-500">§17 · Effective USD Exposure (direct + pegged + synthetic + digital)</div>
+                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
+                      <div className="rounded-lg border border-white/5 bg-white/5 p-2"><div className="text-[9px] text-gray-500">USD direct</div><div className="font-mono text-sm text-white">{fmtPct(reserve.data.usdExposure?.usdDirect)}</div></div>
+                      <div className="rounded-lg border border-white/5 bg-white/5 p-2"><div className="text-[9px] text-gray-500">AED USD-equiv</div><div className="font-mono text-sm text-gray-300">{fmtPct(reserve.data.usdExposure?.aedUsdEquivalent)}</div></div>
+                      <div className="rounded-lg border border-white/5 bg-white/5 p-2"><div className="text-[9px] text-gray-500">SAR USD-equiv</div><div className="font-mono text-sm text-gray-300">{fmtPct(reserve.data.usdExposure?.sarUsdEquivalent)}</div></div>
+                      <div className="rounded-lg border border-white/5 bg-white/5 p-2"><div className="text-[9px] text-gray-500">Synthetic</div><div className="font-mono text-sm text-gray-400">{fmtPct(reserve.data.usdExposure?.usdLinkedSynthetic)}</div></div>
+                      <div className="rounded-lg border border-white/5 bg-white/5 p-2"><div className="text-[9px] text-gray-500">Digital</div><div className="font-mono text-sm text-gray-400">{fmtPct(reserve.data.usdExposure?.usdLinkedDigital)}</div></div>
+                    </div>
+                    <div className={`mt-3 flex items-center justify-between rounded-lg border p-3 ${reserve.data.usdExposure?.breached ? "border-red-500/30 bg-red-500/5" : "border-emerald-500/30 bg-emerald-500/5"}`}>
+                      <span className="text-xs font-semibold text-gray-300">USD Effective Total</span>
+                      <div className="flex items-center gap-3">
+                        <span className={`font-display text-xl font-bold ${reserve.data.usdExposure?.breached ? "text-red-400" : "text-emerald-400"}`}>{fmtPct(reserve.data.usdExposure?.usdEffective)}</span>
+                        <Badge variant={reserve.data.usdExposure?.breached ? "red" : "emerald"}>ceiling {fmtPct(reserve.data.usdExposure?.ceiling, 0)} · {reserve.data.usdExposure?.breached ? "BREACH" : "OK"}</Badge>
+                      </div>
+                    </div>
+                  </GlassCard>
+                </>
+              )}
+            </Section>
+
+            {/* ═══ GOLD & BULLION ═══ */}
+            <Section id="gold" icon={Scale} title="Gold & Bullion Module" subtitle="18% target · 15-25% corridor · silver 0% (SDC ≤ 0) · liquidation protects gold LAST">
+              {!reserve.data ? <LoadingBox label="gold module" /> : (
+                <>
+                  <div className="grid gap-3 md:grid-cols-4">
+                    <StatBox label="Gold Target" value={fmtPct(reserve.data.goldPolicy?.goldTarget, 0)} accent="gold" />
+                    <StatBox label="Preferred Lower" value={fmtPct(reserve.data.goldPolicy?.goldPreferredLower, 0)} accent="emerald" />
+                    <StatBox label="Bullion Corridor" value="15-25%" accent="gold" />
+                    <StatBox label="Silver (current)" value={fmtPct(reserve.data.goldPolicy?.silverCurrent, 0)} sub="SDC ≤ 0 → 0%" accent="amber" />
+                  </div>
+                  <div className="mt-3 grid gap-3 md:grid-cols-2">
+                    <GlassCard className="p-4"><div className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-gray-500">§27 · Silver Diversification Contribution</div><div className="flex items-center justify-between"><div><div className="font-mono text-sm text-gray-400">SDC = {N(reserve.data.silverSDC?.SDC).toFixed(4)}</div><div className="text-[10px] text-gray-500">{reserve.data.silverSDC?.admitted ? "ADMITTED ≤3%" : "0% (not admitted)"}</div></div><Badge variant={reserve.data.silverSDC?.admitted ? "emerald" : "amber"}>{reserve.data.silverSDC?.admitted ? "ADMITTED" : "0%"}</Badge></div></GlassCard>
+                    <GlassCard className="p-4"><div className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-gray-500">§29 · Tokenized Gold (PAXG) TGRS</div><div className="flex items-center justify-between"><div><div className="font-mono text-sm text-gray-400">TGRS = {N(reserve.data.tokenizedGoldTGRS?.TGRS).toFixed(2)} / 10</div><div className="text-[10px] text-gray-500">Haircut: {fmtPct(reserve.data.tokenizedGoldTGRS?.haircut)}</div></div><Badge variant={reserve.data.tokenizedGoldTGRS?.status === "ELIGIBLE" ? "emerald" : "amber"}>{S(reserve.data.tokenizedGoldTGRS?.status)}</Badge></div></GlassCard>
+                  </div>
+                  <GlassCard className="mt-3 p-4"><div className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-gray-500">§26 · Liquidation Sequence (gold protected LAST)</div><div className="flex flex-wrap gap-1.5">{["1. Digital liquidity", "2. Cash", "3. Short-duration sovereign", "4. Non-USD FX", "5. Conditional silver", "6. Tokenized gold", "7. Physical gold (LAST)"].map((s, i) => (<span key={i} className={`rounded border px-2 py-0.5 text-[9px] ${i === 6 ? "border-gold/40 bg-gold/10 text-gold" : "border-white/10 bg-white/5 text-gray-400"}`}>{s}</span>))}</div></GlassCard>
+                </>
+              )}
+            </Section>
+
+            {/* ═══ DIGITAL LIQUIDITY ═══ */}
+            <Section id="digital" icon={Cpu} title="Digital Liquidity Module" subtitle="2% normal · ≤3% operational · 5% max · 0% emergency · algorithmic excluded">
+              {!reserve.data ? <LoadingBox label="digital module" /> : (
+                <>
+                  <div className="grid gap-3 md:grid-cols-4">
+                    <StatBox label="D_normal" value={fmtPct(reserve.data.digitalPolicy?.D_normal, 0)} accent="emerald" />
+                    <StatBox label="D_operational" value={`≤${fmtPct(reserve.data.digitalPolicy?.D_operational, 0)}`} accent="amber" />
+                    <StatBox label="D_max" value={fmtPct(reserve.data.digitalPolicy?.D_max, 0)} sub="constitutional" accent="red" />
+                    <StatBox label="D_emergency" value={fmtPct(reserve.data.digitalPolicy?.D_emergency, 0)} accent="red" />
+                  </div>
+                  <GlassCard className="mt-3 overflow-hidden p-0">
+                    <table className="w-full text-[11px]">
+                      <thead className="border-b border-white/5 bg-white/[0.02]"><tr className="text-gray-500"><th className="px-3 py-2 text-left font-medium">Asset</th><th className="px-3 py-2 text-right font-medium">DRQS</th><th className="px-3 py-2 text-center font-medium">Core ≥7.5</th><th className="px-3 py-2 text-left font-medium">Role</th></tr></thead>
+                      <tbody>
+                        {Arr(reserve.data.digitalUniverse).map((d: any, i: number) => (
+                          <tr key={i} className="border-b border-white/[0.03] hover:bg-gold/[0.03]">
+                            <td className="px-3 py-1.5 font-semibold text-white">{S(d.id)}</td>
+                            <td className="px-3 py-1.5 text-right font-mono text-gray-300">{N(d.drqs).toFixed(2)}</td>
+                            <td className="px-3 py-1.5 text-center">{d.inCore ? <Badge variant="emerald">CORE</Badge> : d.id === "DAI" ? <Badge variant="amber">0% optional</Badge> : <Badge variant="red">EXCL</Badge>}</td>
+                            <td className="px-3 py-1.5 text-gray-400">{S(d.role)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </GlassCard>
+                </>
+              )}
+            </Section>
+
+            {/* ═══ FINALITY GATE ═══ */}
+            <Section id="finality" icon={Lock} title="Finality-Before-Mint — §54" subtitle="NO FINAL SETTLEMENT ⇒ NO MTQ MINT · 7/7 enforcement layers · 10/10 bypass routes blocked">
+              {!finality.data ? <LoadingBox label="finality gate" /> : (
+                <>
+                  <GlassCard glow className="mb-3 p-4 text-center"><div className="font-display text-lg font-bold text-gold">{S(finality.data.invariant)}</div></GlassCard>
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
+                    {Arr(finality.data.layers).map((l: any, i: number) => (
+                      <GlassCard key={i} className={`p-3 ${l.enforced ? "border-emerald-500/20" : "border-red-500/20"}`}>
+                        <div className="flex items-center justify-between"><span className="text-[9px] font-bold text-gray-500">{S(l.id)}</span>{l.enforced ? <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" /> : <XCircle className="h-3.5 w-3.5 text-red-400" />}</div>
+                        <div className="mt-1 text-xs font-semibold text-white">{S(l.name)}</div>
+                        <div className="mt-0.5 text-[9px] text-gray-500">{S(l.description).slice(0, 80)}</div>
+                        <Badge variant={l.enforced ? "emerald" : "red"} className="mt-1.5">{l.enforced ? "ENFORCED" : "GAP"}</Badge>
+                      </GlassCard>
+                    ))}
+                  </div>
+                  <GlassCard className="mt-3 p-4">
+                    <div className="mb-2 flex items-center justify-between"><span className="text-[10px] font-semibold uppercase tracking-wider text-gray-500">§84 Bypass Test Harness</span><Badge variant="emerald">{S(finality.data.bypassTestSummary?.blockedRoutes)}/{S(finality.data.bypassTestSummary?.totalRoutes)} blocked</Badge></div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {Arr(finality.data.bypassTestSummary?.attempts).map((a: any, i: number) => (
+                        <span key={i} className={`rounded border px-1.5 py-0.5 text-[8px] ${a.blocked ? "border-emerald-500/30 bg-emerald-500/5 text-emerald-400" : "border-red-500/40 bg-red-500/10 text-red-400"}`}>{S(a.route)} · {a.blocked ? "BLOCKED" : "BYPASSED!"}</span>
+                      ))}
+                    </div>
+                  </GlassCard>
+                </>
+              )}
+            </Section>
+
+            {/* ═══ P1 FRAMEWORKS ═══ */}
+            <Section id="p1" icon={Building2} title="P1 Critical-Gap Frameworks" subtitle="6 modules + finality + contradiction scan — all IMPLEMENTED at code level, 0/13 institutional gates passed">
+              <div className="grid gap-3 md:grid-cols-2">
+                <GlassCard className="p-4"><div className="flex items-center justify-between"><span className="text-xs font-semibold text-white">§47 Protected Backing Cell</span><Badge variant="amber">0 live cells</Badge></div><div className="mt-1 text-[10px] text-gray-500">{pbc.data ? S(pbc.data.formula).slice(0, 80) : "AvailableBacking = Recognized − Encumbered − Allocated"}</div></GlassCard>
+                <GlassCard className="p-4"><div className="flex items-center justify-between"><span className="text-xs font-semibold text-white">§48 Bank Default & Resolution</span><Badge variant="red">NOT guarantor</Badge></div><div className="mt-1 text-[10px] text-gray-500">{bankDefault.data ? `${S(bankDefault.data.states?.length)} states · ${S(bankDefault.data.contractualQuestions?.length)} contractual Qs` : "8-state lifecycle"}</div></GlassCard>
+                <GlassCard className="p-4"><div className="flex items-center justify-between"><span className="text-xs font-semibold text-white">§49 Legal Liability</span><Badge variant="red">0 validated</Badge></div><div className="mt-1 text-[10px] text-gray-500">{legal.data ? `${S(Object.keys(legal.data.jurisdictionRegistry || {}).length)} jurisdictions ALL PENDING` : "13 dimensions"}</div></GlassCard>
+                <GlassCard className="p-4"><div className="flex items-center justify-between"><span className="text-xs font-semibold text-white">§50 Licensing Matrix</span><Badge variant="red">0 licenses</Badge></div><div className="mt-1 text-[10px] text-gray-500">{licensing.data ? `${S(licensing.data.matrixEntries?.length)} entries ALL REQUIRED_NOT_OBTAINED` : "9 activities × 8 jurisdictions"}</div></GlassCard>
+                <GlassCard className="p-4"><div className="flex items-center justify-between"><span className="text-xs font-semibold text-white">§51 Three-Book Separation</span><Badge variant="amber">not operational</Badge></div><div className="mt-1 text-[10px] text-gray-500">{threeBook.data ? `${S(threeBook.data.books?.length)} books · ${S(threeBook.data.antiComminglingTests?.length)} anti-commingling tests` : "Book A / B / C"}</div></GlassCard>
+                <GlassCard className="p-4"><div className="flex items-center justify-between"><span className="text-xs font-semibold text-white">§52 Systemic Exposure</span><Badge variant="red">not live</Badge></div><div className="mt-1 text-[10px] text-gray-500">{systemic.data ? `${S(systemic.data.dimensions?.length)} concentration dimensions` : "13 dimensions"}</div></GlassCard>
+              </div>
+              <GlassCard className="mt-3 p-4">
+                <div className="flex items-center justify-between"><span className="text-xs font-semibold text-white">§77 Contradiction Scan</span><Badge variant={contradiction.data?.unresolvedContradictions === 0 ? "emerald" : "red"}>{contradiction.data ? `${S(contradiction.data.unresolvedContradictions)} unresolved` : "scanning…"}</Badge></div>
+                <div className="mt-1 text-[10px] text-gray-500">{contradiction.data ? `${S(contradiction.data.patternsScanned)} patterns · ${S(contradiction.data.filesScanned)} files scanned` : "17 patterns across codebase"}</div>
+              </GlassCard>
+            </Section>
+
+            {/* ═══ IMPLEMENTATION STATUS ═══ */}
+            <Section id="status" icon={CheckCircle2} title="§87 Implementation Status Report" subtitle="Never inflate any column · 19/23 acceptance criteria met · 0/13 institutional gates passed">
+              {!status.data ? <LoadingBox label="implementation status" /> : (
+                <>
+                  <div className="grid gap-3 md:grid-cols-3">
+                    <StatBox label="Acceptance Criteria" value={`${S(status.data.acceptanceCriteriaMet)}/${S(status.data.acceptanceCriteriaTotal)}`} sub={`${(N(status.data.acceptanceRate) * 100).toFixed(0)}% met`} accent="amber" />
+                    <StatBox label="Institutional Gates" value={`${S(status.data.institutionalGatesPassed)}/${S(status.data.institutionalGatesTotal)}`} sub="all pending" accent="red" />
+                    <StatBox label="Finality Layers" value={`${S(status.data.honestState?.finalityLayersEnforced)}/${S(status.data.honestState?.finalityLayersRequired)}`} sub="enforced at code level" accent="emerald" />
+                  </div>
+                  <GlassCard className="mt-3 overflow-hidden p-0">
+                    <table className="w-full text-[10px]">
+                      <thead className="border-b border-white/5 bg-white/[0.02]"><tr className="text-gray-500"><th className="px-2 py-1.5 text-left font-medium">§</th><th className="px-2 py-1.5 text-left font-medium">Requirement</th><th className="px-2 py-1.5 text-center font-medium">Design</th><th className="px-2 py-1.5 text-center font-medium">Impl</th><th className="px-2 py-1.5 text-center font-medium">Test</th><th className="px-2 py-1.5 text-center font-medium">Inst.</th><th className="px-2 py-1.5 text-center font-medium">Prod</th></tr></thead>
+                      <tbody>
+                        {Arr(status.data.statusTable).map((r: any, i: number) => (
+                          <tr key={i} className="border-b border-white/[0.03]">
+                            <td className="px-2 py-1 text-gray-500">{S(r.section)}</td>
+                            <td className="px-2 py-1 text-gray-300">{S(r.requirement).slice(0, 50)}</td>
+                            <td className="px-2 py-1 text-center text-[9px] text-emerald-400">{S(r.design).slice(0, 4)}</td>
+                            <td className="px-2 py-1 text-center text-[9px] text-emerald-400">{S(r.implementation).slice(0, 4)}</td>
+                            <td className="px-2 py-1 text-center text-[9px] text-emerald-400">{S(r.testing).slice(0, 5)}</td>
+                            <td className="px-2 py-1 text-center text-[9px] text-amber">{S(r.institutionalValidation).replace("_PENDING", "")}</td>
+                            <td className="px-2 py-1 text-center text-[9px] text-red-400">{S(r.production).slice(0, 8)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </GlassCard>
+                  <GlassCard className="mt-3 border-gold/20 p-4">
+                    <div className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-gold">§74 Honest State Declaration</div>
+                    <div className="grid grid-cols-2 gap-2 text-[10px] sm:grid-cols-4">
+                      <div><span className="text-gray-500">honest:</span> <span className="text-emerald-400">{S(status.data.honestState?.honest)}</span></div>
+                      <div><span className="text-gray-500">productionAuthorized:</span> <span className="text-red-400">{S(status.data.honestState?.productionAuthorized)}</span></div>
+                      <div><span className="text-gray-500">noMithqalOwnedReserve:</span> <span className="text-emerald-400">{S(status.data.honestState?.noMithqalOwnedReserve)}</span></div>
+                      <div><span className="text-gray-500">noMithqalFinancialGuarantee:</span> <span className="text-emerald-400">{S(status.data.honestState?.noMithqalFinancialGuarantee)}</span></div>
+                      <div><span className="text-gray-500">threeBookOperational:</span> <span className="text-red-400">{S(status.data.honestState?.threeBookOperational)}</span></div>
+                      <div><span className="text-gray-500">validatedJurisdictions:</span> <span className="text-red-400">{S(status.data.honestState?.validatedJurisdictions)}</span></div>
+                      <div><span className="text-gray-500">licensesObtained:</span> <span className="text-red-400">{S(status.data.honestState?.licensesObtained)}</span></div>
+                      <div><span className="text-gray-500">reservePolicyStatus:</span> <span className="text-amber">{S(status.data.honestState?.reservePolicyStatus).replace("_", " ")}</span></div>
+                    </div>
+                  </GlassCard>
+                </>
+              )}
+            </Section>
+
+            {/* ═══ SIMULATOR ═══ */}
+            <Section id="simulator" icon={Zap} title="Reserve Weighting Simulator" subtitle="Interactive stress-testing with live mock data · Monte Carlo (1000 iterations) · §V25.2 formulas">
+              {!sim.data ? <LoadingBox label="simulator" /> : (
+                <>
+                  <div className="grid gap-3 md:grid-cols-4">
+                    <StatBox label="Base RR" value={`${(N(sim.data.baseSimulation?.RR) * 100).toFixed(2)}%`} accent="gold" />
+                    <StatBox label="Base FSCR" value={`${(N(sim.data.baseSimulation?.FSCR) * 100).toFixed(2)}%`} accent="emerald" />
+                    <StatBox label="MC P(RR<100%)" value={`${(N(sim.data.monteCarlo?.probRRBelow100) * 100).toFixed(2)}%`} sub="solvency risk" accent="red" />
+                    <StatBox label="MC P(RR<130%)" value={`${(N(sim.data.monteCarlo?.probRRBelow130) * 100).toFixed(2)}%`} sub="strategic target miss" accent="amber" />
+                  </div>
+                  <GlassCard className="mt-3 p-4">
+                    <div className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-gray-500">Monte Carlo Distribution (1000 iterations)</div>
+                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-5 text-[10px]">
+                      <div className="rounded border border-white/5 bg-white/5 p-2"><div className="text-gray-500">RR Mean</div><div className="font-mono text-emerald-400">{(N(sim.data.monteCarlo?.RR_mean) * 100).toFixed(2)}%</div></div>
+                      <div className="rounded border border-white/5 bg-white/5 p-2"><div className="text-gray-500">RR p5</div><div className="font-mono text-amber">{(N(sim.data.monteCarlo?.RR_p5) * 100).toFixed(2)}%</div></div>
+                      <div className="rounded border border-white/5 bg-white/5 p-2"><div className="text-gray-500">RR p50</div><div className="font-mono text-white">{(N(sim.data.monteCarlo?.RR_p50) * 100).toFixed(2)}%</div></div>
+                      <div className="rounded border border-white/5 bg-white/5 p-2"><div className="text-gray-500">RR p95</div><div className="font-mono text-emerald-400">{(N(sim.data.monteCarlo?.RR_p95) * 100).toFixed(2)}%</div></div>
+                      <div className="rounded border border-white/5 bg-white/5 p-2"><div className="text-gray-500">Worst Case</div><div className="font-mono text-red-400">{(N(sim.data.monteCarlo?.RR_min) * 100).toFixed(2)}%</div></div>
+                    </div>
+                  </GlassCard>
+                  <GlassCard className="mt-3 p-4">
+                    <div className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-gray-500">Preset Shock Results ({S(Arr(sim.data.presetShockResults).length)} scenarios)</div>
+                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                      {Arr(sim.data.presetShockResults).map((s: any, i: number) => {
+                        const rrBefore = N(s.RR_before) * 100; const rrAfter = N(s.RR_after) * 100; const delta = rrAfter - rrBefore;
+                        return (
+                          <div key={i} className="rounded-lg border border-white/5 bg-white/5 p-3">
+                            <div className="flex items-center justify-between"><span className="text-[11px] font-semibold text-white">{S(s.shock?.name)}</span><Badge variant={delta < -5 ? "red" : "amber"}>Δ{delta.toFixed(2)}pp</Badge></div>
+                            <div className="mt-1.5 grid grid-cols-2 gap-1 text-[9px]">
+                              <div><span className="text-gray-500">RR:</span> <span className="font-mono text-gray-400">{rrBefore.toFixed(2)}%</span> → <span className={`font-mono font-bold ${delta < -5 ? "text-red-400" : "text-amber"}`}>{rrAfter.toFixed(2)}%</span></div>
+                              <div><span className="text-gray-500">FSCR:</span> <span className="font-mono text-gray-400">{(N(s.FSCR_before) * 100).toFixed(2)}%</span> → <span className="font-mono text-amber">{(N(s.FSCR_after) * 100).toFixed(2)}%</span></div>
+                            </div>
+                            <div className="mt-1 text-[8px] text-gray-500">Loss: ${N(s.reserveLoss).toLocaleString()}</div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </GlassCard>
+                </>
+              )}
+            </Section>
+
+            {/* ═══ CORRIDOR ═══ */}
+            <Section id="corridor" icon={Globe} title="Cross-Border Corridor Simulator — AED ↔ SGD" subtitle="Mock demo: 1,000,000 AED → SGD · FX discovery · compliance · atomic settlement">
+              {!corridor.data ? <LoadingBox label="corridor" /> : (
+                <>
+                  <GlassCard glow className="p-5">
+                    <div className="mb-3 text-[10px] font-semibold uppercase tracking-wider text-gray-500">Demo Transaction Result</div>
+                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                      <div><div className="text-[9px] text-gray-500">Input</div><div className="font-mono text-sm text-white">{N(corridor.data.sampleRunSummary?.amountAED).toLocaleString()} AED</div></div>
+                      <div><div className="text-[9px] text-gray-500">Output</div><div className="font-mono text-sm text-emerald-400">{N(corridor.data.sampleRunSummary?.outputSGD).toLocaleString()} SGD</div></div>
+                      <div><div className="text-[9px] text-gray-500">FX Route</div><div className="font-mono text-sm text-gold">{S(corridor.data.sampleRunSummary?.fxRoute)}</div></div>
+                      <div><div className="text-[9px] text-gray-500">Cost</div><div className="font-mono text-sm text-amber">{N(corridor.data.sampleRunSummary?.totalCostBps).toFixed(2)} bps</div></div>
+                    </div>
+                    <div className="mt-3 flex items-center justify-between rounded-lg border border-gold/20 bg-gold/5 p-3">
+                      <div><span className="text-[10px] text-gray-500">MTQ Minted (atomic):</span> <span className="font-mono text-base font-bold text-gold">{N(corridor.data.sampleRunSummary?.mtqMinted).toLocaleString()} MTQ</span></div>
+                      <div className="text-[10px] text-gray-500">Settlement: {S(corridor.data.sampleRunSummary?.settlementStatus)}</div>
+                    </div>
+                  </GlassCard>
+                  <GlassCard className="mt-3 p-4">
+                    <div className="mb-3 text-[10px] font-semibold uppercase tracking-wider text-gray-500">Settlement Timeline ({S(Arr(corridor.data.corridorSteps).length)} steps)</div>
+                    <div className="space-y-1">
+                      {Arr(corridor.data.corridorSteps).map((s: any, i: number) => (
+                        <div key={i} className="flex items-center gap-2 rounded border border-white/[0.03] px-2 py-1.5 text-[10px]">
+                          <span className="font-mono text-gray-500 w-16 shrink-0">{S(s.id)}</span>
+                          <ArrowRight className="h-2.5 w-2.5 shrink-0 text-gray-600" />
+                          <span className="flex-1 text-gray-300">{S(s.name)}</span>
+                          <span className="text-[8px] text-gray-600">{S(s.stage)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </GlassCard>
+                </>
+              )}
+            </Section>
+
+            {/* ═══ INSTITUTIONAL ENGAGEMENT CTA ═══ */}
+            <Section id="institutional" icon={Building2} title="Institutional Engagement" subtitle="MITHQAL is seeking regulated institutions, monetary authorities, regulators, infrastructure providers and independent assurance institutions">
+              <div className="grid gap-3 md:grid-cols-2">
+                <Link href="/institutional-engagement">
+                  <GlassCard glow className="flex items-center justify-between p-5 transition hover:border-gold/40">
+                    <div className="flex items-center gap-4">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-gold/20 bg-gold/5"><Building2 className="h-6 w-6 text-gold" /></div>
+                      <div>
+                        <div className="font-display text-base font-bold text-white">Institutional Engagement →</div>
+                        <div className="text-[11px] text-gray-500">Express interest · Review architecture · Sandbox testing · Pilot design</div>
+                      </div>
+                    </div>
+                    <ArrowRight className="h-5 w-5 text-gold" />
+                  </GlassCard>
+                </Link>
+                <Link href="/institutional-readiness">
+                  <GlassCard glow className="flex items-center justify-between p-5 transition hover:border-amber-500/40">
+                    <div className="flex items-center gap-4">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-amber-500/20 bg-amber-500/5"><CheckCircle2 className="h-6 w-6 text-amber-400" /></div>
+                      <div>
+                        <div className="font-display text-base font-bold text-white">Pilot Readiness →</div>
+                        <div className="text-[11px] text-gray-500">Readiness scorecard · Pilot model · Review package · Evidence discipline</div>
+                      </div>
+                    </div>
+                    <ArrowRight className="h-5 w-5 text-amber-400" />
+                  </GlassCard>
+                </Link>
+              </div>
+              <GlassCard className="mt-3 p-4 border-gold/20">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-[10px] font-semibold uppercase tracking-wider text-gray-500">Contact MITHQAL</div>
+                    <div className="mt-1 text-sm text-gold">meltonsy@icloud.com</div>
+                  </div>
+                  <a href="mailto:meltonsy@icloud.com" className="rounded-lg border border-gold/30 bg-gold/10 px-4 py-2 text-xs font-semibold text-gold transition hover:bg-gold/20">
+                    <Mail className="mr-1 inline h-3.5 w-3.5" /> Email Directly
+                  </a>
+                </div>
+                <div className="mt-2 text-[9px] text-gray-500">CONTROLLED INSTITUTIONAL DOCUMENT • NOT A LICENSE • NOT A LEGAL OPINION.</div>
+              </GlassCard>
+            </Section>
+          </div>
+        </main>
       </div>
-    </div>
-  );
-}
 
-/* ---- Playbook auth gate ---- */
-function PlaybookGate() {
-  const { data: session } = useSession();
-  if (session) return <Playbook />;
-  return (
-    <div className="grain-bg flex min-h-[60vh] items-center justify-center px-5 py-20">
-      <div className="max-w-md text-center">
-        <BookOpen className="mx-auto mb-4 h-12 w-12 text-gold" />
-        <h2 className="font-display text-2xl text-foreground">Strategic Document</h2>
-        <p className="mt-2 text-sm text-fg-muted">
-          The Execution Playbook is a confidential strategic document available to authenticated operators.
-        </p>
-        <p className="mt-4 text-xs text-fg-muted">
-          Switch to the Admin view to sign in, then return here.
-        </p>
-        <button
-          onClick={() => {
-            localStorage.setItem("mithqal.view", "admin");
-            window.dispatchEvent(new Event("mithqal:view-change"));
-          }}
-          className="mt-6 rounded-md bg-gold px-5 py-2.5 text-sm font-semibold text-ink transition hover:bg-gold/90"
-        >
-          Go to Admin Sign In
-        </button>
-      </div>
-    </div>
-  );
-}
-
-/* ---- Unified Navigation Bar ---- */
-
-function UnifiedNav({
-  view,
-  setView,
-}: {
-  view: View;
-  setView: (v: View) => void;
-}) {
-  return (
-    <div className="no-print sticky top-0 z-[60] flex justify-center border-b border-line/40 glass">
-      <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-3 px-4 py-2 sm:px-8 sm:py-2.5">
-        {/* Left: Brand + Live Status */}
-        <div className="hidden items-center gap-3 lg:flex">
-          <span className="text-[11px] font-medium uppercase tracking-[0.22em] text-fg-muted">
-            Mithqal
-          </span>
-          <LiveStatus />
+      {/* ─── FOOTER ─── */}
+      <footer className="border-t border-white/5 bg-[#0a0a0b]">
+        <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
+          <div className="flex flex-col items-center gap-3 text-center">
+            <div className="flex items-center gap-2"><Landmark className="h-4 w-4 text-gold" /><span className="font-display text-sm font-bold text-white">MITHQAL</span></div>
+            <p className="max-w-2xl text-[10px] text-gray-500">Constitutional Settlement Institution · §V25.2 Final Reserve Mathematical Specification · 130% institutional backing · 80% fiat / 18% gold / 2% digital · 11-currency basket · 20% hard cap · 7/7 finality enforcement · NOT PRODUCTION-AUTHORIZED · 0/13 institutional gates passed</p>
+            <div className="flex flex-wrap justify-center gap-2">
+              <Link href="/institutional-engagement"><Badge variant="gold">Institutional Engagement</Badge></Link>
+              <Link href="/institutional-readiness"><Badge variant="amber">Pilot Requirements</Badge></Link>
+              <a href="mailto:meltonsy@icloud.com"><Badge variant="gray"><Mail className="h-3 w-3" /> Email MITHQAL</Badge></a>
+              <Badge variant="amber">APPROVED CANDIDATE FOR CONTROLLED TESTING</Badge>
+            </div>
+            <p className="text-[9px] text-gray-600">Institutions, regulators, banks and infrastructure providers: help us evaluate MITHQAL in the environments where settlement must actually work.</p>
+            <p className="text-[9px] text-gray-600">CONTROLLED INSTITUTIONAL DOCUMENT • NOT A LICENSE • NOT A LEGAL OPINION. © 2026 MITHQAL</p>
+          </div>
         </div>
-        <div className="flex items-center gap-2 lg:hidden">
-          <LiveStatus />
-        </div>
-
-        {/* Center: Unified Navigation */}
-        <div className="mx-auto inline-flex items-center gap-0.5 overflow-x-auto rounded-full border border-line bg-ink/60 p-1 backdrop-blur-xl">
-          {VIEWS.map((v) => {
-            const active = view === v.id;
-            const Icon = v.icon;
-            return (
-              <button
-                key={v.id}
-                onClick={() => setView(v.id)}
-                className={`relative inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-all sm:px-4 sm:text-[13px] ${
-                  active ? "bg-gold text-ink glow-gold" : "text-fg-muted hover:text-foreground hover:bg-ink-card/60"
-                }`}
-                aria-pressed={active}
-                aria-label={v.label}
-              >
-                <Icon className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">{v.label}</span>
-                <span className="sm:hidden">{v.short}</span>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Right: Language + Theme */}
-        <div className="flex items-center gap-1.5">
-          <LanguageSwitcher />
-          <ThemeToggle />
-        </div>
-      </div>
+      </footer>
     </div>
   );
 }
