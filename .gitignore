@@ -32,3 +32,6 @@ db/custom.db
 db/custom.db-journal
 tool-results/
 .env.local
+auth
+auth-wal
+auth-journal
