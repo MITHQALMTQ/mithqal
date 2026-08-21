@@ -410,58 +410,89 @@ export default function Page() {
 
   return (
     <div className="min-h-screen bg-[#0a0a0b] text-gray-200">
-      {/* ─── HEADER ─── */}
-      <header className="sticky top-0 z-50 border-b border-white/5 bg-[#0a0a0b]/80 backdrop-blur-xl">
+      {/* ─── HEADER (upgraded: prominent, institutional) ─── */}
+      <header className="sticky top-0 z-50 border-b border-gold/10 bg-[#0a0a0b]/95 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
           <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-gold to-gold-soft">
-              <Landmark className="h-4 w-4 text-black" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[#d4af37] to-[#c9a227] shadow-lg shadow-gold/20">
+              <Landmark className="h-5 w-5 text-black" />
             </div>
             <div>
-              <div className="font-display text-sm font-bold text-white">MITHQAL</div>
-              <div className="text-[9px] text-gray-500">§V25.2 Institutional Command Center</div>
+              <div className="font-display text-base font-bold tracking-tight text-white">MITHQAL</div>
+              <div className="text-[10px] font-medium text-gold">§V25.2 Institutional Command Center</div>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Link href="/institutional-engagement"><Badge variant="gold">Institutional Engagement</Badge></Link>
-            <Link href="/institutional-readiness"><Badge variant="amber">Pilot Readiness</Badge></Link>
-            <Badge variant="amber">NOT PRODUCTION-AUTHORIZED</Badge>
+          {/* Mobile-friendly nav */}
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <Link href="/institutional-engagement" className="rounded-lg border border-gold/30 bg-gold/10 px-2.5 py-1.5 text-[10px] font-semibold text-gold transition hover:bg-gold/20 sm:px-3 sm:text-xs">
+              Institutional Engagement
+            </Link>
+            <Link href="/institutional-readiness" className="hidden rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-1.5 text-xs font-semibold text-amber-400 transition hover:bg-amber-500/20 sm:block">
+              Pilot Readiness
+            </Link>
+            <a href="/os" className="hidden rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold text-gray-300 transition hover:bg-white/10 sm:block">
+              OS
+            </a>
           </div>
         </div>
       </header>
 
       <div className="mx-auto flex max-w-7xl">
-        {/* ─── SIDEBAR NAV ─── */}
-        <nav className="sticky top-[57px] hidden h-[calc(100vh-57px)] w-56 shrink-0 flex-col gap-1 overflow-y-auto p-4 lg:flex">
+        {/* ─── SIDEBAR NAV (upgraded: mobile-responsive horizontal scroll) ─── */}
+        <nav className="sticky top-[61px] hidden h-[calc(100vh-61px)] w-56 shrink-0 flex-col gap-1 overflow-y-auto p-4 lg:flex">
           {NAV_ITEMS.map((item) => (
-            <button key={item.id} onClick={() => scrollTo(item.id)} className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs text-gray-400 transition hover:bg-white/5 hover:text-gold">
+            <button key={item.id} onClick={() => scrollTo(item.id)} className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-medium text-gray-500 transition hover:bg-gold/5 hover:text-gold">
               <item.icon className="h-3.5 w-3.5" />
               {item.label}
             </button>
           ))}
           <div className="my-2 border-t border-white/5" />
-          <Link href="/institutional-engagement" className="flex items-center gap-2 rounded-lg border border-gold/20 bg-gold/5 px-3 py-2 text-xs text-gold transition hover:bg-gold/10">
+          <Link href="/institutional-engagement" className="flex items-center gap-2.5 rounded-lg border border-gold/20 bg-gold/5 px-3 py-2 text-xs font-medium text-gold transition hover:bg-gold/10">
             <Building2 className="h-3.5 w-3.5" />
             Institutional Engagement →
           </Link>
-          <Link href="/institutional-readiness" className="flex items-center gap-2 rounded-lg border border-amber-500/20 bg-amber-500/5 px-3 py-2 text-xs text-amber-400 transition hover:bg-amber-500/10">
+          <Link href="/institutional-readiness" className="flex items-center gap-2.5 rounded-lg border border-amber-500/20 bg-amber-500/5 px-3 py-2 text-xs font-medium text-amber-400 transition hover:bg-amber-500/10">
             <CheckCircle2 className="h-3.5 w-3.5" />
             Pilot Readiness →
           </Link>
-          <a href="mailto:meltonsy@icloud.com" className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs text-gray-400 transition hover:bg-white/10">
+          <a href="/os" className="flex items-center gap-2.5 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs font-medium text-gray-400 transition hover:bg-white/10">
+            <Layers className="h-3.5 w-3.5" />
+            Operating System →
+          </a>
+          <a href="mailto:meltonsy@icloud.com" className="flex items-center gap-2.5 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs font-medium text-gray-400 transition hover:bg-white/10">
             <Mail className="h-3.5 w-3.5" />
             Email MITHQAL
           </a>
           <div className="mt-auto pt-4">
-            <div className="rounded-lg border border-gold/10 bg-gold/5 p-3 text-[9px] text-gray-500">
-              <div className="mb-1 font-semibold text-gold">Honest State</div>
-              <div>honest: true</div>
-              <div>productionAuthorized: false</div>
-              <div>gates: 0/13</div>
-              <div>finality: 7/7</div>
+            <div className="rounded-xl border border-gold/10 bg-gold/5 p-3 text-[10px] text-gray-500">
+              <div className="mb-1.5 font-semibold text-gold">Honest State</div>
+              <div className="space-y-0.5">
+                <div className="flex justify-between"><span>honest:</span> <span className="text-emerald-400">true</span></div>
+                <div className="flex justify-between"><span>production:</span> <span className="text-red-400">false</span></div>
+                <div className="flex justify-between"><span>gates:</span> <span className="text-amber-400">0/13</span></div>
+                <div className="flex justify-between"><span>finality:</span> <span className="text-emerald-400">7/7</span></div>
+              </div>
             </div>
           </div>
         </nav>
+
+        {/* ─── MOBILE NAV BAR (horizontal scroll for tablet/mobile) ─── */}
+        <div className="sticky top-[61px] z-40 border-b border-white/5 bg-[#0a0a0b]/95 backdrop-blur-xl lg:hidden">
+          <div className="flex gap-1 overflow-x-auto px-4 py-2">
+            {NAV_ITEMS.map((item) => (
+              <button key={item.id} onClick={() => scrollTo(item.id)} className="flex shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[10px] font-medium text-gray-500 transition hover:bg-gold/5 hover:text-gold">
+                <item.icon className="h-3 w-3" />
+                {item.label}
+              </button>
+            ))}
+            <Link href="/institutional-engagement" className="flex shrink-0 items-center gap-1 rounded-lg border border-gold/20 bg-gold/5 px-2.5 py-1.5 text-[10px] font-medium text-gold">
+              Engagement →
+            </Link>
+            <Link href="/os" className="flex shrink-0 items-center gap-1 rounded-lg border border-white/10 bg-white/5 px-2.5 py-1.5 text-[10px] font-medium text-gray-400">
+              OS →
+            </Link>
+          </div>
+        </div>
 
         {/* ─── MAIN CONTENT ─── */}
         <main className="min-w-0 flex-1 px-4 py-6 sm:px-6 lg:px-8">
@@ -788,20 +819,45 @@ export default function Page() {
         </main>
       </div>
 
-      {/* ─── FOOTER ─── */}
-      <footer className="border-t border-white/5 bg-[#0a0a0b]">
-        <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
-          <div className="flex flex-col items-center gap-3 text-center">
-            <div className="flex items-center gap-2"><Landmark className="h-4 w-4 text-gold" /><span className="font-display text-sm font-bold text-white">MITHQAL</span></div>
-            <p className="max-w-2xl text-[10px] text-gray-500">Constitutional Settlement Institution · §V25.2 Final Reserve Mathematical Specification · 130% institutional backing · 80% fiat / 18% gold / 2% digital · 11-currency basket · 20% hard cap · 7/7 finality enforcement · NOT PRODUCTION-AUTHORIZED · 0/13 institutional gates passed</p>
-            <div className="flex flex-wrap justify-center gap-2">
-              <Link href="/institutional-engagement"><Badge variant="gold">Institutional Engagement</Badge></Link>
-              <Link href="/institutional-readiness"><Badge variant="amber">Pilot Requirements</Badge></Link>
-              <a href="mailto:meltonsy@icloud.com"><Badge variant="gray"><Mail className="h-3 w-3" /> Email MITHQAL</Badge></a>
-              <Badge variant="amber">APPROVED CANDIDATE FOR CONTROLLED TESTING</Badge>
+      {/* ─── FOOTER (upgraded: institutional, multi-column) ─── */}
+      <footer className="border-t border-gold/10 bg-[#080809]">
+        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
+          <div className="grid gap-6 md:grid-cols-3">
+            {/* Brand */}
+            <div>
+              <div className="flex items-center gap-2">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#d4af37] to-[#c9a227]">
+                  <Landmark className="h-4 w-4 text-black" />
+                </div>
+                <span className="font-display text-sm font-bold text-white">MITHQAL</span>
+              </div>
+              <p className="mt-2 text-[10px] leading-relaxed text-gray-600">Constitutional Settlement Institution. §V25.2 Final Reserve Mathematical Specification. 130% institutional backing. 80% fiat / 18% gold / 2% digital. 11-currency basket. 20% hard cap. 7/7 finality enforcement.</p>
             </div>
-            <p className="text-[9px] text-gray-600">Institutions, regulators, banks and infrastructure providers: help us evaluate MITHQAL in the environments where settlement must actually work.</p>
-            <p className="text-[9px] text-gray-600">CONTROLLED INSTITUTIONAL DOCUMENT • NOT A LICENSE • NOT A LEGAL OPINION. © 2026 MITHQAL</p>
+            {/* Links */}
+            <div>
+              <div className="text-[10px] font-semibold uppercase tracking-wider text-gold">Institutional</div>
+              <div className="mt-2 space-y-1.5">
+                <Link href="/institutional-engagement" className="block text-[11px] text-gray-500 transition hover:text-gold">→ Institutional Engagement</Link>
+                <Link href="/institutional-readiness" className="block text-[11px] text-gray-500 transition hover:text-gold">→ Pilot Requirements</Link>
+                <Link href="/os" className="block text-[11px] text-gray-500 transition hover:text-gold">→ Operating System</Link>
+                <a href="mailto:meltonsy@icloud.com" className="block text-[11px] text-gray-500 transition hover:text-gold">→ Email MITHQAL</a>
+              </div>
+            </div>
+            {/* Status */}
+            <div>
+              <div className="text-[10px] font-semibold uppercase tracking-wider text-gold">Status</div>
+              <div className="mt-2 space-y-1 text-[10px] text-gray-600">
+                <div className="flex justify-between"><span>Production Authorized:</span> <span className="text-red-400 font-mono">false</span></div>
+                <div className="flex justify-between"><span>Institutional Gates:</span> <span className="text-amber-400 font-mono">0/13</span></div>
+                <div className="flex justify-between"><span>Finality Layers:</span> <span className="text-emerald-400 font-mono">7/7</span></div>
+                <div className="flex justify-between"><span>Validated Jurisdictions:</span> <span className="text-red-400 font-mono">0</span></div>
+                <div className="flex justify-between"><span>Licenses Obtained:</span> <span className="text-red-400 font-mono">0</span></div>
+              </div>
+            </div>
+          </div>
+          <div className="mt-6 border-t border-white/5 pt-4">
+            <p className="text-center text-[10px] text-gray-600">Institutions, regulators, banks and infrastructure providers: help us evaluate MITHQAL in the environments where settlement must actually work.</p>
+            <p className="mt-1 text-center text-[9px] font-medium text-gray-700">CONTROLLED INSTITUTIONAL DOCUMENT • NOT A LICENSE • NOT A LEGAL OPINION. © 2026 MITHQAL</p>
           </div>
         </div>
       </footer>
