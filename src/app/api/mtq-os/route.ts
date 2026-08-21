@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
+import { generateMTQOSReport, MODULE_ID } from "@/lib/mtq-os";
 export const dynamic = "force-static";
 export async function GET() {
   try {
-    return NextResponse.json({ ok: true, moduleId: "v25.2-mtq-os-1.0", issuanceSteps: [], bankIntegrationNodes: [], bankIntegrationFlows: [], iso20022MessageCatalog: [], finalStatus: "SIMULATED" });
+    return NextResponse.json({ ok: true, moduleId: MODULE_ID, ...generateMTQOSReport() });
   } catch (e) { return NextResponse.json({ ok: false, error: String(e) }, { status: 500 }); }
 }
