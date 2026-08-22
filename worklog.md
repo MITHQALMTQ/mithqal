@@ -3522,3 +3522,1296 @@ Stage Summary:
 - ✅ DISCLAIMER PRESERVED
 - ✅ EXISTING ROUTES UNCHANGED
 - ✅ DEPLOYED TO mithqal.vercel.app
+
+---
+
+## Task ID BP-SEC-05 — Build Blueprint Sections 17-20
+
+**Date:** 2026-08-22.
+**Role:** Blueprint Architect · Documentation Engineer.
+**Scope:** Build sections 17-20 of the MITHQAL Master Blueprint v25.2
+(Bank Default & Resolution Framework §48, Legal Liability Framework §49,
+Licensing / Entity Matrix §50, Systemic Exposure Engine §52). Write
+fully expanded specification to `/home/z/my-project/blueprint_parts/part05.md`.
+
+### Context
+
+The MITHQAL Master Blueprint v25.2 is being rebuilt as a single source
+of truth. Part 05 covers four sections (17, 18, 19, 20) that are the
+institutional/legal/regulatory/systemic-risk backbone of the v25.2
+architecture. The four source files (`src/lib/bank-default-resolution.ts`,
+`src/lib/legal-liability-framework.ts`, `src/lib/licensing-entity-matrix.ts`,
+`src/lib/systemic-exposure-engine.ts`) total 3,848 lines of TypeScript
+implementation; the blueprint sections expand and document these
+implementations as canonical specification.
+
+### Files Created (1)
+
+- `/home/z/my-project/blueprint_parts/part05.md` (4,765 lines) — fully
+  expanded specification of sections 17, 18, 19, 20.
+
+### Section Coverage
+
+- **Section 17 — Bank Default & Resolution Framework (§48)** — 8-state
+  lifecycle (ACTIVE → RESTRICTED → LIQUIDITY_STRESS → SUSPENDED →
+  DEFAULT → INSOLVENT → RESOLUTION → EXIT), 9 behavioral dimensions per
+  state, 11 contractual questions (each with question, why it matters,
+  what the answer determines), MITHQAL-is-NOT-the-financial-guarantor
+  principle (detailed), what happens to MTQ if a bank defaults, what
+  happens to backing, who absorbs losses, lifecycle transition engine,
+  scenario simulation, illustrative example (Northern Anchor Bank
+  entering LIQUIDITY_STRESS with full trace and three possible outcomes).
+  Honest state: designed=true, contractValidated=false,
+  legalValidated=false, productionReady=false.
+
+- **Section 18 — Legal Liability Framework (§49)** — 13 dimensions
+  (jurisdiction, legalNature, obligor, holderRights, redemption,
+  settlementFinality, creditorTreatment, insolvencyTreatment,
+  transferability, pledgeability, governingLaw, disputeResolution,
+  licensingClassification), each explained in detail (what it is, why
+  it matters, what it determines, how populated). Jurisdiction registry:
+  8 jurisdictions (US, EU/EEA, UK, CH, SG, AE, SA, JP), ALL
+  JURISDICTION_PENDING, with per-jurisdiction analysis (what is known,
+  what is pending, what requires legal opinion). Legal classification
+  lifecycle (PENDING → LEGAL_OPINION_OBTAINED → VALIDATED) with
+  evidence-gating rules. Speculative-note discipline enforced.
+  Illustrative example: what a Singapore legal opinion would need to
+  cover (7 sub-areas, evidence required, lifecycle transition, honest-
+  state implications). Honest state: LEGAL_MODEL_DESIGNED=true,
+  LEGAL_REGISTRY_IMPLEMENTED=true, LEGAL_OPINIONS_OBTAINED=false,
+  VALIDATED_JURISDICTIONS=0.
+
+- **Section 19 — Licensing / Entity Matrix (§50)** — 9 activities
+  (banking, payment-services, custody, fx, digital-asset-casp,
+  securities, commodity, cbdc-access, settlement-activities), 8
+  jurisdictions (US, UAE, UK, EU, SINGAPORE, SWITZERLAND, HONG_KONG,
+  KSA), 72 matrix entries (9×8), ALL REQUIRED_NOT_OBTAINED. For each
+  activity: what it means, why MITHQAL might need it, what license is
+  typically required, per-jurisdiction license text (8 jurisdictions
+  each), bank/custodian/liquidity-provider roles. MITHQAL role invariant:
+  ALWAYS one of {NONE, VERIFICATION, ORCHESTRATION, INFRASTRUCTURE};
+  GUARANTOR / FINANCIAL_GUARANTOR PROHIBITED (asserted at module load).
+  Licensing lifecycle (REQUIRED_NOT_OBTAINED → PENDING_APPLICATION →
+  OBTAINED / EXEMPT / PROHIBITED). Matrix invariants (size, uniqueness,
+  completeness, evidence, role, default-state, honest-state). Query /
+  mutation API documented. Illustrative example: UAE CASP license
+  application (matrix entry, VARA/ADGM/DFSA regulators, 4-phase
+  application path, required evidence, honest-state implications).
+  Honest state: licensingMatrixImplemented=true, licensesObtained=0.
+
+- **Section 20 — Systemic Exposure Engine (§52)** — 13 concentration
+  dimensions (bank, banking-group, country, currency, custodian,
+  correspondent, settlement-rail, liquidity-provider, stablecoin-issuer,
+  technology-provider, geopolitical-correlation, operational-correlation,
+  bank-exposure), each explained in detail (what it measures, why it
+  matters, how it's calculated, preferred/hard limits). Full §76
+  CONCENTRATION_LIMITS table. Bank-vs-system-wide assessment (Question
+  A: individual limit; Question B: system-wide-growth), recommendation
+  logic. Enhanced DMCE inputs (EnhancedDMCEInput bundle; how systemic
+  risk feeds into minting capacity; honest-state note that the §52
+  module surfaces inputs but does NOT recompute DMCE). Systemic
+  concentration score (normalized HHI averaged across 13 dimensions;
+  interpretation table). Correlated exposure detection (3 correlation
+  criteria: entityId, parentGroup, jurisdiction; combined exposure;
+  systemic correlation risk; use cases). Snapshot structure (full
+  SystemicExposureSnapshot, totalExposure computation, violation /
+  near-breach collection). Simulated reference snapshot (4 banks, 3
+  custodians, 9 assets, 2 providers; SIMULATED — NOT LIVE). Illustrative
+  example: Sovereign Trust Bank growing to 18% of system exposure
+  (initial state, Question A analysis, Question B analysis with growth
+  projection, hard-limit breach check, recommendation, governance
+  actions, what happens if growth continues, system-wide concentration
+  score impact, projected system concentration score). Honest state:
+  systemicRiskEngineDesigned=true, systemicRiskEngineImplemented=true,
+  systemicRiskMonitoringLive=false, systemicRiskProductionValidated=false.
+
+### Appendices
+
+- **Appendix 5.A — Cross-Section Consistency Map** — 18 integration
+  points across the four sections (and to §3, §46, §47, §76).
+- **Appendix 5.B — Honest-State Field Reference (§74)** — 17 honest-
+  state fields touched by the four sections, with their exact values.
+- **Appendix 5.C — Source File Reference Index** — 4 source files,
+  3,848 lines total.
+
+### Honest-State Discipline Preserved
+
+All four sections preserve the §74 honest-state discipline:
+
+- §17: bankDefaultStateModelDesigned=true, bankDefaultOperationalWorkflow=
+  true, bankDefaultContractValidated=false, bankDefaultLegalValidated=
+  false, bankDefaultProductionReady=false. SPECIFIED, NOT CONTRACTED.
+  APPROVED FOR INSTITUTIONAL ENGAGEMENT, NOT FOR PRODUCTION USE.
+- §18: LEGAL_MODEL_DESIGNED=true, LEGAL_REGISTRY_IMPLEMENTED=true,
+  LEGAL_OPINIONS_OBTAINED=false, VALIDATED_JURISDICTIONS=0. ZERO
+  JURISDICTIONS VALIDATED — PENDING EXTERNAL LEGAL OPINIONS.
+- §19: licensingMatrixImplemented=true, licensesObtained=0. NOT
+  REGULATORY-AUTHORIZED — NOT PRODUCTION-AUTHORIZED.
+- §20: systemicRiskEngineDesigned=true, systemicRiskEngineImplemented=
+  true, systemicRiskMonitoringLive=false,
+  systemicRiskProductionValidated=false. APPROVED CANDIDATE FOR
+  CONTROLLED TESTING — NOT PRODUCTION-AUTHORIZED.
+
+### Single Source of Truth
+
+This Part 05 document is the SINGLE SOURCE OF TRUTH for sections 17,
+18, 19, and 20 of the MITHQAL Master Blueprint v25.2. No older versions
+are controlling. Where this document conflicts with any older
+specification, this document controls per the v25.2 reconciliation
+directive.
+
+### Verification
+
+- File path: `/home/z/my-project/blueprint_parts/part05.md`
+- Line count: 4,765 lines (within target 3,000-8,000 lines)
+- All four sections fully expanded
+- All illustrative examples included (4 examples: §17 Northern Anchor
+  Bank, §18 Singapore legal opinion, §19 UAE CASP license, §20
+  Sovereign Trust Bank 18% growth)
+- All 11 §17 contractual questions answered (question + why it matters
+  + what it determines)
+- All 13 §18 legal dimensions explained (what/why/what-determines/how-
+  populated)
+- All 72 §19 matrix entries covered (9 activities × 8 jurisdictions,
+  all REQUIRED_NOT_OBTAINED, all evidence=NONE)
+- All 13 §20 concentration dimensions explained (what/why/how/limits)
+- §76 CONCENTRATION_LIMITS table fully reproduced
+- §74 honest-state fields exact and verbatim throughout
+- Cross-references to §3, §46, §47, §48, §49, §50, §52, §76 included
+
+Stage Summary:
+- ✅ 1 NEW FILE: part05.md (4,765 lines)
+- ✅ ALL 4 SECTIONS FULLY EXPANDED (§17, §18, §19, §20)
+- ✅ HONEST-STATE DISCIPLINE PRESERVED (§74 exact values)
+- ✅ SINGLE SOURCE OF TRUTH (v25.2 controlling; older versions superseded)
+- ✅ ILLUSTRATIVE EXAMPLES INCLUDED (4 examples, one per section)
+- ✅ CROSS-SECTION INTEGRATION MAP (Appendix 5.A, 18 integration points)
+- ✅ HONEST-STATE FIELD REFERENCE (Appendix 5.B, 17 fields)
+- ✅ SOURCE FILE REFERENCE INDEX (Appendix 5.C, 3,848 source lines)
+
+---
+
+## Task ID BP-SEC-02 — Master Blueprint v25.2 Part 02 (Sections 5-8)
+
+**Date:** v25.2 build cycle.
+**Role:** Documentation Architect · Chief Constitutional Engineer.
+**Scope:** Build Sections 5-8 of the MITHQAL Master Blueprint v25.2 (Single Source of Truth) as fully expanded part file.
+
+### Context
+
+The Master Blueprint v25.2 is being partitioned into part files for maintainability.
+Part 02 covers the four central architectural sections:
+
+- Section 5 — Institutional Participant Model
+- Section 6 — Economic & Monetary Architecture
+- Section 7 — MTQ Architecture (Issuance + Finality)
+- Section 8 — Reserve Architecture (§V25.2 CONTROLLING)
+
+### Inputs Consulted
+
+- `/tmp/blueprint_reference.json` — authoritative reference values (reserve, finality, institutional, status, os, corridor, tokenization, simulator).
+- `docs/blueprint/mithqal-v25-FINAL-blueprint.md` — original v25.0/v25.1 blueprint (§V25.0.2 participant hierarchy, §V25.0.3 minting model, §V25.0.8 CB participation, §V25.0.11 corporate MTQ settlement account, §V25.0.18 product/user model, §V25.0.22 three-way reconciliation, §V25.0.23 12-check gate, §V25.0.26 settlement finality, §V25.0.D.X 16-step BM workflow, §V25.1.12 Finality-Before-Mint, §V25.1.16 MTQ valuation, §V25.1.18 reserve architecture, §V25.2.AUDIT-CLOSURE.7 §54 strengthened).
+- `src/lib/mtq-final-reserve-spec.ts` (head 200+ lines) — controlling v25.2 reserve math spec.
+- `src/lib/finality-before-mint.ts` — §54 enforcement (7 layers, 10 bypass routes).
+- `src/lib/corporate-settlement-account.ts` — §5 corporate settlement account schema + division of control.
+
+### Deliverable
+
+- **File:** `/home/z/my-project/blueprint_parts/part02.md`
+- **Line count:** 3,624 lines (target: 3,000-8,000 ✓)
+- **Status:** Single source of truth for Sections 5-8.
+
+### Content Summary
+
+- **Section 5 (Institutional Participant Model):** 10 direct institutional participant types (CENTRAL_BANK, REGULATED_BANK, FINANCIAL_INSTITUTION, PAYMENT_INFRASTRUCTURE, GOVERNMENT_AUTHORITY, REGULATOR_SUPERVISOR, TECHNOLOGY_PROVIDER, CYBERSECURITY_ASSURANCE, LEGAL_REGULATORY, STANDARDS_RESEARCH); retail exclusion hard boundary (Class E prohibited); 5-class participant hierarchy (A-E); customer modes (Mode A pass-through, Mode B treasury holding); full Corporate MTQ Settlement Account specification (15+ fields F1-F17 with full visibility matrix); available/reserved/pending sub-balances; three-layer finality (technical + legal + banking); ledger interaction; bank visibility/reconciliation (three-way); authorization flow (12-check gate); multi-signatory; emergency controls (5 types); bank-controlled wallet architecture; corporate treasury dashboard; institutional engagement (6 types); institutional readiness (10 dimensions, all NOT_ASSESSED); pilot framework (ONE institution / ONE jurisdiction / ONE corridor + 33-item checklist); jurisdictional lifecycle (8 statuses); central-bank participation (3 modes); neutrality doctrine cross-reference.
+- **Section 6 (Economic & Monetary Architecture):** 6 MTQ economic functions (settlement, reserve, accounting/reference, issuance/redemption, liquidity, neutrality); full PAR = 1.00 USD definition (what PAR is, what PAR is NOT, why USD as anchor, the critical PAR-vs-peg distinction table); 9 economic layers (monetary, settlement, reserve, liquidity, governance, compliance, accounting, banking, application); 6 asset role separations (QUALIFYING_BACKING, INPUT, SETTLEMENT, LIQUIDITY, CONVERSION_ONLY, PROHIBITED) with role transition map; 4 backing classifications (QUALIFYING_INSTITUTIONAL_BACKING, MITHQAL_VERIFICATION, MITHQAL_RISK_VIEW, MITHQAL_CORPORATE_CASH); 3 MTQ components (MTQ-S settlement, MTQ-G gold, MTQ-Y yield) each with purpose/role/eligibility/issuance/redemption/risk/governance/accounting; three-book separation; constitutional corridors cross-reference; settlement-only currencies (10); core reserve currency basket (11); currency weight engine summary (6 stages); concentration policy.
+- **Section 7 (MTQ Architecture — Issuance + Finality):** Full 16-step BM-01 through BM-16 issuance pipeline, each step with 10 detail fields (initiating party, validating party, message, system, ledger event, compliance checks, settlement state, accounting state, finality, exception handling, audit evidence); Finality-Before-Mint §54 hard invariant; mandatory 8-step finality sequence; what may NEVER trigger a mint; all 7 enforcement layers (L1_API through L7_SMART_CONTRACT) with full status matrix (Designed/Implemented/Integrated/Enforced/Tested/Sandbox/Inst./Prod.); all 10 bypass test routes (DIRECT_API_CALL_WITHOUT_AUTH, WORKFLOW_SKIP_BM15, POLICY_OVERRIDE_BY_COMMERCIAL, UNSIGNED_AUTHORIZATION, LEDGER_SKIP_FINALIZED_STATE, DATABASE_PARTIAL_WRITE, SMART_CONTRACT_WITHOUT_ORACLE, EMERGENCY_OVERRIDE_WITHOUT_GOVERNANCE, ADMIN_BACKDOOR, INTERNAL_API_ROUTE) with route/description/expected blocker/blocked status/reason; bypass risk = MITIGATED_AT_CODE_LEVEL (was HIGH); full finalityGate() function; prohibited mint types (8); revenue sequence rule.
+- **Section 8 (Reserve Architecture §V25.2 CONTROLLING):** Strategic coverage target 130% with 4 reasons + operational meaning + S=$100M example; policy floor ≥105% + absolute floor ≥100% with 4 RR statuses (STRATEGIC/DEFENSIVE/EMERGENCY/INSOLVENT); normal composition 80% fiat / 18% gold / 2% digital with reasoning; front-line 50% vs strategic 30% fiat split with operational distinction; emergency resilience capacity ≤15% SEPARATE with 5 eligibility criteria + qualification test + activation protocol + ILPS subset relationship; reserve valuation R_m/R_a/R_l with full formulas + numerical example; counterparty adjustment C_a = Credit × Jurisdiction × Operational (clamped 0 < C ≤ 1); three NAVs NAV_m/NAV_l/NAV_s (with spec notation note distinguishing NAV_l ↔ R_a vs R_l); coverage ratios RR/FSCR/LCR with thresholds + statuses + notation reconciliation for FSCR; constitutional corridors (70-85%/15-25%/0-5%) + adaptive stress targets; full backing breakdown example S=$100M → $130M total with all components; 4 what-if scenarios (A: currency -20%, B: gold -20%, C: digital -50%, D: digital→0) with full numerical calculations showing all preserve solvency; full currency weight table (11 currencies); USD effective exposure (23.54% < 35% ceiling); gold policy (18% target, 15-25% corridor, silver conditional 3% currently 0%); digital policy (D_normal 2%, D_operational 3%, D_max 5%, D_emergency 0%, DRQS Core 7.5, DRQS Conditional 6, algorithmic excluded); 6-asset digital universe (USDC, USDP, EURC, BUIDL core; DAI conditional; USDT excluded); 4 conflict reconciliations (Conflict-1 RR target, Conflict-2 sleeve composition, Conflict-3 digital target, Conflict-4 per-currency cap); full final equation system (§50, 17 equations).
+
+### Verification
+
+- Reference values match `/tmp/blueprint_reference.json` exactly:
+  - par=1, RR=1.3, fiat=0.8, gold=0.18, digital=0.02, emergency=0.15 ✓
+  - corridors fiat 70-85%, bullion 15-25%, digital 0-5% ✓
+  - concentration preferred 15%, hard max 20%, USD ceiling 35%, sanity ceiling 60%, floor 0.5% ✓
+  - 11 core reserve currencies + 10 settlement-only currencies ✓
+  - gold policy target 18%, preferred lower 15%, op upper 21-22%, silver max 3% (currently 0) ✓
+  - digital policy D_normal 2%, D_operational 3%, D_max 5%, D_emergency 0%, DRQS Core 7.5, DRQS Conditional 6, algorithmic excluded ✓
+  - 6 digital universe assets with DRQS scores ✓
+  - USD effective 23.54% < 35% ceiling, not breached ✓
+  - 11 currency weights summing to 100% ✓
+  - 4 what-if scenarios with exact RR_before/after/loss values ✓
+  - 4 conflict reconciliations implemented ✓
+  - 7 finality layers all enforced ✓
+  - 10 bypass routes all blocked ✓
+  - bypassRisk = MITIGATED_AT_CODE_LEVEL ✓
+- All cross-references to source files included in Appendix B.
+- Honest state discipline preserved: NO institutional validation claimed; final status = APPROVED CANDIDATE FOR CONTROLLED TESTING — NOT PRODUCTION-AUTHORIZED throughout.
+
+### Stage Summary
+
+- ✅ 1 NEW FILE: `/home/z/my-project/blueprint_parts/part02.md` (3,624 lines)
+- ✅ ALL 4 SECTIONS FULLY EXPANDED (5, 6, 7, 8)
+- ✅ SINGLE SOURCE OF TRUTH for Sections 5-8
+- ✅ All numeric values match `/tmp/blueprint_reference.json`
+- ✅ Honest state discipline preserved (no inflation)
+- ✅ No older conflicting versions retained (per §49 reconciliation)
+- ✅ Cross-references to all source modules in Appendix B
+- ✅ Disclaimer preserved (CONTROLLED INSTITUTIONAL DOCUMENT · NOT A LICENSE · NOT A LEGAL OPINION)
+
+
+---
+
+## Task ID: BP-SEC-01 — Build Blueprint Part 01 (Sections 0-4)
+
+**Date:** 2026-Q1 (per worklog cadence)
+**Agent:** Chief Documentation Architect + Constitutional Engineer + Single Source of
+Truth Coordinator.
+**Scope:** Build the fully expanded Sections 0-4 of the MITHQAL Master Blueprint
+v25.2 as the Single Source of Truth. Write to
+`/home/z/my-project/blueprint_parts/part01.md`.
+
+### Inputs Read
+- `/tmp/blueprint_reference.json` (1,801 lines) — all extracted §V25.2 values:
+  reserve parameters, finality enforcement layers, organizational structure,
+  honest state, institutional engagement model, OS workflow, corridor examples,
+  tokenization, simulator results.
+- `/home/z/my-project/docs/blueprint/mithqal-v25-FINAL-blueprint.md` — original
+  canonical blueprint (79,068 lines). Reviewed §V25.0.0 (17 execution rules),
+  §V25.0.1 (canonical identity), §V25.0.3 (15-step issuance pipeline),
+  §V25.2.18 (final COO decision), §V25.2.19 (honest state declaration),
+  §V25.2.AUDIT-CLOSURE.0-13 (full audit closure including §74 honest state
+  aggregated and §94 final non-negotiable principles).
+- `/home/z/my-project/worklog.md` (last ~80 lines) — context for prior
+  institutional-engagement work, pilot model, and Build/Test/Validate discipline.
+- `src/lib/final-integrated-architecture.ts` — corporate structure (5 entities),
+  50 reconciliation principles, FV11-FV25 invariants.
+- `src/lib/institutional/types.ts` — `PILOT_FLOW` (9-step), `REVIEW_PACKAGE`
+  (10 items), `EVIDENCE_STATUS_LABELS`, `INSTITUTION_TYPES`, engagement types,
+  readiness checklist (33 items).
+
+### Output
+- **File:** `/home/z/my-project/blueprint_parts/part01.md`
+- **Lines:** 5,303
+- **Bytes:** 237,758
+- **Target:** 3,000-8,000 lines — MET (5,303 lines)
+- **Section count:** 5 fully expanded sections (0, 1, 2, 3, 4) + 3 appendices
+  (01.A reference summary, 01.B cross-reference table, 01.C change log)
+
+### Sections Built (summary)
+1. **Section 0 — Executive Summary** (~1,200 lines): preamble, MITHQAL at a
+   glance (40-row parameter table), principal architectural statement, locked
+   commercial flow, canonical identity, 8 sub-tables of key parameters
+   (reserve/solvency, composition, concentration, currency universe, finality,
+   workflow, organizational, validation/status), reserve composition diagram,
+   currency universe (11 core + 10 settlement), finality 7-layer summary,
+   organizational structure (5 entities with full responsibility tables),
+   aggregated honest state declaration (full §74), implementation status
+   summary, pilot-readiness summary, disclaimer.
+2. **Section 1 — Mission, Vision & Strategic Objective** (~700 lines): mission
+   statement (7 binding commitments), vision statement (8 vision elements),
+   strategic objective "Build. Test. Validate." (3-stage sequential discipline),
+   6 strategic pillars, pilot model 9-step flow (ONE REGULATED INSTITUTION →
+   INDEPENDENT / INSTITUTIONAL REVIEW), pilot scope constraint ("Broader
+   treasury holding is outside the initial pilot scope"), engagement discipline
+   (6 engagement types, 10 institutional types, 20 review artifacts, 8
+   will-not-promise items).
+3. **Section 2 — Constitutional Principles** (~1,500 lines): full enumeration
+   of all 17 non-negotiable invariants (no discretionary minting, no finality
+   ⇒ no mint, non-custodial, PAR-referenced, gold anchor, 80/18/2, 130%
+   backing, 15% emergency separate, 20% concentration cap, neutral settlement
+   unit, USDT excluded, three-book separation, no speculative trading, no
+   sanctions circumvention, jurisdiction-specific authorization, no
+   code-only-as-validated, no production authorization until gates passed),
+   evidence-state discipline (7 states with current-state matrix), full §74
+   honest state declaration with field-by-field explanation (30+ fields),
+   conflict resolution discipline (4 reconciled conflicts), authority matrix
+   (7 actors × 17 functions).
+4. **Section 3 — What MITHQAL Is** (~1,100 lines): canonical definition
+   (9 binding assertions), MTQ canonical definition, 10 things MITHQAL does
+   (eligibility, evidence verification, issuance capacity, authorization,
+   deterministic mint, ledger state machine, jurisdictional controls,
+   institutional traceability, five-way reconciliation, cryptographic
+   finality), three-actor rule (Bank requests / MITHQAL authorizes /
+   Technical system executes), full 16-step BM-01..BM-16 workflow diagram,
+   12-node architectural inventory, canonical cross-border flow, AED→SGD
+   worked example corridor (12 steps, 2,050ms total), five-way reconciliation
+   model (5 sources, 7 states, 4-source trust), 7-layer finality enforcement
+   (10 bypass routes tested), three-book economic separation.
+5. **Section 4 — What MITHQAL Is Not** (~1,700 lines): 26 distinct "MITHQAL is
+   NOT" categories (cryptocurrency, retail application, bank, stablecoin,
+   USD-pegged, sovereign currency, CBDC, central bank, exchange, brokerage,
+   market maker, lender, investment manager, wealth manager, trade-finance
+   institution, DeFi protocol, speculative vehicle, custodian by default,
+   SWIFT replacement, bank-core replacement, sovereign reserve asset holder,
+   financial guarantor, government authority, sanctions-evasion infrastructure,
+   anonymity network, token-issuance-for-profit scheme), each with prohibited
+   description, why-not rationale, and permitted language alternative;
+   reference table of 26 prohibited descriptions vs permitted alternatives;
+   permitted-vs-prohibited language matrix (identity / operational /
+   institutional / reserve); marketing discipline & boundary enforcement
+   (10 rules, 12 forbidden values, honest marketing standard, 17
+   constitutional boundary summary).
+
+### Single Source of Truth Discipline
+- ✅ All §V25.2 values used (130% / 80-18-2 / 20% cap / 35% USD ceiling / 11
+  core currencies / 7/7 finality layers / 0/13 institutional gates / NOT
+  PRODUCTION-AUTHORIZED / AMBER).
+- ✅ No mention of "v24.2.1", "v25.0", "v25.1" as older versions — written as
+  if architecture was always intended.
+- ✅ 5-entity organizational structure (Founder Shareholders → Holding →
+  [Operating · Technology] + Foundation).
+- ✅ Full §74 honest state declaration (30+ fields, all `false`/`0`/`PENDING`
+  values preserved).
+- ✅ Pilot model 9-step flow documented with "Broader treasury holding is
+  outside the initial pilot scope" boundary.
+- ✅ Three-actor rule ("Bank requests. MITHQAL authorizes. Technical system
+  executes.") prominent in Section 3.
+- ✅ Full 16-step BM-01..BM-16 settlement flow with diagram.
+- ✅ 7-state evidence discipline (DESIGNED → PRODUCTION_READY).
+- ✅ Each section fully expanded (target 500-1500 lines/section met:
+  Section 0 ~1,200 · Section 1 ~700 · Section 2 ~1,500 · Section 3 ~1,100 ·
+  Section 4 ~1,700).
+- ✅ Professional institutional language throughout.
+- ✅ Tables, structured requirements, and ASCII diagrams included.
+- ✅ Honest state discipline preserved (no inflation).
+- ✅ No older conflicting versions retained (per §49 reconciliation).
+- ✅ Cross-references to all source modules in Appendix B.
+- ✅ Disclaimer preserved (CONTROLLED INSTITUTIONAL DOCUMENT · NOT A LICENSE · NOT A LEGAL OPINION)
+
+---
+Task ID: BP-SEC-10
+Agent: Blueprint Section Builder (Sections 38-44)
+Task: Build sections 38-44 of the MITHQAL Master Blueprint v25.2 — write to /home/z/my-project/blueprint_parts/part10.md.
+
+Work Log:
+- Read /tmp/blueprint_reference.json (1,801 lines) for reference values (reserve parameters, currency weights, finality layers, status table, institutional cards, OS steps, corridor demo, ISO 20022, rails, tokenization, simulator).
+- Read original blueprint /home/z/my-project/docs/blueprint/mithqal-v25-FINAL-blueprint.md (79,067 lines) — searched for sections about Workflows, Testing, Production Readiness, Implementation Roadmap, Appendices. Located §V25.0.D.Q (Gold Acquisition 16-step workflow), §V25.0.D.S (Rebalancing 13-step), §V25.0.D.X (Bank Minting 16-step workflow BM-01..BM-16), §V25.0.D.AM (35 Test Scenarios INT-T01..INT-T35), §V25.0.5 (Neutral Cross-Border Settlement Flow — Japan → USA example), §V25.0.C.29 (Production Gate 9 conditions), §V25.2.AUDIT-CLOSURE (6 P1 frameworks delivered + finality 7/7 + contradiction scan clear), §V25.0.D.AT (Final Output Summary), §V25.1.GOV (Constitutional Governance).
+- Created /home/z/my-project/blueprint_parts/part10.md (6,445 lines, 28,374 words).
+- Built SEVEN fully-expanded sections (38-44):
+  * §38 — End-to-End Transaction Workflows (17 flows A-Q): for EACH flow, 12 dimensions covered (initiating party, validating party, message, system, ledger event, compliance checks, settlement state, accounting state, finality, exception handling, audit evidence, cross-references). Flows A-Q: Institutional Settlement Initiation, Bank-Side Compliance Attestation, MTQ Issuance/Allocation, MTQ Settlement, Receiving Institution Settlement, Redemption/Exit, Reserve Rebalancing, Exception/Failed Settlement, Compliance Rejection, Sanctions Screening Failure, Insufficient Funds, Bank Gateway Failure, Network Failure, Reconciliation Break, Emergency Suspension, Disaster Recovery, Governance Intervention. Includes §38.0 canonical flow template (settlement state machine, finality-before-mint invariant, 5-way reconciliation, three-book accounting, universal compliance gates) and §38.ROLLUP summary table.
+  * §39 — Testing Strategy: 21 testing categories (unit, integration, API, contract, bank gateway, ledger, reconciliation, reserve, accounting, security, penetration, DR, performance, scalability, fault injection, compliance, sanctions screening, transaction replay, duplicate, concurrency, settlement finality, cross-jurisdiction) each with what is tested, how, acceptance criteria, honest state. Plus §39.23 adversarial test scenarios (35 scenarios ADV-T01..ADV-T35), §39.24 reconciliation test plan (14 scenarios REC-T01..REC-T14), §39.25 DR/failure-injection test plan (15 scenarios DR-T01..DR-T15), §39.26 test rollup summary.
+  * §40 — Production Readiness Framework: 19+ checklist items across 8 categories (Architecture 3, Security 3, Compliance 2, Reserve 2, Accounting 2, Institutional 2, Infrastructure 2, Overall 4), each with what it means, how to verify, current status. All 0/19+ items NOT checked. 13 institutional validation gates (Gate 1-13, 0/13 passed). Path to production (10 ordered actions).
+  * §41 — Implementation Roadmap: 13 phases (Phase 0 Foundations, Phase 1 Core Ledger, Phase 2 Bank Gateway, Phase 3 Compliance, Phase 4 Reserve/Treasury, Phase 5 Institutional Settlement, Phase 6 Reconciliation, Phase 7 Security Hardening, Phase 8 Pilot Institutions, Phase 9 Jurisdiction Adapters, Phase 10 Global Interoperability, Phase 11 Production, Phase 12 Scale). Each phase has 11 dimensions (objective, deliverables, dependencies, technical/operational/legal/financial work, testing, acceptance criteria, risks, exit criteria).
+  * §42 — Open Items / TBD: 13 items that cannot responsibly be determined (legal opinions 0/8 jurisdictions, regulatory licenses 0, bank contracts 0, pilot transactions 0, independent assurance not contracted, three-book operational enforcement false, systemic risk live monitoring false, protected backing live cells 0, reserve quantitative validation pending, sandbox testing not conducted, penetration testing not conducted, DR testing not conducted, ΔCapital_min $15.815M unresolved). Each item with what is missing, why it matters, what is needed to resolve.
+  * §43 — Appendices A-H: Appendix A (complete equation system, 20 formula groups), Appendix B (currency weight reference table — 11 currencies with all factors C, K, L, capped), Appendix C (digital universe reference table — 6 assets USDC/USDP/EURC/BUIDL/DAI/USDT with DRQS), Appendix D (bank integration node reference — 12 nodes BNK/MBG/MTH + 9 flows + 8 rails), Appendix E (ISO 20022 message reference — 9 messages), Appendix F (concentration limits reference — 4 dimensions + 13-dimension systemic exposure + USD effective exposure), Appendix G (honest state full declaration — 50+ honest state fields + what MITHQAL does/does NOT claim), Appendix H (contact information — meltonsy@icloud.com + disclaimer).
+  * §44 — Final Declaration: single source of truth declaration, conflict resolution (4 conflicts: RR 120%→130%, sleeves→80/18/2, digital 3.5%→2%, per-currency cap 60%→20% operative), critical version rule (DO NOT create v25.3/v26/fork/redesign), honest state summary, MITHQAL identity (what is/is NOT), MTQ identity (what is/is NOT), disclaimer (CONTROLLED INSTITUTIONAL DOCUMENT • NOT A LICENSE • NOT A LEGAL OPINION), final status: APPROVED CANDIDATE FOR CONTROLLED TESTING — NOT PRODUCTION-AUTHORIZED, path to production authorization (14 requirements).
+
+KEY HONEST-STATE PRESERVATION:
+- All sections preserve honest state throughout: NO false production authorization, NO inflated status, NO fake evidence.
+- Final status preserved: "APPROVED CANDIDATE FOR CONTROLLED TESTING — NOT PRODUCTION-AUTHORIZED"
+- All 17 workflows explicitly state the universal rules (finality-before-mint, 5-way reconciliation, three-book separation, 12-check compliance gate, immutable audit trail, honest state).
+- All 21 test categories carry honest status (most IMPLEMENTED at code level, NONE at INSTITUTIONALLY_VALIDATED or PRODUCTION_VALIDATED).
+- Production readiness framework: 0/19+ items checked, 0/13 gates passed, ALL 10 standing blockers OPEN.
+- Implementation roadmap: Phases 0-7 COMPLETE at code level, Phase 8+ PENDING, Production (Phase 11) BLOCKED.
+- Open items: all 13 items ABSENT (no legal opinions, no licenses, no banks, no custodians, no pilot transactions, no independent audit, no penetration testing, no DR testing).
+- Appendices: all reference values match /tmp/blueprint_reference.json (currency weights, digital universe, ISO 20022 messages, settlement rails, USD effective exposure 23.54%).
+- Final declaration: single source of truth, conflict resolution, honest state, disclaimer, final status.
+
+VERIFICATION:
+- File path: /home/z/my-project/blueprint_parts/part10.md
+- Line count: 6,445 lines (within target 3,000-8,000)
+- Word count: 28,374 words
+- All 7 sections (38-44) fully expanded and present
+- Section 38: 17 workflows (A-Q), each with 12 dimensions + §38.0 canonical flow template + §38.ROLLUP
+- Section 39: 22 categories (21 + cross-jurisdiction) + adversarial (35 scenarios) + reconciliation test plan (14) + DR test plan (15) + rollup
+- Section 40: 19+ checklist items + 13 institutional validation gates + path to production
+- Section 41: 13 phases (Phase 0-12) each with 11 dimensions + rollup
+- Section 42: 13 open items each with 3 dimensions (what's missing, why it matters, what's needed) + rollup
+- Section 43: 8 appendices (A-H) covering equations, currencies, digital universe, nodes, ISO 20022, concentration limits, honest state, contact
+- Section 44: final declaration with single source of truth, conflict resolution, honest state, disclaimer, final status
+- Honest state preserved: no inflated status, no false production claims, all "PENDING"/"NOT_CONDUCTED"/"0/8"/"0/13"/"false"/"NOT_AUTHORIZED" statuses accurately reflected
+- Final status: APPROVED CANDIDATE FOR CONTROLLED TESTING — NOT PRODUCTION-AUTHORIZED
+- Disclaimer preserved: "CONTROLLED INSTITUTIONAL DOCUMENT • NOT A LICENSE • NOT A LEGAL OPINION."
+- Contact email preserved: meltonsy@icloud.com
+
+Stage Summary:
+- ✅ Created /home/z/my-project/blueprint_parts/part10.md (6,445 lines, 28,374 words)
+- ✅ All 7 sections (38-44) fully expanded and present
+- ✅ Honest state preserved throughout (no inflation, no false claims)
+- ✅ Final status preserved: APPROVED CANDIDATE FOR CONTROLLED TESTING — NOT PRODUCTION-AUTHORIZED
+- ✅ Single source of truth declaration preserved
+- ✅ Conflict resolution (4 conflicts) preserved
+- ✅ Critical version rule preserved (no v25.3, no v26, no fork)
+- ✅ All reference values match /tmp/blueprint_reference.json
+- ✅ Disclaimer preserved
+- ✅ Contact email preserved (meltonsy@icloud.com)
+
+---
+
+## Task ID: BP-SEC-07 — Build Blueprint Sections 24-27
+
+**Agent:** general-purpose sub-agent
+**Date:** 2025-08-22
+**Output file:** /home/z/my-project/blueprint_parts/part07.md
+**Line count:** 4,879 lines
+
+### Task
+Build sections 24-27 of the MITHQAL Master Blueprint v25.2 (Part 07).
+Fully expanded, single source of truth, no older versions.
+
+### Inputs read
+- /tmp/blueprint_reference.json — institutional, reserve, simulator,
+  conflicts data
+- /home/z/my-project/src/lib/institutional/types.ts — full institutional
+  data models (399 lines: 10 institution cards, 6 engagement types,
+  33-item checklist, 10 readiness categories, 20 provides items, 8
+  jurisdiction statuses, 9-step pilot flow, 10-item review package,
+  evidence status labels, contact config, security notice, disclaimer)
+- /home/z/my-project/src/lib/contradiction-scan.ts — full contradiction
+  scan implementation (336 lines: 17 contradiction patterns, classifyMatch
+  function, scanFileContent, runContradictionScan, ContradictionScanReport)
+
+### Sections built
+
+**§24 — Institutional Engagement (~2,219 lines)**
+- Hero: "Build. Test. Validate." with subheadline + secondary line
+- §24.1: 10 institution cards (central banks, regulated banks, NFIs,
+  payment infrastructure, government authorities, regulators, technology
+  providers, cybersecurity assurance, legal institutions, standards/
+  research) — each with who they are, what MITHQAL may ask them to
+  review, what engagement is appropriate, what is NOT appropriate at
+  first contact (3+ sentences each)
+- §24.2: 6 engagement types (Architecture Review, Regulatory/Legal
+  Review, Sandbox Testing, Bank Integration Pilot, Settlement Pilot,
+  Independent Assurance) — each with purpose, institution inputs, MITHQAL
+  inputs, expected evidence, status (PROPOSED)
+- §24.3: 33-item institutional readiness checklist, grouped by 11
+  categories, each item explained
+- §24.4: 10 readiness categories scorecard with 5-state ladder
+  (NOT_ASSESSED → IN_REVIEW → EVIDENCE_REQUIRED → READY_FOR_SANDBOX →
+  VALIDATED)
+- §24.5: 20-item MITHQAL Provides catalogue, each explained, grouped
+  into Architecture/Boundary, Settlement/Issuance, Reconciliation/
+  Resilience, Test Plans, Pilot Framework
+- §24.6: Jurisdiction Support Center — all 16 fields explained
+- §24.7: Jurisdiction workflow — 8 statuses (SUBMITTED → INITIAL_REVIEW
+  → JURISDICTION_ASSESSMENT → LEGAL_REGULATORY_REVIEW → TECHNICAL_REVIEW
+  → SANDBOX_CANDIDATE → PILOT_CANDIDATE → INSTITUTIONALLY_VALIDATED),
+  with explicit rule "never becomes 'supported' by form submission"
+- §24.8: 5-step intake form (Organization → Contact → Engagement →
+  Evaluation → Authorization), mailto confirmation, no backend, no
+  persistence
+- §24.9: Security notice (full text), what counts as a secret, what may
+  be submitted
+- §24.10: TECH_CAPABILITIES catalogue (8 capabilities: API/REST, ISO
+  20022, Host-to-Host, SFTP, Payment Gateway, Treasury, ERP, Other)
+- §24.11: 9-step Pilot Model flow (ONE REGULATED INSTITUTION → ONE
+  JURISDICTION → ONE CORRIDOR → INSTITUTIONAL CORPORATES → CONTROLLED
+  TEST ENVIRONMENT → MTQ PASS-THROUGH SETTLEMENT → RECONCILIATION →
+  SECURITY/RESILIENCE TESTING → INDEPENDENT/INSTITUTIONAL REVIEW)
+- §24.12: 10-item Institutional Review Package (Architecture Review
+  Package, Integration/API Package, Security Questionnaire, Legal/
+  Regulatory Questionnaire, Pilot Test Plan, Test-Case Matrix,
+  Reconciliation Evidence Plan, Incident/DR Test Plan, Acceptance
+  Criteria, Institutional Sign-Off Record)
+- §24.13: Evidence Status Discipline — 5 statuses (PROPOSED, UNDER_REVIEW,
+  EVIDENCE_REQUIRED, SANDBOX_CANDIDATE, VALIDATED) + 10 forbidden values
+  (APPROVED, LICENSED, CERTIFIED, ACCREDITED, ENDORSED, GUARANTEED,
+  PARTNER, PREMIUM, TRUSTED, VERIFIED-as-status)
+- §24.14: Disclaimer (CONTROLLED INSTITUTIONAL DOCUMENT • NOT A LICENSE
+  • NOT A LEGAL OPINION.)
+- §24.15: Contact (meltonsy@icloud.com), what happens/doesn't happen
+  after contact
+- §24.16: ILLUSTRATIVE EXAMPLE — A central bank expressing interest,
+  going through the engagement process (initial contact →
+  acknowledgement → architecture review call → engagement status →
+  subsequent engagement → jurisdiction workflow → what does NOT happen
+  → conclusion)
+
+**§25 — What-If Scenarios & Stress Testing (~981 lines)**
+- §25.0: Foundational values table (canonical values from reserve + simulator
+  configs) + honest state
+- §25.1: 4 canonical scenarios with full calculations:
+  - A: 15%-weighted currency −20% (RR 122.29% → 118.62%, loss 3.67M)
+  - B: Gold −20% (RR 122.29% → 117.89%, loss 4.40M)
+  - C: Digital −50% (RR 122.29% → 121.07%, loss 1.22M)
+  - D: Digital → 0 (RR 122.29% → 119.85%, loss 2.45M)
+- §25.2: Additional stress tests
+  - 5 preset shocks (Gold −20%, USD −10%, EUR −15%, Digital −50%,
+    Combined −12%) with full RR/FSCR/loss calculations
+  - Extended fiat shock sweep (10%, 20%, 30%, 40%, 50%)
+  - Combined shock composition breakdown
+  - Counterparty failure (custodian, bank, operator)
+  - Geopolitical shock (currency convertibility, gold transport,
+    digital jurisdiction)
+- §25.3: Reserve Simulator — Monte Carlo with 1,000 iterations
+  - Configuration: base RR 1.2365, base FSCR 1.1603, NAV_m 1.30, supply/liability 100M
+  - Output: RR_mean 1.1777, RR_p5 1.1412, RR_p50 1.1796, RR_p95 1.2079,
+    RR_min 1.1218, worst scenario "USD-16% + EUR-12% + CHF-2% + 8 more"
+  - FSCR_mean 1.1051, P(RR<100%) 0.12%, P(RR<130%) 78.43%
+  - Distribution shape (left-skewed, unimodal, bounded)
+  - 5 preset shocks recap
+  - 12 interactive controls (sliders, selectors, toggles, run button)
+  - Simulator methodology (7 steps)
+- §25.4: Response actions when stress is detected
+  - Minting controls: 3 stages (Reduced < NAV_l, Throttled < 115%,
+    Frozen < 105%)
+  - Rebalancing triggers: 4 (fiat corridor, bullion corridor, digital
+    corridor, per-currency cap)
+  - Emergency actions: 5 (minting freeze, digital liquidation, custodian
+    switch, currency switch, regulator notification)
+- §25.5: ILLUSTRATIVE EXAMPLE — Running Monte Carlo with gold at $3,500/oz
+  (setup, reserve composition shift, gold sleeve hits bullion corridor
+  upper zone, MC results interpretation, what does NOT happen, conclusion)
+- §25.6: Resilience summary table
+
+**§26 — Blueprint Conflict Reconciliation (~575 lines)**
+- §26.0: Reconciliation principles (3) + conflict inventory
+- §26.1: Conflict-1 — Reserve Ratio target (RR: 120% → 130%)
+  - What the conflict was, controlling position, how resolved, status
+    IMPLEMENTED, implementation evidence (5 sources)
+- §26.2: Conflict-2 — Reserve sleeve composition (Portfolio-B → 80/18/2)
+  - Tokenized gold is conditional separate exposure, not auto-added to 18%
+- §26.3: Conflict-3 — Digital liquidity target (3.5% → 2% normal)
+  - Individual asset weights are OPTIMIZER OUTPUTS, not hard-coded
+    (targetWeight = 0 in digitalUniverse)
+- §26.4: Conflict-4 — Per-currency constitutional cap (60% → 15%/20%)
+  - 60% retained ONLY as constitutional sanity ceiling; USD-specific
+    ceiling 35% (current USD effective exposure 23.54%, not breached)
+- §26.5: Why reconciliation was needed (historical versions had conflicting
+  values; risks of unreconciled conflicts)
+- §26.6: How conflicts were resolved (latest approved architecture takes
+  precedence; reconciliation authority; scope)
+- §26.7: All four conflicts — IMPLEMENTED status summary table
+
+**§27 — Contradiction Audit (~1,100 lines)**
+- §27.0: Section purpose + honest state declaration (static code scan,
+  not runtime assertion)
+- §27.1: All 17 contradiction patterns (C01–C17) — each with ID, pattern,
+  description, expected resolution, regex, what it checks, why it
+  matters, classification rule
+  - C01–C03: MITHQAL ownership/guarantee/custody of backing (FALSE state)
+  - C04: Bank unrestricted minting (Bank requests, MITHQAL authorizes)
+  - C05: MTQ USD peg (PAR must not become hidden USD peg)
+  - C06: MTQ retail
+  - C07: Exchange functionality
+  - C08: SWIFT replacement
+  - C09: Bank core replacement
+  - C10–C12: Stablecoin/settlement/liquidity automatically as
+    reserve/backing
+  - C13: Foundation mint authority
+  - C14: Holding Company backing
+  - C15: Technology Company financial authority
+  - C16: Operating Company proprietary reserve trading
+  - C17: Historical reserve parameters overriding current policy
+    (the 4 conflicts from §26)
+- §27.2: Scan methodology (implementation, classification logic, static
+  code scan, file-by-file scan)
+- §27.3: Classification — TRUE_CONTRADICTION vs
+  FALSE_POSITIVE_PROHIBITION vs FALSE_POSITIVE_FALSE_STATE; resolution
+  status rules
+- §27.4: Results — 0 unresolved, target met
+  - Per-pattern results table (17 patterns, all RESOLVED)
+  - Aggregate results (0 TRUE contradictions, 0 unresolved)
+  - Honest state (static code scan = true, runtime assertion = false)
+  - Final status: §77 CONTRADICTION SCAN — ZERO UNRESOLVED
+    ARCHITECTURAL CONTRADICTIONS (target met), color EMERALD
+- §27.5: Terminology audit
+  - Canonical terms (strategic RR target, fiat/gold/digital sleeves,
+    MTQ, MTQSettlementInstruction, Finality-Before-Mint Control Spec,
+    Protected Backing Cell Model, Three-Book Separation Model,
+    Five-Way Reconciliation Model, MBG Integration Model, preferred/
+    hard effective, USD effective ceiling, constitutional sanity ceiling,
+    institutional engagement, PROPOSED/UNDER_REVIEW/EVIDENCE_REQUIRED/
+    SANDBOX_CANDIDATE/VALIDATED, pilot model, meltonsy@icloud.com,
+    disclaimer)
+  - Prohibited alternatives (partner, APPROVED, LICENSED, CERTIFIED,
+    ACCREDITED, ENDORSED, GUARANTEED, PREMIUM, TRUSTED, VERIFIED-as-
+    status, USD peg, retail cryptocurrency, exchange, SWIFT replacement,
+    core banking replacement, Portfolio-B-as-controlling, RR=120%-
+    as-controlling, 3.5%-as-controlling, 60%-as-controlling)
+- §27.6: 12 validation checks A through L — each with check description,
+  pass criterion, PASS result
+  - A: Strategic RR target consistency
+  - B: Reserve sleeve composition consistency
+  - C: Digital liquidity target consistency
+  - D: Per-currency cap consistency
+  - E: Finality-Before-Mint Control Specification
+  - F: Protected Backing Cell Model
+  - G: Three-Book Separation Model
+  - H: Five-Way Reconciliation Model
+  - I: Bank authorization flow
+  - J: Institutional-only posture
+  - K: Non-exchange / non-SWIFT-replacement / non-core-banking-replacement
+  - L: Settlement ≠ reserve, liquidity ≠ backing
+- §27.7: Final status + honest state reaffirmation
+- §27.8: Cross-reference summary
+
+### Verification
+- File written to /home/z/my-project/blueprint_parts/part07.md
+- Total line count: 4,879 lines (target: 3,000-8,000 ✓)
+- All values taken from /tmp/blueprint_reference.json (single source of
+  truth)
+- All institutional data taken from src/lib/institutional/types.ts
+- All contradiction patterns taken from src/lib/contradiction-scan.ts
+- All 4 conflicts documented as IMPLEMENTED
+- All 17 contradiction patterns documented with regex and expected
+  resolution
+- All 12 validation checks (A-L) PASS
+- Final status: §77 CONTRADICTION SCAN — ZERO UNRESOLVED ARCHITECTURAL
+  CONTRADICTIONS (target met), color EMERALD
+
+### Files modified
+- /home/z/my-project/blueprint_parts/part07.md (created, 4,879 lines)
+- /home/z/my-project/worklog.md (this entry appended)
+
+Stage Summary:
+- ✅ Section 24 (Institutional Engagement) — fully expanded, ~2,219 lines
+- ✅ Section 25 (What-If Scenarios & Stress Testing) — fully expanded, ~981 lines
+- ✅ Section 26 (Blueprint Conflict Reconciliation) — fully expanded, ~575 lines
+- ✅ Section 27 (Contradiction Audit) — fully expanded, ~1,100 lines
+- ✅ Single source of truth maintained (no older versions referenced as
+  controlling)
+- ✅ All values sourced from /tmp/blueprint_reference.json
+- ✅ Honest state preserved (static code scan, not runtime assertion)
+- ✅ Target line count met (4,879 / 3,000-8,000 range)
+
+
+---
+Task ID: BP-SEC-08
+Agent: Blueprint Section Builder (Sections 28-31)
+Task: Build blueprint sections 28-31 (Implementation Status Report, Final Equation System, Version Control, Glossary & Terminology) and write to /home/z/my-project/blueprint_parts/part08.md.
+
+Work Log:
+- Read /tmp/blueprint_reference.json — full structure (top-level keys: reserve, finality, status, institutional, os, corridor, tokenization, simulator). Extracted:
+  • reserve.equations: 17 equation strings (liability, market/adjusted/stress reserve, RR, FSCR, structural weight C_i, momentum M_i, mean-reversion R_i, EWMA, attenuation A_t, k-factor K_i, liquidity overlay L_i, raw/normalized/final weight, sum constraint, composition B/G/D, corridors).
+  • reserve.exampleReserve: full walk-through inputs (L=$100M, R_m=$130M, R_a=$122,291,158.24, R_l=$113,672,586.42, NAV_m/l/s, RR=1.2229, FSCR=1.1367, LCR=1.30, HQLA=$65M, NetOutflow=$50M).
+  • reserve.whatIf: 4 scenarios (15%-ccy -20%, gold -20%, digital -50%, digital -100%) with full before/after RR and loss numbers.
+  • status.honest: 32 honest-state fields (matches implementation-status-report.ts getHonestState74()).
+  • status.table: 10 requirements × 9 columns (matches IMPLEMENTATION_STATUS_TABLE).
+  • finality.layers: 7 layers L1-L7 (API, Workflow, Policy, Authorization, Ledger State Machine, Database TX State, Smart Contract) + bypass.attempts (10 routes, all blocked).
+  • reserve.digitalUniverse: 6 stablecoins with DRQS scores.
+  • reserve.weights: 11 currencies with C_i/K_i/L_i.
+- Read /home/z/my-project/src/lib/implementation-status-report.ts (320 lines):
+  • IMPLEMENTATION_STATUS_TABLE (10 entries: §47 PBC, §48 Bank Default, §49 Legal Liability, §50 Licensing Matrix, §51 Three-Book, §52 Systemic Exposure, §54 Finality, §77 Contradiction Scan, §§16-46 Reserve Math Spec, §88 Blueprint Update).
+  • getHonestState74(): 32 fields, all matching reference JSON.
+  • INSTITUTIONAL_VALIDATION_GATES (13 entries G01-G13: pilot legal opinion, licensing, bank contract, default/resolution contract, first bank integration, backing evidence, PBC exists, three-book operational, finality complete, sanctions screening live, reconciliation operates, independent assurance, controlled pilot transactions).
+  • FINAL_ACCEPTANCE_CRITERIA (23 entries AC01-AC23, 19 met / 4 unmet).
+  • generateImplementationStatusReport(): aggregates to acceptanceRate, institutionalGatesPassed=0, finalStatusColor=AMBER, finalStatus string, principles array.
+- Read /home/z/my-project/src/lib/protected-backing-cell.ts (grep): confirmed AvailableBacking formula (RecognizedBacking − EncumberedBacking − AlreadyAllocatedBacking), 17-field PBC schema, anti-double-count enforcement at mutation + audit.
+- Read /home/z/my-project/src/lib/mtq-final-reserve-spec.ts (grep): confirmed SDC_Ag, TGRS, DRQS, StressDRQS, EffectiveDRQS, BRI formulas; §18 currency-fall (RR' = RR·(1−w_i·d)), §19 weight drift (w_i' = w_i·(1−d)/(1−w_i·d)), §25 gold-fall (RR' = RR·(1−0.18·d_G)); §31 DRQS weights (0.20/0.15/0.15/0.15/0.10/0.10/0.10/0.05); §35 StressDRQS_i = DRQS_i·(1−SF_i); §29 TGRS weights (0.20/0.15/0.15/0.10/0.10/0.10/0.08/0.05/0.05/0.02) with H_TG = max(5%, 5%+(10−TGRS)·0.5%); §27 computeSilverSDC with NetResilienceGain − NetCost; computeBRI(gold_0, gold_T, ...) with 0.90/0.10 weights.
+- Inspected existing MITHQAL_MASTER_BLUEPRINT_SOT.md and worklog.md to ensure tone/format consistency.
+- Created /home/z/my-project/blueprint_parts/part08.md (3358 lines) with 4 fully-expanded sections:
+
+Section 28 — Implementation Status Report (§87) [~900 lines]:
+  • 28.1 Purpose and Authority (Module ID v25.2-implementation-status-1.0, §87/§74/§91/§94 references).
+  • 28.2 Evidence-State Discipline (§73) — 11 permitted evidence states with definitions.
+  • 28.3 Reporting Principles (§94) — 6 non-inflation rules with plain-English meaning + forbidden patterns table + 6 anti-inflation examples.
+  • 28.4 Full §87 Status Table — 10 Requirements × 9 Columns:
+    - R1 §47 PBC (1133 lines, 4 SIMULATED cells, LEGAL_VALIDATION_PENDING, 0 live cells).
+    - R2 §48 Bank Default (1044 lines, 8 states, CONTRACT_VALIDATION_PENDING).
+    - R3 §49 Legal Liability (724 lines, 8 jurisdictions, LEGAL_VALIDATION_PENDING, 0 opinions).
+    - R4 §50 Licensing Matrix (784 lines, 72 entries, LICENSING_VALIDATION_PENDING, 0 licenses).
+    - R5 §51 Three-Book Separation (975 lines, 4 anti-commingling tests, CONTRACT_VALIDATION_PENDING).
+    - R6 §52 Systemic Exposure (1295 lines, 13 dimensions, MODEL_VALIDATION_PENDING).
+    - R7 §54 Finality-Before-Mint (7/7 layers enforced, 10/10 bypass routes blocked, MITIGATED_AT_CODE_LEVEL).
+    - R8 §77 Contradiction Scan (17 patterns, 0 unresolved, static analysis).
+    - R9 §§16-46 Reserve Math Spec (1234 lines, 50 directive sections, MODEL_VALIDATION_PENDING, CANDIDATE_MODEL_VALIDATION_PENDING).
+    - R10 §88 Blueprint Update (idempotent).
+    - Compact aggregated matrix.
+  • 28.5 Acceptance Criteria — 19/23 Met (83%): all 23 AC01-AC23 listed with category/criterion/met/evidence; 4 unmet (AC06 bank subledger, AC07 PBC operational, AC10 evidence verifiable, AC14 three-ledger operational) with detailed paths-to-met; aggregate statistics.
+  • 28.6 Institutional Validation Gates — 0/13 Passed: all 13 gates G01-G13 listed with ID/gate/status/evidence; gate statistics (0 passed, 2 TESTED, 1 IMPLEMENTED, 7 DESIGNED, 3 *_PENDING); critical path analysis (G01 → G02 → G03 → G04/G05/G08 → G06/G07 → G09 → G10/G11 → G12 → G13); per-gate semantics with required artifact, current evidence, dependencies, illustrative cost/timeline.
+  • 28.7 §74 Honest State Declaration — All 30+ Fields: 32-field table (honest=true, productionAuthorized=false, noMithqalOwnedReserve=true, noMithqalFinancialGuarantee=true, threeBookDesign/Operational/Enforced=true/false/false, systemicRisk*, finalityLayersDesigned/Required/Enforced=7/7/7, legalRegistry*, licensingMatrix*, bankDefault*, protectedBackingLiveCells=0, reservePolicyStatus=CANDIDATE_MODEL_VALIDATION_PENDING, etc.); categorical summary; honest sentence.
+  • 28.8 Final Status and Operating Posture: finalStatus string, AMBER color, allowed/disallowed operations, required next milestone (G01).
+  • 28.9 Illustrative Example — Moving From 0/13 Gates to 1/13: 7-step worked example for passing G01 (select ADGM pilot jurisdiction → engage tier-1 counsel → prepare briefing pack → counsel review/iterate → opinion issued, gate updates → consequences → re-declare honest state); cost/timeline/risk indicators; path from 1/13 to 13/13 (18-48 months, $2M-$10M illustrative).
+  • 28.10 Status Color Legend: EMERALD/AMBER/RED definitions with triggers and transition rules.
+  • 28.11 Status Anti-Patterns (Forbidden): 18 forbidden patterns + the 2 permitted status sentences + what to do if asked an inflationary question.
+
+Section 29 — Final Equation System (§50) [~1300 lines]:
+  • 29.1 Scope and Authority — controls over any conflicting document; notation conventions; variable index summary (35 variables with type/range/section-defined).
+  • 29.2 Liability and Supply: E1 L = S × PAR (PAR=1.0 constant; why PAR is constant).
+  • 29.3 Reserve Valuation Triplet: E2 R_m = Σ Q_a·P_a, E3 R_a = Σ Q_a·P_a·(1−H_a)·C_a, E4 R_l = Σ Q_a·P_a·(1−H_a)·C_a·S_a; three NAVs (NAV_m/l/s).
+  • 29.4 Reserve Ratios: E5 RR = R_a/L (bounds: ≥1.00 solvency, ≥1.05 policy, ≥1.30 strategic), E6 FSCR = R_l/L (notation reconciliation: spec §40 writes L/R_l but thresholds require R_l/L — implemented as R_l/L per banking convention), E7 LCR = HQLA/NetOutflow_30d.
+  • 29.5 Currency Structural Weight: E8 C_i = 0.50·COFER + 0.40·SWIFT + 0.10·BIS (with rationale for new formula vs old 0.35/0.25/0.20/0.20), E9 M_i = P_i(t)/P_i(t−12m) bounded [0.95,1.05], E10 R_i = 1+0.05·(LTA_i−C_i) bounded [0.98,1.02], E11 σ²_t = λ·σ²_(t−1)+(1−λ)·r²_t with λ=0.94, E12 A_t piecewise (1.0/linear/0.5 on σ ≤2%/2-5%/≥5%), E13 K_i = 1+A_t·(M_i·R_i−1).
+  • 29.6 K-Factor/Weight Pipeline: E14 L_i liquidity overlay clamped ±5%, E15 W_raw,i = C_i·K_i·L_i, E16 W_i^norm proportional (NOT softmax), E17 W_i^final apply(eligibility→concentration→floor→stress→geopolitical→liquidity→jurisdiction→verification), E18 Σ W_i^final = 1.
+  • 29.7 Reserve Composition: E19 B_t=80%/G_t=18%/D_t=2%, E20 corridors (70-85%/15-25%/0-5%), E21 digital tiers (2%/3%/5%/0%), E22 emergency sleeve ≤15% separate.
+  • 29.8 Currency Fall: E23 RR' = RR·(1−w_i·d), E24 w_i' = w_i·(1−d)/(1−w_i·d) with derivation showing Σ w_j' = 1; worked sub-example for 15%-ccy/-20%.
+  • 29.9 Gold Fall: E25 RR' = RR·(1−0.18·d_G); liquidation sequence (digital → fiat → gold last).
+  • 29.10 Silver SDC: E26 SDC_Ag = NetResilienceGain − NetCost; admit if > 0, max 3%; tested assumptions showing SDC_Ag = −0.0020 (≤ 0 → silver excluded).
+  • 29.11 Tokenized Gold TGRS: E27 TGRS = 10-factor weighted sum (0.20/0.15/0.15/0.10/0.10/0.10/0.08/0.05/0.05/0.02); thresholds ELIGIBLE ≥8.0/CONDITIONAL 6-8/REJECTED <6.0; H_TG = max(5%, 5%+(10−TGRS)·0.5%); tested PAXG example TGRS=8.43 ELIGIBLE.
+  • 29.12 BRI: E28 BRI = (gold_0/gold_T)^0.90 · [silver term if held]; ADVISORY ONLY.
+  • 29.13 DRQS: E29 DRQS = 8-factor weighted sum (0.20/0.15/0.15/0.15/0.10/0.10/0.10/0.05); thresholds CORE ≥7.5/CONDITIONAL 6-7.5/EXCLUDED <6.0; algorithmic stablecoins excluded; tested values for USDC(8.50)/USDP(8.45)/EURC(7.80)/BUIDL(8.55)/DAI(6.25)/USDT(6.15).
+  • 29.14 SAE: E30 SAE = Σ value_i·(DRQS_i−1)/DRQS_i·SF_i / R_a.
+  • 29.15 StressDRQS: E31 StressDRQS_i = DRQS_i·(1−SF_i), E32 EffectiveDRQS_i = min(DRQS_i, StressDRQS_i).
+  • 29.16 PBC AvailableBacking: E33 AvailableBacking = RecognizedBacking − EncumberedBacking − AlreadyAllocatedBacking; anti-double-count rule (max 1 MTQ obligation per cell).
+  • 29.17 LCR/HQLA/FSCR: E34 HQLA = Σ Q_a·P_a·(1−H_a)·C_a·hqlaEligible_a, E35 LCR (restated), E36 FSCR (restated).
+  • 29.18 Complete Equation Catalog: 36 equations E1-E36 in single table.
+  • 29.19 Illustrative Example — Full Calculation Walk-Through for S=$100M: 11-step walk-through using authoritative illustrative inputs (Step 1 L=$100M; Step 2 R_m=$130M; Step 3 R_a=$122,291,158.24 with 11-currency weight table; Step 4 R_l=$113,672,586.42; Step 5 RR=1.2229 (DEFENSIVE); Step 6 FSCR=1.1367 (NORMAL); Step 7 LCR=1.30 (ADEQUATE); Step 8 NAVs; Step 9 stress scenarios A/B/C/D with full numbers; Step 10 summary table; Step 11 honest caveat — inputs are illustrative, real values come from live data feeds that don't exist).
+
+Section 30 — Version Control [~600 lines]:
+  • 30.1 Authoritative Version: v25.2, label v25.2-final, date 2026-08-22, FROZEN, APPROVED CANDIDATE FOR CONTROLLED TESTING; what "authoritative" does/doesn't mean.
+  • 30.2 Single Source of Truth Declaration: where the SoT lives (SOT doc + parts + source code + reference JSON + honest state); conflict resolution rule (source code wins > blueprint > reference JSON > other); SoT test examples.
+  • 30.3 Version History (Forward-Only): 8-row version history table (v24.2.1 → v25.0 → v25.0.D → v25.1 → v25.1-final-amendment → v25.2 (FROZEN) → v25.2.AUDIT-CLOSURE (appended) → v25.3 (planned)); "forward-only" rules (no SUPERSEDED, no rollback, no deletion); version numbering convention (Major.Minor.Patch + label suffix).
+  • 30.4 Branch Protection on main: 12 branch protection rules table (PR required, 2 approvers, code owners, 4 required status checks lint/typecheck/test/blueprint-lint, signed commits, linear history, no force push, no deletions, restrict pushers); canonical CODEOWNERS file (Foundation + blueprint-architect + reserve-architect + security-architect + legal-counsel + accounting-architect + risk-architect).
+  • 30.5 Tag: v25.2-final (FROZEN): tag properties (annotated, GPG-signed, immutable); verification commands (git tag -v, git rev-list -n 1); what FROZEN means (snapshot, never move, never delete, basis for institutional review); what FROZEN does not mean.
+  • 30.6 Backup Branch: v25.2-hardened-backup: branch properties (base = v25.2-final commit, update policy, branch protection); why a backup branch exists (survives main corruption, survives tag deletion, supports cherry-picking); synchronization procedure with --ff-only.
+  • 30.7 Integrity Verification Script: 8-step bash script (verify tag signed, backup branch points to tag, SOT file exists at tag, status file exists at tag, reference JSON exists, honest state fields present, 0/13 gates passed, 19/23 acceptance criteria); how to run; what script does NOT verify.
+  • 30.8 Change-Control Discipline: 5-tier change taxonomy (T0 typo / T1 clarification / T2 patch / T3 minor / T4 major) with approval requirements; 7-step change process; emergency change procedure (hotfix with 7-day retro review); 10 forbidden change patterns.
+  • 30.9 Prohibited Versioning Patterns: 10 forbidden patterns (v25.2-final-v2, v25.2-WIP, v25.2-draft, v25.2-old, multiple *-final tags, branch names that look like tags, vNext, force-pushing tags, deleting tags); single FROZEN tag rule; authoritative version test command.
+
+Section 31 — Glossary and Terminology [~700 lines]:
+  • 31.1 Canonical Terminology Authority: why a canonical glossary exists; the three rules of canonical terminology (use preferred term, use with exact meaning, never use prohibited alternative).
+  • 31.2 Master Glossary — 50 Terms: each entry with Preferred Term / Exact Meaning / Prohibited Alternatives / Context:
+    MTQ, PAR, MBG, DMCE, PBC, RR, FSCR, LCR, DRQS, TGRS, SDC, BRI, COFER, SWIFT, BIS, HQLA, CALM, MRRC, CBGRS, ILPS, Protected Backing Cell (restated), Three-Book Separation, Five-Way Reconciliation, Finality-Before-Mint, PBC Anti-Double-Count Rule, MTQ Operating System, Cross-Border Corridor, Settlement Rail, Tokenized Deposit, Wholesale CBDC, ISO 20022, RWA, StressDRQS, EffectiveDRQS, SAE, AvailableBacking, RecognizedBacking, EncumberedBacking, AlreadyAllocatedBacking, Currency Universe, Currency Lifecycle, Effective USD Exposure, Concentration Limits, Emergency Resilience Sleeve, Honest State, APPROVED CANDIDATE FOR CONTROLLED TESTING, NOT PRODUCTION-AUTHORIZED, Single Source of Truth, MITHQAL Foundation, Institutional Engagement.
+  • 31.3 Prohibited Language List:
+    - 50 Prohibited Words (cryptocurrency, stablecoin, coin, token, decentralized, DeFi, Web3, blockchain project, ICO/IDO/IEO, airdrop, yield, staking, liquidity mining, governance token, DAO, APPROVED without qualifier, production-ready, live, launched, in production, partner, partnered with, backed by, fully backed, guaranteed, bank partner, bank integration, licensed, legally cleared, audited, secure, trustless, permissionless, open, public, anonymous, pseudonymous, retail, consumer, user, app, fintech, crypto, digital asset, tokenize, smart contract, on-chain, off-chain, HODL, moon).
+    - 40 Prohibited Phrases (with permitted alternatives for each).
+  • 31.4 Canonical Terminology Rules: 5 rules (use preferred term; use exact meaning; never prohibited alternatives; define on first use; acronym consistency).
+  • 31.5 Capitalization and Formatting Conventions: capitalization rules (acronyms ALL CAPS, system names Title Case, status colors ALL CAPS, variables lowercase italic, § prefix for sections); "MITHQAL" capitalization rules; "MTQ" capitalization rules.
+  • 31.6 Acronym Expansion Table: 70+ acronyms with expansions and section-defined references (MTQ, PAR, MBG, DMCE, PBC, RR, FSCR, LCR, DRQS, TGRS, SDC, BRI, COFER, SWIFT, BIS, HQLA, CALM, MRRC, CBGRS, ILPS, RWA, CBDC, ISO, RTGS, ACH, SFTP, API, REST, H2H, FX, AML, KYC, KYB, BM, L1-L7, all 21 currency codes USD/EUR/CHF/JPY/GBP/SGD/AED/SAR/CNY/CAD/AUD + 10 settlement-only EGP/INR/KRW/TRY/BRL/MXN/ZAR/IDR/MYR/THB, FSRA, ADGM, DIFC, MAS, BVI, CI, EWMA, LTA, SAE, NAV/NAV_m/NAV_l/NAV_s, CVaR, DR, BCP, CI/CD, PR, GPG, SSH, LOI).
+  • 31.7 The Final Terminology Test: 10-test checklist for any MITHQAL communication; communications passing all 10 tests are terminologically clean.
+
+Summary:
+- File: /home/z/my-project/blueprint_parts/part08.md
+- Lines: 3358 (target was 3000-8000; met).
+- Sections: 28 (Implementation Status Report, §87), 29 (Final Equation System, §50), 30 (Version Control), 31 (Glossary & Terminology) — all fully expanded.
+- Single source of truth preserved: v25.2 canonical, no older-version references except in version-history table (where older versions are listed with disposition "NOT AUTHORITATIVE" not "SUPERSEDED").
+- Honest state preserved: 19/23 acceptance criteria (83%), 0/13 institutional gates, status color AMBER, APPROVED CANDIDATE FOR CONTROLLED TESTING — NOT PRODUCTION-AUTHORIZED.
+- All §94 non-inflation principles honored: no column inflated, no code-only capability called institutionally validated, no production authorization claimed.
+- 36 equations (E1-E36) fully specified with formula / variables / bounds / explanation; full walk-through for S=$100M.
+- 50+ glossary terms, 50 prohibited words, 40 prohibited phrases, 70+ acronyms expanded.
+- Branch protection / FROZEN tag v25.2-final / backup branch v25.2-hardened-backup / integrity verification script all specified.
+
+Status: APPROVED CANDIDATE FOR CONTROLLED TESTING — NOT PRODUCTION-AUTHORIZED.
+
+---
+
+## Task ID BP-SEC-06 — Blueprint Sections 21-23 (MTQ-OS · AED↔SGD Corridor · Tokenization)
+
+**Date:** see git history.
+**Role:** Chief Blueprint Architect · Settlement Systems Engineer · Tokenization Engineer.
+**Scope:** Build PART 06 of the MITHQAL Master Blueprint v25.2 — SINGLE SOURCE OF TRUTH — covering sections 21, 22, 23.
+
+### Deliverable
+
+- File: `/home/z/my-project/blueprint_parts/part06.md`
+- Line count: 3,745 lines
+- Target: 3,000-8,000 lines ✓ (within range)
+
+### Sections Built
+
+**§21 — MTQ Operating System (§10):**
+- Full 16-step issuance pipeline (BM-01 through BM-16), each step with:
+  Initiating party, Validating party, Message/communication, System involved,
+  Ledger event, Compliance checks, Settlement state change, Accounting state,
+  Finality status, Exception handling, Audit evidence.
+- Bank integration blueprint (12 nodes BNK-01..MTH-03, 9 flows F01..F09).
+- ISO 20022 compliance layer (9 messages: pain.001, pain.002, pacs.002,
+  pacs.008, pacs.009, camt.025, camt.054, camt.056, head.001) with field
+  mappings for pain.001, pacs.008, pacs.002, pain.002, camt.025, camt.054,
+  camt.056 plus 8 reason codes.
+- DMCE (Dynamic Minting Capacity Engine) — MIN of 8 limits with formulas
+  and SIMULATED examples: Reserve Ratio, Per-Bank, Per-Jurisdiction,
+  Per-Corridor, Per-Currency, Digital Sleeve, Gold Sleeve, Emergency Reserve.
+- ILLUSTRATIVE EXAMPLE: A full BM-01 through BM-16 execution for a $1M MTQ
+  issuance (SIMULATED Corporate → SIMULATED Bank A, USD-backed USD→SGD
+  corridor, 14-step trace, post-mint reconciliation).
+- Appendix A: 23-state machine transition table, 18 rejection codes,
+  3 integration patterns (ISO 20022, REST API, H2H), 4 additional ISO 20022
+  message field mappings, 8 DMCE limit detail formulas with examples,
+  binding-limit identification.
+
+**§22 — Cross-Border Settlement Corridor (AED ↔ SGD):**
+- 6-stage architecture (SENDER → FX → LIQUIDITY → COMPLIANCE → SETTLEMENT
+  → RECEIVER → CONFIRMATION), with stage durations totaling 1,950 ms
+  (sub-2-second target).
+- FX rate discovery (direct AED→SGD vs USD-bridge AED→USD→SGD, pick cheaper;
+  USD-bridge wins in demo at 4.5 bps vs 6 bps direct).
+- Liquidity pool routing (10 pools: 5 AED + 5 SGD, atomic-capable selection
+  algorithm with CBDC reservation rule).
+- Compliance/sanctions pre-check (KYC/KYB cross-bank attestation +
+  AML/sanctions/PEP/adverse-media/transaction-pattern AML).
+- Atomic settlement execution (MBG → mint → transfer → redeem, bound in
+  single ACID transaction; Herstatt-risk eliminated).
+- 12-step settlement timeline (each step with stage, name, description,
+  status, duration), totaling 1,950 ms.
+- 8 multi-rail support (SWIFT FIN → ISO 20022 → REST API → H2H → SFTP →
+  RTGS → TOKENIZED_DEPOSIT → CBDC, with latency, fee, atomic-capability for
+  each).
+- Demo transaction: 1,000,000 AED → 367,365 SGD, ATOMICALLY_SETTLED,
+  272,000 MTQ, 7 bps total cost (~257.29 SGD), 1,950 ms end-to-end.
+- Settlement sovereignty / fallback (PRIMARY, SECONDARY, EMERGENCY,
+  SAFE_HALT modes with decision tree).
+- ILLUSTRATIVE EXAMPLE: A corporate paying a Singapore supplier via
+  AED→SGD corridor (14-step trace, post-settlement reconciliation,
+  pass-through property).
+- Appendix B: FX discovery detail with provider quotes, liquidity pool
+  routing detail with pool selection logic, compliance pre-check detail,
+  atomic settlement execution detail, 8x8 multi-rail atomic capability
+  matrix, sovereignty decision tree pseudocode.
+
+**§23 — Asset & Coin Tokenization:**
+- RWA model (Non-Reserve Asset):
+  - Tokenized Commercial Paper: CP-001 ($50M, AAA, 20% RW, 2% haircut,
+    $47.5M adjusted) and CP-002 ($30M, A, 30% RW, 3% haircut, $28.2M
+    adjusted).
+  - Enterprise Debt: ED-001 ($45M, BBB, 50% RW, 5% haircut, $40.6M
+    adjusted) and ED-002 ($25M, BB-B, 100% RW, 8% haircut, $21.08M
+    adjusted).
+  - Risk-weight calculations (Basel III: AAA-AA 20%, A 30%, BBB 50%,
+    BB-B 100%, Below B 150%, Defaulted 1250%).
+  - Maturity schedules (5 buckets: money-market 25%, short-term 40%,
+    medium-term 25%, long-term 10%, very long-term 0%).
+  - Asset-backed valuation with haircuts (formula:
+    Adjusted = Notional × (1 - Haircut) × (1 - C_a)).
+  - Counterparty adjustment: C_a = Credit × Jurisdiction × Operational,
+    with implied C_a values for all 4 reference assets.
+- Digitized Coin model:
+  - Tokenized Bank Deposit: TD-USD-001 (SIMULATED Bank A, $100M supply)
+    and TD-EUR-001 (SIMULATED Bank B, €50M supply).
+  - Wholesale CBDC: CBDC-USD-001 (SIMULATED Central Bank, $200M supply).
+  - Dynamic minting, burning, cross-ledger transfer (with JSON request
+    examples).
+  - Balance mapping with 5-way reconciliation.
+  - NOT stablecoins (§44, §72) — full distinction matrix covering
+    issuer, backing, segregation, holder, credit risk, central bank
+    money status, algorithmic status, regulatory treatment.
+- ILLUSTRATIVE EXAMPLE: A bank minting tokenized deposits ($50M
+  TD-USD-001) and transferring to another bank, with 5-way
+  reconciliation, plus burning/interbank settlement reverse process.
+- Appendix C: Basel III risk-weight detail with required capital
+  calculations, MITHQAL adjusted value formula with implied C_a
+  derivation, counterparty adjustment decomposition (3-factor
+  decomposition), maturity bucket limits and reference asset assignment,
+  tokenized deposit mint process detail with JSON request, cross-ledger
+  transfer detail, burn process detail (cross-bank), stablecoin vs
+  digitized coin comparison matrix (11-dimension comparison).
+
+### Honest State Discipline
+
+- All three modules declare `productionAuthorized: false, simulated: true`.
+- All references to mint executions, settlements, and tokenization
+  operations carry the SIMULATED / NOT-PRODUCTION-AUTHORIZED qualifier.
+- Module IDs: v25.2-mtq-os-1.0, v25.2-corridor-aed-sgd-1.0,
+  v25.2-tokenization-1.0 (matching source files).
+- Cross-references to §16-46 (Reserve), §47 (Protected Backing Cell),
+  §48 (Bank Default), §49 (Legal Liability), §50 (Licensing Matrix),
+  §51 (Three-Book Separation), §52 (Systemic Exposure), §54 (Finality
+  Before Mint) preserved.
+
+### Single Source of Truth Confirmation
+
+PART 06 is the single source of truth for sections 21, 22, 23. No older
+versions supersede. Where conflicts exist with prior versions, this
+document controls.
+
+---
+Task ID: BP-SEC-04
+Agent: Blueprint Sections 12-16 Builder (general-purpose sub-agent)
+Task: Build Part 04 of the MITHQAL Master Blueprint v25.2 — Sections 12-16
+(Bank Gateway / Sidecar Architecture, Bank-Side Compliance Attestation,
+Protected Backing Cell, Three-Book Separation, Five-Way Reconciliation).
+
+Work Log:
+- Read `/tmp/blueprint_reference.json` (1,801 lines — canonical reference
+  values for reserve, finality, status, institutional, OS, corridor,
+  tokenization, simulator sections).
+- Read `src/lib/protected-backing-cell.ts` (1,133 lines — §47 Protected
+  Backing Cell with 17-field schema, anti-double-count rule, formula,
+  eligibility rules, 4 SIMULATED reference cells).
+- Read `src/lib/three-book-separation.ts` (975 lines — §51 Three-Book
+  Separation with 8+8+9=25 fields across 3 books, 4 anti-commingling tests
+  ALL BLOCKED, transfer-authorization schema, reconciliation checks).
+- Read `src/lib/mithqal-bank-gateway.ts` (3,969 lines — MBG architectural
+  amendment with TRANSLATION-NOT-TRANSFORMATION principle, 12 nodes,
+  9 flows, 9 ISO 20022 messages, 7 assertions, Five-Way Reconciliation).
+- Read `src/lib/corporate-settlement-account.ts` (§22 three-way
+  reconciliation primitives, DIVISION_OF_CONTROL).
+- Read `src/lib/reconciliation.ts` (174 lines — general reconciliation
+  engine with variance thresholds).
+- Read `src/lib/proof-of-liabilities.ts` (235 lines — §21 Institutional
+  Proof-of-Liabilities).
+- Created `/home/z/my-project/blueprint_parts/part04.md` (6,615 lines).
+  • Header: PART 04 / SINGLE SOURCE OF TRUTH / v25.2 FINAL — CONTROLLING /
+    APPROVED CANDIDATE FOR CONTROLLED TESTING — NOT PRODUCTION-AUTHORIZED.
+  • Section 12 — Bank Gateway / Sidecar Architecture (§11): MBG principle
+    TRANSLATION, NOT TRANSFORMATION (fully explained); 9 bank authoritative
+    systems (CBS, KYC, KYB, AML, sanctions, FX, treasury, accounting, SWIFT,
+    ISO 20022, custody); why no core banking replacement (cost/risk,
+    regulatory, operational continuity, vendor neutrality); all 12
+    integration nodes (BNK-01 through MTH-03 with full detail); all 9
+    integration flows (F01-F09); ISO 20022 message catalog (9 messages:
+    pain.001, pain.002, pacs.002, pacs.008, pacs.009, camt.025, camt.054,
+    camt.056, head.001 with name + purpose + field mapping); field-mapping
+    conventions (PASS_THROUGH, DERIVED, VALIDATED, REJECTED); SWIFT
+    relationship (compatible + complementary, not replacement); 8-rail
+    catalog (SWIFT, ISO_20022, REST_API, HOST_TO_HOST, SFTP, RTGS,
+    TOKENIZED_DEPOSIT, CBDC with latency + fee + atomic-capable flags);
+    demo AED↔SGD corridor (12-step execution, 1.79 sec total, 7 bps);
+    customer-visible MTQ (Mode A invisible, Mode B visible);
+    ILLUSTRATIVE EXAMPLE: Acme Logistics AED 1M → SGD 367K cross-border
+    via MTQ Settlement (Mode B), showing the corporate's treasury portal
+    view, behind-the-scenes flow, post-confirmation portal state, what
+    the corporate sees and does NOT see, what could have failed.
+  • Section 13 — Bank-Side Compliance Attestation (§8): §8 Privacy
+    Principle ("customer identity stays in the bank"); 6 customer/account
+    PASS attestations (KYC PASS, KYB PASS, AML PASS, SANCTIONS PASS,
+    ACCOUNT AUTHORITY PASS, FUNDS AVAILABLE PASS) — for each: who
+    generates, where validation occurs, what MITHQAL receives, what
+    remains in bank; 7th assertion (TRANSACTION_AUTHORIZED) explained
+    as distinct from the 6 customer/account PASS attestations;
+    cryptographic verification (Ed25519 signatures, key registration
+    via §10 BankSecurityProfile, RFC 8785 JSON Canonicalization, 7-step
+    ZeroTrustVerification); expiry (24-hour max), replay prevention
+    (24-hour cache), revocation (per-attestation + per-key); audit
+    trail (7-year retention, immutable, signed); dispute handling
+    (5-step process with Governance Council escalation); jurisdictional
+    differences (US/EU/UK/UAE/SG KYC thresholds, sanctions lists) and
+    jurisdiction-neutral assertion model; selective disclosure +
+    ZKP compatibility (current Ed25519 + future ZKP migration);
+    ILLUSTRATIVE EXAMPLE: Reference-Responsible-Bank (SIMULATED)
+    generating a KYC PASS attestation for Acme Logistics (UAE) —
+    6-check KYC verification (lookup, document, PEP, adverse-media,
+    risk-rating, source-of-funds), assertion generation, full
+    BankComplianceAttestation assembly with 7 assertions, Ed25519
+    signature generation in HSM, MITHQAL-side 7-step verification,
+    what MITHQAL receives and does NOT receive, what could have failed.
+  • Section 14 — Protected Backing Cell (§47): full 17-field schema
+    (each field explained in detail with description, format,
+    constraints, use); operational companion fields (encumberedAmount,
+    allocatedObligationIds, custodianTier, jurisdictionRisk, simulated);
+    §47 formula (AvailableBacking = RecognizedBacking − EncumberedBacking
+    − AlreadyAllocatedBacking) with full computeAvailableBacking
+    implementation; 4 formula examples (USD cash, physical gold,
+    US Treasury, constitutional breach); anti-double-count rule (why
+    it matters + mutation-time enforcement via allocateBacking +
+    audit-time enforcement via verifyNoDoubleCount); allocation
+    workflow (5 steps); release workflow (5 steps); verification
+    (no-double-count); evidence package generation
+    (ProtectedBackingEvidencePackage schema + generateProtectedBackingEvidence
+    + honestState declaration); 11 eligibility rules; current state
+    (0 live cells, 4 SIMULATED reference cells with full data: USD cash
+    $65M, allocated physical gold $23.4M, USDC $2.6M, US T-Bill $39M);
+    ILLUSTRATIVE EXAMPLE: Reference-Responsible-Bank allocating $50M
+    USD cash as backing for MTQ issuance — pre-allocation state,
+    eligibility check (12 checks all pass), allocation request,
+    post-allocation state, verification, attempted double-count
+    (BLOCKED), same-obligation top-up (PERMITTED), capacity exceeded
+    (BLOCKED), release, post-release state, evidence package
+    generation.
+  • Section 15 — Three-Book Separation (§51): non-custodial + non-
+    commingling principles; Book A — MITHQAL Corporate (8 fields
+    detailed); Book B — Bank MTQ Obligation Ledger (8 fields
+    detailed); Book C — Corporate Participant Position (9 fields
+    detailed); 4 anti-commingling tests (CORPORATE_CASH_TO_MTQ_BACKING,
+    BANK_OBLIGATION_TO_CORPORATE_REVENUE, CORPORATE_MTQ_TO_MITHQAL_ASSET,
+    RESERVE_GAIN_TO_OPERATING_REVENUE — ALL BLOCKED with full reason
+    text + bookViolated + illegalField for each); transfer between
+    books (authorized only — forbidden pairs A↔B + A↔C always blocked,
+    permitted pair B↔C with signed authorization, full
+    transferBetweenBooksAuthorized implementation); 4 reconciliation
+    checks (Book C Σ(MTQ) ≤ Book B Σ(outstanding); Book B backing ≥
+    1.30× outstanding; Book A profitLoss == revenue − expenses; no
+    commingling violations); verifyNoCommingling runtime guard
+    (3 checks: Book A P&L, Book B off-book funding, Book C orphan
+    participants); reference SIMULATED ledger ($50M corporate cash,
+    $130M bank backing for $100M MTQ outstanding, $10M participant
+    balance); createBookEntry 2-layer commingling rejection
+    (discriminator + cross-book field detection); current state
+    (design=true, operational=false, enforced=false) with
+    production-authorization path (5 conditions);
+    ILLUSTRATIVE EXAMPLE: Attempting to use MITHQAL corporate cash
+    as MTQ backing — 4 attack attempts (direct transfer BLOCKED,
+    direct Book B entry injection BLOCKED, anti-commingling test
+    simulation BLOCKED, run-time verification would detect);
+    conclusion shows 6 layers of defense.
+  • Section 16 — Five-Way Reconciliation: 5 sources (Canonical Ledger,
+    Bank Subledger, Corporate Positions, Reserve Ledger, Proof of
+    Liabilities) with description, authority, computation,
+    reconciliation role for each; reconciliation frequency (real-time
+    per-transaction, daily end-of-day, weekly, monthly with independent
+    auditor, exception-driven on-mismatch); deterministic matching
+    (fixed-precision arithmetic via round2, tolerance bands 1 bps
+    WARNING / 100 bps CRITICAL); full runFiveWayReconciliation
+    implementation; 5 statuses (RECONCILED / WARNING / MISMATCH /
+    CRITICAL / LOCKED); mismatch schema (ledger, expected, actual,
+    deltaBps, severity, investigationStatus); break management
+    (severity-based actions per WARNING/MISMATCH/CRITICAL/LOCKED with
+    full incident-response arrays); settlement suspension rules (when
+    suspended, what suspension means, when resumes, scope);
+    remediation workflows (5 steps: identify, investigate, remediate,
+    verify, RESTORE); audit records (reconciliation run, investigation,
+    RESTORE, 7-year retention); reference reconciliation state (all
+    5 totals at $100M, RECONCILED); three-way reconciliation primitive
+    (reconcileThreeWay); general reconciliation engine
+    (VARIANCE_THRESHOLD_LOW/MEDIUM/HIGH/CRITICAL);
+    ILLUSTRATIVE EXAMPLE: A reconciliation break between Bank
+    Subledger ($99.5M) and Canonical Ledger ($100M) — 50 bps delta
+    → MISMATCH status; MISMATCH incident response (RESTRICT Bank A
+    operations, escalate within 1 hour, preserve forensic evidence);
+    investigation (audit-trail review, root cause: synchronization
+    bug in Bank A's MBG adapter); remediation (manual subledger
+    update, re-run reconciliation returns RECONCILED, RESTORE);
+    what could have been worse ($5M shortfall = CRITICAL, LOCKED,
+    4-of-7 Council signoff) vs smaller ($100 shortfall = WARNING,
+    continued operations with heightened monitoring).
+  • Cross-references: §1-3 reserve targets (130% strategic, 100% floor),
+    §10 BankSecurityProfile, §11 institutional readiness, §18
+    ZeroTrustVerification, §22 reconciliation engine, §21 Proof of
+    Liabilities, §47 Protected Backing Cell, §49 legal liability,
+    §51 Three-Book Separation, §54 Finality-Before-Mint (7 layers,
+    10 bypass tests), §73 evidence states (7 canonical + 6 PENDING),
+    §74 honest-state invariants (productionAuthorized=false,
+    protectedBackingLiveCells=0, threeBookDesign=true,
+    threeBookOperational=false, threeBookEnforced=false,
+    validatedJurisdictions=0), §83 anti-commingling tests, §88
+    blueprint update.
+  • Honest-state discipline preserved across all sections: every
+    module's honest state is stated explicitly (implemented vs
+    operational vs enforced), every reference cell / bank / asset is
+    marked SIMULATED, the final status is "APPROVED CANDIDATE FOR
+    CONTROLLED TESTING — NOT PRODUCTION-AUTHORIZED" everywhere.
+
+Verification:
+- File path: /home/z/my-project/blueprint_parts/part04.md
+- Total line count: 6,615 lines (target: 3,000-8,000 lines — within range)
+- Section 12 (Bank Gateway): ~1,580 lines (target: 500-1,500 — slightly
+  above target due to depth of node/flow/ISO 20022/rail catalogues)
+- Section 13 (Compliance Attestation): ~1,120 lines (within target)
+- Section 14 (Protected Backing Cell): ~1,440 lines (within target)
+- Section 15 (Three-Book Separation): ~1,365 lines (within target)
+- Section 16 (Five-Way Reconciliation): ~1,100 lines (within target)
+- Single source of truth: confirmed. No older versions referenced. All
+  values cross-checked against /tmp/blueprint_reference.json.
+- §74 honest-state invariants preserved verbatim throughout.
+- All code excerpts cross-checked against actual source files (no
+  paraphrasing of function signatures, type names, or constants).
+
+Stage Summary:
+- ✅ Created /home/z/my-project/blueprint_parts/part04.md (6,615 lines).
+- ✅ All 5 sections (12-16) fully expanded per v25.2 controlling spec.
+- ✅ All required sub-topics covered for each section per task scope.
+- ✅ All 4 ILLUSTRATIVE EXAMPLES included (one per section except §16
+  which has 1, plus the demo corridor example in §12).
+- ✅ Honest-state discipline preserved (productionAuthorized=false,
+  protectedBackingLiveCells=0, threeBookDesign=true,
+  threeBookOperational=false, threeBookEnforced=false,
+  validatedJurisdictions=0).
+- ✅ All references to SIMULATED state explicit.
+- ✅ Code excerpts match actual source files exactly.
+- ✅ Cross-references to §1-3, §10, §11, §18, §21, §22, §47, §49, §51,
+  §52, §54, §73, §74, §83, §88 preserved.
+
+
+---
+Task ID: BP-SEC-09
+Agent: Sub-agent (general-purpose) — MITHQAL Master Blueprint v25.2 Part Builder
+Task: Build sections 32-37 of the MITHQAL Master Blueprint v25.2 — Single Source of Truth.
+
+Work Log:
+- Read /tmp/blueprint_reference.json for reference values (RR=1.30, 80/18/2, fiat corridor 70-85%, bullion 15-25%, digital 0-5%, preferred effective 15%, hard effective 20%, USD-effective ceiling 35%, 7-layer finality enforced with 10/10 bypass routes blocked, 11 reserve currencies, 10 settlement-only currencies, digital policy D_normal=2% / D_operational=3% / D_max=5%, gold policy 18% target / 15-25% corridor, digital universe 6 assets, etc.)
+- Read docs/blueprint/mithqal-v25-FINAL-blueprint.md for depth reference — searched sections on Risk (§32-37 of original), Security (§39 Cryptographic Governance + §MBG-18 Zero Trust + V25.0.AUDIT-CLOSURE.7 Finality-Before-Mint), Regulatory (§V25.0.15 Jurisdictional Regulatory Perimeter + V25.2.AUDIT-CLOSURE.4 Legal Liability + V25.2.AUDIT-CLOSURE.5 Licensing Matrix), Accounting (§51 Three-Book Separation + §V25.0.21 Proof-of-Liabilities + §V25.0.22 Three-Way Reconciliation + §V25.2 Final Reserve Math Spec §37-42), Treasury (§V24.2 6-State CALM + §V25.0.D.S Rebalancing Engine + §V25.0.D.Q Gold Acquisition + §V24.2.10 ERTF + §V24.2.11 In-Kind Delivery), Governance (§13 Monetary Council + §V25.0.D Corporate Structure + §V25.0.A.11 Foundation Governance + §V25.0.D.AB Foundation Oversight + §V25.0.D.AN Dashboards + §V25.0.D.AL FV11-FV25)
+- Created /home/z/my-project/blueprint_parts/part09.md (6639 lines)
+  • §32 — RISK ARCHITECTURE (1442 lines): 17 risk categories (Strategic, Regulatory, Monetary, Liquidity, Credit, Counterparty, Currency, Sovereign, Geopolitical, Operational, Cyber, Technology, Legal, Reputation, Settlement, Reserve, Concentration) — each with 10-field dossier (description, likelihood, impact, controls, warning indicators, thresholds, mitigation, owner, escalation, emergency response); likelihood × impact matrix (5×5, 4 bands GREEN/AMBER/RED/BLACK); reserve risk engine (16 risk types: liquidity, duration, currency, custodian, bank concentration, sovereign, counterparty, commodity, operational, cyber, settlement, sanctions, geopolitical, reserve valuation, collateral impairment, emergency liquidity); 3-layer risk lens; fail-closed posture; honest quantification (P(RR<100%)=21.54%)
+  • §33 — SECURITY ARCHITECTURE (905 lines): 6 foundational principles (Defense in Depth, Zero Trust, Least Privilege, Assume Breach, Transparency, Continuous Improvement); 8-layer security stack (Constitutional → Smart Contract → Cryptographic → Oracle → Custody → Network → Governance → Quantum); Zero Trust 5 required authentications (INSTITUTION + GATEWAY + SIGNING_KEY + POLICY_VERSION + TRANSACTION_AUTHORIZATION); 3-tier identity (Institutional + Operator + Council/Foundation); authentication mechanisms (mTLS, signed nonce, HMAC, JWT, hardware key, MPC); authorization (3 dimensions); privileged access (12 privileged actions with multi-party approval); cryptographic signing (ECDSA, Ed25519, Falcon-512, Lamport); key management 7-stage lifecycle; HSM (FIPS 140-2 L3); MPC (6-of-7 constitutional, 4-of-7 emergency, 2-of-3 operational); PQC migration roadmap (5 phases); secrets management; certificate management (PKI); network security (segmentation + WAF + DDoS); API security; replay prevention (nonce + timestamp); idempotency (UUID v4); fraud controls (transaction limits + DMCE + velocity); sanctions controls (fail-closed per §V24.2.13); compromise response (IR plan + key rotation); insider threats (background checks + access controls + behavioral monitoring + mandatory vacation); supply-chain risk (SOC 2 + ISO 27001 + SCA + SBOM); logging (Merkle tree tamper-evidence); business continuity (RTO 4h, RPO 0); Finality-Before-Mint security (7 layers L1-L7 + 10 bypass tests ALL BLOCKED — DIRECT_API_CALL_WITHOUT_AUTH, WORKFLOW_SKIP_BM15, POLICY_OVERRIDE_BY_COMMERCIAL, UNSIGNED_AUTHORIZATION, LEDGER_SKIP_FINALIZED_STATE, DATABASE_PARTIAL_WRITE, SMART_CONTRACT_WITHOUT_ORACLE, EMERGENCY_OVERRIDE_WITHOUT_GOVERNANCE, ADMIN_BACKDOOR, INTERNAL_API_ROUTE)
+  • §34 — REGULATORY ARCHITECTURE (983 lines): System vs legal characterization separated (4-lens separation); 19 classifications per jurisdiction; §50 Licensing Matrix (9 activities × 8 jurisdictions = 72 entries ALL REQUIRED_NOT_OBTAINED); banking regulation analysis; payment regulation analysis; securities analysis (Howey + MiCAR); monetary regulation; AML/CFT (layered KYC per §V25.0.4); sanctions (fail-closed); data privacy (GDPR + CCPA + PDPA + PDPL + UK DPA); custody (non-custodial by default per §V25.0.D.K); reserve requirements; reporting; tax; accounting; cross-border restrictions; jurisdiction adapter concept (software abstraction localizing behavior without changing canonical monetary core); 8 per-jurisdiction dossiers (US, AE, UK, EU, SG, CH, HK, SA — each with architecture fit, likely regulatory categories, required legal analysis, required institutional approvals, open questions, prohibited assumptions); "Subject to local authorization" canonical language (10 prohibited marketing claims + 8 required disclosures)
+  • §35 — ACCOUNTING / CFO ARCHITECTURE (892 lines): 4-lens separation (economic / accounting / legal / settlement); PAR = $1.00 is ACCOUNTING REFERENCE ONLY (NOT a USD peg); 3-layer reserve valuation (R_m / R_a / R_l with R_l ≤ R_a ≤ R_m); 3-book separation (Book A MITHQAL Corporate 8 fields / Book B Bank MTQ Obligation 8 fields / Book C Corporate Participant 9 fields); chart-of-accounts concepts (Book A 26 accounts + Book B 14 accounts + Book C 9 accounts + canonical reserve ledger 12 accounts); MTQ accounting entries (issuance / redemption / settlement / finality / backing failure); reserve accounting (valuation + unrealized/realized + haircut table + counterparty adjustment + stress coefficient); anti-commingling 4 tests ALL BLOCKED; operating company revenue 8 fee categories + 6 NOT profit + 9 funds; bank revenue 9 streams; non-compete principle; FX boundary; financial reporting (daily/weekly/monthly/quarterly/annual); P&L + balance sheet + cash flow statements; canonical reserve balance sheet; proof-of-liabilities (Merkle tree); proof-of-reserves; 5-way reconciliation (5 sources, 7 statuses, 1bp tolerance); treasury reporting + management reporting + stress reporting; 4-lens distinction with reconciliation rules
+  • §36 — TREASURY ARCHITECTURE (1009 lines): Treasury philosophy (constitutionally separated from commercial); treasury mandate + MUST NOT (8 items) + MAY (6 items); anti-procyclical posture; reserve management (3-pillar structure 80/18/2 + solvency buffer + currency basket 11 reserve + 10 settlement-only + currency weight engine + concentration policy + effective USD exposure (currently 23.54% vs 35% ceiling) + gold policy 18% + digital liquidity policy 2% + 3-layer valuation + RR thresholds 1.30/1.05/1.00 + FSCR thresholds); liquidity management (ILPS 5-layer $46M total: Settlement $2.7M + Redemption $16.2M + Emergency $10.8M + Structural $13M + External $5.4M + HQLA + LCR/MLCR + prefunded redemption + 6-state continuity machine + Article X sequential liquidation); bank relationships + custodians + gold custody (16-step GA-01..GA-16); reserve custody principle (non-custodial by default); 5-way reconciliation; fiat allocation (front-line 50% + strategic 30%); liquidity buffers; concentration limits (15%/20% preferred/hard); rebalancing (13-step RB-01..RB-13 + 2pp threshold + 6 hard overrides + transaction-cost test NetBenefit > 0 + 15-component trade cost model + LifecycleCost + hysteresis + trade suppression + turnover limits + approval routing 5 roles + No-Trade Principle + 9-item preserve list + what-if scenarios A/B/C/D); FX management (boundary + currency weight engine + lifecycle WATCH/REDUCE/SUSPEND/SUBSTITUTE/REINSTATE + SDP + minimum currency floor Q1-Q4 ladder); emergency liquidity (ILPS Emergency Layer + External Layer + in-kind delivery per §V24.2.11 + ERTF per §V24.2.10 + Article X 7-step waterfall gold LAST); stress testing (250K Monte Carlo seed=42 + 4 challenger models + Model Validity Gate HARD); counterparty monitoring per §V25.0.D.AA; treasury permissions + workflow; CALM 6 states with corrected RR targets (NORMAL=1.20 / CAUTION=1.22 / DEFENSIVE=1.23 / STRESS=1.25 / EMERGENCY=1.30 / RECOVERY=1.21) + monotonic invariant + 7 subsystem states + 12 behaviors per state; Liquidation Waterfall 7 steps (digital liquidity → cash → sovereign bonds → non-USD FX → conditional silver → tokenized gold → physical gold LAST with Exhaustion Certificate + Council 4-of-7 + Foundation + public + regulator)
+  • §37 — GOVERNANCE ARCHITECTURE (1079 lines): 5-entity corporate structure (Founder Shareholders + Holding + Operating + Technology + Foundation); 4 governance bodies (Foundation + Holding + Operating + Technology Boards) + Council (15 members, 4-year terms); Foundation (11 SHALL + 8 SHALL NOT + READ_ONLY + 6 technology layer items + 7 dashboard fields + 14 validation topics all PENDING + audit committee + succession plan); Holding (5-7 directors + 6 capital categories + cannot mint per FV25); Operating Company (15 activities + 8 fee categories + 6 NOT profit + 7 NOT sources + 9 funds + cannot mint per FV25); Technology Company (12 owns + cannot mint + intercompany agreement); Institutional authorities (7 actors × 17 functions Authority Matrix with full allocation table); Operational authority (8 role holders + limits + separation of duties); Emergency authority (per §13.3 + triggers + powers + limits + 90-day duration); Reserve authority (Monetary & Reserve Control Division + workflow); Technology authority (CTO + Tech Co Board + Council 4-of-7 + workflow); Compliance authority (Head of Compliance + General Counsel + workflow); Policy changes + versioning (4 parameter classes A/B/C/D + 37 parameters + amendment workflow 11 steps + quorums); Separation of Duties (initiator/approver/executor/verifier + conflict-of-interest controls + 4 anti-commingling tests + 13 no-contradictory-authority phrases + CRO reports to Council); Audit authority (6 audit bodies + Foundation Audit Committee + 8 audit cadences + findings classification); Monetary & Reserve Control Division (structurally separated from commercial per §V25.0.D.AA + 22 monitoring items + signed mint authorization L4 + critical rule: commercial staff MUST NOT approve reserve sufficiency for their own bank clients); Foundation Oversight (READ_ONLY + 7 dashboard fields: total supply / reserve status / weight history / major exceptions / constitutional metrics / incidents / CALM state + 8 cannot-do actions: mint / authorize / buy-sell / transfer / override invariants / operate as commercial / receive profit / silently reclassify + 6 technology layer items + Foundation constitutional stewardship + amendment authority 6/7 Foundation + Sharia + regulatory + 90-day public notice)
+  • §99 Appendices (186 lines): cross-reference table + glossary (45+ terms) + honest status aggregation (cross-sectional PART_09 honest state)
+
+VERIFICATION:
+- File path: /home/z/my-project/blueprint_parts/part09.md
+- Total line count: 6639 (target 3,000-8,000) ✓
+- Per-section line counts:
+  - §32 — RISK ARCHITECTURE: 1442 lines (target 500-1500) ✓
+  - §33 — SECURITY ARCHITECTURE: 905 lines (target 500-1500) ✓
+  - §34 — REGULATORY ARCHITECTURE: 983 lines (target 500-1500) ✓
+  - §35 — ACCOUNTING / CFO ARCHITECTURE: 892 lines (target 500-1500) ✓
+  - §36 — TREASURY ARCHITECTURE: 1009 lines (target 500-1500) ✓
+  - §37 — GOVERNANCE ARCHITECTURE: 1079 lines (target 500-1500) ✓
+- All section markers present (§32 through §37 + §99 Appendices)
+- All end markers present (END OF §32 through END OF §37 + END OF PART 09)
+- Single source of truth: supersedes all older versions of sections 32-37 wherever they conflict
+- Reference values incorporated from /tmp/blueprint_reference.json:
+  - RR target 1.30 / policy floor 1.05 / absolute floor 1.00 ✓
+  - Composition 80/18/2 (fiat 80% / gold 18% / digital 2%) ✓
+  - Constitutional corridors (fiat 70-85% / bullion 15-25% / digital 0-5%) ✓
+  - Concentration limits (preferred effective 15% / hard effective 20% / 60% sanity ceiling / USD-effective 35% / min floor 0.5%) ✓
+  - 11 reserve currencies + 10 settlement-only currencies ✓
+  - Digital policy (D_normal 2% / D_operational 3% / D_max 5% / D_emergency 0% / DRQS core 7.5 / DRQS conditional 6 / algorithmic excluded) ✓
+  - Digital universe (USDC, USDP, EURC, BUIDL in core; DAI, USDT excluded) ✓
+  - Gold policy (18% target / 15% preferred lower / 21-22% operational upper zone / 15-25% corridor / silver 0% conditional max 3%) ✓
+  - USD-effective exposure (current 23.54% / ceiling 35% / not breached) ✓
+  - 7-layer finality enforced (10/10 bypass routes blocked, MITIGATED_AT_CODE_LEVEL) ✓
+  - CALM 6 states with corrected RR targets (NORMAL 1.20 / CAUTION 1.22 / DEFENSIVE 1.23 / STRESS 1.25 / EMERGENCY 1.30 / RECOVERY 1.21) ✓
+  - Liquidation waterfall 7 steps (gold LAST with Exhaustion Certificate) ✓
+  - 3-book separation (Book A 8 fields / Book B 8 fields / Book C 9 fields) ✓
+  - 5-way reconciliation (5 sources / 7 statuses / 1bp tolerance) ✓
+  - Foundation READ_ONLY (7 fields / 8 cannot-do actions) ✓
+  - 9 activities × 8 jurisdictions = 72 licensing entries (all REQUIRED_NOT_OBTAINED) ✓
+  - Monte Carlo 250K paths / seed=42 / P(RR<100%)=21.54% ✓
+  - Honest state preserved (PRODUCTION_AUTHORIZED=false throughout)
+
+Stage Summary:
+- ✅ Built /home/z/my-project/blueprint_parts/part09.md (6639 lines)
+- ✅ All 6 sections (§32-§37) fully expanded with required sub-sections
+- ✅ All reference values from /tmp/blueprint_reference.json incorporated
+- ✅ Single source of truth preserved (supersedes older versions)
+- ✅ Honest state discipline maintained (PRODUCTION_AUTHORIZED=false, gates 0/13 passed, all PENDING)
+- ✅ Subject to local authorization language included
+- ✅ Jurisdiction adapter concept documented
+- ✅ Finality-Before-Mint 7 layers + 10 bypass tests documented (MITIGATED_AT_CODE_LEVEL)
+- ✅ CALM 6 states with corrected RR targets documented
+- ✅ Liquidation waterfall 7 steps (gold LAST) documented with Exhaustion Certificate
+- ✅ Three-Book separation (Book A/B/C) documented with 4 anti-commingling tests
+- ✅ Foundation READ_ONLY oversight documented (7 fields + 8 cannot-do actions)
+- ✅ Monetary & Reserve Control Division structural separation documented
+- ✅ 4-lens separation (economic / accounting / legal / settlement) documented
+- ✅ Risk matrix (5×5, 4 bands GREEN/AMBER/RED/BLACK) with 17 categories placed
+- ✅ Reserve Risk Engine 16 risk types documented
+- ✅ Zero Trust 5 required authentications documented
+- ✅ Cross-reference table + glossary + honest status aggregation in appendices
+- ✅ Worklog appended with Task ID BP-SEC-09
+
+FINAL FILE PATH: /home/z/my-project/blueprint_parts/part09.md
+FINAL LINE COUNT: 6639
+
+
+---
+Task ID: BP-SEC-03-RETRY
+Agent: Sub-agent (general-purpose) — MITHQAL Master Blueprint v25.2 Part Builder
+Task: Build sections 9-11 of the MITHQAL Master Blueprint v25.2 — Single Source of Truth. Write to /home/z/my-project/blueprint_parts/part03.md.
+
+Work Log:
+- Read /tmp/blueprint_reference.json for ALL values:
+  - Reserve: par=1, RR=1.30, fiat=0.80, gold=0.18, digital=0.02, emergency=0.15
+  - Corridors: fiat 70-85%, bullion 15-25%, digital 0-5%
+  - Concentration: preferredEffective=15%, hardMaxEffective=20%, constitutionalSanityCeiling=60%, usdEffectiveCeiling=35%, minFloor=0.5%
+  - 11 reserve currencies: USD, EUR, CHF, JPY, GBP, SGD, AED, SAR, CNY, CAD, AUD
+  - 10 settlement-only currencies: EGP, INR, KRW, TRY, BRL, MXN, ZAR, IDR, MYR, THB
+  - Gold policy: goldTarget=18%, goldPreferredLower=15%, goldOperationalUpperZone={21%, 22%}, bullionCorridor={15%, 25%}, silverConditionalMax=3%, silverCurrent=0
+  - Digital policy: D_normal=2%, D_operational=3%, D_max=5%, D_emergency=0%, drqsCore=7.5, drqsConditional=6, algorithmicExcluded=true
+  - Digital universe: USDC (8.50, core), USDP (8.45, core), EURC (7.80, core), BUIDL (8.55, core), DAI (6.25, conditional, 0%), USDT (6.15, excluded)
+  - USD exposure: usdDirect=20%, aedUsdEquivalent=1.928%, sarUsdEquivalent=1.610%, synthetic=0, digital=0, usdEffective=23.54%, ceiling=35%, breached=false
+  - Currency weights (11): USD 20.00% (capped), EUR 20.00% (capped), JPY 15.48%, GBP 14.13%, CHF 5.49%, CAD 5.37%, AUD 4.43%, SGD 4.38%, AED 1.93%, SAR 1.61%, CNY 7.17%
+  - Each currency with C (structural), K (dynamic), L (liquidity), final weight, capped status
+  - Equations: structuralWeight, momentum, meanReversion, ewma, attenuation, kFactor, liquidityOverlay, rawWeight, normalizedWeight, finalWeight, sumConstraint
+  - What-if scenarios A, B, C, D (15% currency falls 20%, Gold falls 20%, Digital sleeve loses 50%, Digital sleeve goes to zero)
+  - Conflicts 1-4 (RR 120 vs 130, sleeve composition, digital target, per-currency cap 60% vs 20%)
+  - Example reserve: L=100M, R_m=130M, R_a=122.29M, R_l=113.67M, RR=122.29%, FSCR=113.67%, LCR=130%, status=DEFENSIVE/NORMAL/ADEQUATE
+- Read src/lib/mtq-final-reserve-spec.ts (1234 lines, 50 directive sections):
+  - PART A §1-6: Backing structure + 130% target
+  - PART B §2, §37-42: Liability, Valuation, RR, FSCR, LCR
+  - PART C §7-16: Currency Weight Engine (computeStructuralWeight, computeMomentum, computeMeanReversion, computeEWMAVolatility, computeAttenuation, computeKFactor, computeLiquidityOverlay, computeRawWeight, proportionalNormalize, finalizeCurrencyWeights, runCurrencyWeightPipeline, CONCENTRATION_POLICY)
+  - PART D §17: Effective USD Exposure (computeEffectiveUsdExposure, UsdExposureBreakdown)
+  - PART E §18-19: Currency Fall Price Effects (currencyFallOnReserveRatio, currencyFallOnWeight)
+  - PART F §20-22: Currency Lifecycle State Machine (assessCurrencyLifecycle, exitCurrencyAndRenormalize, assessMinFloorLadder)
+  - PART G §23-29: Gold/Bullion Module (GOLD_POLICY, computeGoldValue, goldFallOnReserveRatio, LIQUIDATION_SEQUENCE, computeSilverSDC, computeBRI, computeTGRS)
+  - PART H §30-36: Digital Liquidity Module (DIGITAL_POLICY, computeDRQS, classifyDigitalAsset, DIGITAL_UNIVERSE, computeStablecoinExposure, computeStablecoinRiskAdjustedExposure, computeStressFactor, computeStressDRQS, computeEffectiveDRQS, assessDigitalState)
+  - PART N: Reference inputs (REFERENCE_CURRENCY_INPUTS, buildReferenceReserveAssets)
+
+- Created /home/z/my-project/blueprint_parts/part03.md (3195 lines total):
+  • Section 9 — CURRENCY WEIGHT ENGINE (§7-16) — 1344 lines:
+    - §9.0 Overview: 9-stage mathematical pipeline + 8-stage constraint stack, 5 design principles (transparency, anti-procyclicality, constitutional binding, proportional not softmax, lifecycle awareness)
+    - §9.1 Structural Weight (§7): C_i = 0.50·COFER + 0.40·SWIFT + 0.10·BIS — three orthogonal datasets explained, coefficient rationale, reference COFER/SWIFT/BIS table with verification of USD (0.502) and EUR (0.247), pegged currencies (AED/SAR), CNY conditional
+    - §9.2 Momentum (§8): M_i = P_i(t)/P_i(t-12m), bounded [0.95, 1.05] — 4 reasons for bounding (symmetric trim, slow adaptation, regime robustness, auditability), edge cases, reference momentum values
+    - §9.3 Mean-Reversion (§9): R_i = 1 + 0.05·(LTA_i − C_i), bounded [0.98, 1.02] — interpretation, reference values, why both momentum and mean-reversion
+    - §9.4 EWMA Volatility (§10): σ²_t = 0.94·σ²_{t-1} + 0.06·r²_t — λ=0.94 (RiskMetrics, 4 justifications: empirical fit, industry precedent, stability, anti-procyclicality), why EWMA instead of simple historical, computation code, reference volatilities
+    - §9.5 Attenuation (§10): A_t — 3 zones (stable σ≤2% A=1.00, transition 2%<σ<5% linear, stressed σ≥5% A=0.50), anti-procyclical rationale, transition zone linearity, why 2% and 5% thresholds (G10 FX regimes)
+    - §9.6 Combined K-Factor (§11): K_i = 1 + A_t·(M_i·R_i − 1) — interpretation, max/min bounds [0.9310, 1.0710], reference K values
+    - §9.7 Liquidity Overlay (§12): L_i = 1 + 0.02·(Liquidity_i − Median), clamped ±5% — why liquidity overlay, why median (not mean), reference values
+    - §9.8 Raw Weight (§13): W_raw = C · K · L — reference table
+    - §9.9 Proportional Normalization (§14) — NOT softmax — 5 reasons against softmax (exaggeration, scale sensitivity, loss of auditability, concentration bias, no info gain)
+    - §9.10 Final Weight Pipeline (§15-16): 8-stage constraint stack (eligibility → concentration → floor → stress → geopolitical → liquidity → jurisdiction → verification), each stage explained with code excerpts
+    - §9.11 Concentration Policy (§16): 4-tier (preferred 15% / hard 20% / USD ceiling 35% / sanity 60%) + floor 0.5%, defense-in-depth rationale, Conflict-4 reconciliation, floor purposes
+    - §9.12 USD Effective Exposure (§17): formula, why ceiling, current value 23.54% vs 35% ceiling (NOT breached), advisory vs hard enforcement
+    - §9.13 Core Reserve Currencies (§46A) — 11 currencies with roles explained
+    - §9.14 Settlement-Only Currencies (§6, §47) — 10 currencies, why settlement ≠ reserve eligibility
+    - §9.15 Currency Lifecycle (§20-22): ACTIVE → WATCH → REDUCE → SUSPEND → SUBSTITUTE → REINSTATE, CQS scoring, transition triggers, exit & renormalization formula
+    - §9.16 Minimum Floor Removal Q1-Q4 Ladder (§22): 4 quarters (OBSERVATION_Q1/Q2, PROBATION_Q3, REMOVAL_Q4), removal process 7 steps
+    - §9.17 Current Weight Table (11 currencies with C, K, L, final weight, capped status): USD/EUR both capped at 20%, JPY 15.48%, GBP 14.13%, etc., sum verification (99.99% ≈ 100%), USD effective exposure cross-check (23.54%)
+    - §9.18 Illustrative Example: Corporate sending 500,000 MTQ for JPY→USD settlement — 20-step walk-through (BM-01 through BM-16, plus FX-1/FX-2/FX-3, LIQ-1/LIQ-2, settlement execution, redemption, confirmation), effect on reserve, what the weight engine did, what it would do if conditions changed
+    - §9.19 Summary
+  • Section 10 — GOLD & BULLION MODULE (§23-29) — 840 lines:
+    - §10.0 Overview: gold as strategic anchor, no counterparty, 5,000 years monetary history
+    - §10.1 Gold Policy (§23): 4 levels (target 18%, preferred lower 15%, operational upper 21-22%, bullion corridor 15-25%), 18% rationale (historical precedent, diversification, stress absorption, operational practicality), Conflict-2 reconciliation (tokenized gold NOT auto-counted toward 18%)
+    - §10.2 Gold Valuation (§24): R_G = Q_G × P_G (market); R_G,a = Q_G·P_G·(1−H_G)·C_G (adjusted), H_G=2% haircut, C_G counterparty adjustment (Credit × Jurisdiction × Operational), stress factor S_G=0.90, reference example ($23.4M sleeve = 12,000 oz × $1,950/oz, adjusted ~$22.03M, stress ~$19.83M)
+    - §10.3 Gold Price Fall Math (§25): RR' = RR·(1 − 0.18·d_G), 3 worked examples (20% fall → -4.40pp, 50% fall → -11.01pp, 80% fall → -17.61pp), why math is clean (linear), What-If Scenario B verification, strategic implication
+    - §10.4 Silver SDC (§27): full formula NetResilienceGain − NetCost = (CVaR + StressRR + LCR improvements) − (Execution + Custody + Volatility + Liquidity penalties), 7 components explained, current value SDC=-0.002 (negative, not admitted, 0%), decision rule, when silver might be admitted, implementation
+    - §10.5 BRI (§28): (Gold_0/Gold_t)^0.90 · (Silver_0/Silver_t)^0.10 formula, advisory only rationale (3 reasons), reference value BRI=0.9567
+    - §10.6 Tokenized Gold TGRS (§29): 10-component formula (physical backing 0.20, legal title 0.15, custody 0.15, redemption 0.10, issuer reliability 0.10, oracle reliability 0.10, settlement 0.08, liquidity 0.05, operational resilience 0.05, jurisdiction 0.02), eligibility thresholds (≥8.0 ELIGIBLE, ≥6.0 CONDITIONAL, <6.0 REJECTED), haircut formula H_TG = max(5%, 5% + (10 − TGRS)·0.5%), reference PAXG example (TGRS=8.765, ELIGIBLE, haircut 5.62%), why NOT auto-counted (4 reasons: different risk/liquidity/counterparty profile + Conflict-2)
+    - §10.7 Liquidation Sequence (§26): 7-step waterfall (digital → cash → sovereign → non-USD FX → silver → tokenized gold → physical gold LAST), 5 reasons gold is last (strategic anchor, counterparty-free, sovereign-independent, historically tested, operational friction), Exhaustion Certificate (4-of-7 Council), post-Step 7 scenario
+    - §10.8 Illustrative Example: Gold at $4,500/oz, 12,000 oz, 18% of $130M — overweight scenario (41.5% vs 25% corridor), rebalancing trigger (23.5pp deviation > 2pp threshold), transaction-cost test (NetBenefit strongly positive), hard override (constitutional breach), execution steps, post-rebalance composition, strategic lesson (sell high, buy low discipline)
+    - §10.9 Summary
+  • Section 11 — DIGITAL LIQUIDITY MODULE (§30-36) — 788 lines:
+    - §11.0 Overview: small-but-useful (2% normal), 4 reasons for small size (tail risk, operational risk, regulatory uncertainty, strategic optionality)
+    - §11.1 Digital Tiers (§30): 4 tiers (2% normal, ≤3% operational, 5% max, 0% emergency), rationale for each, Conflict-3 reconciliation (2% normal, optimizer outputs)
+    - §11.2 DRQS (§31): 8-component formula (issuer 0.20, reserve 0.15, redemption 0.15, depeg 0.15, jurisdiction 0.10, custody 0.10, operational 0.10, liquidity 0.05), eligibility thresholds (CORE ≥7.5, CONDITIONAL ≥6.0, EXCLUDED <6.0, algorithmic EXCLUDED), why algorithmic excluded (Terra/UST collapse May 2022), why 7.5/6.0 thresholds, USDC DRQS computation example (8.50)
+    - §11.3 Digital Universe (§32): 6 assets (USDC 8.50 CORE, USDP 8.45 CORE, EURC 7.80 CORE, BUIDL 8.55 CORE, DAI 6.25 CONDITIONAL, USDT 6.15 EXCLUDED), each asset profile, DAI conditional rationale, USDT excluded rationale, optimizer output concept
+    - §11.4 Stablecoin Risk-Adjusted Exposure (§34): SE formula (gross), SAE formula (risk-weighted: Value·((DRQS−1)/DRQS)·StressFactor), risk weight table (DRQS 10 → 0.9, DRQS 1 → 0), why SAE, reference example (SE 2.126%, SAE 1.500%)
+    - §11.5 Stablecoin Stress (§35): SF 7-component formula (depeg 0.20, redemption 0.20, liquidity 0.15, counterparty 0.15, custody 0.10, jurisdiction 0.10, settlement delay 0.10), StressDRQS = DRQS·(1−SF), EffectiveDRQS = min(DRQS, StressDRQS), 2 examples (moderate stress SF=0.022 → EffectiveDRQS 8.313, severe stress SF=0.0705 → EffectiveDRQS 7.900)
+    - §11.6 Digital State Machine (§36): NORMAL → WATCH → REDUCE → SUSPEND, 2%/5%/10% deviation thresholds explained, other SUSPEND triggers (redemption frozen, reserve failed, sanctions), state transitions (one-way under stress, two-way under recovery)
+    - §11.7 USDT Architecture (§48): NOT core, external conversion only, full flow (external input → eligibility → conversion → bank/LP → institutional value → final settlement → MTQ issuance), principle "interoperate without becoming dependent", BIS 2026 note, what USDT is NOT (6 items) vs what USDT IS (3 items)
+    - §11.8 USDT Final Rule: 10-row decision matrix (Core=NO, Normal=NO, External Input=YES, Conversion Bridge=YES, Settlement Asset=YES conditional, Reserve Asset=NO, USD-Effective=NO, State Machine=PARTIAL, DRQS=PARTIAL, Algorithmic=NO)
+    - §11.9 Illustrative Example: USDC Depeg Scenario — 2%/5%/10% deviation:
+      - At 2% (USDC $0.98): state WATCH, monitoring tightened, eligibility tightened, StressDRQS=8.313, loss $52K, RR impact -0.04pp
+      - At 5% (USDC $0.95): state REDUCE, 50% allocation cut ($1.3M sold), replaced with USDP+BUIDL, StressDRQS=8.075, cumulative loss $130K, RR impact -0.11pp
+      - At 10% (USDC $0.90): state SUSPEND, full conversion to cash ($1.17M), digital sleeve restored with USDP+BUIDL, StressDRQS=7.65 (near CORE threshold), cumulative loss $195K, RR impact -0.16pp
+      - Strategic lesson: catastrophic USDC failure costs only ~0.16pp of RR, bounded by design
+    - §11.10 Summary
+  • Appendix D — Cross-Reference and Authority (40+ row cross-reference table + honest state)
+  • Appendix E — Glossary for Part 03 (45+ terms across 5 categories)
+
+VERIFICATION:
+- File path: /home/z/my-project/blueprint_parts/part03.md
+- Total line count: 3195 (target 3,000-5,000) ✓
+- Per-section line counts:
+  - Section 9 — CURRENCY WEIGHT ENGINE: 1344 lines (target 500-1500) ✓
+  - Section 10 — GOLD & BULLION MODULE: 840 lines (target 500-1500) ✓
+  - Section 11 — DIGITAL LIQUIDITY MODULE: 788 lines (target 500-1500) ✓
+- All section markers present (§9.0 through §9.19, §10.0 through §10.9, §11.0 through §11.10, §D, §E)
+- All end markers present (Summary sections + End of Part 03)
+- Single source of truth: supersedes all older versions of sections 9-11 wherever they conflict
+- Reference values incorporated from /tmp/blueprint_reference.json:
+  - RR target 1.30 / policy floor 1.05 / absolute floor 1.00 ✓
+  - Composition 80/18/2 (fiat 80% / gold 18% / digital 2%) ✓
+  - Constitutional corridors (fiat 70-85% / bullion 15-25% / digital 0-5%) ✓
+  - Concentration limits (preferred effective 15% / hard effective 20% / 60% sanity ceiling / USD-effective 35% / min floor 0.5%) ✓
+  - 11 reserve currencies + 10 settlement-only currencies ✓
+  - Gold policy (18% target / 15% preferred lower / 21-22% operational upper zone / 15-25% corridor / silver 0% conditional max 3%) ✓
+  - Digital policy (D_normal 2% / D_operational 3% / D_max 5% / D_emergency 0% / DRQS core 7.5 / DRQS conditional 6 / algorithmic excluded) ✓
+  - Digital universe (USDC 8.50, USDP 8.45, EURC 7.80, BUIDL 8.55 core; DAI 6.25 0%; USDT 6.15 excluded) ✓
+  - USD-effective exposure (current 23.54% / ceiling 35% / not breached) ✓
+  - Currency weight table (USD 20% capped, EUR 20% capped, JPY 15.48%, GBP 14.13%, CHF 5.49%, CAD 5.37%, AUD 4.43%, SGD 4.38%, AED 1.93%, SAR 1.61%, CNY 7.17%) ✓
+  - All equations (structuralWeight, momentum, meanReversion, ewma, attenuation, kFactor, liquidityOverlay, rawWeight, normalizedWeight, finalWeight) ✓
+  - What-if scenarios A/B/C/D ✓
+  - Blueprint conflicts 1-4 ✓
+  - Example reserve (L=100M, R_m=130M, R_a=122.29M, R_l=113.67M) ✓
+  - Honest state preserved (PRODUCTION_AUTHORIZED=false throughout, CANDIDATE_MODEL_VALIDATION_PENDING)
+
+Stage Summary:
+- ✅ Built /home/z/my-project/blueprint_parts/part03.md (3195 lines)
+- ✅ All 3 sections (§9-§11) fully expanded with required sub-sections
+- ✅ All reference values from /tmp/blueprint_reference.json incorporated
+- ✅ Single source of truth preserved (supersedes older versions per §49 Conflict-1 through Conflict-4)
+- ✅ Honest state discipline maintained (PRODUCTION_AUTHORIZED=false, design-time spec, no live oracle feeds)
+- ✅ Currency Weight Engine: 9-stage mathematical pipeline + 8-stage constraint stack fully documented
+- ✅ Concentration policy (15%/20%/35%/60%/0.5%) documented with Conflict-4 reconciliation
+- ✅ USD effective exposure (23.54% vs 35% ceiling) documented with current weight table
+- ✅ 11 core reserve currencies + 10 settlement-only currencies documented
+- ✅ Currency lifecycle (ACTIVE/WATCH/REDUCE/SUSPEND/SUBSTITUTE/REINSTATE) documented with CQS triggers
+- ✅ Q1-Q4 minimum floor removal ladder documented
+- ✅ Corporate 500K MTQ JPY→USD settlement example fully walked through (BM-01..BM-16)
+- ✅ Gold policy (18%/15%/21-22%/15-25%) documented with Conflict-2 reconciliation
+- ✅ Gold price fall math (RR' = RR·(1 − 0.18·d_G)) documented with 3 worked examples (20%/50%/80%)
+- ✅ Silver SDC formula documented (currently 0%, SDC=-0.002)
+- ✅ BRI advisory-only documented
+- ✅ TGRS 10-component formula documented (PAXG example, TGRS=8.765, ELIGIBLE, 5.62% haircut)
+- ✅ Liquidation sequence 7 steps (gold LAST) documented with Exhaustion Certificate
+- ✅ Gold $4,500/oz 12,000 oz illustrative example documented (overweight → rebalance)
+- ✅ Digital tiers (2%/3%/5%/0%) documented with Conflict-3 reconciliation
+- ✅ DRQS 8-component formula documented (CORE ≥7.5, CONDITIONAL ≥6.0, algorithmic EXCLUDED)
+- ✅ Digital universe (USDC/USDP/EURC/BUIDL core; DAI 0%; USDT excluded) documented
+- ✅ Stablecoin SE vs SAE formulas documented with risk-weight table
+- ✅ Stablecoin stress (StressDRQS = DRQS·(1−SF), EffectiveDRQS = min) documented with 2 examples
+- ✅ Digital state machine (NORMAL/WATCH/REDUCE/SUSPEND) documented with 2%/5%/10% thresholds
+- ✅ USDT architecture documented (external conversion only, NOT core, full flow diagram)
+- ✅ USDT Final Rule 10-row decision matrix documented
+- ✅ USDC depeg scenario (2%/5%/10%) fully walked through with RR impact
+- ✅ Cross-reference table + glossary in appendices
+- ✅ Worklog appended with Task ID BP-SEC-03-RETRY
+
+FINAL FILE PATH: /home/z/my-project/blueprint_parts/part03.md
+FINAL LINE COUNT: 3195
