@@ -698,6 +698,7 @@ export interface CurrencyWeight {
   belowFloor: boolean; // below minimum floor (§22)
   goldPrice: number; // P_i (§14)
   goldPrice12moAgo: number;
+  fx?: number; // FX rate vs USD (used by §22 SDP computation)
 }
 
 export interface MonetaryStateV19 {
@@ -725,6 +726,8 @@ export interface MonetaryStateV19 {
   goldUsd: number;
   supply: number;
   mintingPaused: boolean;
+  // §22 Settlement Disruption Protection (optional — populated when FX deviations trigger SDP)
+  sdp?: { triggered: boolean; details: string };
 }
 
 // ---- Main: compute full v24.2.1 monetary state ----

@@ -156,7 +156,7 @@ export async function GET() {
 
       // Live values
       liveValues: {
-        nav: nav.navMarket,
+        nav: nav.navM,
         supply: nav.supply,
         ra,
         rm,

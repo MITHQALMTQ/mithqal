@@ -122,12 +122,15 @@ interface MBGReport {
     description: string;
     defaultPreference: boolean;
   }>;
-  adapters: Array<{
-    connectorClass: string;
-    protocolVersion: string;
-    status: string;
-  }>;
-  connectorClasses: string[];
+  adapters: {
+    msasStandard?: {
+      supportedConnectorClasses?: string[];
+      [key: string]: unknown;
+    };
+    [key: string]: unknown;
+  };
+  connectorClasses?: string[];
+  banksContracted?: number;
   integrationCostSummary: Record<
     string,
     {
@@ -218,7 +221,7 @@ export function MBGDashboard() {
   const testsPassed = report.tests.filter((t) => t.status === "PASS").length;
   const testsSimulated = report.tests.filter((t) => t.status === "SIMULATED").length;
   const acceptanceMet = report.acceptanceCriteria.filter((c) => c.met).length;
-  const banksContracted = report.honestState.banksContracted ?? report.banksContracted ?? 0;
+  const banksContracted = report.honestState?.banksContracted ?? report.banksContracted ?? 0;
   const costModels = Object.values(report.integrationCostSummary || {}).filter(
     (v): v is { bankSize: string; totalOneTime: number; annualRecurring: number; estimatedImplementationWeeks: number; integrationDepth: string; coreBankingReplacementRequired: boolean } =>
       typeof v === "object" && v !== null && "bankSize" in v,
@@ -346,7 +349,7 @@ export function MBGDashboard() {
                   if (report.deploymentModels && Array.isArray(report.deploymentModels) && report.deploymentModels.length > 0) {
                     dmArr.push(...report.deploymentModels);
                   } else if (report.deploymentModels && typeof report.deploymentModels === "object") {
-                    for (const [k, v] of Object.entries(report.deploymentModels as Record<string, { name?: string; description?: string; bankPreference?: string }>)) {
+                    for (const [k, v] of Object.entries(report.deploymentModels as unknown as Record<string, { name?: string; description?: string; bankPreference?: string }>)) {
                       if (v && typeof v === "object" && (v.name || v.description)) {
                         dmArr.push({
                           modelId: k,
@@ -403,22 +406,17 @@ export function MBGDashboard() {
                 Connectivity — MSAS Adapter Standard
               </CardTitle>
               <CardDescription>
-                {(report.connectorClasses && report.connectorClasses.length > 0
-                  ? report.connectorClasses.length
-                  : report.adapters && report.adapters.supportedConnectorClasses
-                            ? report.adapters.supportedConnectorClasses.length
-                            : 7
-                )} bank-specific connector classes
+                {report.adapters?.msasStandard?.supportedConnectorClasses?.length
+                  ?? report.connectorClasses?.length
+                  ?? 7} bank-specific connector classes
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                 {(() => {
-                  const cls = (report.connectorClasses && report.connectorClasses.length > 0)
-                    ? report.connectorClasses
-                    : (report.adapters && report.adapters.supportedConnectorClasses)
-                      ? report.adapters.supportedConnectorClasses
-                      : ["ISO_20022", "BANK_REST_API", "HOST_TO_HOST", "SECURE_FILE_EXCHANGE_SFTP", "EXISTING_PAYMENT_GATEWAY", "TREASURY_SYSTEM", "CORPORATE_ERP_CONNECTIVITY"];
+                  const cls = report.adapters?.msasStandard?.supportedConnectorClasses
+                    ?? report.connectorClasses
+                    ?? ["ISO_20022", "BANK_REST_API", "HOST_TO_HOST", "SECURE_FILE_EXCHANGE_SFTP", "EXISTING_PAYMENT_GATEWAY", "TREASURY_SYSTEM", "CORPORATE_ERP_CONNECTIVITY"];
                   return cls.map((c: string) => (
                     <div
                       key={c}

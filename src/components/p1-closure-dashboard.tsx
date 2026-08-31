@@ -216,7 +216,7 @@ export function P1ClosureDashboard() {
                 {bdr.data.states?.map((s: string, i: number) => (
                   <span key={s} className="flex items-center gap-1">
                     <span className="rounded border border-amber-300 bg-amber-50 px-1.5 py-0.5 text-[10px] font-semibold text-amber-800">{s}</span>
-                    {i < (bdr.data.states.length - 1) && <span className="text-gray-400">→</span>}
+                    {i < ((bdr.data?.states?.length ?? 0) - 1) && <span className="text-gray-400">→</span>}
                   </span>
                 ))}
               </div>

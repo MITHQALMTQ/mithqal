@@ -46,6 +46,8 @@ import {
   INSTITUTIONAL_EMAIL,
   DISCLAIMER,
   SECURITY_NOTICE,
+  type ReadinessCategory,
+  type JurisdictionStatus,
 } from "@/lib/institutional/types";
 
 /* ─── Defensive helpers ───────────────────────────────────────
@@ -252,7 +254,7 @@ function PageHeader() {
 
 /* ─── Section 2 · Readiness Scorecard ─────────────────────── */
 function ReadinessScorecard() {
-  const categories = Arr(READINESS_CATEGORIES);
+  const categories = Arr<ReadinessCategory>(READINESS_CATEGORIES);
   return (
     <Section
       id="scorecard"
@@ -494,7 +496,7 @@ function EvidenceDiscipline() {
               <GlassCard className="flex h-full flex-col gap-3">
                 <div className="flex items-center justify-between">
                   <span
-                    className={`font-mono text-[10px] uppercase tracking-[0.18em] ${color.text}`}
+                    className={`font-mono text-[10px] uppercase tracking-[0.18em] ${STATUS_COLOR_CLASSES[color].text}`}
                   >
                     {String(N(idx) + 1).padStart(2, "0")}
                   </span>
@@ -659,7 +661,7 @@ const JURISDICTION_ICONS = [
 ];
 
 function JurisdictionWorkflow() {
-  const statuses = Arr(JURISDICTION_STATUSES);
+  const statuses = Arr<{ status: JurisdictionStatus; label: string; description: string }>(JURISDICTION_STATUSES);
   return (
     <Section
       id="jurisdiction"
@@ -817,7 +819,7 @@ function ContactCTA() {
 /* ─── Footer ──────────────────────────────────────────────── */
 function PageFooter() {
   return (
-    <footer className="border-t border-[color:var(--line)]/60 bg-[color:var(--ink-soft)]/40">
+    <footer className="mt-auto border-t border-[color:var(--line)]/60 bg-[color:var(--ink-soft)]/40">
       <div className="mx-auto w-full max-w-6xl px-5 py-10 sm:px-8">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-[color:var(--gold)]">
@@ -859,16 +861,18 @@ function PageFooter() {
 /* ─── Page ─────────────────────────────────────────────────── */
 export default function InstitutionalReadinessPage() {
   return (
-    <main className="min-h-screen bg-[color:var(--ink)] text-foreground">
+    <div className="flex min-h-screen flex-col bg-[color:var(--ink)] text-foreground">
       <PageHeader />
-      <ReadinessScorecard />
-      <PilotModel />
-      <ReviewPackage />
-      <EvidenceDiscipline />
-      <StatusDisciplineReference />
-      <JurisdictionWorkflow />
-      <ContactCTA />
+      <div className="flex-1">
+        <ReadinessScorecard />
+        <PilotModel />
+        <ReviewPackage />
+        <EvidenceDiscipline />
+        <StatusDisciplineReference />
+        <JurisdictionWorkflow />
+        <ContactCTA />
+      </div>
       <PageFooter />
-    </main>
+    </div>
   );
 }

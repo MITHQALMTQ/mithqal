@@ -54,6 +54,8 @@ export async function GET() {
     // Per-asset state classification
     const states = depegReadings.map(r => ({
       ...classifyStablecoinState(r),
+      peg: r.peg,
+      pegValue: r.pegValue,
       drqs: approved[r.asset]?.drqs ?? 0,
       targetAllocation: approved[r.asset]?.target ?? 0,
       valueUsd: positions.find(p => p.asset === r.asset)?.valueUsd ?? 0,

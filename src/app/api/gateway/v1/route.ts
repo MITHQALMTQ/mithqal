@@ -53,6 +53,7 @@ import {
   type MSASConnectorClass,
   type BankGatewayDeploymentModel,
   type MTQ_STATUS_EVENT_DESCRIPTIONS,
+  type BankComplianceAssertionType,
 } from "@/lib/mithqal-bank-gateway";
 
 /**
@@ -184,7 +185,7 @@ function getExampleRequest(ep: BankGatewayAPIEndpoint): unknown {
       return {
         attestationId: "ATT-EXAMPLE-001",
         institutionId: "INST-SIMULATED-001",
-        assertions: [
+        assertions: ([
           "KYC",
           "KYB",
           "AML",
@@ -192,7 +193,7 @@ function getExampleRequest(ep: BankGatewayAPIEndpoint): unknown {
           "ACCOUNT_AUTHORITY",
           "FUNDS_AVAILABLE",
           "TRANSACTION_AUTHORIZED",
-        ].map((a) => ({
+        ] as BankComplianceAssertionType[]).map((a) => ({
           assertion: a,
           passed: true,
           attestationId: "ATT-EXAMPLE-001",

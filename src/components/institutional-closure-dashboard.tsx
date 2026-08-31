@@ -279,10 +279,11 @@ function extractScalars(obj: unknown): Array<{ key: string; value: unknown }> {
   const out: Array<{ key: string; value: unknown }> = [];
   for (const [k, v] of Object.entries(obj)) {
     if (v === null || v === undefined) continue;
-    const t = typeof v;
-    if (t === "string" || t === "number" || t === "boolean") {
+    if (typeof v === "string") {
       // Skip free-text description blobs from the metrics grid.
-      if (t === "string" && v.length > 80) continue;
+      if (v.length > 80) continue;
+      out.push({ key: k, value: v });
+    } else if (typeof v === "number" || typeof v === "boolean") {
       out.push({ key: k, value: v });
     }
   }

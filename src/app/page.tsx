@@ -10,8 +10,8 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import {
   Landmark, Shield, Lock, Coins, Cpu, Scale, Network,
-  AlertTriangle, CheckCircle2, XCircle, Activity, Building2,
-  Layers, Zap, Globe, ArrowRight, Mail, RefreshCw, Banknote,
+  CheckCircle2, XCircle, Activity, Building2,
+  Layers, Zap, Globe, ArrowRight, Mail, RefreshCw,
 } from "lucide-react";
 
 // ─── Defensive helpers ───
@@ -55,7 +55,7 @@ function GlassCard({ children, className = "", glow = false }: { children: React
   return <div className={`${glow ? "glass-gold" : "glass"} rounded-2xl ${className}`}>{children}</div>;
 }
 
-function Badge({ children, variant = "gray" }: { children: React.ReactNode; variant?: "emerald" | "amber" | "red" | "gold" | "gray" }) {
+function Badge({ children, variant = "gray", className = "" }: { children: React.ReactNode; variant?: "emerald" | "amber" | "red" | "gold" | "gray"; className?: string }) {
   const colors: Record<string, string> = {
     emerald: "border-emerald-500/30 bg-emerald-500/10 text-emerald-400",
     amber: "border-amber-500/30 bg-amber-500/10 text-amber-400",
@@ -63,7 +63,7 @@ function Badge({ children, variant = "gray" }: { children: React.ReactNode; vari
     gold: "border-gold/30 bg-gold/10 text-gold",
     gray: "border-white/10 bg-white/5 text-gray-400",
   };
-  return <span className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${colors[variant]}`}>{children}</span>;
+  return <span className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${colors[variant]} ${className}`}>{children}</span>;
 }
 
 function StatBox({ label, value, sub, accent = "gold" }: { label: string; value: string; sub?: string; accent?: "gold" | "emerald" | "amber" | "red" }) {
@@ -105,10 +105,14 @@ function LoadingBox({ label }: { label: string }) {
   return <GlassCard className="flex items-center gap-2 p-4"><RefreshCw className="h-4 w-4 animate-spin text-gold" /><span className="text-xs text-gray-400">Loading {label}…</span></GlassCard>;
 }
 
+function ErrorBox({ label, msg }: { label: string; msg?: string | null }) {
+  return <GlassCard className="flex items-center gap-2 border-red-500/20 p-4"><XCircle className="h-4 w-4 text-red-400" /><span className="text-xs text-red-400">Failed to load {label}{msg ? `: ${msg}` : ""}</span></GlassCard>;
+}
+
 // ─── Dynamic Reserve Simulator ───
 const SIM_CURRENCIES = ["USD","EUR","CHF","JPY","GBP","SGD","AED","SAR","CNY","CAD","AUD","GOLD","USDC","USDT"];
 
-function DynamicReserveSimulator({ baseData }: { baseData: any }) {
+function DynamicReserveSimulator() {
   const [supply, setSupply] = useState(100);
   const [goldPrice, setGoldPrice] = useState(4500);
   const [fiatPct, setFiatPct] = useState(80);
@@ -244,7 +248,7 @@ const CORRIDOR_CURRENCIES = [
 ];
 const CORRIDOR_RAILS = ["SWIFT","ISO 20022","REST API","Host-to-Host","SFTP","RTGS","Tokenized Deposit","CBDC"];
 
-function DynamicCorridorSimulator({ baseData }: { baseData: any }) {
+function DynamicCorridorSimulator() {
   const [fromCcy, setFromCcy] = useState("AED");
   const [toCcy, setToCcy] = useState("SGD");
   const [amount, setAmount] = useState(1000000);
@@ -401,15 +405,13 @@ export default function Page() {
   const threeBook = useFetch("/api/mtq-three-book-separation");
   const systemic = useFetch("/api/mtq-systemic-exposure-engine");
   const contradiction = useFetch("/api/mtq-contradiction-scan");
-  const sim = useFetch("/api/reserve-simulator");
-  const corridor = useFetch("/api/corridor");
 
   const scrollTo = useCallback((id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#0a0a0b] text-gray-200">
+    <div className="flex min-h-screen flex-col bg-[#0a0a0b] text-gray-200">
       {/* ─── HEADER (upgraded: prominent, institutional) ─── */}
       <header className="sticky top-0 z-50 border-b border-gold/10 bg-[#0a0a0b]/95 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
@@ -430,14 +432,13 @@ export default function Page() {
             <Link href="/institutional-readiness" className="hidden rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-1.5 text-xs font-semibold text-amber-400 transition hover:bg-amber-500/20 sm:block">
               Pilot Readiness
             </Link>
-            <a href="/os" className="hidden rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold text-gray-300 transition hover:bg-white/10 sm:block">
+            <Link href="/os" className="hidden rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold text-gray-300 transition hover:bg-white/10 sm:block">
               OS
-            </a>
+            </Link>
           </div>
         </div>
       </header>
-
-      <div className="mx-auto flex max-w-7xl">
+      <div className="mx-auto flex w-full max-w-7xl flex-1">
         {/* ─── SIDEBAR NAV (upgraded: mobile-responsive horizontal scroll) ─── */}
         <nav className="sticky top-[61px] hidden h-[calc(100vh-61px)] w-56 shrink-0 flex-col gap-1 overflow-y-auto p-4 lg:flex">
           {NAV_ITEMS.map((item) => (
@@ -455,10 +456,10 @@ export default function Page() {
             <CheckCircle2 className="h-3.5 w-3.5" />
             Pilot Readiness →
           </Link>
-          <a href="/os" className="flex items-center gap-2.5 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs font-medium text-gray-400 transition hover:bg-white/10">
+          <Link href="/os" className="flex items-center gap-2.5 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs font-medium text-gray-400 transition hover:bg-white/10">
             <Layers className="h-3.5 w-3.5" />
             Operating System →
-          </a>
+          </Link>
           <a href="mailto:meltonsy@icloud.com" className="flex items-center gap-2.5 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs font-medium text-gray-400 transition hover:bg-white/10">
             <Mail className="h-3.5 w-3.5" />
             Email MITHQAL
@@ -499,7 +500,7 @@ export default function Page() {
           <div className="space-y-16">
             {/* ═══ HERO: LIVE STATE ═══ */}
             <Section id="hero" icon={Activity} title="Live Monetary State" subtitle="Auto-refreshing from /api/nav + /api/oracle">
-              {!nav.data ? <LoadingBox label="live data" /> : (
+              {!nav.data ? (nav.err ? <ErrorBox label="live data" msg={nav.err} /> : <LoadingBox label="live data" />) : (
                 <>
                   <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                     <StatBox label="NAV (Market)" value={`$${N(nav.data.navM).toFixed(4)}`} sub="R_m / S" accent="gold" />
@@ -524,7 +525,7 @@ export default function Page() {
 
             {/* ═══ RESERVE ARCHITECTURE ═══ */}
             <Section id="reserve" icon={Shield} title="Reserve Architecture — §V25.2" subtitle="130% institutional backing target · 80% fiat / 18% gold / 2% digital">
-              {!reserve.data ? <LoadingBox label="reserve architecture" /> : (
+              {!reserve.data ? (reserve.err ? <ErrorBox label="reserve architecture" msg={reserve.err} /> : <LoadingBox label="reserve architecture" />) : (
                 <>
                   <div className="grid gap-3 md:grid-cols-3">
                     <GlassCard glow className="p-5"><div className="flex items-center justify-between"><Coins className="h-5 w-5 text-emerald-400" /><Badge variant="emerald">80%</Badge></div><div className="mt-2 font-display text-2xl font-bold text-emerald-400">{fmtUSDm(reserve.data.exampleBacking?.fiat)}</div><div className="mt-1 text-[10px] text-gray-500">Front-line: {fmtUSDm(reserve.data.exampleBacking?.frontlineFiat)} · Strategic: {fmtUSDm(reserve.data.exampleBacking?.strategicFiat)}</div></GlassCard>
@@ -556,7 +557,7 @@ export default function Page() {
 
             {/* ═══ CURRENCY ENGINE ═══ */}
             <Section id="currency" icon={Network} title="Currency Weight Engine" subtitle="11 currencies · C = 0.50·COFER + 0.40·SWIFT + 0.10·BIS · 20% hard cap · proportional normalization">
-              {!reserve.data ? <LoadingBox label="currency engine" /> : (
+              {!reserve.data ? (reserve.err ? <ErrorBox label="currency engine" msg={reserve.err} /> : <LoadingBox label="currency engine" />) : (
                 <>
                   <div className="grid gap-3 md:grid-cols-3">
                     <StatBox label="Currency Sum" value={N(reserve.data.currencyWeights?.sum).toFixed(6)} sub="Σ W_i = 1.0" accent="emerald" />
@@ -627,7 +628,7 @@ export default function Page() {
 
             {/* ═══ GOLD & BULLION ═══ */}
             <Section id="gold" icon={Scale} title="Gold & Bullion Module" subtitle="18% target · 15-25% corridor · silver 0% (SDC ≤ 0) · liquidation protects gold LAST">
-              {!reserve.data ? <LoadingBox label="gold module" /> : (
+              {!reserve.data ? (reserve.err ? <ErrorBox label="gold module" msg={reserve.err} /> : <LoadingBox label="gold module" />) : (
                 <>
                   <div className="grid gap-3 md:grid-cols-4">
                     <StatBox label="Gold Target" value={fmtPct(reserve.data.goldPolicy?.goldTarget, 0)} accent="gold" />
@@ -646,7 +647,7 @@ export default function Page() {
 
             {/* ═══ DIGITAL LIQUIDITY ═══ */}
             <Section id="digital" icon={Cpu} title="Digital Liquidity Module" subtitle="2% normal · ≤3% operational · 5% max · 0% emergency · algorithmic excluded">
-              {!reserve.data ? <LoadingBox label="digital module" /> : (
+              {!reserve.data ? (reserve.err ? <ErrorBox label="digital module" msg={reserve.err} /> : <LoadingBox label="digital module" />) : (
                 <>
                   <div className="grid gap-3 md:grid-cols-4">
                     <StatBox label="D_normal" value={fmtPct(reserve.data.digitalPolicy?.D_normal, 0)} accent="emerald" />
@@ -675,7 +676,7 @@ export default function Page() {
 
             {/* ═══ FINALITY GATE ═══ */}
             <Section id="finality" icon={Lock} title="Finality-Before-Mint — §54" subtitle="NO FINAL SETTLEMENT ⇒ NO MTQ MINT · 7/7 enforcement layers · 10/10 bypass routes blocked">
-              {!finality.data ? <LoadingBox label="finality gate" /> : (
+              {!finality.data ? (finality.err ? <ErrorBox label="finality gate" msg={finality.err} /> : <LoadingBox label="finality gate" />) : (
                 <>
                   <GlassCard glow className="mb-3 p-4 text-center"><div className="font-display text-lg font-bold text-gold">{S(finality.data.invariant)}</div></GlassCard>
                   <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
@@ -718,7 +719,7 @@ export default function Page() {
 
             {/* ═══ IMPLEMENTATION STATUS ═══ */}
             <Section id="status" icon={CheckCircle2} title="§87 Implementation Status Report" subtitle="Never inflate any column · 19/23 acceptance criteria met · 0/13 institutional gates passed">
-              {!status.data ? <LoadingBox label="implementation status" /> : (
+              {!status.data ? (status.err ? <ErrorBox label="implementation status" msg={status.err} /> : <LoadingBox label="implementation status" />) : (
                 <>
                   <div className="grid gap-3 md:grid-cols-3">
                     <StatBox label="Acceptance Criteria" value={`${S(status.data.acceptanceCriteriaMet)}/${S(status.data.acceptanceCriteriaTotal)}`} sub={`${(N(status.data.acceptanceRate) * 100).toFixed(0)}% met`} accent="amber" />
@@ -762,16 +763,12 @@ export default function Page() {
 
             {/* ═══ DYNAMIC RESERVE SIMULATOR ═══ */}
             <Section id="simulator" icon={Zap} title="Dynamic Reserve Weighting Simulator" subtitle="Interactive stress-testing · Adjust parameters and simulate in real-time · Monte Carlo (1000 iterations) · §V25.2 formulas">
-              {!sim.data ? <LoadingBox label="simulator" /> : (
-                <DynamicReserveSimulator baseData={sim.data} />
-              )}
+              <DynamicReserveSimulator />
             </Section>
 
             {/* ═══ DYNAMIC CROSS-BORDER CORRIDOR ═══ */}
             <Section id="corridor" icon={Globe} title="Dynamic Cross-Border Corridor Simulator" subtitle="Select currencies, amount, and rail to simulate different settlement corridors in real-time">
-              {!corridor.data ? <LoadingBox label="corridor" /> : (
-                <DynamicCorridorSimulator baseData={corridor.data} />
-              )}
+              <DynamicCorridorSimulator />
             </Section>
 
             {/* ═══ INSTITUTIONAL ENGAGEMENT CTA ═══ */}
@@ -820,7 +817,7 @@ export default function Page() {
       </div>
 
       {/* ─── FOOTER (upgraded: institutional, multi-column) ─── */}
-      <footer className="border-t border-gold/10 bg-[#080809]">
+      <footer className="mt-auto border-t border-gold/10 bg-[#080809]">
         <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
           <div className="grid gap-6 md:grid-cols-3">
             {/* Brand */}

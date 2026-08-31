@@ -58,6 +58,12 @@ const STATE_CONFIG: Record<ReserveState, {
   STRESS:     { rrTarget: 1.25, feeBps: 37,  feeRange: "0.25–0.50%" },
   EMERGENCY:  { rrTarget: 1.30, feeBps: 0,   feeRange: "minting disabled" },
   RECOVERY:   { rrTarget: 1.21, feeBps: 10,  feeRange: "0.05–0.10%" },
+  // Legacy v24.1 ReserveState aliases (GAP-010 type-widening interop).
+  // ELEVATED ≈ CAUTION, HIGH_STRESS ≈ STRESS, CRISIS ≈ EMERGENCY per the
+  // v24.2 calmStateMap; the v24.2 state machine never emits these.
+  ELEVATED:   { rrTarget: 1.22, feeBps: 15,  feeRange: "0.10–0.20%" },
+  HIGH_STRESS:{ rrTarget: 1.25, feeBps: 37,  feeRange: "0.25–0.50%" },
+  CRISIS:     { rrTarget: 1.30, feeBps: 0,   feeRange: "minting disabled" },
 };
 
 export function computeCalm(input: CalmInput): CalmResult {

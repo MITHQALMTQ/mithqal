@@ -965,7 +965,7 @@ function EngagementHeader() {
  * ------------------------------------------------------------------------- */
 function EngagementFooter() {
   return (
-    <footer className="border-t border-line/40 bg-ink-soft/60">
+    <footer className="mt-auto border-t border-line/40 bg-ink-soft/60">
       <div className="mx-auto w-full max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
           <div className="lg:col-span-2">

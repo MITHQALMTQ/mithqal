@@ -307,7 +307,7 @@ export async function GET() {
       // Live values (preserved from v24.2.1)
       liveValues: {
         rr,
-        nav: nav.navMarket,
+        nav: nav.navM,
         supply: nav.supply,
         goldUsd: nav.goldUsd,
       },
@@ -334,13 +334,13 @@ export async function GET() {
       productionDecision: "IMPLEMENTED + PROVISIONALLY VALIDATED + NOT PRODUCTION-AUTHORIZED",
       decisionReason: "v25.0 transforms MITHQAL into permissioned wholesale neutral settlement infrastructure. Constitutional spine preserved. Participant model transformed. CBDC interop first-class. NOT production-certified, NOT regulator-approved.",
 
-      // Helper functions (for API consumers)
-      helpers: {
-        canClassMint: "GET /api/v25.0/can-mint?class=B",
-        checkAuthorization: "GET /api/v25.0/authorize?institutionId=INST-001&function=SETTLE&amount=1000",
-        checkGeoFence: "GET /api/v25.0/geo-fence?jurisdiction=CN",
-        processSettlement: "POST /api/v25.0/settle",
-        checkCBDC: "GET /api/v25.0/cbdc-interop",
+      // Helper endpoints — status disclosure
+      helperEndpoints: {
+        canClassMint: { path: "/api/v25.0/can-mint", method: "GET", status: "IMPLEMENTED (SIMULATED)", description: "Check if a participant class can mint" },
+        checkAuthorization: { path: "/api/v25.0/authorize", method: "GET", status: "IMPLEMENTED (SIMULATED)", description: "Check institutional authorization for a function" },
+        checkGeoFence: { path: "/api/v25.0/geo-fence", method: "GET", status: "IMPLEMENTED (SIMULATED)", description: "Check jurisdictional geo-fence (e.g. CN)" },
+        processSettlement: { path: "/api/v25.0/settle", method: "POST", status: "IMPLEMENTED (SIMULATED)", description: "Process a settlement instruction" },
+        checkCBDC: { path: "/api/v25.0/cbdc-interop", method: "GET", status: "IMPLEMENTED (SIMULATED)", description: "Check CBDC interoperability status" },
       },
     });
   } catch (err) {

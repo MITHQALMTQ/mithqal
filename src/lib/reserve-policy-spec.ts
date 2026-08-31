@@ -177,8 +177,8 @@ export const BASKET_VERIFICATION_SPEC = {
   SUM_TARGET: 1.0,
   /** Tolerance for sum verification (floating-point) */
   SUM_TOLERANCE: 0.0001,
-  /** Regional group cap: ≤70% (v18 Part 2 Article V) */
-  GROUP_CAP: 0.70,
+  /** v18 historical reference: regional group cap maximum (v18 Part 2 Article V). Superseded by GROUP_CAP (0.40) in v21. Kept for audit/provenance. */
+  V18_GROUP_CAP_MAX: 0.70,
   /** Minimum currency diversity: 3 currencies (v18 Part 3 Article I) */
   MIN_DIVERSITY: 3,
 } as const;

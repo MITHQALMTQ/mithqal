@@ -8,8 +8,15 @@
 //   LCR minimum, Stress-RR minimum, reporting frequency, stress-test frequency
 // =================================================================
 
+// Union widened (GAP-010) to also accept the legacy v24.1 ReserveState literals
+// ("ELEVATED" | "HIGH_STRESS" | "CRISIS") so that callers which map v24.2
+// states into the legacy CALM labels can pass them to computeCalm without
+// a cast. The v24.2 state machine itself still only emits the 6 core states;
+// these extra members exist purely for type-level interop with v24.1 callers
+// (rebalancing-dashboard, resilience-stack, v24.2 calmStateMap).
 export type ReserveStateV242 =
-  | "NORMAL" | "CAUTION" | "DEFENSIVE" | "STRESS" | "EMERGENCY" | "RECOVERY";
+  | "NORMAL" | "CAUTION" | "DEFENSIVE" | "STRESS" | "EMERGENCY" | "RECOVERY"
+  | "ELEVATED" | "HIGH_STRESS" | "CRISIS";
 
 export interface StateConfigV242 {
   state: ReserveStateV242;
@@ -152,6 +159,74 @@ export const STATE_CONFIGS_V242: Record<ReserveStateV242, StateConfigV242> = {
     stressTestFrequency: "DAILY",
     stabilizationFeeBps: 15,
     calMRRTarget: 1.21,
+  },
+  // Legacy v24.1 ReserveState aliases — kept for type-level interop only.
+  // The v24.2 state machine never emits these states; they exist so that
+  // callers which bridge v24.1 ReserveState ("ELEVATED"|"HIGH_STRESS"|"CRISIS")
+  // into computeCalm / STATE_CONFIGS_V242 can do so without a cast.
+  // Values mirror the closest v24.2 state per the v24.2 calmStateMap:
+  //   ELEVATED  ≈ CAUTION   (CAUTION/DEFENSIVE → ELEVATED)
+  //   HIGH_STRESS ≈ STRESS  (STRESS → HIGH_STRESS)
+  //   CRISIS    ≈ EMERGENCY (EMERGENCY → CRISIS)
+  ELEVATED: {
+    state: "ELEVATED",
+    bullionRange: { min: 0.17, max: 0.21 },
+    goldTarget: { min: 0.14, max: 0.18 },
+    silverTarget: { min: 0.00, max: 0.03 },
+    fiatRange: { min: 0.77, max: 0.81 },
+    digitalCeiling: 0.03,
+    minLiquidCashPct: 0.60,
+    cashSovSplit: { cash: 0.65, sovereign: 0.35 },
+    mintingStatus: "ALLOWED",
+    maxMintCapacityPct: 0.7,
+    rebalancingPermission: "FULL",
+    approvalRequired: "AUTO",
+    lcrMinimum: 1.1,
+    stressRRMinimum: 1.0,
+    reportingFrequency: "DAILY",
+    stressTestFrequency: "DAILY",
+    stabilizationFeeBps: 10,
+    calMRRTarget: 1.22,
+  },
+  HIGH_STRESS: {
+    state: "HIGH_STRESS",
+    bullionRange: { min: 0.20, max: 0.24 },
+    goldTarget: { min: 0.16, max: 0.20 },
+    silverTarget: { min: 0.00, max: 0.03 },
+    fiatRange: { min: 0.74, max: 0.79 },
+    digitalCeiling: 0.02,
+    minLiquidCashPct: 0.72,
+    cashSovSplit: { cash: 0.75, sovereign: 0.25 },
+    mintingStatus: "RESTRICTED",
+    maxMintCapacityPct: 0.15,
+    rebalancingPermission: "DEFENSIVE_ONLY",
+    approvalRequired: "4_OF_5",
+    lcrMinimum: 1.2,
+    stressRRMinimum: 1.0,
+    reportingFrequency: "HOURLY",
+    stressTestFrequency: "HOURLY",
+    stabilizationFeeBps: 37,
+    calMRRTarget: 1.25,
+  },
+  CRISIS: {
+    state: "CRISIS",
+    bullionRange: { min: 0.22, max: 0.25 },
+    goldTarget: { min: 0.18, max: 0.22 },
+    silverTarget: { min: 0.00, max: 0.03 },
+    fiatRange: { min: 0.75, max: 0.76 },
+    digitalCeiling: 0.0,
+    minLiquidCashPct: 0.78,
+    cashSovSplit: { cash: 0.80, sovereign: 0.20 },
+    mintingStatus: "BLOCKED",
+    maxMintCapacityPct: 0.0,
+    rebalancingPermission: "EMERGENCY_ONLY",
+    approvalRequired: "5_OF_5",
+    lcrMinimum: 1.3,
+    stressRRMinimum: 1.0,
+    reportingFrequency: "REAL_TIME",
+    stressTestFrequency: "HOURLY",
+    stabilizationFeeBps: 0,
+    calMRRTarget: 1.30,
   },
 };
 

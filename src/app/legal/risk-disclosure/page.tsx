@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { SiteFooter } from "@/components/site-footer";
 
 export const metadata: Metadata = {
   title: "Risk Disclosure",
@@ -9,6 +10,8 @@ export const metadata: Metadata = {
 
 export default function RiskDisclosurePage() {
   return (
+    <>
+    <div className="flex-1">
     <main className="mx-auto w-full max-w-3xl px-5 py-16">
       <Link href="/" className="inline-flex items-center gap-2 text-xs text-fg-muted transition hover:text-gold">
         <ArrowLeft className="h-3.5 w-3.5" /> Back to Mithqal
@@ -61,7 +64,7 @@ export default function RiskDisclosurePage() {
           <ul className="ml-5 list-disc space-y-1">
             <li>A formation team is being assembled. Until the team is seated, a single operator holds all keys and credentials (key-person risk).</li>
             <li>Multi-factor authentication is not yet enforced on the operator account; rate-limiting is in-memory and per-instance on Vercel.</li>
-            <li>No Content-Security-Policy header is currently emitted for the public site.</li>
+            <li>A Content-Security-Policy header is emitted for all routes via next.config.ts (default-src &apos;self&apos;, script-src &apos;self&apos; &apos;unsafe-inline&apos; &apos;unsafe-eval&apos;). The CSP permits &apos;unsafe-inline&apos; and &apos;unsafe-eval&apos; for scripts — this should be tightened with nonce-based CSP in a future hardening pass.</li>
             <li>Operational database is single-region (us-east-1). No cross-region replication.</li>
             <li>No 24/7 incident-response team. No cyber, professional-indemnity, or custody insurance is in force.</li>
           </ul>
@@ -103,5 +106,8 @@ export default function RiskDisclosurePage() {
         </section>
       </div>
     </main>
+    </div>
+    <SiteFooter />
+    </>
   );
 }

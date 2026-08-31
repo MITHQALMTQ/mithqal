@@ -11,8 +11,8 @@ export async function GET() {
     return NextResponse.json(
       {
         ok: true,
-        moduleId: MODULE_ID,
         ...report,
+        moduleId: MODULE_ID,
         _meta: {
           honestState: report.honestState,
           generatedAt: new Date().toISOString(),

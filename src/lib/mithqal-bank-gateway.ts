@@ -2171,7 +2171,13 @@ export function calculateBankIntegrationCost(
 export interface BankROIModel {
   bankId: string;
   bankSize: "TIER_1" | "TIER_2" | "TIER_3";
-  integrationCost: BankIntegrationCostModel;
+  // GAP-019: integrationCost is intentionally `Omit<..., "bankId">` here so
+  // that calculateBankROI() (which only knows `bankSize` + `monthlyVolumeUSD`)
+  // can return an `Omit<BankROIModel, "bankId">` whose nested integrationCost
+  // is itself bankId-less. The caller that knows the bankId is responsible
+  // for stamping it onto both BankROIModel.bankId and (when serializing the
+  // full record) BankIntegrationCostModel.bankId.
+  integrationCost: Omit<BankIntegrationCostModel, "bankId">;
   annualOperatingCost: number;        // ongoing operating cost
   // Revenue streams (USD annual)
   settlementRevenue: number;

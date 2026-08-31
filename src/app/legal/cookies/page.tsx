@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { SiteFooter } from "@/components/site-footer";
 
 export const metadata: Metadata = {
   title: "Cookie Policy",
@@ -9,6 +10,8 @@ export const metadata: Metadata = {
 
 export default function CookiesPage() {
   return (
+    <>
+    <div className="flex-1">
     <main className="mx-auto w-full max-w-3xl px-5 py-16">
       <Link href="/" className="inline-flex items-center gap-2 text-xs text-fg-muted transition hover:text-gold">
         <ArrowLeft className="h-3.5 w-3.5" /> Back to Mithqal
@@ -70,5 +73,8 @@ export default function CookiesPage() {
         </section>
       </div>
     </main>
+    </div>
+    <SiteFooter />
+    </>
   );
 }

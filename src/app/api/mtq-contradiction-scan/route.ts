@@ -15,7 +15,7 @@ export async function GET() {
       content: fs.readFileSync(path.join(libDir, f), "utf8"),
     }));
     const report = runContradictionScan(inputs);
-    return NextResponse.json({ ok: true, moduleId: MODULE_ID, ...report });
+    return NextResponse.json({ ok: true, ...report, moduleId: MODULE_ID });
   } catch (e) {
     return NextResponse.json({ ok: false, error: e instanceof Error ? e.message : "unknown" }, { status: 500 });
   }

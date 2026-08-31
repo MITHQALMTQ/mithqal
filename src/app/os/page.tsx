@@ -24,22 +24,27 @@ const Arr = (v: unknown): any[] => {
 
 function useFetch<T = any>(url: string) {
   const [data, setData] = useState<T | null>(null);
+  const [err, setErr] = useState<string | null>(null);
   useEffect(() => {
     let c = false;
     const go = (a = 0) => {
-      fetch(url).then(r => r.json()).then(j => { if (!c) setData(j); }).catch(() => { if (!c && a < 3) setTimeout(() => go(a + 1), 1200 * (a + 1)); });
+      fetch(url).then(r => r.json()).then(j => {
+        if (!c && j.ok !== false) setData(j);
+        else if (!c && a < 3) setTimeout(() => go(a + 1), 1200 * (a + 1));
+        else if (!c) setErr("failed");
+      }).catch(() => { if (!c && a < 3) setTimeout(() => go(a + 1), 1200 * (a + 1)); else if (!c) setErr("error"); });
     };
     go();
     return () => { c = true; };
   }, [url]);
-  return { data };
+  return { data, err };
 }
 
 function GlassCard({ children, className = "", glow = false }: { children: React.ReactNode; className?: string; glow?: boolean }) {
   return <div className={`${glow ? "glass-gold" : "glass"} rounded-2xl ${className}`}>{children}</div>;
 }
 
-function Badge({ children, variant = "gray" }: { children: React.ReactNode; variant?: "emerald" | "amber" | "red" | "gold" | "gray" }) {
+function Badge({ children, variant = "gray", className = "" }: { children: React.ReactNode; variant?: "emerald" | "amber" | "red" | "gold" | "gray"; className?: string }) {
   const colors: Record<string, string> = {
     emerald: "border-emerald-500/30 bg-emerald-500/10 text-emerald-400",
     amber: "border-amber-500/30 bg-amber-500/10 text-amber-400",
@@ -47,7 +52,7 @@ function Badge({ children, variant = "gray" }: { children: React.ReactNode; vari
     gold: "border-gold/30 bg-gold/10 text-gold",
     gray: "border-white/10 bg-white/5 text-gray-400",
   };
-  return <span className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${colors[variant]}`}>{children}</span>;
+  return <span className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${colors[variant]} ${className}`}>{children}</span>;
 }
 
 export default function OSPage() {
@@ -58,7 +63,7 @@ export default function OSPage() {
   const token = useFetch("/api/tokenization");
 
   return (
-    <div className="min-h-screen bg-[#0a0a0b] text-gray-200">
+    <div className="flex min-h-screen flex-col bg-[#0a0a0b] text-gray-200">
       <header className="sticky top-0 z-50 border-b border-white/5 bg-[#0a0a0b]/80 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
           <Link href="/" className="flex items-center gap-3">
@@ -165,7 +170,7 @@ export default function OSPage() {
         </div>
       </main>
 
-      <footer className="border-t border-white/5 bg-[#0a0a0b]"><div className="mx-auto max-w-7xl px-4 py-4 text-center"><p className="text-[10px] text-gray-500">MITHQAL §V25.2 Operating System · SIMULATED · NOT PRODUCTION-AUTHORIZED · 7/7 finality · 0/13 gates</p></div></footer>
+      <footer className="mt-auto border-t border-white/5 bg-[#0a0a0b]"><div className="mx-auto max-w-7xl px-4 py-4 text-center"><p className="text-[10px] text-gray-500">MITHQAL §V25.2 Operating System · SIMULATED · NOT PRODUCTION-AUTHORIZED · 7/7 finality · 0/13 gates</p></div></footer>
     </div>
   );
 }
