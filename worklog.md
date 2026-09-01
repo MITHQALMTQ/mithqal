@@ -5400,3 +5400,43 @@ Stage Summary:
 - VLM verification: dashboard renders with real data (NAV $1.2559, RR 120.48%, Gold $4442, USD Exposure 23.54% vs 35% ceiling OK)
 - No loading/error boxes visible in rendered UI
 - Lint: 29 pre-existing errors in use-wallet.ts (not touched by this task); 0 new errors introduced
+
+---
+Task ID: DEPLOY-GITHUB-TURSO-VERCEL
+Agent: Main (Z.ai Code)
+Task: Push all updates to GitHub, Turso, and deploy on Vercel — verify all connected
+
+Work Log:
+- Verified NO deletions in project source (only 4 skill metadata files had mode changes — restored)
+- Verified all gap implementation edits intact (layout.tsx, page.tsx, os/page.tsx, legal pages, api/route.ts, v25.0 helpers, etc.)
+- Created backup branch (backup/pre-push-*) before any operations
+- Updated git remote URL with new GitHub token
+- Resolved divergent branches: reset to origin/main, cherry-picked gap fix commit (e20cdf4 → 5707b08)
+- Pushed to GitHub (main branch): 5707b08 + 9ba80aa commits — linear history, no merge commits
+- GitHub remote verified: origin/main = local main = 9ba80aa
+- Configured Vercel project link (tonsy/mithqal, projectId=prj_SrfvqPNzATQizbErM63pIzDlbzEI)
+- Verified existing Turso env vars on Vercel (DATABASE_URL + DATABASE_AUTH_TOKEN already set for Production/Preview/Development)
+- Set SMTP env vars on Vercel (SMTP_HOST=smtp.mail.me.com, SMTP_PORT=587, SMTP_USER=meltonsy@icloud.com, SMTP_PASS=***, SMTP_FROM=meltonsy@icloud.com)
+- Generated Prisma client + pushed schema to local DB (database is already in sync)
+- Deployed to Vercel production: https://mithqal.vercel.app (Ready, build completed in 58s)
+- Verified Turso DB connection on production: database=connected, network=Monad Testnet
+- Tested formation form submission → Turso DB write succeeded (record id: cmtj7zg5u7eqj89y1v1)
+- SMTP email should be sent to meltonsy@icloud.com (iCloud app-specific password configured)
+
+Stage Summary:
+- ✅ GitHub: pushed (main branch, 2 new commits, linear history)
+- ✅ Vercel: deployed (https://mithqal.vercel.app, Ready status)
+- ✅ Turso: connected (database=connected on production, DB writes work)
+- ✅ SMTP: configured (smtp.mail.me.com:587, meltonsy@icloud.com)
+- ✅ All 10 routes return HTTP 200 on production
+- ✅ All 11 key APIs return HTTP 200 on production (including 5 new v25.0 helper endpoints)
+- ✅ API root discovery catalog live (/api returns structured catalog with 148 endpoints)
+- ✅ No data loss, no deletions, backup branch preserved
+- ✅ All 3 platforms (GitHub + Turso + Vercel) connected and synced
+
+Final URLs:
+- GitHub: https://github.com/MITHQALMTQ/mithqal
+- Vercel: https://mithqal.vercel.app
+- Turso DB: connected via DATABASE_URL env var on Vercel
+- API Discovery: https://mithqal.vercel.app/api
+- Status: https://mithqal.vercel.app/api/status
