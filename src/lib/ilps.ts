@@ -31,7 +31,7 @@ export const BREACH_PROBABILITY_DEFINITION = {
   oracleFailure: "Bernoulli p=0.01/path",
   executionCost: "Linear in trade size + stress multiplier (1x/2x/3x)",
   markToMarket: "Yes — all assets marked to market daily",
-  realizableValue: "After haircuts: gold 5%, PAXG 5.5%, silver 7%, FX 2%, stablecoins 2%",
+  realizableValue: "After haircuts (v25.2 controlling per MITHQAL_MASTER_BLUEPRINT_SOT.md §V25.2): gold 18%; silver 0% (SDC ≤ 0); tokenized gold (PAXG) conditional — NOT auto-added on top of 18% gold; FX 2%; digital 2% normal. NOTE: legacy v24.2.1 values were gold 5% / PAXG 5.5% / silver 7% / FX 2% / stablecoins 2% — superseded.",
   liquidityAssumptions: "Bid-ask spread expansion 2x normal, 3x crisis; Article X liquidation order",
   modelLimitations: [
     "30-day horizon may understate long-tail risks",
@@ -105,11 +105,14 @@ export const ILPS_LAYERS: ILPSLayer[] = [
     type: "STRUCTURAL",
     name: "Structural Reserve",
     assetEligibility: ["Physical allocated gold", "Tokenized allocated gold (PAXG)"],
+    // TODO(BP-GAP-005-010-011): v25.2 controlling haircut for gold = 18% (NOT 5%) per MITHQAL_MASTER_BLUEPRINT_SOT.md §V25.2;
+    //   PAXG is conditional separate exposure — NOT auto-added. liquidityHaircut: 0.05 below is the legacy v24.2.1 value
+    //   and remains a COMPUTATION value (not changed here) — pending re-calibration by Quantitative Risk Architect.
     liquidityHaircut: 0.05,
     availabilityState: "RESERVED",
     jurisdiction: "Multi (vault jurisdictions)",
     custodian: "Brink's / Loomis (gold); Paxos (PAXG)",
-    stressAssumption: "5% haircut; available T+3 to T+7; requires Exhaustion Certificate",
+    stressAssumption: "5% haircut (legacy v24.2.1; v25.2 controlling = gold 18%, PAXG conditional — re-calibration pending); available T+3 to T+7; requires Exhaustion Certificate",
     amountUsd: 12_960_000,  // 20% bullion of $64.8M R_a
   },
   {

@@ -35,7 +35,7 @@ A complete forensic review was performed comparing the original MITHQAL blueprin
 | 16 | Finality enforcement | 3/7 layers | §V25.2: 7/7 enforced at code level | 7/7 enforced | MODIFIED |
 | 17 | Protected Backing Cell | Not defined | §V25.2: 17-field schema, anti-double-count | 17-field PBC | NEW |
 | 18 | Bank Default & Resolution | Not defined | §V25.2: 8-state lifecycle, 11 contractual questions | 8-state lifecycle | NEW |
-| 19 | Legal Liability | Not defined | §V25.2: 13 dimensions, 8 jurisdictions (ALL PENDING) | 0 validated | NEW |
+| 19 | Legal Liability | Not defined | §V25.2: 13 dimensions, 9 jurisdictions (ALL PENDING) | 0 validated | NEW |
 | 20 | Licensing Matrix | Not defined | §V25.2: 9×8=72 entries, ALL REQUIRED_NOT_OBTAINED | 0 licenses | NEW |
 | 21 | Three-Book Separation | Not defined | §V25.2: Book A/B/C, 4 anti-commingling tests | Design only | NEW |
 | 22 | Systemic Exposure | Not defined | §V25.2: 13 dimensions, concentration limits | Design only | NEW |
@@ -200,7 +200,7 @@ MITHQAL is a **Constitutional Monetary and Institutional Settlement Infrastructu
 
 | # | Item | Status | Notes |
 |---|---|---|---|
-| 1 | Legal classification per jurisdiction | TBD — Requires validation | 8 jurisdictions ALL PENDING |
+| 1 | Legal classification per jurisdiction | TBD — Requires validation | 9 jurisdictions ALL PENDING |
 | 2 | Regulatory licensing per activity | TBD — Requires validation | 72 entries ALL REQUIRED_NOT_OBTAINED |
 | 3 | Bank contractual default framework | TBD — Requires validation | bankDefaultContractValidated=false |
 | 4 | First bank integration | TBD — Requires bank | 0 banks contracted |
@@ -234,9 +234,9 @@ MITHQAL is a **Constitutional Monetary and Institutional Settlement Infrastructu
 
 ## G.3 Compliance
 - [x] KYC/KYB/AML/sanctions model defined (bank-side)
-- [ ] Legal review completed (0/8 jurisdictions)
+- [ ] Legal review completed (0/9 jurisdictions)
 - [ ] Regulatory review completed (0 licenses)
-- [x] Compliance attestation model defined (6 attestations)
+- [x] Compliance attestation model defined (7 attestations: KYC, KYB, AML, SANCTIONS, ACCOUNT_AUTHORITY, FUNDS_AVAILABLE, TRANSACTION_AUTHORIZED)
 
 ## G.4 Reserve
 - [x] Reserve architecture validated (code level)
@@ -1080,6 +1080,7 @@ SWIFT, ISO 20022, REST/API, Host-to-Host, SFTP, Treasury, ERP, Domestic payment 
 | SANCTIONS PASS | Bank | Bank | Cryptographic attestation |
 | ACCOUNT AUTHORITY PASS | Bank | Bank | Cryptographic attestation |
 | FUNDS AVAILABLE PASS | Bank | Bank | Cryptographic attestation |
+| TRANSACTION AUTHORIZED PASS | Bank | Bank | Cryptographic attestation |
 
 ### 13.2 Privacy Principle
 
@@ -1204,7 +1205,7 @@ Jurisdiction, legal nature, obligor, holder rights, redemption, settlement final
 
 ### 18.2 Jurisdiction Registry
 
-8 jurisdictions (US, EU/EEA, UK, CH, SG, AE, SA, JP) — ALL `JURISDICTION_PENDING`.
+9 jurisdictions (US, EU/EEA, UK, CH, SG, AE, SA, JP, HK) — ALL `JURISDICTION_PENDING`.
 
 **Current state:** validatedJurisdictions = 0, legalOpinionsObtained = false.
 

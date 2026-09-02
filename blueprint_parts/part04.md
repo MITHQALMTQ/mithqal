@@ -6,7 +6,7 @@
 ## Status: APPROVED CANDIDATE FOR CONTROLLED TESTING — NOT PRODUCTION-AUTHORIZED
 
 > **SOURCE FILES:**
-> - `src/lib/mithqal-bank-gateway.ts` (3,969 lines — MBG architectural amendment)
+> - `src/lib/mithqal-bank-gateway.ts` (3,975 lines — MBG architectural amendment)
 > - `src/lib/protected-backing-cell.ts` (1,133 lines — §47 Protected Backing Cell)
 > - `src/lib/three-book-separation.ts` (975 lines — §51 Three-Book Separation)
 > - `src/lib/corporate-settlement-account.ts` (§22 three-way reconciliation primitives)

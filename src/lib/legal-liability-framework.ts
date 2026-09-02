@@ -364,6 +364,29 @@ export const JURISDICTION_REGISTRY: Record<string, MTQLegalLiability> = {
     source: "Public regulatory materials (triage only — not an opinion).",
     lastReviewed: "2026-02-01",
   },
+
+  HK: {
+    jurisdiction: "HK",
+    jurisdictionName: "Hong Kong SAR",
+    legalNature: `PENDING OPINION — likely a virtual asset / stored value facility under the HKMA/SFC regime (VATP, SVF); not a deposit. ${SPECULATIVE_NOTE}`,
+    obligor: `PENDING OPINION — obligor is the HKMA-licensed issuer within the Protected Backing Cell; MITHQAL verifies/governs only. ${SPECULATIVE_NOTE}`,
+    holderRights: `PENDING OPINION — holder expected to hold a redemption claim at PAR against the issuer per SVF/VATP terms. ${SPECULATIVE_NOTE}`,
+    redemption: `PENDING OPINION — redemption at PAR expected subject to issuer terms and HKMA/SFC conditions. ${SPECULATIVE_NOTE}`,
+    settlementFinality: `PENDING OPINION — settlement finality under HKMA Clearing House rules; MTQ settlement subject to finality gate. ${SPECULATIVE_NOTE}`,
+    creditorTreatment: `PENDING OPINION — treatment under HK bankruptcy/scheme of arrangement; SVF/VATP holder may be unsecured creditor. ${SPECULATIVE_NOTE}`,
+    insolvencyTreatment: `PENDING OPINION — issuer insolvency under HK Companies (Winding Up) Ordinance; PBC protects backing. ${SPECULATIVE_NOTE}`,
+    transferability: `PENDING OPINION — transfer restricted to institutional participants per HKMA AML/KYB. ${SPECULATIVE_NOTE}`,
+    pledgeability: `PENDING OPINION — pledgeability subject to HK law security interest rules. ${SPECULATIVE_NOTE}`,
+    governingLaw: `PENDING OPINION — HK law (common law); dispute resolution via HK courts or arbitration. ${SPECULATIVE_NOTE}`,
+    disputeResolution: `PENDING OPINION — HK International Arbitration Centre (HKIAC) or HK courts. ${SPECULATIVE_NOTE}`,
+    licensingClassification: `PENDING OPINION — SVF License (HKMA) or VATP License (SFC) likely required. ${SPECULATIVE_NOTE}`,
+    validated: false,
+    evidenceState: pendingEvidenceState(
+      "HK triage sources: HKMA Banking Ordinance, SFC VATP regime (2023), SVFSA (read-only)."
+    ),
+    source: "Public regulatory materials (triage only — not an opinion).",
+    lastReviewed: "2026-02-01",
+  },
 };
 
 // ----------------------------------------------------------------------------

@@ -188,7 +188,9 @@ export const BREACH_PROBABILITY_MODEL = {
     correlation: "Single-factor (ρ=0.30 baseline, 1.5x crisis)",
     depeg: "Bernoulli p=0.02/year, magnitude=N(0.05, 0.10)",
     oracle: "Bernoulli p=0.01/path",
-    haircuts: "Gold 5%, PAXG 5.5%, silver 7%, FX 2%, stablecoins 2%",
+    haircuts: "Gold 18% (v25.2 controlling); PAXG conditional — NOT auto-added; silver 0% (SDC ≤ 0); FX 2%; digital 2% normal (v25.2 §V25.2). NOTE: legacy v24.2.1 values were gold 5% / PAXG 5.5% / silver 7% / FX 2% / stablecoins 2% — superseded by MITHQAL_MASTER_BLUEPRINT_SOT.md.",
+    // TODO(BP-GAP-005-010-011): legacy stress coefficients below (gold 0.85, PAXG 0.83, silver 0.80) are v24.2.1 values
+    //   and DO NOT reflect v25.2 haircuts. Re-calibration pending — flagged here, NOT changed in computation.
     stressCoefficients: "Gold 0.85, PAXG 0.83, silver 0.80, FX 0.80-0.95, stablecoins 0.80",
   },
 

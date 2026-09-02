@@ -287,7 +287,7 @@ export function generateEvidencePackage(
     case "SHARIA":
       contents.push(
         { type: "SHARIA_SCOPE", path: "src/lib/v25-0-identity.ts", description: "MTQ definition, PAR, reserve backing, fees, custody, Takaful", hash: "auto" },
-        { type: "BLUEPRINT_SHARIA", path: "docs/blueprint/mithqal-v25-FINAL-blueprint.md", description: "Blueprint §45 Sharia compliance section", hash: "auto" },
+        { type: "BLUEPRINT_SHARIA", path: "MITHQAL_MASTER_BLUEPRINT_SOT.md", description: "Blueprint §45 Sharia compliance section", hash: "auto" },
       );
       break;
   }

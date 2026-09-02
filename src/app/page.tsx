@@ -378,6 +378,7 @@ function DynamicCorridorSimulator() {
 
 // ─── NAV ───
 const NAV_ITEMS = [
+  { id: "identity", label: "Identity", icon: Landmark },
   { id: "hero", label: "Live State", icon: Activity },
   { id: "reserve", label: "Reserve Architecture", icon: Shield },
   { id: "currency", label: "Currency Engine", icon: Network },
@@ -498,6 +499,53 @@ export default function Page() {
         {/* ─── MAIN CONTENT ─── */}
         <main className="min-w-0 flex-1 px-4 py-6 sm:px-6 lg:px-8">
           <div className="space-y-16">
+            {/* ═══ IDENTITY: WHAT MITHQAL IS / IS NOT ═══ */}
+            <Section id="identity" icon={Landmark} title="What MITHQAL Is — & Is Not" subtitle="§3-§4 Constitutional Identity · 10 functions MITHQAL performs · 18 things MITHQAL is NOT">
+              <div className="grid gap-3 md:grid-cols-2">
+                <GlassCard glow className="p-5">
+                  <div className="mb-3 flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-emerald-400">What MITHQAL IS (§3)</span>
+                  </div>
+                  <div className="space-y-1 text-[10px] text-gray-400">
+                    {["Defines eligibility", "Verifies evidence", "Calculates issuance capacity (DMCE)", "Enforces concentration rules", "Authorizes issuance", "Operates settlement infrastructure", "Reconciles", "Monitors systemic risk", "Applies constitutional rules", "Monitors systemic concentration"].map((item, i) => (
+                      <div key={i} className="flex items-start gap-2">
+                        <span className="mt-0.5 text-emerald-400">▸</span>
+                        <span>{item}</span>
+                      </div>
+                    ))}
+                  </div>
+                </GlassCard>
+                <GlassCard className="p-5 border-red-500/10">
+                  <div className="mb-3 flex items-center gap-2">
+                    <XCircle className="h-4 w-4 text-red-400" />
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-red-400">What MITHQAL IS NOT (§4)</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-[9px] text-gray-500">
+                    {["Cryptocurrency", "Retail payment app", "Commercial bank", "Central bank", "Deposit-taking institution", "Investment fund", "Lending institution", "Speculative vehicle", "A DAO", "Permissionless blockchain", "Consumer remittance", "Retail wallet system", "Stablecoin issuer", "National currency replacement", "A USD peg", "A BRICS currency", "Anti-dollar currency", "SWIFT replacement"].map((item, i) => (
+                      <div key={i} className="flex items-start gap-1">
+                        <span className="text-red-400/60">×</span>
+                        <span>{item}</span>
+                      </div>
+                    ))}
+                  </div>
+                </GlassCard>
+              </div>
+              <GlassCard className="mt-3 p-4">
+                <div className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-gray-500">§5.3 Customer Modes — Pass-Through Settlement vs Institutional Treasury Holding</div>
+                <div className="grid gap-3 md:grid-cols-2">
+                  <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-3">
+                    <div className="text-[10px] font-bold text-emerald-400">Mode A — Pass-Through Settlement</div>
+                    <div className="mt-1 text-[10px] text-gray-400">JPY → Bank → MTQ → Receiving Bank → USD. Customer uses MTQ without maintaining a substantial MTQ treasury position.</div>
+                  </div>
+                  <div className="rounded-lg border border-gold/20 bg-gold/5 p-3">
+                    <div className="text-[10px] font-bold text-gold">Mode B — Institutional MTQ Treasury Holding</div>
+                    <div className="mt-1 text-[10px] text-gray-400">Corporate → Bank → MTQ Institutional Position (hold, receive, send, settle, redeem). Jurisdiction-dependent.</div>
+                  </div>
+                </div>
+              </GlassCard>
+            </Section>
+
             {/* ═══ HERO: LIVE STATE ═══ */}
             <Section id="hero" icon={Activity} title="Live Monetary State" subtitle="Auto-refreshing from /api/nav + /api/oracle">
               {!nav.data ? (nav.err ? <ErrorBox label="live data" msg={nav.err} /> : <LoadingBox label="live data" />) : (

@@ -2683,7 +2683,7 @@ The §49 framework integrates with:
 |---|---|
 | Module ID | `v25.2-licensing-entity-matrix-1.0` |
 | Directive section | §50 |
-| Source file | `src/lib/licensing-entity-matrix.ts` (785 lines) |
+| Source file | `src/lib/licensing-entity-matrix.ts` (784 lines) |
 | Final status | IMPLEMENTED BLUEPRINT — 0 LICENSES OBTAINED — NOT REGULATORY-AUTHORIZED — NOT PRODUCTION-AUTHORIZED |
 | Controlling principle | **Technical implementation is NOT regulatory authorization.** |
 
@@ -4715,7 +4715,7 @@ source files:
 |---|---|---|
 | §17 — Bank Default & Resolution | `src/lib/bank-default-resolution.ts` | 1,044 |
 | §18 — Legal Liability Framework | `src/lib/legal-liability-framework.ts` | 724 |
-| §19 — Licensing / Entity Matrix | `src/lib/licensing-entity-matrix.ts` | 785 |
+| §19 — Licensing / Entity Matrix | `src/lib/licensing-entity-matrix.ts` | 784 |
 | §20 — Systemic Exposure Engine | `src/lib/systemic-exposure-engine.ts` | 1,295 |
 | **Total** | | **3,848** |
 
@@ -4763,3 +4763,6 @@ SOURCE OF TRUTH for sections 17, 18, 19, and 20 of the MITHQAL Master
 Blueprint v25.2. No older versions are controlling. Where this
 document conflicts with any older specification, this document
 controls per the v25.2 reconciliation directive.
+
+---
+**END OF PART 05 — SECTIONS 17-20**

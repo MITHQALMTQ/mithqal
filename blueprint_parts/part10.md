@@ -23,7 +23,7 @@
 ## TABLE OF CONTENTS — PART 10
 
 - §38 — End-to-End Transaction Workflows (17 flows, A through Q)
-- §39 — Testing Strategy (21 categories + adversarial scenarios)
+- §39 — Testing Strategy (27 sub-sections + adversarial scenarios)
 - §40 — Production Readiness Framework (checklist + institutional validation gates)
 - §41 — Implementation Roadmap (13 phases, Phase 0 through Phase 12)
 - §42 — Open Items / TBD (13 items that cannot responsibly be determined)
@@ -6408,7 +6408,7 @@ This MITHQAL Master Blueprint v25.2 — PART 10 (Sections 38-44) is the single
 source of truth for:
 
 - End-to-end transaction workflows (17 flows, A through Q)
-- Testing strategy (21 categories + adversarial scenarios)
+- Testing strategy (27 sub-sections + adversarial scenarios)
 - Production readiness framework (19+ checklist items + 13 institutional
   validation gates)
 - Implementation roadmap (13 phases, Phase 0 through Phase 12)

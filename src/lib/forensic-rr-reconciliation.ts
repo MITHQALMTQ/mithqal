@@ -155,7 +155,9 @@ export const MODEL_VALIDATION = {
   },
 
   stressMultipliers: {
-    haircutApplied: "Yes — gold 5%, PAXG 5.5%, silver 7%, FX 2%, stablecoins 2%",
+    haircutApplied: "Yes — v25.2 controlling composition per MITHQAL_MASTER_BLUEPRINT_SOT.md §V25.2: 80% fiat / 18% gold / 2% digital; silver 0% (SDC ≤ 0); PAXG conditional (NOT auto-added on top of 18% gold). NOTE: legacy v24.2.1 haircuts were gold 5% / PAXG 5.5% / silver 7% / FX 2% / stablecoins 2% — superseded.",
+    // TODO(BP-GAP-005-010-011): legacy stress coefficients below (gold 0.85, PAXG 0.83, silver 0.80) are v24.2.1 values
+    //   and DO NOT reflect v25.2 controlling haircuts. Re-calibration pending — flagged, NOT changed in computation.
     stressCoefficients: "Yes — gold 0.85, PAXG 0.83, silver 0.80, FX 0.80-0.95, stablecoins 0.80",
     liquiditySpread: "2x normal in stress, 3x in crisis",
     executionCost: "Linear in trade size + stress multiplier (1x/2x/3x)",

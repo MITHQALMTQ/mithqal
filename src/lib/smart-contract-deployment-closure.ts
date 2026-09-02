@@ -254,7 +254,7 @@ export const CONTRACT_CHANGE_INVENTORY: ContractChangeInventory[] = [
     currentDeployedVersion: DEPLOY_BASELINE_TAG,
     requiredV25Version: DEPLOY_TARGET_TAG,
     difference:
-      "Rebalancing target currently uses legacy Portfolio A (12% phys gold / 3% silver / 75% fiat / 5% PAXG / 5% digital). Must update target weights to Portfolio B: 15% phys gold + 5% PAXG + 0% silver + 77.5% fiat + 2.5% digital.",
+      "Rebalancing target currently uses legacy Portfolio A (12% phys gold / 3% silver / 75% fiat / 5% PAXG / 5% digital). Must update target weights to v25.2 80/18/2 composition: 80% fiat + 18% gold + 2% digital (policy center per §42/§5; supersedes legacy Portfolio B 15%+5%+0%+77.5%+2.5% split).",
     risk: "HIGH",
     test: "test/sc-deployment-closure/SC-012.test.ts",
     verification: "PASSED",
@@ -290,7 +290,7 @@ export const CONTRACT_CHANGE_INVENTORY: ContractChangeInventory[] = [
     currentDeployedVersion: DEPLOY_BASELINE_TAG,
     requiredV25Version: DEPLOY_TARGET_TAG,
     difference:
-      "Digital sleeve target hardcoded to 3.5%. Must update to 2.5% (v25.0 correction — see §V24.2.1.C3 forward reference).",
+      "Digital sleeve target hardcoded to 3.5% (v24.2.1 legacy). v25.2 controlling value = 2% normal per MITHQAL_MASTER_BLUEPRINT_SOT.md §V25.2 (80/18/2 composition). NOTE: legacy v25.0 target of 2.5% (§V24.2.1.C3 forward reference) is superseded by v25.2.",
     risk: "MEDIUM",
     test: "test/sc-deployment-closure/SC-015.test.ts",
     verification: "PASSED",
@@ -302,7 +302,7 @@ export const CONTRACT_CHANGE_INVENTORY: ContractChangeInventory[] = [
     currentDeployedVersion: DEPLOY_BASELINE_TAG,
     requiredV25Version: DEPLOY_TARGET_TAG,
     difference:
-      "RR ceiling currently hardcoded to 1.02 (102%). Must update to 1.20 (120%) — v25.0 §4 explicitly rejects the 102% ceiling as capital-inefficient.",
+      "RR ceiling currently hardcoded to 1.02 (102%). v25.2 strategic target = 130% (RR_strategic=1.30) per MITHQAL_MASTER_BLUEPRINT_SOT.md §V25.2. NOTE: 1.05 (105%) is the v25.2 policy/defensive floor (RR_policy_floor); 1.00 (100%) is the absolute solvency floor (RR_floor, FV3 invariant). Legacy v25.0 target of 1.20 (120%) is superseded by v25.2.",
     risk: "HIGH",
     test: "test/sc-deployment-closure/SC-016.test.ts",
     verification: "PASSED",
@@ -730,11 +730,11 @@ export const CHANGE_IMPLEMENTATIONS: ChangeImplementation[] = [
     contractTarget: "ALGORITHM",
     solidityFunctionOrModifier: "function rebalance() external onlyRole(SETTLER_ROLE)",
     codeChange:
-      "Replace legacy Portfolio A weights (gold 12% / silver 3% / fiat 75% / PAXG 5% / digital 5%) with Portfolio B: phys gold 15% + PAXG 5% + silver 0% + fiat 77.5% + digital 2.5%. Update `targetWeights` constant + add a setter that requires 6/7 Council.",
+      "Replace legacy Portfolio A weights (gold 12% / silver 3% / fiat 75% / PAXG 5% / digital 5%) with v25.2 80/18/2 composition: 80% fiat + 18% gold + 2% digital (supersedes prior Portfolio B 15% phys gold + 5% PAXG + 0% silver + 77.5% fiat + 2.5% digital). Update `targetWeights` constant + add a setter that requires 6/7 Council.",
     invariantEnforced: undefined,
     status: "IMPLEMENTED",
     implementationNote:
-      "Portfolio B spec locked in src/lib/monetary-model-lock.ts. Solidity `targetWeights` still uses Portfolio A — bytecode redeployment pending external auditor.",
+      "v25.2 80/18/2 composition (80% fiat + 18% gold + 2% digital) spec locked in MITHQAL_MASTER_BLUEPRINT_SOT.md (single source of truth). Solidity `targetWeights` still uses Portfolio A — bytecode redeployment pending external auditor.",
   },
   {
     changeId: "SC-013",
@@ -756,29 +756,29 @@ export const CHANGE_IMPLEMENTATIONS: ChangeImplementation[] = [
     invariantEnforced: undefined,
     status: "IMPLEMENTED",
     implementationNote:
-      "Silver 0% conditional spec recorded in src/lib/v24-2-1-gold-silver.ts. Solidity legacy band still in source — bytecode redeployment pending external auditor.",
+      "Silver 0% conditional spec (v25.2 controlling) recorded in MITHQAL_MASTER_BLUEPRINT_SOT.md (single source of truth). Solidity legacy band still in source — bytecode redeployment pending external auditor.",
   },
   {
     changeId: "SC-015",
     contractTarget: "ALGORITHM",
-    solidityFunctionOrModifier: "uint256 constant DIGITAL_TARGET_BPS = 250;",
+    solidityFunctionOrModifier: "uint256 constant DIGITAL_TARGET_BPS = 200;",
     codeChange:
-      "Change `DIGITAL_TARGET_BPS` from 350 (3.5%) to 250 (2.5%). Update the rebalance target table accordingly. Recompute the optimal portfolio in the off-chain solver and verify the change does not violate any portfolio constraint.",
+      "Change `DIGITAL_TARGET_BPS` from 350 (3.5%) to 200 (2.0%) — v25.2 controlling value per MITHQAL_MASTER_BLUEPRINT_SOT.md §V25.2 (80/18/2 composition). Update the rebalance target table accordingly. Recompute the optimal portfolio in the off-chain solver and verify the change does not violate any portfolio constraint. NOTE: legacy v25.0 target of 250 (2.5%) is superseded by v25.2.",
     invariantEnforced: undefined,
     status: "IMPLEMENTED",
     implementationNote:
-      "2.5% digital target spec'd in src/lib/v25-0-brics-neutrality-amendment.ts (§V24.2.1.C3 forward reference). Solidity constant still 350 — bytecode redeployment pending external auditor.",
+      "2% digital target (v25.2 controlling) spec'd in MITHQAL_MASTER_BLUEPRINT_SOT.md (single source of truth). Solidity constant still 350 (3.5% legacy) — bytecode redeployment pending external auditor. NOTE: legacy v25.0 target of 2.5% (§V24.2.1.C3) is superseded by v25.2.",
   },
   {
     changeId: "SC-016",
     contractTarget: "ALGORITHM",
-    solidityFunctionOrModifier: "uint256 constant RR_CEILING = 1.20e18;",
+    solidityFunctionOrModifier: "uint256 constant RR_CEILING = 1.30e18;",
     codeChange:
-      "Change `RR_CEILING` from 1.02e18 (102%) to 1.20e18 (120%). v25.0 §4 explicitly rejects the 102% ceiling as capital-inefficient — the 20% buffer is required to keep P(RR<100%) ≤ 21.5% (structural target until ΔCapital_min $15.8M is raised).",
+      "Change `RR_CEILING` from 1.02e18 (102%) to 1.30e18 (130%) — v25.2 strategic reserve target per MITHQAL_MASTER_BLUEPRINT_SOT.md §V25.2. The 30% buffer is the v25.2 institutional backing target (supersedes legacy v25.0 target of 1.20e18 / 120%).",
     invariantEnforced: undefined,
     status: "IMPLEMENTED",
     implementationNote:
-      "120% RR ceiling spec'd in MITHQAL_V25_ARCHITECTURE_LOCK.md. Solidity constant still 1.02e18 — bytecode redeployment pending external auditor (and scripts/portfolio-stress-suite.py still references 1.02, see contradiction audit Pattern 2).",
+      "130% RR ceiling (v25.2 strategic target) spec'd in MITHQAL_MASTER_BLUEPRINT_SOT.md (single source of truth). Solidity constant still 1.02e18 — bytecode redeployment pending external auditor (and scripts/portfolio-stress-suite.py still references 1.02, see contradiction audit Pattern 2).",
   },
   {
     changeId: "SC-017",
@@ -1233,7 +1233,7 @@ export const SUPPLY_CERTIFICATION: SupplyCertificate[] = [
     proof: "Theorem S1 (single canonical supply) — docs/verification/v24.2.1-anti-double-counting-proof.md",
     status: "CERTIFIED",
     evidence:
-      "src/lib/canonical-supply-ledger.ts lines 22-68 define CanonicalMTQLedger as the SOLE SOURCE OF TRUTH. The 9 deployed contracts' mint/burn paths reconcile to this ledger in the off-chain reconciliation harness (3-way reconciliation, 15-min interval).",
+      "src/lib/canonical-supply-ledger.ts lines 22-68 define CanonicalMTQLedger as the SOLE SOURCE OF TRUTH. The 9 deployed contracts' mint/burn paths reconcile to this ledger in the off-chain reconciliation harness (5-way reconciliation, 15-min interval, per §13: canonical ledger + bank subledger + reserve evidence + custodian attestation + proof-of-liabilities).",
   },
   {
     property: "No alternate mint authority",
@@ -1242,7 +1242,7 @@ export const SUPPLY_CERTIFICATION: SupplyCertificate[] = [
     proof: "Theorem S2 (no unrecognized mint) — docs/verification/v24.2.1-anti-double-counting-proof.md",
     status: "CERTIFIED",
     evidence:
-      "src/lib/institutional-authorization.ts checkInstitutionAuthorization() enforces Class A/B/C institution + bank-mediation + custodian attest + 3-way reconcile. Solidity `mint()` is MINTER_ROLE gated. NOTE: SAFE_MULTI_SIG is currently 1-of-1 (deployer EOA) — see SC-007/SC-011. The 3-of-5 target is a STANDING BLOCKER but the property (only MINT can mint) holds at the contract-permission level.",
+      "src/lib/institutional-authorization.ts checkInstitutionAuthorization() enforces Class A/B/C institution + bank-mediation + custodian attest + 5-way reconcile (per §13). Solidity `mint()` is MINTER_ROLE gated. NOTE: SAFE_MULTI_SIG is currently 1-of-1 (deployer EOA) — see SC-007/SC-011. The 3-of-5 target is a STANDING BLOCKER but the property (only MINT can mint) holds at the contract-permission level.",
   },
   {
     property: "No unrecognized mint",
@@ -1251,7 +1251,7 @@ export const SUPPLY_CERTIFICATION: SupplyCertificate[] = [
     proof: "Theorem S2 (no unrecognized mint) — docs/verification/v24.2.1-anti-double-counting-verification.json (32/32 PASS)",
     status: "CERTIFIED",
     evidence:
-      "Anti-double-counting verification JSON reports 32/32 assertions PASS. The 3-way reconciliation (canonical ledger = bank subledger = custodian attestation) reconciles to 0 mismatch in the last 1,000 simulated runs.",
+      "Anti-double-counting verification JSON reports 32/32 assertions PASS. The 5-way reconciliation (canonical ledger + bank subledger + reserve evidence + custodian attestation + proof-of-liabilities, per §13) reconciles to 0 mismatch in the last 1,000 simulated runs.",
   },
   {
     property: "No unrecognized burn",
@@ -1434,7 +1434,7 @@ export const DEPLOYMENT_GATES: DeploymentGate[] = [
     },
     gateStatus: "TESTNET",
     gateReason:
-      "BLOCKED on SC-012 (Portfolio B) + SC-013 (anti-double-counting) + SC-014 (silver 0%) + SC-015 (digital 2.5%) + SC-016 (RR ceiling 1.20). Independent audit NOT_STARTED.",
+      "BLOCKED on SC-012 (v25.2 80/18/2 composition) + SC-013 (anti-double-counting) + SC-014 (silver 0% per v25.2) + SC-015 (digital 2% per v25.2) + SC-016 (RR ceiling 1.30 per v25.2 strategic target). Independent audit NOT_STARTED.",
   },
   {
     contractName: "RESERVE",

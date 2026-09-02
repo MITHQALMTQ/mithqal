@@ -117,7 +117,7 @@ export const IMPLEMENTATION_STATUS_TABLE: RequirementStatus[] = [
   // §88 Blueprint Update
   {
     requirement: "Blueprint Update (§V25.2 + §V25.2.AUDIT-CLOSURE appended, idempotent)",
-    section: "§88", module: "docs/blueprint/mithqal-v25-FINAL-blueprint.md",
+    section: "§88", module: "MITHQAL_MASTER_BLUEPRINT_SOT.md",
     design: "IMPLEMENTED", implementation: "IMPLEMENTED", integration: "INTEGRATED",
     testing: "TESTED", institutionalValidation: "DESIGNED", production: "DESIGNED",
     evidence: "§V25.2 appended (+650 lines) + §V25.2.AUDIT-CLOSURE appended · idempotent scripts verified",

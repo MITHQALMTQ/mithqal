@@ -46,6 +46,9 @@ export interface CalmResult {
 // v25.0 CORRECTION: Uses v24.2 6-state machine with corrected targets
 // v24.2 had NORMAL=1.15 (WRONG — below strategic target 1.20)
 // v25.0 (per §33): NORMAL=1.20, monotonically increasing
+// v25.2 (per MITHQAL_MASTER_BLUEPRINT_SOT.md §33): CALM rrTarget updated 1.20 → 1.30
+//   (strategic reserve target). CAUTION=1.22, DEFENSIVE=1.23, STRESS=1.25,
+//   EMERGENCY=1.30, RECOVERY=1.21 unchanged. Monotonicity preserved.
 // Core invariant: Risk↑ → RR_target↑ → S_max↓ → MintCapacity↓
 const STATE_CONFIG: Record<ReserveState, {
   rrTarget: number;

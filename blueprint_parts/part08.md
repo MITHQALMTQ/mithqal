@@ -64,6 +64,7 @@
   - 31.4 Canonical Terminology Rules
   - 31.5 Capitalization and Formatting Conventions
   - 31.6 Acronym Expansion Table
+  - 31.7 The Final Terminology Test
 
 ---
 
