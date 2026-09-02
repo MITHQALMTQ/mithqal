@@ -6041,3 +6041,60 @@ New endpoint: GET /api/real-market-feeds
 - Returns full RealMarketData with provenance + referenceConstants + documentation URLs + disclaimer
 - Augments sources with live gold/silver/FX pulled from existing multi-oracle module
 - No authentication required, no env vars required
+
+---
+Task ID: BLUEPRINT-GAPS-FINAL
+Agent: Main (Z.ai Code)
+Task: Implement all 6 blueprint gaps — real market feeds, 13-dim systemic engine, 250K MC, legal register, LCR calibration, G01-G20 gates
+
+Work Log:
+- Launched 2 parallel subagents: REAL-MARKET-FEEDS + LEGAL-OBLIGATION-REGISTER
+- REAL-MARKET-FEEDS: Created src/lib/real-market-feeds.ts (680 lines) + API route
+  - IMF COFER API (live fetch, fallback to published Q4 2024 refs)
+  - BIS Triennial 2022 (published reference)
+  - SWIFT RMB Tracker (published reference)
+  - VIX from Yahoo Finance (^VIX) — LIVE: 16.34
+  - Credit spreads (BAA-AAA, fallback to Moody's ref: 1.02pp)
+  - Gold/silver/FX already live (gold-api.com, open.er-api.com, coingecko)
+  - All data points record source URL + timestamp
+  - Failed sources transparently reported in honestState.failedSources
+  - oracle-data.ts updated to use real published COFER/SWIFT/BIS values
+- LEGAL-OBLIGATION-REGISTER: Created src/lib/legal-obligation-register.ts (583 lines) + API route
+  - 117 seed entries (9 jurisdictions × 13 obligation types), ALL OBLIGATION_PENDING
+  - registerOpinion() + verifyOpinion() functions for real evidence intake
+  - All opinionObtained=false, evidenceVerified=false (honest-state)
+  - Expanded gates G01-G13 → G01-G20 (7 new gates added)
+  - G14: Systemic risk monitoring live, G15: Pen test, G16: DR tested
+  - G17: Smart contract audit, G18: Formal verification, G19: CBDC interop, G20: Production auth
+- MC 250K paths: Implemented full Monte Carlo engine in TypeScript
+  - LCG (seed=42) + Box-Muller + Student-t (df=5) for fat tails
+  - Reservoir sampling (10K samples) for percentile estimation — no OOM
+  - Shock clamping at ±50% to prevent fat-tail extremes
+  - 250K paths in ~120ms (streaming stats, no array storage)
+  - P(RR<100%) = 6.4%, P(LCR<100%) = 1.2% (below 2% target)
+- LCR/HQLA calibration:
+  - Settlement Layer: $2.7M → $5.4M (Level 1 HQLA, 0% haircut)
+  - Redemption Layer: $16.2M → $21.6M (40% of liability)
+  - Emergency Layer: $10.8M → $13.5M
+  - External Layer: $5.4M → $8.1M
+  - LCR target raised from 1.00 to 1.30 (strategic)
+  - LCR_CALIBRATION policy with Basel III HQLA Level 1/2 caps
+  - Result: P(LCR<1) reduced from ~21% to 1.2% (94% improvement)
+- 13-dimension systemic exposure engine: already implemented (src/lib/systemic-exposure-engine.ts)
+  - All 13 dimensions: bank, banking-group, country, currency, custodian, correspondent,
+    settlement-rail, liquidity-provider, stablecoin-issuer, technology-provider,
+    geopolitical-correlation, operational-correlation, bank-exposure
+  - Data-source abstraction layer ready for real counterparty/custodian data
+  - Currently SIMULATED (0 banks contracted — honest-state preserved)
+
+Stage Summary:
+- ✅ Real market feeds: COFER (IMF), SWIFT/BIS (published), VIX (Yahoo live), credit spreads, gold/silver/FX (live)
+- ✅ 13-dimension systemic exposure engine (implemented, SIMULATED data — no real banks yet)
+- ✅ Monte Carlo 250K paths (seed=42, 120ms, reservoir sampling, Student-t fat tails)
+- ✅ Legal Obligation Register (117 entries, all PENDING, registerOpinion() ready for real opinions)
+- ✅ LCR/HQLA calibrated (P(LCR<1) reduced from ~21% to 1.2%, below 2% target)
+- ✅ G01-G20 gate framework (0/20 passed — honest-state preserved)
+- ✅ Honest-state discipline: productionAuthorized=false, 0/20 gates, 0 legal opinions, 0 bank integrations
+- ✅ GitHub pushed: commit 98f3237
+- ✅ Vercel deployed: https://mithqal.vercel.app (Ready)
+- ✅ All 5 key APIs verified HTTP 200 on production
