@@ -14,6 +14,7 @@ export const SECTION = 87;
 
 // §73 — evidence-state discipline (exact states allowed)
 export type EvidenceState =
+  | "NOT_STARTED"
   | "DESIGNED"
   | "IMPLEMENTED"
   | "INTEGRATED"
@@ -122,6 +123,14 @@ export const IMPLEMENTATION_STATUS_TABLE: RequirementStatus[] = [
     testing: "TESTED", institutionalValidation: "DESIGNED", production: "DESIGNED",
     evidence: "§V25.2 appended (+650 lines) + §V25.2.AUDIT-CLOSURE appended · idempotent scripts verified",
   },
+  // §49 Legal Obligation Register (evidence-intake infrastructure)
+  {
+    requirement: "Legal Obligation Register (9 jurisdictions × 13 obligation types = 117 entries, registerOpinion intake)",
+    section: "§49", module: "src/lib/legal-obligation-register.ts",
+    design: "IMPLEMENTED", implementation: "IMPLEMENTED", integration: "INTEGRATED",
+    testing: "TESTED", institutionalValidation: "LEGAL_VALIDATION_PENDING", production: "DESIGNED",
+    evidence: "117 entries ALL OBLIGATION_PENDING · opinionsObtained=false · validatedJurisdictions=0 · licensesObtained=0 · productionAuthorized=false",
+  },
 ];
 
 // §74 — current honest state (aggregated)
@@ -219,6 +228,14 @@ export const INSTITUTIONAL_VALIDATION_GATES: ValidationGate[] = [
   { id: "G11", gate: "Reconciliation operates", status: "TESTED", evidence: "5-way reconciliation designed + tested, not live" },
   { id: "G12", gate: "Independent assurance framework validated", status: "DESIGNED", evidence: "not contracted" },
   { id: "G13", gate: "Controlled pilot transactions succeed", status: "DESIGNED", evidence: "0 pilot transactions" },
+  // §91 — G14-G20 (expanded institutional validation gates)
+  { id: "G14", gate: "Systemic risk monitoring live", status: "DESIGNED", evidence: "engine implemented, not live" },
+  { id: "G15", gate: "Penetration testing completed", status: "NOT_STARTED", evidence: "not conducted" },
+  { id: "G16", gate: "Disaster recovery tested", status: "NOT_STARTED", evidence: "not conducted" },
+  { id: "G17", gate: "Independent smart contract audit", status: "NOT_STARTED", evidence: "not conducted" },
+  { id: "G18", gate: "Formal verification completed", status: "NOT_STARTED", evidence: "not conducted" },
+  { id: "G19", gate: "CBDC interoperability tested", status: "DESIGNED", evidence: "architecture designed" },
+  { id: "G20", gate: "Production authorization", status: "NOT_STARTED", evidence: "all gates must pass first" },
 ];
 
 // §90 — final acceptance criteria

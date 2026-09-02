@@ -14,10 +14,12 @@ export async function GET() {
       "Constitutional settlement infrastructure API. §V25.2 Final Reserve Mathematical Specification.",
     honestState: {
       productionAuthorized: false,
-      institutionalGatesPassed: "0/13",
+      institutionalGatesPassed: "0/20",
       finalityLayersEnforced: "7/7",
       validatedJurisdictions: 0,
       licensesObtained: 0,
+      legalOpinionsObtained: 0,
+      legalObligationRegisterSeeded: 117,
     },
     versions: [
       { id: "v25.2", status: "CURRENT", path: "/api/mtq-final-reserve" },
@@ -41,6 +43,7 @@ export async function GET() {
         { id: "mtq-protected-backing-cell", path: "/api/mtq-protected-backing-cell", description: "§47 Protected Backing Cell" },
         { id: "mtq-bank-default-resolution", path: "/api/mtq-bank-default-resolution", description: "§48 Bank Default & Resolution" },
         { id: "mtq-legal-liability-framework", path: "/api/mtq-legal-liability-framework", description: "§49 Legal Liability Framework" },
+        { id: "legal-obligation-register", path: "/api/legal-obligation-register", description: "§49 Legal Obligation Register (9 jurisdictions × 13 obligation types = 117 entries, registerOpinion intake)" },
         { id: "mtq-licensing-entity-matrix", path: "/api/mtq-licensing-entity-matrix", description: "§50 Licensing Matrix (9 activities × 8 jurisdictions)" },
         { id: "mtq-three-book-separation", path: "/api/mtq-three-book-separation", description: "§51 Three-Book Separation" },
         { id: "mtq-systemic-exposure-engine", path: "/api/mtq-systemic-exposure-engine", description: "§52 Systemic Exposure Engine" },
@@ -62,7 +65,7 @@ export async function GET() {
         { id: "reserve-verification", path: "/api/reserve-verification", description: "Reserve verification" },
       ],
     },
-    totalEndpoints: 148,
+    totalEndpoints: 149,
     documentation: "/api-docs",
     openapi: "/openapi.json",
     disclaimer:
