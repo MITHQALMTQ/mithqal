@@ -1,0 +1,70 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+// When using the libsql driver adapter, the datasource URL is only used by
+// Prisma's internal validation — the actual connection is handled by the
+// adapter in src/lib/db.ts (which reads DATABASE_URL for the real Turso URL).
+datasource db {
+  provider = "sqlite"
+  url      = "file:./prisma.db"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Post {
+  id        String   @id @default(cuid())
+  title     String
+  content   String?
+  published Boolean  @default(false)
+  authorId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Public Formation Committee interest capture — the credibility-layer intake
+// for investors, advisors, anchor participants and Council nominees.
+model FormationInterest {
+  id        String   @id @default(cuid())
+  fullName  String
+  email     String
+  org       String?
+  role      String   // investor | advisor | anchor | council-nominee | partner | other
+  message   String?
+  createdAt DateTime @default(now())
+
+  @@index([role])
+  @@index([createdAt])
+}
+
+// MTQ testnet simulator — append-only ledger of mint/redeem operations.
+// State (supply, reserves by tier, NAV, reserve ratio) is derived from this
+// immutable log on every read. This mirrors the Constitution's own
+// auditability principle: every claim verifiable from the ledger.
+model TestnetOperation {
+  id           String   @id @default(cuid())
+  type         String   // mint | redeem
+  amountUsd    Float    // USD value of the deposit (mint) or claim (redeem)
+  mtq          Float    // MTQ minted or burned
+  participant  String   // label for the simulated participant
+  nav          Float    // NAV (USD per MTQ) at time of op
+  reserveRatio Float    // reserve ratio (%) after op
+  porHash      String   // proof-of-reserves hash after op
+  createdAt    DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([type])
+}

@@ -53,6 +53,7 @@ export async function GET() {
         { id: "reserve-simulator", path: "/api/reserve-simulator", description: "Monte Carlo reserve simulator (250K iterations, seed=42)" },
         { id: "corridor", path: "/api/corridor", description: "AED↔SGD cross-border corridor simulator" },
         { id: "tokenization", path: "/api/tokenization", description: "RWA + digital coin tokenization reference" },
+        { id: "institutional-stress-tests", path: "/api/institutional-stress-tests", description: "10 real historical crisis stress tests (2008, 2020, 2022, 2023, etc.)" },
       ],
       governance: [
         { id: "governance-proposals", path: "/api/governance/proposals", description: "Governance proposals" },
