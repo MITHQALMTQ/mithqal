@@ -26,7 +26,7 @@ A complete forensic review was performed comparing the original MITHQAL blueprin
 | 7 | Gold allocation | 15% physical + 5% tokenized (PAXG) | §V25.2: 18% gold (silver 0%, tokenized conditional) | 18% gold, silver 0% | MODIFIED |
 | 8 | Silver | Mandatory silver allocation | §V25.2: SDC ≤ 0 → 0% | 0% (conditional) | REPLACED |
 | 9 | USDT | Included in digital reserve | §V25.2: Excluded from core, external conversion only | Excluded from core | REPLACED |
-| 10 | Emergency resilience | Not separate | §V25.2: ≤15% separate, non-double-counted | ≤15% separate | NEW |
+| 10 | Emergency resilience | Not separate | §V25.2: ≤20% separate, non-double-counted | ≤20% separate | NEW |
 | 11 | Effective USD exposure | Direct USD only | §V25.2: direct + AED/SAR peg + synthetic + digital, ceiling 35% | 35% ceiling | NEW |
 | 12 | Currency lifecycle | Not defined | §V25.2: WATCH/REDUCE/SUSPEND/SUBSTITUTE/REINSTATE | 5-state lifecycle | NEW |
 | 13 | Minimum floor | Not defined | §V25.2: 0.5% with Q1-Q4 removal ladder | 0.5% floor | NEW |
@@ -303,7 +303,7 @@ MITHQAL is a **Constitutional Monetary and Institutional Settlement Infrastructu
 |---|---|---|
 | Strategic reserve coverage target | **130%** | CANDIDATE (pending validation) |
 | Reserve composition | **80% fiat / 18% gold / 2% digital** | CANDIDATE |
-| Emergency resilience capacity | ≤15% (separate, non-double-counted) | DESIGNED |
+| Emergency resilience capacity | ≤20% (separate, non-double-counted) | DESIGNED |
 | Currency basket | 11 reserve + 10 settlement-only | IMPLEMENTED |
 | Per-currency hard cap | 20% (preferred 15%) | ENFORCED |
 | USD effective ceiling | 35% (direct + AED/SAR peg + synthetic + digital) | ENFORCED |
@@ -716,7 +716,7 @@ No bank, human, Foundation, Holding, Operating, or Technology Company may arbitr
 
 ### 8.3 Emergency Resilience Capacity (§4)
 
-≤15% — **SEPARATE** from core reserve. Not auto-added (130% + 15% ≠ 145%).
+≤20% — **SEPARATE** from core reserve. Not auto-added (130% + 15% ≠ 145%).
 
 Eligible only when:
 1. Legally enforceable
@@ -838,7 +838,7 @@ W_i^final (Σ = 1.0)
 
 | Limit | Value |
 |---|---|
-| Preferred effective | ≤15% |
+| Preferred effective | ≤20% |
 | Hard maximum (operative) | ≤20% |
 | Constitutional sanity ceiling | 60% (cannot override 20%) |
 | USD effective ceiling | ≤35% |

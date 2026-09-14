@@ -65,7 +65,7 @@ export const RESERVE_TARGETS = {
   RR_policy_floor: 1.05,     // policy floor
   RR_floor: 1.00,            // absolute solvency floor
   // §4 — Emergency resilience capacity is SEPARATE from core reserve
-  emergencyCapacityMax: 0.15, // ≤ 15%, not auto-added to 130%
+  emergencyCapacityMax: 0.20, // ≤ 20%, not auto-added to 130%
   // §42 — Core sleeve composition (80/18/2 of the 130% core backing)
   fiatPct: 0.80,
   goldPct: 0.18,
@@ -96,7 +96,7 @@ export interface BackingBreakdown {
   digital: number;         // 2%
   frontlineFiat: number;   // 50% of total core
   strategicFiat: number;   // 30% of total core
-  emergencyCapacity: number; // separate, ≤15%, currently 0 unless activated
+  emergencyCapacity: number; // separate, ≤20%, currently 0 unless activated
 }
 
 // §3 — computeBackingBreakdown: for S supply, returns the 130% institutional backing

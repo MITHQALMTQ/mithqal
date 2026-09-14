@@ -217,6 +217,49 @@ export const BASKET_CURRENCIES = [
 
 const DEFAULT_TIMEOUT_MS = 10_000;
 
+// ─── FRED API key support (free, register at https://fred.stlouisfed.org) ───
+// If FRED_API_KEY environment variable is set, the module will use the live FRED API
+// for VIX (VIXCLS), BAA/AAA credit spreads, and other economic data.
+// Without a key, it falls back to Yahoo Finance + published reference constants.
+const FRED_API_KEY = process.env.FRED_API_KEY || "";
+export const FRED_ENABLED = FRED_API_KEY !== "";
+export const FRED_BASE_URL = "https://api.stlouisfed.org/fred/series/observations";
+
+/**
+ * Fetch a FRED series value (live, requires FRED_API_KEY env var).
+ * Returns null if no API key or fetch fails.
+ * Series IDs: VIXCLS (VIX), BAA (Moody's BAA), AAA (Moody's AAA),
+ *             T10YIE (10yr breakeven inflation), DGS10 (10yr treasury)
+ */
+async function fetchFREDSeries(seriesId: string): Promise<SourcedValue<number | null>> {
+  const fetchedAt = new Date().toISOString();
+  if (!FRED_API_KEY) {
+    return {
+      value: null,
+      source: "FRED (no API key — register at https://fred.stlouisfed.org)",
+      fetchedAt,
+      ok: false,
+      error: "FRED_API_KEY not set",
+    };
+  }
+  const url = `${FRED_BASE_URL}?series_id=${seriesId}&api_key=${FRED_API_KEY}&file_type=json&limit=1&sort_order=desc&observation_start=${new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10)}`;
+  try {
+    const { json, status, ok } = await fetchJsonWithTimeout(url);
+    const observations = json?.observations;
+    if (!ok || !observations || !observations.length) {
+      return { value: null, source: url, fetchedAt, ok: false, error: `FRED ${seriesId} HTTP ${status}` };
+    }
+    // FRED returns values as strings; "." means no data
+    const val = observations[0].value;
+    if (val === "." || !val) {
+      return { value: null, source: url, fetchedAt, ok: false, error: `FRED ${seriesId} no recent data` };
+    }
+    return { value: parseFloat(val), source: `FRED ${seriesId} (${url})`, fetchedAt, ok: true };
+  } catch (e: any) {
+    return { value: null, source: url, fetchedAt, ok: false, error: e?.message || "fetch error" };
+  }
+}
+
 async function fetchJsonWithTimeout(
   url: string,
   timeoutMs: number = DEFAULT_TIMEOUT_MS,

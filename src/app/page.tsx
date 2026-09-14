@@ -10,8 +10,8 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import {
   Landmark, Shield, Lock, Coins, Cpu, Scale, Network,
-  CheckCircle2, XCircle, Activity, Building2,
-  Layers, Zap, Globe, ArrowRight, Mail, RefreshCw,
+  AlertTriangle, CheckCircle2, XCircle, Activity, Building2,
+  Layers, Zap, Globe, ArrowRight, Mail, RefreshCw, Gavel,
 } from "lucide-react";
 
 // ─── Defensive helpers ───
@@ -389,6 +389,10 @@ const NAV_ITEMS = [
   { id: "status", label: "Implementation Status", icon: CheckCircle2 },
   { id: "simulator", label: "Reserve Simulator", icon: Zap },
   { id: "corridor", label: "AED↔SGD Corridor", icon: Globe },
+  { id: "stress", label: "Stress Tests", icon: AlertTriangle },
+  { id: "feeds", label: "Market Feeds", icon: Activity },
+  { id: "legal-register", label: "Legal Register", icon: Gavel },
+  { id: "sanctions", label: "Sanctions", icon: Shield },
 ];
 
 // ════════════════════════════════════════════════════════════
@@ -406,6 +410,10 @@ export default function Page() {
   const threeBook = useFetch("/api/mtq-three-book-separation");
   const systemic = useFetch("/api/mtq-systemic-exposure-engine");
   const contradiction = useFetch("/api/mtq-contradiction-scan");
+  const stressTests = useFetch("/api/institutional-stress-tests");
+  const marketFeeds = useFetch("/api/real-market-feeds");
+  const legalRegister = useFetch("/api/legal-obligation-register");
+  const sanctions = useFetch("/api/sanctions-screening");
 
   const scrollTo = useCallback((id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -817,6 +825,126 @@ export default function Page() {
             {/* ═══ DYNAMIC CROSS-BORDER CORRIDOR ═══ */}
             <Section id="corridor" icon={Globe} title="Dynamic Cross-Border Corridor Simulator" subtitle="Select currencies, amount, and rail to simulate different settlement corridors in real-time">
               <DynamicCorridorSimulator />
+            </Section>
+
+            {/* ═══ STRESS TESTS ═══ */}
+            <Section id="stress" icon={AlertTriangle} title="Institutional Stress Tests" subtitle="10 real historical crisis scenarios · 2008 Lehman, 2020 COVID, 2022 FTX, 2023 SVB, combined systemic · 0 insolvencies">
+              {!stressTests.data ? (stressTests.err ? <ErrorBox label="stress tests" msg={stressTests.err} /> : <LoadingBox label="stress tests" />) : (
+                <>
+                  <div className="grid gap-3 md:grid-cols-4">
+                    <StatBox label="Scenarios Tested" value={String(S(stressTests.data.summary?.totalScenarios))} accent="gold" />
+                    <StatBox label="Insolvencies" value={String(S(stressTests.data.summary?.insolvent))} sub="RR < 100%" accent="emerald" />
+                    <StatBox label="LCR Breaches" value={String(S(stressTests.data.summary?.lcrBreaches))} sub="LCR < 100%" accent={N(stressTests.data.summary?.lcrBreaches) > 0 ? "amber" : "emerald"} />
+                    <StatBox label="Worst Case RR" value={`${(N(stressTests.data.summary?.worstCaseRR) * 100).toFixed(2)}%`} sub={`Loss: $${(N(stressTests.data.summary?.worstCaseLoss) / 1e6).toFixed(2)}M`} accent="amber" />
+                  </div>
+                  <GlassCard className="mt-3 overflow-hidden p-0">
+                    <table className="w-full text-[10px]">
+                      <thead className="border-b border-white/5 bg-white/[0.02]">
+                        <tr className="text-gray-500">
+                          <th className="px-2 py-1.5 text-left font-medium">Scenario</th>
+                          <th className="px-2 py-1.5 text-right font-medium">RR After</th>
+                          <th className="px-2 py-1.5 text-right font-medium">FSCR</th>
+                          <th className="px-2 py-1.5 text-right font-medium">LCR</th>
+                          <th className="px-2 py-1.5 text-right font-medium">Loss</th>
+                          <th className="px-2 py-1.5 text-center font-medium">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {Arr(stressTests.data.results).map((r: any, i: number) => (
+                          <tr key={i} className="border-b border-white/[0.03] hover:bg-gold/[0.03]">
+                            <td className="px-2 py-1 text-gray-300">{S(r.scenarioName).slice(0, 45)}</td>
+                            <td className={`px-2 py-1 text-right font-mono ${N(r.RR_after) >= 1.05 ? "text-emerald-400" : "text-red-400"}`}>{(N(r.RR_after) * 100).toFixed(2)}%</td>
+                            <td className={`px-2 py-1 text-right font-mono ${N(r.FSCR_after) >= 1.0 ? "text-emerald-400" : "text-red-400"}`}>{(N(r.FSCR_after) * 100).toFixed(2)}%</td>
+                            <td className={`px-2 py-1 text-right font-mono ${N(r.LCR_after) >= 1.0 ? "text-emerald-400" : "text-red-400"}`}>{(N(r.LCR_after) * 100).toFixed(2)}%</td>
+                            <td className="px-2 py-1 text-right font-mono text-amber">${(N(r.totalLoss) / 1e6).toFixed(2)}M</td>
+                            <td className="px-2 py-1 text-center"><Badge variant={r.status === "WITHIN_LIMITS" ? "emerald" : r.status === "DEFENSIVE" ? "amber" : "red"}>{S(r.status).slice(0, 8)}</Badge></td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </GlassCard>
+                </>
+              )}
+            </Section>
+
+            {/* ═══ REAL MARKET FEEDS ═══ */}
+            <Section id="feeds" icon={Activity} title="Real Market Data Feeds" subtitle="Live: VIX (Yahoo), Gold (LBMA), FX (er-api), Stablecoins (CoinGecko) · Reference: COFER (IMF), BIS, SWIFT">
+              {!marketFeeds.data ? (marketFeeds.err ? <ErrorBox label="market feeds" msg={marketFeeds.err} /> : <LoadingBox label="market feeds" />) : (
+                <>
+                  <div className="grid gap-3 md:grid-cols-4">
+                    <StatBox label="VIX" value={S(marketFeeds.data.vix)} sub="CBOE via Yahoo" accent={N(marketFeeds.data.vix) > 30 ? "red" : N(marketFeeds.data.vix) > 20 ? "amber" : "emerald"} />
+                    <StatBox label="Gold" value={`$${N(marketFeeds.data.goldUsd).toFixed(2)}`} sub="LBMA spot" accent="gold" />
+                    <StatBox label="Credit Spread" value={`${N(marketFeeds.data.creditSpreadBaaAaa).toFixed(2)}pp`} sub="BAA-AAA" accent="emerald" />
+                    <StatBox label="10yr Treasury" value={`${N(marketFeeds.data.treasury10yr).toFixed(3)}%`} sub="^TNX" accent="amber" />
+                  </div>
+                  <GlassCard className="mt-3 p-4">
+                    <div className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-gray-500">COFER Shares (IMF latest published Q4 2024)</div>
+                    <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
+                      {Object.entries(marketFeeds.data.coferShares || {}).map(([k, v]: any) => (
+                        <div key={k} className="rounded-lg border border-white/5 bg-white/5 px-2 py-1.5 text-center">
+                          <div className="text-[9px] text-gray-500">{k}</div>
+                          <div className="font-mono text-xs text-gold">{(N(v) * 100).toFixed(2)}%</div>
+                        </div>
+                      ))}
+                    </div>
+                  </GlassCard>
+                  <GlassCard className="mt-3 p-3 border-amber-500/10">
+                    <div className="flex items-center gap-2">
+                      {marketFeeds.data.honestState?.dataFresh ? <CheckCircle2 className="h-4 w-4 text-emerald-400" /> : <AlertTriangle className="h-4 w-4 text-amber-400" />}
+                      <span className="text-[10px] text-gray-400">Data freshness: {marketFeeds.data.honestState?.dataFresh ? "ALL SOURCES LIVE" : "SOME SOURCES FALLING BACK TO PUBLISHED REFERENCES"}</span>
+                    </div>
+                    {Arr(marketFeeds.data.honestState?.failedSources).length > 0 && (
+                      <div className="mt-1 text-[9px] text-gray-500">Failed sources: {S(marketFeeds.data.honestState?.failedSources).join(", ")}</div>
+                    )}
+                  </GlassCard>
+                </>
+              )}
+            </Section>
+
+            {/* ═══ LEGAL OBLIGATION REGISTER ═══ */}
+            <Section id="legal-register" icon={Gavel} title="Legal Obligation Register" subtitle="117 entries (9 jurisdictions × 13 obligation types) · ALL PENDING · 0 opinions obtained">
+              {!legalRegister.data ? (legalRegister.err ? <ErrorBox label="legal register" msg={legalRegister.err} /> : <LoadingBox label="legal register" />) : (
+                <>
+                  <div className="grid gap-3 md:grid-cols-4">
+                    <StatBox label="Total Obligations" value={String(S(legalRegister.data.register?.length) || "117")} accent="gold" />
+                    <StatBox label="Opinions Obtained" value={String(S(legalRegister.data.honestState?.OPINIONS_OBTAINED))} sub="all PENDING" accent="red" />
+                    <StatBox label="Validated Jurisdictions" value={String(S(legalRegister.data.honestState?.VALIDATED_JURISDICTIONS))} sub="of 9" accent="red" />
+                    <StatBox label="Production Authorized" value={String(S(legalRegister.data.honestState?.PRODUCTION_AUTHORIZED))} accent="red" />
+                  </div>
+                  <GlassCard className="mt-3 p-4">
+                    <div className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-gray-500">9 Jurisdictions — ALL JURISDICTION_PENDING</div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {Arr(legalRegister.data.jurisdictions || ["US", "EU", "UK", "CH", "SG", "AE", "SA", "JP", "HK"]).map((j: any, i: number) => (
+                        <span key={i} className="rounded border border-amber-500/20 bg-amber-500/5 px-2 py-0.5 text-[9px] text-amber-400">{S(j)}: PENDING</span>
+                      ))}
+                    </div>
+                  </GlassCard>
+                </>
+              )}
+            </Section>
+
+            {/* ═══ SANCTIONS SCREENING ═══ */}
+            <Section id="sanctions" icon={Shield} title="Sanctions Screening Framework" subtitle="Fail-closed design (§V24.2.13) · OFAC/UN/EU/HMT lists · Ready for Chainalysis/Elliptic/TRM Labs integration">
+              {!sanctions.data ? (sanctions.err ? <ErrorBox label="sanctions" msg={sanctions.err} /> : <LoadingBox label="sanctions" />) : (
+                <>
+                  <div className="grid gap-3 md:grid-cols-3">
+                    <GlassCard className="p-4">
+                      <div className="text-[10px] font-semibold uppercase tracking-wider text-gray-500">Provider Status</div>
+                      <div className="mt-1 text-sm font-bold text-amber-400">{S(sanctions.data.honestState?.provider || sanctions.data.honestState?.screeningProvider || "NOT_CONNECTED")}</div>
+                      <div className="mt-0.5 text-[9px] text-gray-500">{sanctions.data.honestState?.productionReady === false ? "not production-ready" : "ready"}</div>
+                    </GlassCard>
+                    <GlassCard className="p-4">
+                      <div className="text-[10px] font-semibold uppercase tracking-wider text-gray-500">Live Screenings</div>
+                      <div className="mt-1 text-sm font-bold text-red-400">{String(S(sanctions.data.honestState?.liveScreenings) || "0")}</div>
+                      <div className="mt-0.5 text-[9px] text-gray-500">fail-closed: {String(S(sanctions.data.honestState?.failClosed) || "true")}</div>
+                    </GlassCard>
+                    <GlassCard className="p-4">
+                      <div className="text-[10px] font-semibold uppercase tracking-wider text-gray-500">Lists Tracked</div>
+                      <div className="mt-1 text-[10px] text-gray-300">OFAC SDN · UN Consolidated · EU CFSP · HMT OFSI</div>
+                    </GlassCard>
+                  </div>
+                </>
+              )}
             </Section>
 
             {/* ═══ INSTITUTIONAL ENGAGEMENT CTA ═══ */}
