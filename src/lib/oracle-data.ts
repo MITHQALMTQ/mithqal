@@ -3,7 +3,7 @@
 // COFER, SWIFT, BIS values are sourced from `./real-market-feeds` which
 // fetches REAL data from free public APIs (IMF COFER, Yahoo Finance VIX,
 // Moody's credit spreads) and uses the latest published reference constants
-// for BIS Triennial Survey 2022 and SWIFT RMB Tracker (no live API exists
+// for BIS Triennial Survey and SWIFT RMB Tracker (BIS SDMX API available; SWIFT per-dataset evaluation
 // for these). See `/src/lib/real-market-feeds.ts` for provenance details.
 //
 // In production, the spot gold / FX data comes from multiple oracle families
@@ -85,8 +85,8 @@ export interface OracleSnapshot {
 // admitted on 2024-01-01 (placeholder genesis date).
 //
 // COFER / SWIFT / BIS values below are sourced from the LATEST PUBLISHED
-// reference constants in `./real-market-feeds` (IMF COFER Q4 2024,
-// SWIFT RMB Tracker ~Q4 2024, BIS Triennial Survey 2022). The async function
+// reference constants in `./real-market-feeds` (IMF COFER (dynamically discovered),
+// SWIFT RMB Tracker (latest published), BIS Triennial Survey (latest published)). The async function
 // `getOracleSnapshotWithRealMarketData(opIndex)` overlays live-fetched
 // values when network is available; this const is the network-free fallback.
 //

@@ -1061,6 +1061,30 @@ const CHAPTER_XX_SCHEMA_STATEMENTS: string[] = [
   `CREATE TABLE IF NOT EXISTS "ReserveOwnership" ("id" INTEGER PRIMARY KEY AUTOINCREMENT, "assetClass" TEXT NOT NULL, "ownerEntity" TEXT NOT NULL, "custodian" TEXT NOT NULL, "amount" REAL NOT NULL, "valueUsd" REAL NOT NULL, "verified" INTEGER NOT NULL DEFAULT 1, "lastVerifiedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP)`,
   `CREATE INDEX IF NOT EXISTS "ReserveOwnership_assetClass_idx" ON "ReserveOwnership"("assetClass")`,
   `CREATE INDEX IF NOT EXISTS "ReserveOwnership_ownerEntity_idx" ON "ReserveOwnership"("ownerEntity")`,
+  // ─── Data Source Observation (provenance tracking) — additive, per data-architecture audit ───
+  `CREATE TABLE IF NOT EXISTS "DataSourceObservation" (
+    "id" TEXT PRIMARY KEY NOT NULL,
+    "provider" TEXT NOT NULL,
+    "dataset" TEXT NOT NULL,
+    "series_key" TEXT,
+    "reference_period" TEXT,
+    "frequency" TEXT,
+    "value" TEXT NOT NULL,
+    "unit" TEXT,
+    "source_url" TEXT,
+    "access_method" TEXT,
+    "retrieved_at" TEXT NOT NULL,
+    "published_at" TEXT,
+    "revision_number" INTEGER,
+    "methodology_version" TEXT,
+    "dataset_version" TEXT,
+    "raw_payload_hash" TEXT,
+    "ingestion_run_id" TEXT,
+    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+  )`,
+  `CREATE INDEX IF NOT EXISTS "DataSourceObs_provider_dataset_idx" ON "DataSourceObservation"("provider", "dataset")`,
+  `CREATE INDEX IF NOT EXISTS "DataSourceObs_period_idx" ON "DataSourceObservation"("reference_period")`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS "DataSourceObs_unique_idx" ON "DataSourceObservation"("provider", "dataset", "series_key", "reference_period", "dataset_version")`,
 ]
 
 let __chapterXxSchemaEnsured = false
