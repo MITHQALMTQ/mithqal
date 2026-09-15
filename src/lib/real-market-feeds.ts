@@ -83,6 +83,7 @@ export interface RealMarketData {
   bisLiquidity: Record<string, number>; // currency code → BIS liquidity metric (0-1)
   vix: number;                           // VIX index value
   creditSpreadBaaAaa: number;            // BAA − AAA yield spread (percentage points)
+  treasury10yr: number | null;           // 10-year US Treasury yield (percentage)
   goldUsd: number | null;                // populated by caller (already live elsewhere)
   silverUsd: number | null;              // populated by caller (already live elsewhere)
   fxRates: Record<string, number> | null; // populated by caller (already live elsewhere)
@@ -242,7 +243,7 @@ async function fetchFREDSeries(seriesId: string): Promise<SourcedValue<number | 
       error: "FRED_API_KEY not set",
     };
   }
-  const url = `${FRED_BASE_URL}?series_id=${seriesId}&api_key=${FRED_API_KEY}&file_type=json&limit=1&sort_order=desc&observation_start=${new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10)}`;
+  const url = `${FRED_BASE_URL}?series_id=${seriesId}&api_key=${FRED_API_KEY}&file_type=json&limit=1&sort_order=desc&observation_start=${new Date(Date.now() - 90 * 86400000).toISOString().slice(0, 10)}`;
   try {
     const { json, status, ok } = await fetchJsonWithTimeout(url);
     const observations = json?.observations;
@@ -444,9 +445,24 @@ export async function fetchRealBISLiquidity(): Promise<
  * Returns: { chart: { result: [{ meta: { regularMarketPrice: 16.34 } }] } }
  */
 export async function fetchRealVIX(): Promise<SourcedValue<number>> {
+  const fetchedAt = new Date().toISOString();
+
+  // --- Step 0: try FRED VIXCLS (if API key is set) ---
+  if (FRED_ENABLED) {
+    const fredVix = await fetchFREDSeries("VIXCLS");
+    if (fredVix.ok && fredVix.value !== null && fredVix.value > 0) {
+      return {
+        value: fredVix.value,
+        source: `FRED VIXCLS (live, ${fredVix.value} on VIX spot) — ${fredVix.source}`,
+        fetchedAt,
+        ok: true,
+      };
+    }
+  }
+
+  // --- Step 1: try Yahoo Finance ^VIX ---
   const url =
     "https://query1.finance.yahoo.com/v8/finance/chart/%5EVIX?interval=1d&range=1d";
-  const fetchedAt = new Date().toISOString();
   try {
     const { json, status, ok } = await fetchJsonWithTimeout(url);
     if (!ok) {
@@ -483,6 +499,7 @@ export async function fetchRealVIX(): Promise<SourcedValue<number>> {
  * Fetch the BAA − AAA corporate bond yield spread (in percentage points).
  *
  * Strategy:
+ *   0. Try FRED BAA and AAA series (if FRED_API_KEY is set — PREFERRED SOURCE).
  *   1. Try Yahoo Finance ^BAA and ^AAA. Yahoo has DELISTED these symbols
  *      in many regions, so this usually fails.
  *   2. If that fails, fall back to the latest published reference constant
@@ -496,77 +513,116 @@ export async function fetchRealCreditSpreads(): Promise<{
 }> {
   const fetchedAt = new Date().toISOString();
 
-  // --- Step 1: try Yahoo ^BAA and ^AAA ---
-  let baa: number | null = null;
-  let aaa: number | null = null;
-  try {
-    const baaRes = await fetchJsonWithTimeout(
-      "https://query1.finance.yahoo.com/v8/finance/chart/%5EBAA?interval=1d&range=1d",
-    );
-    const baaPrice =
-      baaRes.json?.chart?.result?.[0]?.meta?.regularMarketPrice ??
-      baaRes.json?.chart?.result?.[0]?.indicators?.quote?.[0]?.close?.[0];
-    if (typeof baaPrice === "number" && isFinite(baaPrice) && baaPrice > 0) {
-      baa = baaPrice;
-    }
-  } catch {
-    /* fall through */
-  }
-  try {
-    const aaaRes = await fetchJsonWithTimeout(
-      "https://query1.finance.yahoo.com/v8/finance/chart/%5EAAA?interval=1d&range=1d",
-    );
-    const aaaPrice =
-      aaaRes.json?.chart?.result?.[0]?.meta?.regularMarketPrice ??
-      aaaRes.json?.chart?.result?.[0]?.indicators?.quote?.[0]?.close?.[0];
-    if (typeof aaaPrice === "number" && isFinite(aaaPrice) && aaaPrice > 0) {
-      aaa = aaaPrice;
-    }
-  } catch {
-    /* fall through */
-  }
-
+  // --- Step 0: try FRED BAA + AAA (if API key is set — PREFERRED) ---
   let spread: SourcedValue<number>;
-  if (baa !== null && aaa !== null && baa > aaa) {
-    const computed = baa - aaa; // percentage points
-    spread = {
-      value: computed,
-      source:
-        "https://query1.finance.yahoo.com/v8/finance/chart/%5EBAA minus %5EAAA (live Yahoo Finance)",
-      fetchedAt,
-      ok: true,
-    };
-  } else {
-    spread = {
-      value: CREDIT_SPREAD_LATEST_PUBLISHED_REFERENCE,
-      source:
-        "reference-constant: Moody's BAA−AAA via FRED latest published (~1.02pp) — Yahoo ^BAA/^AAA delisted or unreachable",
-      fetchedAt,
-      ok: false,
-      error: "Yahoo Finance ^BAA and/or ^AAA not available",
-    };
+  if (FRED_ENABLED) {
+    const [fredBaa, fredAaa] = await Promise.all([
+      fetchFREDSeries("BAA"),
+      fetchFREDSeries("AAA"),
+    ]);
+    if (fredBaa.ok && fredAaa.ok && fredBaa.value !== null && fredAaa.value !== null) {
+      const spreadVal = fredBaa.value - fredAaa.value; // percentage points
+      spread = {
+        value: spreadVal,
+        source: `FRED BAA (${fredBaa.value}) − FRED AAA (${fredAaa.value}) — live Moody's via FRED`,
+        fetchedAt,
+        ok: true,
+      };
+      // Skip Yahoo BAA/AAA — FRED succeeded
+    } else {
+      // FRED failed — fall through to Yahoo
+    }
   }
 
-  // --- Step 2: fetch ^TNX (10-year treasury) as a secondary stress indicator ---
-  let tnx10y: SourcedValue<number> | null = null;
-  try {
-    const tnxRes = await fetchJsonWithTimeout(
-      "https://query1.finance.yahoo.com/v8/finance/chart/%5ETNX?interval=1d&range=1d",
-    );
-    const tnxPrice =
-      tnxRes.json?.chart?.result?.[0]?.meta?.regularMarketPrice ??
-      tnxRes.json?.chart?.result?.[0]?.indicators?.quote?.[0]?.close?.[0];
-    if (typeof tnxPrice === "number" && isFinite(tnxPrice) && tnxPrice > 0) {
-      tnx10y = {
-        value: tnxPrice,
+  // --- Step 1: try Yahoo ^BAA and ^AAA (only if FRED didn't set spread) ---
+  if (spread === undefined) {
+    let baa: number | null = null;
+    let aaa: number | null = null;
+    try {
+      const baaRes = await fetchJsonWithTimeout(
+        "https://query1.finance.yahoo.com/v8/finance/chart/%5EBAA?interval=1d&range=1d",
+      );
+      const baaPrice =
+        baaRes.json?.chart?.result?.[0]?.meta?.regularMarketPrice ??
+        baaRes.json?.chart?.result?.[0]?.indicators?.quote?.[0]?.close?.[0];
+      if (typeof baaPrice === "number" && isFinite(baaPrice) && baaPrice > 0) {
+        baa = baaPrice;
+      }
+    } catch {
+      /* fall through */
+    }
+    try {
+      const aaaRes = await fetchJsonWithTimeout(
+        "https://query1.finance.yahoo.com/v8/finance/chart/%5EAAA?interval=1d&range=1d",
+      );
+      const aaaPrice =
+        aaaRes.json?.chart?.result?.[0]?.meta?.regularMarketPrice ??
+        aaaRes.json?.chart?.result?.[0]?.indicators?.quote?.[0]?.close?.[0];
+      if (typeof aaaPrice === "number" && isFinite(aaaPrice) && aaaPrice > 0) {
+        aaa = aaaPrice;
+      }
+    } catch {
+      /* fall through */
+    }
+
+    if (baa !== null && aaa !== null && baa > aaa) {
+      const computed = baa - aaa; // percentage points
+      spread = {
+        value: computed,
         source:
-          "https://query1.finance.yahoo.com/v8/finance/chart/%5ETNX (live Yahoo Finance)",
+          "https://query1.finance.yahoo.com/v8/finance/chart/%5EBAA minus %5EAAA (live Yahoo Finance)",
+        fetchedAt,
+        ok: true,
+      };
+    } else {
+      spread = {
+        value: CREDIT_SPREAD_LATEST_PUBLISHED_REFERENCE,
+        source:
+          "reference-constant: Moody's BAA−AAA via FRED latest published (~1.02pp) — Yahoo ^BAA/^AAA delisted or unreachable",
+        fetchedAt,
+        ok: false,
+        error: "Yahoo Finance ^BAA and/or ^AAA not available",
+      };
+    }
+  }
+
+  // --- Step 2: fetch 10-year treasury (FRED DGS10 preferred, Yahoo ^TNX fallback) ---
+  let tnx10y: SourcedValue<number> | null = null;
+
+  // Try FRED DGS10 first
+  if (FRED_ENABLED) {
+    const fredDgs10 = await fetchFREDSeries("DGS10");
+    if (fredDgs10.ok && fredDgs10.value !== null && fredDgs10.value > 0) {
+      tnx10y = {
+        value: fredDgs10.value,
+        source: `FRED DGS10 (${fredDgs10.value}%) — live US Treasury`,
         fetchedAt,
         ok: true,
       };
     }
-  } catch {
-    /* leave tnx10y null */
+  }
+
+  // Fall back to Yahoo ^TNX if FRED didn't succeed
+  if (tnx10y === null) {
+    try {
+      const tnxRes = await fetchJsonWithTimeout(
+        "https://query1.finance.yahoo.com/v8/finance/chart/%5ETNX?interval=1d&range=1d",
+      );
+      const tnxPrice =
+        tnxRes.json?.chart?.result?.[0]?.meta?.regularMarketPrice ??
+        tnxRes.json?.chart?.result?.[0]?.indicators?.quote?.[0]?.close?.[0];
+      if (typeof tnxPrice === "number" && isFinite(tnxPrice) && tnxPrice > 0) {
+        tnx10y = {
+          value: tnxPrice,
+          source:
+            "https://query1.finance.yahoo.com/v8/finance/chart/%5ETNX (live Yahoo Finance)",
+          fetchedAt,
+          ok: true,
+        };
+      }
+    } catch {
+      /* leave tnx10y null */
+    }
   }
 
   return { spread, tnx10y };
@@ -632,6 +688,7 @@ export async function fetchRealMarketData(input?: {
     bisLiquidity: bis.value,
     vix: vix.value,
     creditSpreadBaaAaa: credit.spread.value,
+    treasury10yr: credit.tnx10y ? credit.tnx10y.value : null,
     goldUsd: input?.goldUsd ?? null,
     silverUsd: input?.silverUsd ?? null,
     fxRates: input?.fxRates ?? null,
