@@ -6575,3 +6575,44 @@ implementation scope. The COO recommends prioritizing G01 (first legal opinion i
 US or UAE) as the critical-path item.
 
 All 3 platforms (GitHub + Vercel + Turso) are synced, deployed, and functioning.
+
+---
+Task ID: DATA-ARCH-CORRECTION
+Agent: Main (Z.ai Code) acting as CTO/COO/Principal Architect
+Task: Audit-first correction of IMF/BIS/SWIFT data-source classification
+
+Work Log:
+- AUDIT PHASE: Inspected complete codebase for COFER/IMF/BIS/SWIFT/SDMX references
+- Found 3 incorrect classifications:
+  1. BIS: incorrectly labeled "no live API" (BIS SDMX REST API IS LIVE)
+  2. SWIFT: overbroad "no live free public API exists" (should be per-dataset)
+  3. COFER: hardcoded "Q4 2024" label (should be dynamically discovered)
+- Verified BIS SDMX API connectivity: fetched WS_EER (2025-01/02) + WS_DER_OTC_TOV data
+- Discovered 13+ BIS dataflow IDs via https://stats.bis.org/api/v1/dataflow
+- Corrected all 3 classifications with provenance + frequency-aware staleness
+
+Files Modified (3 files, 368 insertions, 54 deletions):
+- src/lib/real-market-feeds.ts: Corrected BIS/SWIFT/COFER, added provenance, sourceStatus model
+- src/lib/db.ts: Added DataSourceObservation table (additive, idempotent unique index)
+- src/lib/oracle-data.ts: Corrected comments (removed "Q4 2024" and "no live API" language)
+
+What was NOT changed (deliberate):
+- No existing database tables dropped or modified
+- No existing API routes removed
+- No existing caching patterns replaced
+- No new microservices or Docker containers added
+- No new scheduler or cron jobs added
+- No existing consumer of SourcedValue<T> broke (all new fields are optional)
+
+Stage Summary:
+- ✅ BIS SDMX API: LIVE (confirmed from production — accessMethod=SDMX_API on Vercel)
+- ✅ SWIFT: per-dataset PUBLICATION_ONLY (not global "no API")
+- ✅ COFER: dynamically discovered period (no hardcoded Q4 2024)
+- ✅ Provenance model: 11 fields (provider, dataset, publishedAt, referencePeriod, etc.)
+- ✅ DataSourceStatusEntry: 5 datasets with dynamic status
+- ✅ DataSourceObservation table: additive, idempotent unique index
+- ✅ GitHub pushed: commit c88d2ec
+- ✅ Vercel deployed: mithqal.vercel.app
+- ✅ Turso DB: connected
+- ✅ All APIs return HTTP 200
+- ✅ No breaking changes
