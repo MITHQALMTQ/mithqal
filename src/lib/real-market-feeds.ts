@@ -1642,6 +1642,11 @@ export async function fetchRealCreditSpreads(): Promise<{
         source: `FRED BAA (${fredBaa.value}) − FRED AAA (${fredAaa.value}) — live Moody's via FRED`,
         fetchedAt,
         ok: true,
+        provider: "FRED",
+        dataset: "BAA-AAA Credit Spread",
+        frequency: "MONTHLY",
+        accessMethod: "REST_API",
+        referencePeriod: fredBaa.referencePeriod,
       };
       // Skip Yahoo BAA/AAA — FRED succeeded
     } else {
@@ -1721,6 +1726,11 @@ export async function fetchRealCreditSpreads(): Promise<{
         source: `FRED DGS10 (${fredDgs10.value}%) — live US Treasury`,
         fetchedAt,
         ok: true,
+        provider: "FRED",
+        dataset: "DGS10 (10yr Treasury)",
+        frequency: "DAILY",
+        accessMethod: "REST_API",
+        referencePeriod: fredDgs10.referencePeriod,
       };
     }
   }
@@ -1741,6 +1751,10 @@ export async function fetchRealCreditSpreads(): Promise<{
             "https://query1.finance.yahoo.com/v8/finance/chart/%5ETNX (live Yahoo Finance)",
           fetchedAt,
           ok: true,
+          provider: "Yahoo",
+          dataset: "10yr Treasury (^TNX)",
+          frequency: "DAILY",
+          accessMethod: "REST_API",
         };
       }
     } catch {

@@ -868,17 +868,17 @@ export default function Page() {
             </Section>
 
             {/* ═══ REAL MARKET FEEDS ═══ */}
-            <Section id="feeds" icon={Activity} title="Real Market Data Feeds" subtitle="Live: VIX (Yahoo), Gold (LBMA), FX (er-api), Stablecoins (CoinGecko) · Reference: COFER (IMF), BIS, SWIFT">
+            <Section id="feeds" icon={Activity} title="Real Market Data Feeds" subtitle="Live: VIX (FRED), Gold (LBMA), FX (er-api), BIS EER (SDMX) · Reference: COFER (IMF SDMX), SWIFT (publication)">
               {!marketFeeds.data ? (marketFeeds.err ? <ErrorBox label="market feeds" msg={marketFeeds.err} /> : <LoadingBox label="market feeds" />) : (
                 <>
                   <div className="grid gap-3 md:grid-cols-4">
-                    <StatBox label="VIX" value={S(marketFeeds.data.vix)} sub="CBOE via Yahoo" accent={N(marketFeeds.data.vix) > 30 ? "red" : N(marketFeeds.data.vix) > 20 ? "amber" : "emerald"} />
+                    <StatBox label="VIX" value={S(marketFeeds.data.vix)} sub="FRED VIXCLS live" accent={N(marketFeeds.data.vix) > 30 ? "red" : N(marketFeeds.data.vix) > 20 ? "amber" : "emerald"} />
                     <StatBox label="Gold" value={`$${N(marketFeeds.data.goldUsd).toFixed(2)}`} sub="LBMA spot" accent="gold" />
-                    <StatBox label="Credit Spread" value={`${N(marketFeeds.data.creditSpreadBaaAaa).toFixed(2)}pp`} sub="BAA-AAA" accent="emerald" />
-                    <StatBox label="10yr Treasury" value={`${N(marketFeeds.data.treasury10yr).toFixed(3)}%`} sub="^TNX" accent="amber" />
+                    <StatBox label="Credit Spread" value={`${N(marketFeeds.data.creditSpreadBaaAaa).toFixed(2)}pp`} sub="FRED BAA-AAA live" accent="emerald" />
+                    <StatBox label="10yr Treasury" value={`${N(marketFeeds.data.treasury10yr).toFixed(3)}%`} sub="FRED DGS10 live" accent="amber" />
                   </div>
                   <GlassCard className="mt-3 p-4">
-                    <div className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-gray-500">COFER Shares (IMF latest published Q4 2024)</div>
+                    <div className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-gray-500">COFER Shares (IMF — dynamically discovered period)</div>
                     <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
                       {Object.entries(marketFeeds.data.coferShares || {}).map(([k, v]: any) => (
                         <div key={k} className="rounded-lg border border-white/5 bg-white/5 px-2 py-1.5 text-center">
@@ -887,6 +887,44 @@ export default function Page() {
                         </div>
                       ))}
                     </div>
+                  </GlassCard>
+                  {marketFeeds.data.bisExchangeRates && Object.keys(marketFeeds.data.bisExchangeRates).length > 0 && (
+                    <GlassCard className="mt-3 p-4">
+                      <div className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-emerald-400">BIS Effective Exchange Rates (live SDMX API — WS_EER)</div>
+                      <div className="grid grid-cols-3 gap-2 sm:grid-cols-7">
+                        {Object.entries(marketFeeds.data.bisExchangeRates || {}).map(([k, v]: any) => (
+                          <div key={k} className="rounded-lg border border-emerald-500/10 bg-emerald-500/5 px-2 py-1.5 text-center">
+                            <div className="text-[9px] text-gray-500">{k}</div>
+                            <div className="font-mono text-xs text-emerald-400">{N(v).toFixed(2)}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </GlassCard>
+                  )}
+                  <GlassCard className="mt-3 overflow-hidden p-0">
+                    <div className="mb-2 p-3 text-[10px] font-semibold uppercase tracking-wider text-gray-500">Corrected Source Status (dynamically generated)</div>
+                    <table className="w-full text-[10px]">
+                      <thead className="border-b border-white/5 bg-white/[0.02]">
+                        <tr className="text-gray-500">
+                          <th className="px-2 py-1 text-left">Dataset</th>
+                          <th className="px-2 py-1 text-left">Source</th>
+                          <th className="px-2 py-1 text-left">Access</th>
+                          <th className="px-2 py-1 text-left">Frequency</th>
+                          <th className="px-2 py-1 text-left">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {Arr(marketFeeds.data.sourceStatus).map((s: any, i: number) => (
+                          <tr key={i} className="border-b border-white/[0.03]">
+                            <td className="px-2 py-1 text-gray-300">{S(s.dataset)}</td>
+                            <td className="px-2 py-1 text-gray-400">{S(s.officialSource)}</td>
+                            <td className="px-2 py-1 text-gray-400">{S(s.access)}</td>
+                            <td className="px-2 py-1 text-gray-500">{S(s.frequency)}</td>
+                            <td className="px-2 py-1"><Badge variant={s.status === "HEALTHY" ? "emerald" : s.status === "PUBLICATION_ONLY" ? "gray" : "amber"}>{S(s.status).slice(0, 12)}</Badge></td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </GlassCard>
                   <GlassCard className="mt-3 p-3 border-amber-500/10">
                     <div className="flex items-center gap-2">
