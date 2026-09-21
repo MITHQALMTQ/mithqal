@@ -9,29 +9,35 @@
  *   2. AI Compliance Assistant — KYC screening for Formation Committee
  *   3. AI Transaction Anomaly Detection — flags unusual on-chain activity
  *
- * Architecture: 3 external LLMs are called in parallel for every query.
- *   - Gemini       (Google)            — broad reasoning + knowledge
- *   - HuggingFace  (Inference API)      — specialized financial models
- *   - Groq         (ultra-fast inference) — real-time analysis
+ * Architecture: 5 external LLMs are called in parallel for every query.
+ *   - Gemini       (Google)               — broad reasoning + knowledge
+ *   - HuggingFace  (Inference API)        — specialized financial models
+ *   - Groq         (ultra-fast inference)  — real-time analysis
+ *   - OpenRouter   (multi-model gateway)  — diverse model aggregation
+ *   - NVIDIA       (Nemotron NIM)          — enterprise-grade reasoning
  *
- * Consensus mechanism:
- *   - All 3 models agree  → high   confidence (green)
- *   - 2/3 models agree     → medium confidence (yellow)
- *   - All disagree         → low    confidence (red, needs human review)
+ * Consensus mechanism (5 providers):
+ *   - 4–5 models agree  → high   confidence (green)
+ *   - 3 models agree   → high   confidence (majority, green)
+ *   - 2 models agree   → medium confidence (yellow)
+ *   - 1 model responds  → low    confidence (red, needs human review)
+ *   - 0 models respond  → degraded (red, needs human review)
  *
  * Agreement is measured via Jaccard similarity on the lowercased token
- * sets of each response (threshold: 0.30). This is intentionally a coarse
- * heuristic — the goal is to surface divergence to the operator, not to
- * produce a numerical "truth score". A real Binance-grade system would
- * use cross-encoder NLI scoring; the Constitution explicitly defers AI
- * details to engineering judgment.
+ * sets of each response (threshold: 0.30). The largest clique of
+ * pairwise-agreeing models determines the consensus level. This is
+ * intentionally a coarse heuristic — the goal is to surface divergence
+ * to the operator, not to produce a numerical "truth score". A real
+ * Binance-grade system would use cross-encoder NLI scoring; the
+ * Constitution explicitly defers AI details to engineering judgment.
  *
  * Failure model:
- *   - Each model call is wrapped in `Promise.allSettled`. If one model
+ *   - Each model call is wrapped in `Promise.allSettled`. If a model
  *     is down (timeout, bad key, 500), the Brain continues with the
- *     remaining models. With 2 models → max consensus is "medium". With
- *     1 model → max consensus is "low". With 0 → returns a degraded
- *     message and `consensus: "low"`.
+ *     remaining models. With ≥3 models → max consensus is "high".
+ *     With 2 models → max consensus is "medium". With 1 model → max
+ *     consensus is "low". With 0 → returns a degraded message and
+ *     `consensus: "low"`.
  *   - Each call has a 12-second AbortController timeout so a hung
  *     upstream never blocks the response.
  *
@@ -50,7 +56,7 @@ export type ConsensusLevel = "high" | "medium" | "low";
 
 export interface ModelResponse {
   /** Stable identifier for this model (used by the UI to render cards). */
-  model: "gemini" | "huggingface" | "groq";
+  model: "gemini" | "huggingface" | "groq" | "openrouter" | "nvidia";
   /** Human-friendly label. */
   label: string;
   /** The model's textual response (may be empty if the call failed). */
@@ -77,7 +83,7 @@ export interface BrainResponse {
   recommendations: string[];
   /** ISO timestamp of when the Brain completed this query. */
   timestamp: string;
-  /** Number of models that responded successfully (0..3). */
+  /** Number of models that responded successfully (0..5). */
   modelsResponded: number;
 }
 
@@ -133,6 +139,8 @@ export interface AnomalyFinding {
 const GEMINI_KEY = process.env.GEMINI_API_KEY;
 const HF_KEY = process.env.HUGGINGFACE_API_KEY;
 const GROQ_KEY = process.env.GROQ_API_KEY;
+const OPENROUTER_KEY = process.env.OPENROUTER_API_KEY;
+const NVIDIA_KEY = process.env.NVIDIA_API_KEY;
 
 /** Per-call upstream timeout. 12s is generous for Groq, tight for HF. */
 const UPSTREAM_TIMEOUT_MS = 12_000;
@@ -141,9 +149,11 @@ const UPSTREAM_TIMEOUT_MS = 12_000;
 const AGREEMENT_THRESHOLD = 0.3;
 
 const MODEL_LABELS: Record<ModelResponse["model"], string> = {
-  gemini: "Gemini",
-  huggingface: "HuggingFace",
-  groq: "Groq",
+  gemini: "Gemini 2.0 Flash",
+  huggingface: "HuggingFace Llama 3.1 70B",
+  groq: "Groq Llama 3.3 70B",
+  openrouter: "OpenRouter (multi-model)",
+  nvidia: "NVIDIA Nemotron",
 };
 
 /* ------------------------------------------------------------------ */
@@ -437,6 +447,215 @@ async function queryHuggingFace(prompt: string): Promise<ModelResponse> {
   }
 }
 
+/**
+ * Query OpenRouter via the OpenAI-compatible chat completions API.
+ *
+ * Endpoint (per spec):
+ *   POST https://openrouter.ai/api/v1/chat/completions
+ *
+ * Model: "meta-llama/llama-3.3-70b-instruct" (per spec; alternative
+ * fallback identifier documented by OpenRouter is
+ * "google/gemini-2.0-flash-exp:free").
+ *
+ * OpenRouter is a multi-model gateway — it routes a single OpenAI-
+ * shaped request to many underlying providers (Anthropic, Meta,
+ * Google, Mistral, etc.) behind one URL. We use it for response
+ * diversity: even when two of our other providers land on the same
+ * answer, OpenRouter's independent routing adds a 4th perspective
+ * (and a 5th with NVIDIA) to the consensus.
+ *
+ * Request/response shape: identical to Groq (OpenAI chat completions).
+ */
+async function queryOpenRouter(prompt: string): Promise<ModelResponse> {
+  const start = Date.now();
+  const model: ModelResponse["model"] = "openrouter";
+  const base: ModelResponse = {
+    model,
+    label: MODEL_LABELS[model],
+    response: "",
+    confidence: 0,
+    latencyMs: 0,
+    ok: false,
+  };
+
+  if (!OPENROUTER_KEY) {
+    return { ...base, error: "OPENROUTER_API_KEY not configured" };
+  }
+
+  try {
+    const res = await fetchWithTimeout(
+      "https://openrouter.ai/api/v1/chat/completions",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${OPENROUTER_KEY}`,
+        },
+        body: JSON.stringify({
+          model: "meta-llama/llama-3.3-70b-instruct",
+          messages: [
+            {
+              role: "system",
+              content:
+                "You are the Mithqal Brain, a multi-model consensus AI for a " +
+                "constitutional settlement infrastructure. Be precise, " +
+                "structured, and concise.",
+            },
+            { role: "user", content: prompt },
+          ],
+          temperature: 0.3,
+          max_tokens: 800,
+        }),
+      }
+    );
+
+    if (!res.ok) {
+      const text = await res.text().catch(() => "");
+      return {
+        ...base,
+        latencyMs: Date.now() - start,
+        error: `OpenRouter HTTP ${res.status}: ${text.slice(0, 200)}`,
+      };
+    }
+
+    const json = (await res.json()) as {
+      choices?: Array<{ message?: { content?: string } }>;
+    };
+    const text = json?.choices?.[0]?.message?.content?.trim() ?? "";
+
+    if (!text) {
+      return {
+        ...base,
+        latencyMs: Date.now() - start,
+        ok: true,
+        error: "OpenRouter returned an empty response",
+      };
+    }
+
+    return {
+      ...base,
+      response: text,
+      confidence: scoreConfidence(text),
+      latencyMs: Date.now() - start,
+      ok: true,
+    };
+  } catch (err) {
+    return {
+      ...base,
+      latencyMs: Date.now() - start,
+      error:
+        err instanceof Error && err.name === "AbortError"
+          ? "OpenRouter timed out"
+          : err instanceof Error
+            ? err.message
+            : "OpenRouter call failed",
+    };
+  }
+}
+
+/**
+ * Query NVIDIA NIM via the OpenAI-compatible chat completions API.
+ *
+ * Endpoint (per spec):
+ *   POST https://integrate.api.nvidia.com/v1/chat/completions
+ *
+ * Model: "nvidia/llama-3.1-nemotron-70b-instruct" (per spec).
+ *
+ * NVIDIA's NIM (NVIDIA Inference Microservices) hosts open-weight
+ * models tuned by NVIDIA. Nemotron is NVIDIA's instruction-tuned
+ * variant of Llama 3.1 70B — it brings an enterprise-aligned
+ * perspective distinct from the open-source HF/Groq variants of the
+ * same base model.
+ *
+ * Request/response shape: identical to Groq (OpenAI chat completions).
+ */
+async function queryNVIDIA(prompt: string): Promise<ModelResponse> {
+  const start = Date.now();
+  const model: ModelResponse["model"] = "nvidia";
+  const base: ModelResponse = {
+    model,
+    label: MODEL_LABELS[model],
+    response: "",
+    confidence: 0,
+    latencyMs: 0,
+    ok: false,
+  };
+
+  if (!NVIDIA_KEY) {
+    return { ...base, error: "NVIDIA_API_KEY not configured" };
+  }
+
+  try {
+    const res = await fetchWithTimeout(
+      "https://integrate.api.nvidia.com/v1/chat/completions",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${NVIDIA_KEY}`,
+        },
+        body: JSON.stringify({
+          model: "nvidia/llama-3.1-nemotron-70b-instruct",
+          messages: [
+            {
+              role: "system",
+              content:
+                "You are the Mithqal Brain, a multi-model consensus AI for a " +
+                "constitutional settlement infrastructure. Be precise, " +
+                "structured, and concise.",
+            },
+            { role: "user", content: prompt },
+          ],
+          temperature: 0.3,
+          max_tokens: 800,
+        }),
+      }
+    );
+
+    if (!res.ok) {
+      const text = await res.text().catch(() => "");
+      return {
+        ...base,
+        latencyMs: Date.now() - start,
+        error: `NVIDIA HTTP ${res.status}: ${text.slice(0, 200)}`,
+      };
+    }
+
+    const json = (await res.json()) as {
+      choices?: Array<{ message?: { content?: string } }>;
+    };
+    const text = json?.choices?.[0]?.message?.content?.trim() ?? "";
+
+    if (!text) {
+      return {
+        ...base,
+        latencyMs: Date.now() - start,
+        ok: true,
+        error: "NVIDIA returned an empty response",
+      };
+    }
+
+    return {
+      ...base,
+      response: text,
+      confidence: scoreConfidence(text),
+      latencyMs: Date.now() - start,
+      ok: true,
+    };
+  } catch (err) {
+    return {
+      ...base,
+      latencyMs: Date.now() - start,
+      error:
+        err instanceof Error && err.name === "AbortError"
+          ? "NVIDIA timed out"
+          : err instanceof Error
+            ? err.message
+            : "NVIDIA call failed",
+    };
+  }
+}
+
 /* ------------------------------------------------------------------ */
 /*  Consensus + confidence heuristics                                  */
 /* ------------------------------------------------------------------ */
@@ -500,13 +719,25 @@ function jaccard(a: Set<string>, b: Set<string>): number {
 }
 
 /**
- * Build the consensus result from 3 model responses.
+ * Build the consensus result from up to 5 model responses.
  *
  * Returns the consensus level + the combined answer + recommendations.
  * The "combined answer" is the response with the highest mean Jaccard
  * similarity to the other responses — i.e. the response that is most
  * "central" to the cluster. In the case of a tie or no agreement, we
  * pick the response with the highest heuristic confidence.
+ *
+ * Consensus levels (5-provider spec):
+ *   - Largest pairwise-agreement clique of size ≥ 3 → "high"
+ *   - Largest clique of size 2                    → "medium"
+ *   - Largest clique of size 1 (no pair agrees)   → "low"
+ *   - 0 models responded                          → "low" (degraded message)
+ *
+ * "Pairwise-agreement clique" = a subset of models where every pair
+ * has Jaccard similarity ≥ AGREEMENT_THRESHOLD. We brute-force this
+ * (≤5 models → ≤32 subsets) — trivially cheap, and far more accurate
+ * than the old agreeingPairs-count heuristic which conflated "many
+ * overlapping pairs" with "many models agree".
  */
 export function buildConsensus(responses: ModelResponse[]): {
   consensus: ConsensusLevel;
@@ -522,11 +753,12 @@ export function buildConsensus(responses: ModelResponse[]): {
     return {
       consensus: "low",
       combinedAnswer:
-        "The Mithqal Brain could not reach any of the 3 upstream models. " +
+        "The Mithqal Brain could not reach any of the 5 upstream models. " +
         "Check API keys, network connectivity, and try again. No consensus " +
         "was formed — operator review required.",
       recommendations: [
-        "Verify GEMINI_API_KEY, HUGGINGFACE_API_KEY, GROQ_API_KEY are set.",
+        "Verify GEMINI_API_KEY, HUGGINGFACE_API_KEY, GROQ_API_KEY, " +
+          "OPENROUTER_API_KEY, NVIDIA_API_KEY are set.",
         "Retry the query in a few seconds — upstream may be rate-limited.",
       ],
       modelsResponded: 0,
@@ -544,25 +776,62 @@ export function buildConsensus(responses: ModelResponse[]): {
     };
   }
 
-  // Compute pairwise Jaccard similarities.
+  // Compute pairwise Jaccard similarities and build the agreement graph.
   const tokenSets = ok.map((r) => tokenize(r.response));
-  const pairs: number[] = [];
-  for (let i = 0; i < ok.length; i++) {
-    for (let j = i + 1; j < ok.length; j++) {
-      pairs.push(jaccard(tokenSets[i], tokenSets[j]));
+  const n = ok.length;
+  const agree: boolean[][] = Array.from({ length: n }, () =>
+    Array(n).fill(false)
+  );
+  for (let i = 0; i < n; i++) {
+    for (let j = i + 1; j < n; j++) {
+      if (jaccard(tokenSets[i], tokenSets[j]) >= AGREEMENT_THRESHOLD) {
+        agree[i][j] = true;
+        agree[j][i] = true;
+      }
     }
   }
 
-  const agreeingPairs = pairs.filter((p) => p >= AGREEMENT_THRESHOLD).length;
+  // Find the largest clique of pairwise-agreeing models. With ≤5
+  // models this brute-force over subsets (largest first) is trivially
+  // cheap and avoids the NP-hardness that bites general clique search.
+  const isClique = (members: number[]): boolean => {
+    for (let i = 0; i < members.length; i++) {
+      for (let j = i + 1; j < members.length; j++) {
+        if (!agree[members[i]][members[j]]) return false;
+      }
+    }
+    return true;
+  };
+  const combinations = (arr: number[], k: number): number[][] => {
+    if (k === 0) return [[]];
+    if (arr.length < k) return [];
+    const [first, ...rest] = arr;
+    return [
+      ...combinations(rest, k - 1).map((c) => [first, ...c]),
+      ...combinations(rest, k),
+    ];
+  };
+  let largestAgreement = 1; // every model trivially agrees with itself
+  for (let size = n; size >= 2; size--) {
+    const combos = combinations(
+      Array.from({ length: n }, (_, i) => i),
+      size
+    );
+    if (combos.some(isClique)) {
+      largestAgreement = size;
+      break;
+    }
+  }
 
+  // Map agreement-clique size → consensus level (per 5-provider spec):
+  //   ≥3 agree → high   ·   2 agree → medium   ·   1 → low
   let consensus: ConsensusLevel;
-  if (modelsResponded === 3) {
-    if (agreeingPairs === 3) consensus = "high";
-    else if (agreeingPairs >= 1) consensus = "medium";
-    else consensus = "low";
+  if (largestAgreement >= 3) {
+    consensus = "high";
+  } else if (largestAgreement === 2) {
+    consensus = "medium";
   } else {
-    // 2 models only — max consensus is "medium".
-    consensus = agreeingPairs >= 1 ? "medium" : "low";
+    consensus = "low";
   }
 
   // Pick the combined answer: the response with the highest mean
@@ -638,13 +907,13 @@ export function extractRecommendations(text: string): string[] {
 /* ------------------------------------------------------------------ */
 
 /**
- * Query all 3 models in parallel for a single prompt.
+ * Query all 5 models in parallel for a single prompt.
  *
  * Uses `Promise.allSettled` so a single failure does not abort the
  * others. Each model function returns a `ModelResponse` (with `ok: false`
  * on failure), so we never throw — the caller gets the full picture.
  *
- * The optional `systemContext` is prepended to the prompt to give all 3
+ * The optional `systemContext` is prepended to the prompt to give all 5
  * models the same framing.
  */
 export async function queryAllModels(
@@ -654,10 +923,12 @@ export async function queryAllModels(
   const fullPrompt = systemContext
     ? `${systemContext}\n\n---\n\n${prompt}`
     : prompt;
-  const [gemini, groq, hf] = await Promise.allSettled([
+  const [gemini, groq, hf, openrouter, nvidia] = await Promise.allSettled([
     queryGemini(fullPrompt),
     queryGroq(fullPrompt),
     queryHuggingFace(fullPrompt),
+    queryOpenRouter(fullPrompt),
+    queryNVIDIA(fullPrompt),
   ]);
   return [
     gemini.status === "fulfilled"
@@ -669,6 +940,12 @@ export async function queryAllModels(
     groq.status === "fulfilled"
       ? groq.value
       : { model: "groq" as const, label: MODEL_LABELS.groq, response: "", confidence: 0, latencyMs: 0, ok: false, error: "Groq rejected" },
+    openrouter.status === "fulfilled"
+      ? openrouter.value
+      : { model: "openrouter" as const, label: MODEL_LABELS.openrouter, response: "", confidence: 0, latencyMs: 0, ok: false, error: "OpenRouter rejected" },
+    nvidia.status === "fulfilled"
+      ? nvidia.value
+      : { model: "nvidia" as const, label: MODEL_LABELS.nvidia, response: "", confidence: 0, latencyMs: 0, ok: false, error: "NVIDIA rejected" },
   ];
 }
 
@@ -687,7 +964,7 @@ const SYSTEM_CONTEXT =
 /**
  * Risk Monitor — analyzes currency / reserve risks from live oracle data.
  *
- * The Brain asks all 3 models to assess the current gold/silver/stablecoin
+ * The Brain asks all 5 models to assess the current gold/silver/stablecoin
  * snapshot, reserve ratio, and NAV for the Mithqal peg. Each model returns
  * a structured risk assessment; the Brain then forms a consensus.
  */
@@ -732,7 +1009,7 @@ export async function riskMonitor(data: CurrencyData): Promise<{
 /**
  * Compliance Assistant — KYC screening for Formation Committee intake.
  *
- * The Brain asks all 3 models to assess the counterparty risk of a
+ * The Brain asks all 5 models to assess the counterparty risk of a
  * prospective Formation Committee participant based on the supplied
  * self-attested profile. Output: a risk score (0-100, higher = riskier),
  * a list of flags, and a recommendation (clear / review / escalate).
@@ -778,7 +1055,7 @@ export async function complianceAssistant(user: UserData): Promise<{
 /**
  * Anomaly Detection — scans recent on-chain transactions for unusual patterns.
  *
- * The Brain asks all 3 models to flag suspicious activity: unusually large
+ * The Brain asks all 5 models to flag suspicious activity: unusually large
  * amounts, rapid sequences, circular transfers, unknown counterparties,
  * etc. Output: a list of anomalies with severity.
  */
@@ -1055,10 +1332,12 @@ export interface BrainStatus {
  */
 export async function getBrainStatus(): Promise<BrainStatus> {
   const pingPrompt = "Reply with the single word OK.";
-  const [gemini, groq, hf] = await Promise.allSettled([
+  const [gemini, groq, hf, openrouter, nvidia] = await Promise.allSettled([
     queryGemini(pingPrompt),
     queryGroq(pingPrompt),
     queryHuggingFace(pingPrompt),
+    queryOpenRouter(pingPrompt),
+    queryNVIDIA(pingPrompt),
   ]);
 
   const models: BrainStatus["models"] = [
@@ -1098,6 +1377,32 @@ export async function getBrainStatus(): Promise<BrainStatus> {
         groq.status === "fulfilled" && !groq.value.ok
           ? groq.value.error
           : groq.status === "rejected"
+            ? "rejected"
+            : undefined,
+    },
+    {
+      model: "openrouter",
+      label: MODEL_LABELS.openrouter,
+      connected: openrouter.status === "fulfilled" && openrouter.value.ok,
+      configured: Boolean(OPENROUTER_KEY),
+      latencyMs: openrouter.status === "fulfilled" ? openrouter.value.latencyMs : 0,
+      error:
+        openrouter.status === "fulfilled" && !openrouter.value.ok
+          ? openrouter.value.error
+          : openrouter.status === "rejected"
+            ? "rejected"
+            : undefined,
+    },
+    {
+      model: "nvidia",
+      label: MODEL_LABELS.nvidia,
+      connected: nvidia.status === "fulfilled" && nvidia.value.ok,
+      configured: Boolean(NVIDIA_KEY),
+      latencyMs: nvidia.status === "fulfilled" ? nvidia.value.latencyMs : 0,
+      error:
+        nvidia.status === "fulfilled" && !nvidia.value.ok
+          ? nvidia.value.error
+          : nvidia.status === "rejected"
             ? "rejected"
             : undefined,
     },

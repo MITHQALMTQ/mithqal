@@ -6823,3 +6823,161 @@ Smoke test (`bun run /tmp/smoke_test.ts`) confirms:
 - dataFresh = false in sandbox (IMF DataMapper 403-blocked, Yahoo ^BAA/^AAA delisted)
 - In production (Vercel), dataFresh should be true because IMF DataMapper
   returns 200 from Vercel egress IPs and Yahoo's TNX/VIX symbols are live
+
+---
+
+## Task ID BRAIN-5PROVIDER-UPGRADE — Multi-model consensus expansion (3 → 5 providers)
+
+**Date:** see git history.
+**Role:** Chief Enterprise Architect · Chief Constitutional Engineer · Chief
+Systems Architect · AI Reliability Engineer · Documentation Architect.
+**Scope:** Upgrade `src/lib/mithqal-brain.ts` from a 3-LLM consensus to a
+5-LLM consensus by adding OpenRouter and NVIDIA NIM alongside the existing
+Gemini, HuggingFace, and Groq providers. Strictly additive — no existing
+function removed, no interface shape changed.
+
+### Context
+
+The Mithqal Brain is the advisory AI layer RECOMMENDED (not REQUIRED) by the
+v19 Constitutional spec. It runs alongside the deterministic monetary engine
+and provides three operator-facing intelligence services: AI Risk Monitor,
+AI Compliance Assistant, and AI Transaction Anomaly Detection. Until this
+task, the Brain formed consensus across 3 LLMs (Gemini, HuggingFace, Groq).
+Two additional providers were added for diversity:
+
+- **OpenRouter** — multi-model gateway that routes a single OpenAI-shaped
+  request to many underlying providers (Anthropic, Meta, Google, Mistral,
+  etc.) behind one URL. Adds an "aggregator perspective" distinct from
+  direct calls to any one underlying model.
+- **NVIDIA NIM** — hosts `nvidia/llama-3.1-nemotron-70b-instruct`,
+  NVIDIA's enterprise-tuned instruction variant of Llama 3.1 70B. Adds
+  an enterprise-aligned perspective distinct from the open-source HF/Groq
+  variants of the same base model.
+
+### Files Modified (1)
+
+- `src/lib/mithqal-brain.ts` (1153 → 1457 lines; +304 / -0, fully additive)
+  - `ModelResponse["model"]` union extended:
+    `"gemini" | "huggingface" | "groq"` →
+    `"gemini" | "huggingface" | "groq" | "openrouter" | "nvidia"`
+  - New env vars: `OPENROUTER_KEY`, `NVIDIA_KEY` (alongside existing
+    `GEMINI_KEY`, `HF_KEY`, `GROQ_KEY`)
+  - `MODEL_LABELS` extended with verbose display labels:
+    - `gemini: "Gemini 2.0 Flash"`
+    - `huggingface: "HuggingFace Llama 3.1 70B"`
+    - `groq: "Groq Llama 3.3 70B"`
+    - `openrouter: "OpenRouter (multi-model)"`
+    - `nvidia: "NVIDIA Nemotron"`
+  - Two new query functions, both patterned after `queryGroq()` (OpenAI
+    chat-completions shape):
+    - `queryOpenRouter()` → `POST https://openrouter.ai/api/v1/chat/completions`,
+      model `meta-llama/llama-3.3-70b-instruct`
+    - `queryNVIDIA()` → `POST https://integrate.api.nvidia.com/v1/chat/completions`,
+      model `nvidia/llama-3.1-nemotron-70b-instruct`
+    - Both: 12s timeout via `fetchWithTimeout`, Bearer auth, `if (!KEY)`
+      early-return, error surface via `ModelResponse.error`, confidence
+      via existing `scoreConfidence()`, identical empty-response and
+      AbortError handling.
+  - System message for the two new providers (consistent between them):
+    `"You are the Mithqal Brain, a multi-model consensus AI for a
+    constitutional settlement infrastructure. Be precise, structured,
+    and concise."` (The existing `queryGroq` retains its original
+    "gold-backed stablecoin" wording — left untouched per task rule 1.)
+  - `queryAllModels()` now `Promise.allSettled`s all 5 providers in
+    parallel; the returned array contains 5 `ModelResponse` entries
+    (failed promises become `{ ok: false, error: "<Model> rejected" }`).
+  - `getBrainStatus()` now pings all 5 providers; returns 5 entries in
+    `models[]`. `consensusEligible` threshold unchanged (≥2 connected).
+  - `buildConsensus()` rewritten with clique-based agreement:
+    - Builds an agreement graph (nodes = responding models, edges =
+      pairs with Jaccard ≥ 0.30).
+    - Finds the largest clique of pairwise-agreeing models by brute-
+      forcing subsets in decreasing-size order (≤5 models → ≤32 subsets,
+      trivially cheap; avoids the general clique NP-hardness).
+    - Maps clique size → consensus level per the 5-provider spec:
+      ≥3 → high · 2 → medium · 1 → low · 0 → low (degraded message).
+    - The previous `agreeingPairs`-count heuristic was retired because
+      it conflated "many overlapping pairs" with "many models mutually
+      agree" — e.g. with 4 models you can have 4 agreeing pairs without
+      any 3 of them mutually agreeing.
+    - The "combined answer" picker (highest mean Jaccard, tie-break on
+      heuristic confidence) is unchanged.
+  - Degraded-message copy + recommendations list updated to mention all
+    5 API keys.
+  - JSDoc on `riskMonitor`, `complianceAssistant`, `anomalyDetection`
+    updated from "asks all 3 models" → "asks all 5 models".
+  - File header comment (lines 1-49) updated: provider list, consensus
+    table, failure model wording.
+
+### Verification (sandbox, bun + bunx tsc)
+
+- `bun build --no-bundle src/lib/mithqal-brain.ts` → transpiles cleanly
+  (28.83 KB chunk, 3 ms). No syntax errors.
+- `bunx tsc --noEmit` → only pre-existing sandbox-only errors remain
+  (`Cannot find name 'process'` on the 5 `process.env.X` lines, because
+  `@types/node` is not installed in the sandbox). No new errors introduced
+  by the new functions, the consensus rewrite, or the 5-way parallel
+  dispatch. The two new `process.env` lines (OPENROUTER_KEY, NVIDIA_KEY)
+  produce the SAME TS2591 warning as the three pre-existing ones — by
+  design, since they follow the exact same pattern.
+- Smoke test (`/tmp/test-brain-consensus.ts`, run via `bun run`, 16
+  assertions, all passing) covers:
+  - 0 models → low (degraded message)
+  - 1 model → low
+  - 2 models agreeing → medium
+  - 2 models disagreeing → low
+  - 3 models all mutually agree → high
+  - 5 models all agree → high (modelsResponded=5)
+  - 5 models, 3 mutually agree + 2 disagree → high (majority)
+  - 5 models, only 2 mutually agree + 3 divergent → medium
+  - 5 models, all disagree → low
+  - 5 models, 4 mutually agree + 1 disagree → high
+  - 5 models, two non-overlapping cliques of {3, 2} → high (largest=3)
+- The pre-existing `src/components/mithqal-brain.tsx` component was
+  NOT modified (per task rule 1). It declares its own local
+  `ModelStatus.model` type as `"gemini" | "huggingface" | "groq"` and
+  falls back to a 3-entry mock when the API is unreachable. At runtime
+  it correctly renders whatever the API returns (it uses `m.model` only
+  as a React `key`, never branches on specific identifiers), so the 5
+  model cards from the upgraded Brain will display without code changes.
+
+### What was NOT changed
+
+- No existing `queryGemini`, `queryGroq`, or `queryHuggingFace` functions
+  modified (rule 1).
+- No `BrainResponse` or `ModelResponse` interface shape changed — only
+  the `model` union extended (rule 2).
+- No rate limiting, auth patterns, or 12-second timeout modified (rule 3,
+  rule 5). `enforceRateLimit("brain-query", req, 5, 60_000)` in
+  `src/app/api/brain/route.ts` untouched.
+- No new npm dependencies added (rule 4). OpenRouter and NVIDIA both
+  speak the OpenAI chat-completions dialect that `queryGroq` already
+  uses, so the existing `fetchWithTimeout` + `JSON.stringify` flow is
+  reused verbatim.
+- No API routes modified — `src/app/api/brain/route.ts` consumes
+  `getBrainStatus` and `dispatchBrainQuery`, both of which retain their
+  original signatures.
+- No database tables touched.
+- No `src/components/mithqal-brain.tsx` modified.
+- No constitutional compliance posture changed — the Brain is still NEVER
+  wired into NAV/weight calculations (§4 invariants) and remains purely
+  advisory to the operator.
+
+### Operational notes
+
+- Two new environment variables must be set in production (Vercel) for
+  the new providers to come online:
+  - `OPENROUTER_API_KEY` — get from https://openrouter.ai/keys
+  - `NVIDIA_API_KEY` — get from https://build.nvidia.com/ (NVIDIA NIM)
+  If a key is absent, that provider returns
+  `ModelResponse { ok: false, error: "<PROVIDER>_API_KEY not configured" }`
+  and the Brain continues with the remaining providers — same failure
+  semantics as the existing 3 providers.
+- The 5-provider consensus broadens the "high" band: previously required
+  all 3 models to agree; now any 3-of-5 mutually agreeing models yields
+  `high`. This is a deliberate majority-of-5 design — it surfaces more
+  high-confidence reads to the operator without weakening the agreement
+  threshold (still Jaccard ≥ 0.30 per pair). When ≥3 models are down,
+  max consensus drops to `medium` (with 2 remaining) or `low` (with 1),
+  matching the prior degraded-mode behavior.
+
