@@ -67,7 +67,7 @@ export async function GET() {
         { id: "data-source-health", path: "/api/data-source-health", description: "Live health check of upstream data sources (IMF/BIS/SWIFT/FRED) — connectivity, access method, frequency, status" },
       ],
     },
-    totalEndpoints: 152,
+    totalEndpoints: 153,
     documentation: "/api-docs",
     openapi: "/openapi.json",
     disclaimer:

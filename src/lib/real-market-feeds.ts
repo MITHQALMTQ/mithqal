@@ -333,16 +333,16 @@ async function fetchFREDSeries(seriesId: string): Promise<SourcedValue<number | 
     const { json, status, ok } = await fetchJsonWithTimeout(url);
     const observations = json?.observations;
     if (!ok || !observations || !observations.length) {
-      return { value: null, source: url, fetchedAt, ok: false, error: `FRED ${seriesId} HTTP ${status}` };
+      return { value: null, source: url, fetchedAt, ok: false, error: `FRED ${seriesId} HTTP ${status}`, provider: "FRED", dataset: seriesId, frequency: seriesId in ["VIXCLS","DGS10"] ? "DAILY" : "MONTHLY", accessMethod: "REST_API" };
     }
     // FRED returns values as strings; "." means no data
     const val = observations[0].value;
     if (val === "." || !val) {
-      return { value: null, source: url, fetchedAt, ok: false, error: `FRED ${seriesId} no recent data` };
+      return { value: null, source: url, fetchedAt, ok: false, error: `FRED ${seriesId} no recent data`, provider: "FRED", dataset: seriesId, frequency: seriesId in ["VIXCLS","DGS10"] ? "DAILY" : "MONTHLY", accessMethod: "REST_API" };
     }
     return { value: parseFloat(val), source: `FRED ${seriesId} (${url})`, fetchedAt, ok: true, provider: "FRED", dataset: seriesId, frequency: seriesId in ["VIXCLS","DGS10"] ? "DAILY" : "MONTHLY", accessMethod: "REST_API", referencePeriod: observations[0].date };
   } catch (e: any) {
-    return { value: null, source: url, fetchedAt, ok: false, error: e?.message || "fetch error" };
+    return { value: null, source: url, fetchedAt, ok: false, error: e?.message || "fetch error", provider: "FRED", dataset: seriesId, frequency: seriesId in ["VIXCLS","DGS10"] ? "DAILY" : "MONTHLY", accessMethod: "REST_API" };
   }
 }
 

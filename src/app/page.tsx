@@ -393,6 +393,7 @@ const NAV_ITEMS = [
   { id: "feeds", label: "Market Feeds", icon: Activity },
   { id: "legal-register", label: "Legal Register", icon: Gavel },
   { id: "sanctions", label: "Sanctions", icon: Shield },
+  { id: "observations", label: "Observations", icon: Activity },
 ];
 
 // ════════════════════════════════════════════════════════════
@@ -414,6 +415,7 @@ export default function Page() {
   const marketFeeds = useFetch("/api/real-market-feeds");
   const legalRegister = useFetch("/api/legal-obligation-register");
   const sanctions = useFetch("/api/sanctions-screening");
+  const dataSourceObs = useFetch("/api/data-source-observations?limit=10");
 
   const scrollTo = useCallback((id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -981,6 +983,53 @@ export default function Page() {
                       <div className="mt-1 text-[10px] text-gray-300">OFAC SDN · UN Consolidated · EU CFSP · HMT OFSI</div>
                     </GlassCard>
                   </div>
+                </>
+              )}
+            </Section>
+
+            {/* ═══ DATA SOURCE OBSERVATIONS ═══ */}
+            <Section id="observations" icon={Activity} title="Data Source Observations" subtitle="Persisted provenance trail · Every ingested observation with full audit metadata · Idempotent (INSERT OR IGNORE)">
+              {!dataSourceObs.data ? (dataSourceObs.err ? <ErrorBox label="observations" msg={dataSourceObs.err} /> : <LoadingBox label="observations" />) : (
+                <>
+                  <div className="grid gap-3 md:grid-cols-4">
+                    <StatBox label="Total Observations" value={String(S(dataSourceObs.data.count))} sub="in Turso DB" accent="gold" />
+                    <StatBox label="Providers" value={String(Object.keys(dataSourceObs.data.summary || {}).length)} sub="data sources" accent="emerald" />
+                    <StatBox label="Idempotent" value="YES" sub="INSERT OR IGNORE" accent="emerald" />
+                    <StatBox label="Audit Trail" value="FULL" sub="provenance per obs" accent="emerald" />
+                  </div>
+                  <GlassCard className="mt-3 overflow-hidden p-0">
+                    <div className="mb-2 p-3 text-[10px] font-semibold uppercase tracking-wider text-gray-500">Recent Observations (by provider/dataset)</div>
+                    <table className="w-full text-[10px]">
+                      <thead className="border-b border-white/5 bg-white/[0.02]">
+                        <tr className="text-gray-500">
+                          <th className="px-2 py-1 text-left">Provider</th>
+                          <th className="px-2 py-1 text-left">Dataset</th>
+                          <th className="px-2 py-1 text-left">Series</th>
+                          <th className="px-2 py-1 text-right">Value</th>
+                          <th className="px-2 py-1 text-left">Period</th>
+                          <th className="px-2 py-1 text-left">Access</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {Arr(dataSourceObs.data.observations).map((o: any, i: number) => (
+                          <tr key={i} className="border-b border-white/[0.03]">
+                            <td className="px-2 py-1 text-gray-300">{S(o.provider)}</td>
+                            <td className="px-2 py-1 text-gray-400">{S(o.dataset)}</td>
+                            <td className="px-2 py-1 font-mono text-gray-500">{S(o.series_key)}</td>
+                            <td className="px-2 py-1 text-right font-mono text-gold">{S(o.value).slice(0, 12)}</td>
+                            <td className="px-2 py-1 text-gray-500">{S(o.reference_period)}</td>
+                            <td className="px-2 py-1 text-gray-500">{S(o.access_method).slice(0, 15)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </GlassCard>
+                  <GlassCard className="mt-3 p-3 border-emerald-500/10">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+                      <span className="text-[10px] text-gray-400">Provenance per observation: provider, dataset, series_key, reference_period, frequency, value, unit, source_url, access_method, retrieved_at, published_at, revision_number, methodology_version, dataset_version, raw_payload_hash, ingestion_run_id</span>
+                    </div>
+                  </GlassCard>
                 </>
               )}
             </Section>
