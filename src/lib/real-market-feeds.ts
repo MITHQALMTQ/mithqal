@@ -340,7 +340,7 @@ async function fetchFREDSeries(seriesId: string): Promise<SourcedValue<number | 
     if (val === "." || !val) {
       return { value: null, source: url, fetchedAt, ok: false, error: `FRED ${seriesId} no recent data` };
     }
-    return { value: parseFloat(val), source: `FRED ${seriesId} (${url})`, fetchedAt, ok: true };
+    return { value: parseFloat(val), source: `FRED ${seriesId} (${url})`, fetchedAt, ok: true, provider: "FRED", dataset: seriesId, frequency: seriesId in ["VIXCLS","DGS10"] ? "DAILY" : "MONTHLY", accessMethod: "REST_API", referencePeriod: observations[0].date };
   } catch (e: any) {
     return { value: null, source: url, fetchedAt, ok: false, error: e?.message || "fetch error" };
   }
@@ -1558,6 +1558,11 @@ export async function fetchRealVIX(): Promise<SourcedValue<number>> {
         source: `FRED VIXCLS (live, ${fredVix.value} on VIX spot) — ${fredVix.source}`,
         fetchedAt,
         ok: true,
+        provider: "FRED",
+        dataset: "VIXCLS",
+        frequency: "DAILY",
+        accessMethod: "REST_API",
+        referencePeriod: fredVix.referencePeriod,
       };
     }
   }
@@ -1581,6 +1586,10 @@ export async function fetchRealVIX(): Promise<SourcedValue<number>> {
       source: url,
       fetchedAt,
       ok: true,
+      provider: "Yahoo",
+      dataset: "VIX (^VIX)",
+      frequency: "DAILY",
+      accessMethod: "REST_API",
     };
   } catch (err) {
     return {
@@ -1589,6 +1598,10 @@ export async function fetchRealVIX(): Promise<SourcedValue<number>> {
       fetchedAt,
       ok: false,
       error: err instanceof Error ? err.message : String(err),
+      provider: "CBOE",
+      dataset: "VIX",
+      frequency: "DAILY",
+      accessMethod: "REFERENCE_CONSTANT",
     };
   }
 }
@@ -1675,6 +1688,10 @@ export async function fetchRealCreditSpreads(): Promise<{
           "https://query1.finance.yahoo.com/v8/finance/chart/%5EBAA minus %5EAAA (live Yahoo Finance)",
         fetchedAt,
         ok: true,
+        provider: "Yahoo",
+        dataset: "BAA-AAA Credit Spread",
+        frequency: "DAILY",
+        accessMethod: "REST_API",
       };
     } else {
       spread = {
@@ -1684,6 +1701,10 @@ export async function fetchRealCreditSpreads(): Promise<{
         fetchedAt,
         ok: false,
         error: "Yahoo Finance ^BAA and/or ^AAA not available",
+        provider: "Moody's / FRED",
+        dataset: "BAA-AAA Credit Spread",
+        frequency: "MONTHLY",
+        accessMethod: "REFERENCE_CONSTANT",
       };
     }
   }
@@ -1918,7 +1939,84 @@ export async function fetchRealMarketData(input?: {
   };
 
   cached = { data, timestamp: Date.now() };
+
+  // ─── Persist observations to Turso DB (best-effort, non-blocking) ───
+  // Records provenance for each data source observation.
+  // Failures are silently ignored (don't break the API response).
+  persistObservationsBestEffort(data).catch(() => {});
+
   return data;
+}
+
+/**
+ * Best-effort persistence of data source observations to the DataSourceObservation table.
+ * Non-blocking — failures are silently caught.
+ */
+async function persistObservationsBestEffort(data: RealMarketData): Promise<void> {
+  try {
+    const { persistDataSourceObservation } = await import("@/lib/db");
+    const ingestionRunId = `ingest-${data.timestamp}`;
+    const now = new Date().toISOString();
+
+    // Persist COFER observations
+    for (const [ccy, share] of Object.entries(data.coferShares)) {
+      await persistDataSourceObservation({
+        id: `IMF-COFER-${ccy}-${data.provenance.cofer.referencePeriod || "latest"}`,
+        provider: "IMF",
+        dataset: "COFER",
+        series_key: ccy,
+        reference_period: data.provenance.cofer.referencePeriod,
+        frequency: "QUARTERLY",
+        value: String(share),
+        unit: "share (0-1)",
+        source_url: data.provenance.cofer.source,
+        access_method: String(data.provenance.cofer.accessMethod || "REST_API"),
+        retrieved_at: data.provenance.cofer.fetchedAt,
+        published_at: data.provenance.cofer.publishedAt,
+        methodology_version: data.provenance.cofer.methodologyVersion,
+        dataset_version: data.provenance.cofer.datasetVersion,
+        ingestion_run_id: ingestionRunId,
+      });
+    }
+
+    // Persist BIS observations
+    for (const [ccy, share] of Object.entries(data.bisLiquidity)) {
+      await persistDataSourceObservation({
+        id: `BIS-TRI-${ccy}-${data.provenance.bis.referencePeriod || "latest"}`,
+        provider: "BIS",
+        dataset: "Triennial Survey",
+        series_key: ccy,
+        reference_period: data.provenance.bis.referencePeriod,
+        frequency: "TRIENNIAL",
+        value: String(share),
+        unit: "share (0-1)",
+        source_url: data.provenance.bis.source,
+        access_method: String(data.provenance.bis.accessMethod || "SDMX_API"),
+        retrieved_at: data.provenance.bis.fetchedAt,
+        published_at: data.provenance.bis.publishedAt,
+        dataset_version: data.provenance.bis.datasetVersion,
+        ingestion_run_id: ingestionRunId,
+      });
+    }
+
+    // Persist VIX
+    await persistDataSourceObservation({
+      id: `VIX-${data.provenance.vix.referencePeriod || now}`,
+      provider: data.provenance.vix.provider || "FRED",
+      dataset: "VIX",
+      series_key: "VIXCLS",
+      reference_period: data.provenance.vix.referencePeriod,
+      frequency: "DAILY",
+      value: String(data.vix),
+      unit: "index points",
+      source_url: data.provenance.vix.source,
+      access_method: String(data.provenance.vix.accessMethod || "REST_API"),
+      retrieved_at: data.provenance.vix.fetchedAt,
+      ingestion_run_id: ingestionRunId,
+    });
+  } catch {
+    // Best-effort — don't break the API if DB persistence fails
+  }
 }
 
 /**
