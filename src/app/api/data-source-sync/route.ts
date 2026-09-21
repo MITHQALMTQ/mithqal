@@ -4,7 +4,7 @@ import { fetchRealMarketData } from "@/lib/real-market-feeds";
 /**
  * GET /api/data-source-sync
  *
- * Vercel cron job — runs every 6 hours ("0 */6 * * *").
+ * Vercel cron job — runs daily at 6am UTC ("0 6 * * *").
  *
  * Triggers a fresh fetch of all real market data feeds (IMF COFER, BIS SDMX,
  * FRED VIX/credit-spreads/treasury, SWIFT, gold, silver, FX) and persists
