@@ -64,9 +64,10 @@ export async function GET() {
         { id: "transparency", path: "/api/transparency", description: "Live transparency dashboard data" },
         { id: "proofs/latest", path: "/api/proofs/latest", description: "Latest proof-of-reserves / proof-of-liabilities" },
         { id: "reserve-verification", path: "/api/reserve-verification", description: "Reserve verification" },
+        { id: "data-source-health", path: "/api/data-source-health", description: "Live health check of upstream data sources (IMF/BIS/SWIFT/FRED) — connectivity, access method, frequency, status" },
       ],
     },
-    totalEndpoints: 149,
+    totalEndpoints: 150,
     documentation: "/api-docs",
     openapi: "/openapi.json",
     disclaimer:

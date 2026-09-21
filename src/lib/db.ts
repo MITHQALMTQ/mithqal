@@ -1146,3 +1146,100 @@ export async function disconnect(): Promise<void> {
     globalForDb.__schemaInitialized = false
   }
 }
+
+/* ---- Data Source Observation persistence (provenance tracking) ----
+ * Persists raw observations retrieved from external data sources (IMF COFER,
+ * BIS Triennial Survey, SWIFT RMB Tracker, FRED VIX/spreads, etc.) to the
+ * `DataSourceObservation` table. The table is created idempotently in
+ * CHAPTER_XX_SCHEMA_STATEMENTS (see ensureChapterXxSchema) — this module
+ * just provides insert + query helpers on top of it.
+ *
+ * Ingestion is idempotent: INSERT OR IGNORE respects the unique index
+ * `DataSourceObs_unique_idx` on (provider, dataset, series_key,
+ * reference_period, dataset_version), so re-running the same ingestion
+ * pipeline multiple times will not produce duplicate rows.
+ */
+
+export interface DataSourceObservationRecord {
+  id: string
+  provider: string
+  dataset: string
+  series_key?: string
+  reference_period?: string
+  frequency?: string
+  value: string
+  unit?: string
+  source_url?: string
+  access_method?: string
+  retrieved_at: string
+  published_at?: string
+  revision_number?: number
+  methodology_version?: string
+  dataset_version?: string
+  raw_payload_hash?: string
+  ingestion_run_id?: string
+}
+
+/**
+ * Persist a single data-source observation. Idempotent — INSERT OR IGNORE
+ * relies on the unique index to dedupe. Does NOT throw on duplicate; the
+ * existing row is left untouched.
+ */
+export async function persistDataSourceObservation(
+  obs: DataSourceObservationRecord,
+): Promise<void> {
+  await ensureSchema()
+  await ensureChapterXxSchema()
+  await _rawClient.execute({
+    sql: `INSERT OR IGNORE INTO "DataSourceObservation"
+      ("id", "provider", "dataset", "series_key", "reference_period", "frequency", "value", "unit", "source_url", "access_method", "retrieved_at", "published_at", "revision_number", "methodology_version", "dataset_version", "raw_payload_hash", "ingestion_run_id")
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    args: [
+      obs.id,
+      obs.provider,
+      obs.dataset,
+      obs.series_key ?? null,
+      obs.reference_period ?? null,
+      obs.frequency ?? null,
+      obs.value,
+      obs.unit ?? null,
+      obs.source_url ?? null,
+      obs.access_method ?? null,
+      obs.retrieved_at,
+      obs.published_at ?? null,
+      obs.revision_number ?? null,
+      obs.methodology_version ?? null,
+      obs.dataset_version ?? null,
+      obs.raw_payload_hash ?? null,
+      obs.ingestion_run_id ?? null,
+    ],
+  })
+}
+
+/**
+ * Query persisted data-source observations, optionally filtered by
+ * provider and/or dataset. Results are ordered by retrieved_at DESC
+ * (most recent first). An optional limit caps the row count.
+ */
+export async function getDataSourceObservations(
+  provider?: string,
+  dataset?: string,
+  limit?: number,
+): Promise<DataSourceObservationRecord[]> {
+  await ensureSchema()
+  await ensureChapterXxSchema()
+  let sql = `SELECT * FROM "DataSourceObservation"`
+  const args: Array<string | number> = []
+  if (provider) {
+    sql += ` WHERE "provider" = ?`
+    args.push(provider)
+    if (dataset) {
+      sql += ` AND "dataset" = ?`
+      args.push(dataset)
+    }
+  }
+  sql += ` ORDER BY "retrieved_at" DESC`
+  if (limit) sql += ` LIMIT ${limit}`
+  const result = await _rawClient.execute({ sql, args })
+  return result.rows as unknown as DataSourceObservationRecord[]
+}

@@ -13,13 +13,18 @@ import { ALL_CHAINS } from "@/lib/chains";
  *                a local Anvil node is running on localhost:8545)
  *   - oracle   — /api/oracle (returns 200 + a fetchedAt timestamp)
  *   - smtp     — checks SMTP_HOST env var is set (does NOT send email)
+ *   - imf      — IMF SDMX 2.1 API reachability (COFER endpoint, 5s timeout)
+ *   - bis      — BIS SDMX API reachability (dataflow endpoint, 5s timeout)
  *
  * Returns 200 + { status: "healthy", checks } when every gating probe passes.
  * Returns 503 + { status: "degraded", checks } when any gating probe fails.
  *
  * Gating: only `db`, `rpc` (Monad), `oracle`, and `smtp` gate the overall
- * status. `rpcArc` and `rpcLocal` are informational — they don't cause a 503
- * on their own.
+ * status. `rpcArc`, `rpcLocal`, `imf`, and `bis` are informational — they
+ * don't cause a 503 on their own. The IMF/BIS checks are reported for
+ * observability (used by the data-source catalog), but a single upstream
+ * macro-data API being unreachable does not degrade the platform's
+ * settlement / oracle / RPC stack.
  *
  * This endpoint is unauthenticated and not rate-limited so external
  * monitors (UptimeRobot, Vercel cron, etc.) can poll it freely.
@@ -27,9 +32,12 @@ import { ALL_CHAINS } from "@/lib/chains";
 export async function GET() {
   const checks = await runChecks();
 
-  // rpcArc + rpcLocal are informational only — they do NOT gate the status.
+  // rpcArc + rpcLocal + imf + bis are informational only — they do NOT gate.
   const gatingChecks = Object.entries(checks)
-    .filter(([key]) => key !== "rpcArc" && key !== "rpcLocal")
+    .filter(
+      ([key]) =>
+        key !== "rpcArc" && key !== "rpcLocal" && key !== "imf" && key !== "bis",
+    )
     .map(([, c]) => c);
   const allOk = gatingChecks.every((c) => c.ok);
   const status = allOk ? "healthy" : "degraded";
@@ -48,17 +56,30 @@ type Checks = {
   rpcLocal: CheckResult;
   oracle: CheckResult;
   smtp: CheckResult;
+  imf: CheckResult;
+  bis: CheckResult;
 };
 
 async function runChecks(): Promise<Checks> {
   // Run independent probes in parallel — total latency = slowest probe.
-  const [dbCheck, rpcCheck, rpcArcCheck, rpcLocalCheck, oracleCheck, smtpCheck] = await Promise.all([
+  const [
+    dbCheck,
+    rpcCheck,
+    rpcArcCheck,
+    rpcLocalCheck,
+    oracleCheck,
+    smtpCheck,
+    imfCheck,
+    bisCheck,
+  ] = await Promise.all([
     checkDb(),
     checkRpc(),
     checkRpcArc(),
     checkRpcLocal(),
     checkOracle(),
     checkSmtp(),
+    checkImf(),
+    checkBis(),
   ]);
 
   return {
@@ -68,6 +89,8 @@ async function runChecks(): Promise<Checks> {
     rpcLocal: rpcLocalCheck,
     oracle: oracleCheck,
     smtp: smtpCheck,
+    imf: imfCheck,
+    bis: bisCheck,
   };
 }
 
@@ -213,6 +236,71 @@ function checkSmtp(): CheckResult {
     ok: true,
     detail: `SMTP_HOST=${host}`,
   };
+}
+
+/* ---- IMF: probe the SDMX 2.1 COFER endpoint ----
+ * Informational only — does NOT cause a 503 if unreachable. Reports
+ * upstream API liveness for the data-source health catalog. */
+async function checkImf(): Promise<CheckResult> {
+  const start = Date.now();
+  try {
+    const res = await fetch(
+      "https://api.imf.org/external/sdmx/2.1/data/COFER/1.0/",
+      {
+        signal: AbortSignal.timeout(5000),
+        headers: { "User-Agent": "MITHQAL-HealthCheck/1.0" },
+      },
+    );
+    if (!res.ok) {
+      return {
+        ok: false,
+        latencyMs: Date.now() - start,
+        error: `IMF SDMX HTTP ${res.status}`,
+      };
+    }
+    return {
+      ok: true,
+      latencyMs: Date.now() - start,
+      detail: "IMF SDMX / COFER reachable",
+    };
+  } catch (err) {
+    return {
+      ok: false,
+      latencyMs: Date.now() - start,
+      error: `IMF: ${err instanceof Error ? err.message : "fetch failed"}`,
+    };
+  }
+}
+
+/* ---- BIS: probe the SDMX dataflow endpoint ----
+ * Informational only — does NOT cause a 503 if unreachable. Reports
+ * upstream API liveness for the data-source health catalog. */
+async function checkBis(): Promise<CheckResult> {
+  const start = Date.now();
+  try {
+    const res = await fetch("https://stats.bis.org/api/v1/dataflow", {
+      signal: AbortSignal.timeout(5000),
+      headers: { "User-Agent": "MITHQAL-HealthCheck/1.0" },
+    });
+    if (!res.ok) {
+      return {
+        ok: false,
+        latencyMs: Date.now() - start,
+        error: `BIS SDMX HTTP ${res.status}`,
+      };
+    }
+    return {
+      ok: true,
+      latencyMs: Date.now() - start,
+      detail: "BIS SDMX dataflow reachable",
+    };
+  } catch (err) {
+    return {
+      ok: false,
+      latencyMs: Date.now() - start,
+      error: `BIS: ${err instanceof Error ? err.message : "fetch failed"}`,
+    };
+  }
 }
 
 /* Resolve the deployment's public origin from Vercel env or fall back to localhost.

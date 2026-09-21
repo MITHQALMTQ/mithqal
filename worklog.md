@@ -6616,3 +6616,210 @@ Stage Summary:
 - ✅ Turso DB: connected
 - ✅ All APIs return HTTP 200
 - ✅ No breaking changes
+
+---
+Task ID: DATA-HEALTH-PERSIST
+Agent: Sub-agent (general-purpose) acting as CTO/COO/Principal Architect
+Task: Add data-source health checks + persistence layer (additive, no breaking changes)
+
+Work Log:
+- CONTEXT: Read worklog.md (DATA-ARCH-CORRECTION stage) — DataSourceObservation
+  table already exists in db.ts via CHAPTER_XX_SCHEMA_STATEMENTS with idempotent
+  unique index DataSourceObs_unique_idx on (provider, dataset, series_key,
+  reference_period, dataset_version).
+- INSPECTED existing surface:
+  - /api/route.ts discovery catalog (149 endpoints, transparency category)
+  - /api/health/route.ts gating model (db/rpc/oracle/smtp gate; rpcArc/rpcLocal informational)
+  - src/lib/db.ts _rawClient + ensureSchema/ensureChapterXxSchema pattern
+- IMPLEMENTED 4 additive changes (no existing logic modified or removed):
+
+  1. Created src/app/api/data-source-health/route.ts (NEW, 167 lines):
+     - GET endpoint, dynamic = "force-dynamic"
+     - Parallel Promise.allSettled probes with 10s timeouts:
+       * checkIMFConnectivity → https://api.imf.org/external/sdmx/2.1/data/COFER/1.0/
+       * checkBISConnectivity → https://stats.bis.org/api/v1/dataflow
+       * checkFREDConnectivity → https://api.stlouisfed.org/fred/series/observations (VIXCLS, requires FRED_API_KEY)
+       * checkSWIFTConfig → always true (PUBLICATION_ONLY is not an error state)
+     - Response: sources[] with dataset/provider/apiEndpoint/connectivity/accessMethod/frequency/status
+     - SWIFT classified PUBLICATION_ONLY (not UNREACHABLE — access pattern, not outage)
+     - FRED returns NOT_TESTED when FRED_API_KEY unset, UNREACHABLE when set+down, REACHABLE when ok
+     - honestState.productionAuthorized = false (DESIGN-TIME only)
+
+  2. Extended src/lib/db.ts with persistence layer (additive, ~95 lines appended):
+     - export interface DataSourceObservationRecord (17 fields, all optional except id/provider/dataset/value/retrieved_at)
+     - export async function persistDataSourceObservation(obs): INSERT OR IGNORE for idempotent ingestion (respects unique index)
+     - export async function getDataSourceObservations(provider?, dataset?, limit?): SELECT with optional WHERE provider/dataset, ORDER BY retrieved_at DESC, optional LIMIT
+     - Both functions call ensureSchema() + ensureChapterXxSchema() to guarantee the table exists before any I/O
+     - No schema changes — table already created by CHAPTER_XX_SCHEMA_STATEMENTS
+
+  3. Updated src/app/api/route.ts discovery catalog (additive):
+     - Added data-source-health to transparency[] modules list
+     - Bumped totalEndpoints from 149 → 150
+     - Path: /api/data-source-health
+     - Description: "Live health check of upstream data sources (IMF/BIS/SWIFT/FRED) — connectivity, access method, frequency, status"
+
+  4. Updated src/app/api/health/route.ts (additive, informational only):
+     - Added checkImf() probe: IMF SDMX COFER endpoint, 5s timeout, reports HTTP status
+     - Added checkBis() probe: BIS SDMX dataflow endpoint, 5s timeout, reports HTTP status
+     - Both added to Checks type, runChecks() Promise.all, and returned in checks object
+     - Both excluded from gating filter (key !== "imf" && key !== "bis") — informational, do NOT cause 503
+     - Updated docstring to document new informational probes
+     - Existing db/rpc/rpcArc/rpcLocal/oracle/smtp checks preserved untouched
+
+Files Modified (4 files, 1 new + 3 edited):
+- src/app/api/data-source-health/route.ts (NEW, 167 lines)
+- src/lib/db.ts (+95 lines, appended after disconnect())
+- src/app/api/route.ts (+2 lines: 1 module entry + totalEndpoints bump)
+- src/app/api/health/route.ts (+~85 lines: 2 new probe fns + Checks type extension)
+
+What was NOT changed (deliberate):
+- No existing database tables dropped or modified (DataSourceObservation was already in CHAPTER_XX_SCHEMA_STATEMENTS)
+- No existing API routes removed or renamed
+- No existing health-check gating behavior modified (db/rpc/oracle/smtp still gate; rpcArc/rpcLocal still informational)
+- No existing functions in db.ts modified (only appended new exports)
+- No schema migration required
+- No new dependencies added (uses built-in fetch + AbortSignal.timeout + libsql client already in deps)
+
+Verification:
+- bun build transpiles all 4 files without syntax errors (Transpiled file in 1-2ms each)
+- TypeScript module-resolution errors observed in tsc --noEmit are environment-only
+  (node_modules not installed in this sandbox) and apply equally to pre-existing
+  files like /api/health/route.ts and /api/real-market-feeds/route.ts — they are
+  NOT introduced by these changes
+- Pattern of new code matches existing style (ensureSchema()+_rawClient.execute,
+  Promise.all probes, NextResponse.json with honestState)
+
+Stage Summary:
+- ✅ /api/data-source-health endpoint: NEW, returns live health for IMF/BIS/SWIFT/FRED
+- ✅ DataSourceObservationRecord interface + persistDataSourceObservation + getDataSourceObservations: idempotent INSERT OR IGNORE persistence
+- ✅ Discovery catalog: data-source-health registered under transparency, totalEndpoints=150
+- ✅ /api/health: IMF + BIS informational probes added (do NOT gate, do NOT cause 503)
+- ✅ SWIFT classified as PUBLICATION_ONLY (not UNREACHABLE)
+- ✅ FRED returns NOT_TESTED/UNREACHABLE/REACHABLE based on API key + reachability
+- ✅ Honest-state preserved: productionAuthorized=false everywhere
+- ✅ Additive only — no breaking changes
+
+---
+
+## [DATA-ARCH-UPGRADE] IMF SDMX 2.1 + BIS CSV parser + retry (2026-09-21)
+
+### Objective
+Upgrade the data-source architecture in `src/lib/real-market-feeds.ts` to
+make IMF SDMX 2.1 the PRIMARY COFER endpoint, add a real BIS SDMX CSV
+parser (replacing the previous "API responds but values aren't parsed"
+stub), add a new BIS EER (Effective Exchange Rates) fetcher, and add
+retry-with-circuit-breaker to all HTTP calls.
+
+### Tasks Completed
+1. **IMF SDMX 2.1 as PRIMARY COFER endpoint** — `fetchRealCOFERShares()`
+   now tries IMF SDMX 2.1 FIRST (extracts UPDATE_DATE, PUBLICATION_DATE,
+   datasetVersion 7.0.1, METHODOLOGY_NOTES, declared CURRENCY codes, and
+   any `<Obs>` observations), then IMF DataMapper REST (for actual share
+   values when SDMX returns metadata only), then reference constants.
+   The SDMX metadata is preserved in the provenance record even when the
+   values come from a later fallback layer (so publishedAt, datasetVersion,
+   and methodologyVersion are correctly populated).
+
+2. **BIS SDMX CSV parser** — `fetchRealBISLiquidity()` now actually
+   PARSES the BIS SDMX CSV response from WS_DER_OTC_TOV. Uses the
+   dimension-filtered key `A.U.A` (Annual + Turnover + FX spot instrument)
+   to limit response from 14MB → 825KB. Detects XML-vs-CSV response
+   (notes XML and falls back if BIS returns XML). Aggregates per-currency
+   turnover from DER_CURR_LEG1 + DER_CURR_LEG2 columns for the latest
+   TIME_PERIOD, then computes one-sided shares.
+
+3. **NEW `fetchBISExchangeRates()`** — Fetches BIS Effective Exchange
+   Rate (EER) data from WS_EER dataflow (monthly nominal EER index per
+   currency, base year = 100). URL:
+   `https://stats.bis.org/api/v1/data/BIS,WS_EER,1.0/M.N.N.<REF_AREA>?format=csv&startPeriod=2025-01`.
+   Returns 7 of 11 basket currencies (USD, JPY, GBP, CHF, CAD, AUD, SGD);
+   EUR/CNY/AED/SAR return HTTP 404 (not in the narrow 27-economy EER
+   basket). The function handles partial success — `ok=false` but
+   `value` is populated with the 7 that succeeded, and the `error` field
+   lists the 4 failures.
+
+4. **Retry / circuit-breaker** — New `fetchWithRetry()` helper wraps
+   `fetchJsonWithTimeout()`. Retries on 5xx and network/timeout errors
+   with exponential backoff (500ms, 1000ms, 2000ms). Does NOT retry on
+   4xx (client errors are not transient). Records `retries` count and
+   `lastError` in returned metadata. Verified empirically:
+   - HTTP 500 → retries=1 (one retry triggered, then returned ok=false)
+   - HTTP 404 → retries=0 (no retry, immediate return)
+   - Network timeout → retries=N then throw
+
+5. **Aggregator updates** — `fetchRealMarketData()` now:
+   - Calls `fetchBISExchangeRates()` in parallel with the other 5 fetchers
+   - Adds `bisExchangeRates` field to the `RealMarketData` response
+     (additive — no existing field removed)
+   - Adds `bisEer` to the `provenance` record
+   - Adds "Effective Exchange Rates (EER)" as a SEPARATE entry in
+     `sourceStatus` (distinct from the Triennial Survey entry — they
+     have different frequencies: MONTHLY vs TRIENNIAL)
+   - Updates `dataFresh` logic: BIS EER partial success (some currencies
+     404) does NOT count as a failure — only if ZERO currencies returned.
+
+### Critical Discovery: IMF SDMX Accept Header
+The IMF SDMX 2.1 API at `https://api.imf.org/external/sdmx/2.1/data/COFER/1.0/`
+returns HTTP 400 (Jackson JSON serialization error) when the Accept header
+lists `application/json` first. The IMF API honours the FIRST content-type
+in Accept and tries to serialise the COFER dataset as JSON via a Jackson
+bridge that doesn't support the dataset's structure.
+
+Fix: Changed the default Accept header in `fetchJsonWithTimeout()` from
+`"application/json, text/csv, application/xml, */*"` to
+`"application/xml, text/csv, application/json, */*"` (XML-first). This is
+safe for ALL the other APIs in the module (FRED, Yahoo, BIS) because they
+ignore Accept and return their default content-type. Verified empirically
+that all 5 Accept-header variants now work:
+- `*/*` → 200 XML ✓
+- `application/xml` → 200 XML ✓
+- `application/vnd.sdmx.structurespecificdata+xml;version=2.1` → 200 XML ✓
+- `application/xml, */*` → 200 XML ✓
+- (old) `application/json, ...` → 400 (Jackson error) ✗ — fixed
+
+### Empirical Verification (sandbox, 2026-09-21)
+Smoke test (`bun run /tmp/smoke_test.ts`) confirms:
+- **fetchWithRetry**: HTTP 500 → retries=1, lastError set; HTTP 404 → retries=0,
+  lastError undefined ✓
+- **fetchRealCOFERShares**: publishedAt=`2026-07-01T13:00:00Z`, datasetVersion=`7.0.1`,
+  methodologyVersion=`COFER-2025Q3-revised`, declaredCurrencies=[JPY,GBP,ECU,NLG,DEM,CNY,AUD,CHF,EUR,USD,CAD,OTHC,_T,FRF].
+  Values fall back to reference constants (IMF DataMapper 403-blocked from sandbox),
+  but SDMX metadata is correctly attached to provenance. ✓
+- **fetchRealBISLiquidity**: CSV parsed (48960 rows, 40 currencies aggregated
+  for period 2025). USD=39.8%, EUR=16.8%, JPY=7.6%, GBP=5.6%. accessMethod=SDMX_API,
+  referencePeriod=2025. ✓
+- **fetchBISExchangeRates**: 7/11 currencies fetched successfully
+  (USD=105.92, JPY=68, GBP=106.09, CHF=116.83, CAD=97.8, AUD=109.19, SGD=115.96),
+  referencePeriod=2026-08. EUR/CNY/AED/SAR return HTTP 404 (not in narrow EER basket). ✓
+- **fetchRealMarketData**: 6 sourceStatus entries
+  (COFER | Triennial Survey | EER | RMB Tracker | VIX | BAA-AAA Credit Spread),
+  7 provenance entries (cofer, swift, bis, vix, creditSpread, tnx10y, bisEer),
+  bisExchangeRates populated with 7 currencies, honestState.failedSources
+  correctly excludes BIS-EER (partial success is OK). ✓
+
+### Files Modified
+- `src/lib/real-market-feeds.ts` (1070 → 1988 lines; +1008 / -90)
+  - Additive: `bisExchangeRates` field on `RealMarketData`, `bisEer` on provenance
+  - All existing exports preserved (BASKET_CURRENCIES, BIS_DATAFLOWS, etc.)
+  - No new npm dependencies (regex XML parser, hand-rolled CSV parser)
+  - 60-second cache preserved
+  - All reference-constant fallbacks preserved
+
+### What was NOT changed
+- No existing exports removed (additive only)
+- No `SourcedValue<T>` interface change (already had provenance fields)
+- No new npm dependencies added (XML parsed via regex; CSV via RFC 4180 parser)
+- No existing API routes modified (route.ts uses `...data` spread → new
+  field automatically appears in response)
+- No existing database tables touched
+- No new scheduler/cron/microservices added
+- TypeScript strict-mode: only pre-existing warnings remain (process.env
+  requires @types/node, and `let spread: SourcedValue<number>` in
+  fetchRealCreditSpreads — both at lines untouched by this task)
+
+### Honest-State Constraint (blueprint §V25.2)
+- productionAuthorized = false (preserved)
+- institutionalGatesPassed = 0 / 20 (preserved)
+- dataFresh = false in sandbox (IMF DataMapper 403-blocked, Yahoo ^BAA/^AAA delisted)
+- In production (Vercel), dataFresh should be true because IMF DataMapper
+  returns 200 from Vercel egress IPs and Yahoo's TNX/VIX symbols are live
