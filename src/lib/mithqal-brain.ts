@@ -144,6 +144,7 @@ const NVIDIA_KEY = process.env.NVIDIA_API_KEY;
 
 /** Per-call upstream timeout. 12s is generous for Groq, tight for HF. */
 const UPSTREAM_TIMEOUT_MS = 12_000;
+const NVIDIA_TIMEOUT_MS = 20_000; // NVIDIA NIM cold-start can be slow
 
 /** Jaccard similarity threshold above which two responses "agree". */
 const AGREEMENT_THRESHOLD = 0.3;
@@ -274,7 +275,7 @@ async function queryGemini(prompt: string): Promise<ModelResponse> {
  * Endpoint (per spec):
  *   POST https://api.groq.com/openai/v1/chat/completions
  *
- * Model: "llama-3.3-70b-versatile" (per spec).
+ * Model: "llama-3.1-8b-instant" (per spec).
  */
 async function queryGroq(prompt: string): Promise<ModelResponse> {
   const start = Date.now();
@@ -302,7 +303,7 @@ async function queryGroq(prompt: string): Promise<ModelResponse> {
           Authorization: `Bearer ${GROQ_KEY}`,
         },
         body: JSON.stringify({
-          model: "llama-3.3-70b-versatile",
+          model: "llama-3.1-8b-instant",
           messages: [
             { role: "system", content: "You are the Mithqal Brain, a multi-model consensus AI for a gold-backed stablecoin. Be precise, structured, and concise." },
             { role: "user", content: prompt },
@@ -609,7 +610,8 @@ async function queryNVIDIA(prompt: string): Promise<ModelResponse> {
           temperature: 0.3,
           max_tokens: 800,
         }),
-      }
+      },
+      NVIDIA_TIMEOUT_MS
     );
 
     if (!res.ok) {
