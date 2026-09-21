@@ -559,7 +559,7 @@ async function queryOpenRouter(prompt: string): Promise<ModelResponse> {
  * Endpoint (per spec):
  *   POST https://integrate.api.nvidia.com/v1/chat/completions
  *
- * Model: "nvidia/llama-3.1-nemotron-70b-instruct" (per spec).
+ * Model: "mistralai/mistral-nemotron" (per spec).
  *
  * NVIDIA's NIM (NVIDIA Inference Microservices) hosts open-weight
  * models tuned by NVIDIA. Nemotron is NVIDIA's instruction-tuned
@@ -595,7 +595,7 @@ async function queryNVIDIA(prompt: string): Promise<ModelResponse> {
           Authorization: `Bearer ${NVIDIA_KEY}`,
         },
         body: JSON.stringify({
-          model: "nvidia/llama-3.1-nemotron-70b-instruct",
+          model: "mistralai/mistral-nemotron",
           messages: [
             {
               role: "system",
