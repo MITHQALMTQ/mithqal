@@ -996,7 +996,7 @@ export default function Page() {
                       <span className="text-[10px] text-gray-400">Data freshness: {marketFeeds.data.honestState?.dataFresh ? "ALL SOURCES LIVE" : "SOME SOURCES FALLING BACK TO PUBLISHED REFERENCES"}</span>
                     </div>
                     {Arr(marketFeeds.data.honestState?.failedSources).length > 0 && (
-                      <div className="mt-1 text-[9px] text-gray-500">Failed sources: {S(marketFeeds.data.honestState?.failedSources).join(", ")}</div>
+                      <div className="mt-1 text-[9px] text-gray-500">Failed sources: {Arr(marketFeeds.data.honestState?.failedSources).join(", ")}</div>
                     )}
                   </GlassCard>
                 </>
