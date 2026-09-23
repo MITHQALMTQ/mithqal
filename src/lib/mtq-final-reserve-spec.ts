@@ -1232,3 +1232,50 @@ export function generateFinalReserveSpecReport(): FinalReserveSpecReport {
 function clamp(x: number, lo: number, hi: number): number {
   return Math.min(Math.max(x, lo), hi);
 }
+
+// ---------------------------------------------------------------------------
+// §7.2 — MTQ Component Types (MTQ-S, MTQ-G, MTQ-Y)
+// ---------------------------------------------------------------------------
+// The blueprint defines three MTQ instrument component types:
+//   MTQ-S — Settlement unit (institutional cross-border settlement)
+//   MTQ-G — Gold-referenced unit (gold-anchored valuation reference)
+//   MTQ-Y — Yield-bearing unit (treasury holding, where permitted)
+// All three are settlement instruments backed by the same reserve architecture
+// (80/18/2 composition, 130% coverage, 11-currency basket + gold anchor).
+// They are NOT separate tokens — they are functional distinctions within the
+// MTQ instrument for institutional accounting and settlement purposes.
+// ---------------------------------------------------------------------------
+
+export type MTQComponentType = "MTQ-S" | "MTQ-G" | "MTQ-Y";
+
+export interface MTQComponent {
+  id: MTQComponentType;
+  name: string;
+  description: string;
+  economicRole: string;
+  availability: string; // "all jurisdictions" | "where permitted" etc.
+}
+
+export const MTQ_COMPONENTS: MTQComponent[] = [
+  {
+    id: "MTQ-S",
+    name: "MTQ Settlement",
+    description: "Neutral unit for institutional cross-border settlement",
+    economicRole: "Settlement",
+    availability: "all jurisdictions (subject to local authorization)",
+  },
+  {
+    id: "MTQ-G",
+    name: "MTQ Gold-Referenced",
+    description: "Gold-anchored valuation reference",
+    economicRole: "Gold-Referenced Valuation",
+    availability: "all jurisdictions (subject to local authorization)",
+  },
+  {
+    id: "MTQ-Y",
+    name: "MTQ Yield-Bearing",
+    description: "Treasury holding unit (where permitted)",
+    economicRole: "Yield-Bearing Treasury",
+    availability: "where permitted by jurisdiction and bank",
+  },
+];

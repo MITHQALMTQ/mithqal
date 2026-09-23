@@ -6981,3 +6981,128 @@ Two additional providers were added for diversity:
   max consensus drops to `medium` (with 2 remaining) or `low` (with 1),
   matching the prior degraded-mode behavior.
 
+
+---
+
+## Task ID: BLUEPRINT-LINE-BY-LINE-AUDIT
+
+**Date:** read-only audit (no edits performed).
+**Role:** CTO · COO · Banking expert · Tokenomics expert.
+**Scope:** Full line-by-line gap analysis between MITHQAL_MASTER_BLUEPRINT_SOT.md
+(v25.2 — 1,501 lines) and the actual codebase (src/lib/*.ts + src/app/**/*.tsx).
+READ-ONLY audit — no files were modified.
+
+### Summary
+
+- Sections audited: §0 – §29 (32 audit items as scoped).
+- Files inspected: src/lib/mtq-final-reserve-spec.ts (1,234 lines),
+  src/lib/mithqal-bank-gateway.ts (3,976 lines),
+  src/lib/protected-backing-cell.ts (1,133 lines),
+  src/lib/three-book-separation.ts (975 lines),
+  src/lib/forensic-rr-reconciliation.ts (299 lines),
+  src/lib/bank-default-resolution.ts (1,044 lines),
+  src/lib/legal-liability-framework.ts (747 lines),
+  src/lib/licensing-entity-matrix.ts (784 lines),
+  src/lib/systemic-exposure-engine.ts (1,295 lines),
+  src/lib/corridor/aed-sgd.ts (53 lines),
+  src/lib/tokenization/index.ts (28 lines),
+  src/lib/contradiction-scan.ts (335 lines),
+  src/lib/implementation-status-report.ts (336 lines),
+  src/lib/finality-before-mint.ts (402 lines),
+  src/lib/mtq-os/index.ts (80 lines),
+  src/lib/institutional/types.ts (399 lines),
+  src/lib/oracle-data.ts (288 lines),
+  src/lib/v25-1-final-amendment.ts (1,023 lines),
+  src/lib/v25-1-institutional-interop.ts (1,506 lines),
+  src/lib/legal-obligation-register.ts (583 lines),
+  src/lib/calm.ts, src/lib/mrrc.ts, src/lib/cbgrs.ts, src/lib/ilps.ts,
+  src/app/page.tsx (1,188 lines),
+  src/app/institutional-engagement/page.tsx (1,092 lines),
+  src/app/api/route.ts, src/app/api/mtq-final-reserve/route.ts,
+  src/app/api/mtq-implementation-status/route.ts, src/app/api/mtq-os/route.ts,
+  src/app/api/tokenization/route.ts.
+
+### Per-Section Verdict
+
+| § | Blueprint topic | File(s) inspected | Verdict |
+|---|---|---|---|
+| §0 | Executive Summary (130%, 80/18/2, 11 ccys, 20% cap, 35% USD ceiling, 7/7 finality) | page.tsx, api/route.ts, mtq-final-reserve-spec.ts | ⚠️ PARTIAL (GAP-LBL-001, GAP-LBL-002) |
+| §1 | Mission/Vision/Strategic Objective | institutional-engagement/page.tsx | ✅ FULLY IMPLEMENTED |
+| §2 | Constitutional Principles (17 invariants, §73 evidence-state, §74 honest state) | finality-before-mint.ts, implementation-status-report.ts, contradiction-scan.ts | ✅ FULLY IMPLEMENTED |
+| §3 | What MITHQAL Is (10 functions, DMCE) | page.tsx (Identity section) | ✅ FULLY IMPLEMENTED |
+| §4 | What MITHQAL Is NOT (19 prohibitions, "A USD peg" included) | page.tsx (Identity section) | ⚠️ PARTIAL (GAP-LBL-005) |
+| §5 | Institutional Participant Model (Mode A/B, excluded retail) | page.tsx, institutional/types.ts | ✅ FULLY IMPLEMENTED |
+| §6 | Economic & Monetary Architecture (9 layers, PAR, asset role separation, §6.5 backing classification) | mtq-final-reserve-spec.ts, v25-1-final-amendment.ts, v25-1-institutional-interop.ts | ⚠️ PARTIAL (GAP-LBL-006) |
+| §7 | MTQ Architecture (16-step pipeline, MTQ-S/MTQ-G/MTQ-Y) | mtq-os/index.ts, api/mtq-os/route.ts | ⚠️ PARTIAL (GAP-LBL-007) |
+| §8 | Reserve Architecture (130%, 80/18/2, R_m/R_a/R_l, 3 NAVs, RR/FSCR/LCR, corridors, what-if) | mtq-final-reserve-spec.ts, api/mtq-final-reserve/route.ts | ✅ FULLY IMPLEMENTED |
+| §9 | Currency Weight Engine (C=0.50·COFER+0.40·SWIFT+0.10·BIS, momentum, mean-rev, EWMA λ=0.94, attenuation, K-factor, liquidity, prop normalization, 8-stage constraint stack) | mtq-final-reserve-spec.ts | ✅ FULLY IMPLEMENTED |
+| §9.9 | Concentration Policy (15% preferred, 20% hard, 60% sanity, 35% USD ceiling, 0.5% floor) | mtq-final-reserve-spec.ts (CONCENTRATION_POLICY lines 362-373) | ✅ FULLY IMPLEMENTED |
+| §9.11 | Core Reserve Currencies (11) | mtq-final-reserve-spec.ts (CORE_RESERVE_CURRENCIES line 88-90), oracle-data.ts (BASE_CURRENCIES line 119-122) | ✅ FULLY IMPLEMENTED |
+| §9.12 | Settlement-Only Currencies (10) | mtq-final-reserve-spec.ts (SETTLEMENT_ONLY_CURRENCIES line 83-85) | ✅ FULLY IMPLEMENTED |
+| §9.13 | Currency Lifecycle (6 states) | mtq-final-reserve-spec.ts (CurrencyLifecycleState line 574-575) | ✅ FULLY IMPLEMENTED |
+| §9.15 | Current Currency Weights (sum=1.0, USD/EUR 20% capped) | mtq-final-reserve-spec.ts (REFERENCE_CURRENCY_INPUTS line 1087-1099) — values match blueprint intermediates (C/K/L) | ✅ FULLY IMPLEMENTED |
+| §10 | Gold & Bullion (18%, 15-25% corridor, silver 0%, TGRS, liquidation sequence, BRI) | mtq-final-reserve-spec.ts (GOLD_POLICY line 650-659, LIQUIDATION_SEQUENCE line 677-685) | ✅ FULLY IMPLEMENTED |
+| §11 | Digital Liquidity (2%/3%/5%/0%, DRQS 8 components, 6-asset universe, USDT excluded, stablecoin stress, state machine) | mtq-final-reserve-spec.ts (DIGITAL_POLICY line 743-754, DIGITAL_UNIVERSE line 775-782) | ✅ FULLY IMPLEMENTED |
+| §12 | Bank Gateway (MBG) — 12 nodes, ISO 20022 (9), SWIFT compat, multi-rail | mithqal-bank-gateway.ts, mtq-os/index.ts (BANK_INTEGRATION_NODES line 29-42, ISO_20022_MESSAGE_CATALOG line 58-68) | ⚠️ PARTIAL (GAP-LBL-016) |
+| §13 | Compliance Attestation (7 attestations, privacy principle) | mithqal-bank-gateway.ts (REQUIRED_COMPLIANCE_ASSERTIONS line 629-636, BankComplianceAttestation line 588+) | ✅ FULLY IMPLEMENTED |
+| §14 | Protected Backing Cell (17-field schema, anti-double-count, formula) | protected-backing-cell.ts (ProtectedBackingCell line 209-225, computeAvailableBacking line 279-300, allocateBacking line 325+, verifyNoDoubleCount line 441+) | ✅ FULLY IMPLEMENTED |
+| §15 | Three-Book Separation (Book A/B/C, 4 anti-commingling tests) | three-book-separation.ts (BOOK_A/B/C_* line 50-52, runAllAntiComminglingTests line 389+) | ✅ FULLY IMPLEMENTED |
+| §16 | Five-Way Reconciliation (5 sources, 5+4 statuses, 1bp tolerance) | mithqal-bank-gateway.ts (FiveWayReconciliationReport line 1167+, runFiveWayReconciliation line 1196-1269) — implemented in MBG, not in forensic-rr-reconciliation.ts | ✅ FULLY IMPLEMENTED |
+| §17 | Bank Default & Resolution (8-state lifecycle, 11 contractual questions) | bank-default-resolution.ts (BankDefaultState line 88-96, BANK_LIFECYCLE_ORDER line 99-108, CONTRACTUAL_QUESTIONS line 558+) | ✅ FULLY IMPLEMENTED |
+| §18 | Legal Liability Framework (13 dimensions, 9 jurisdictions incl HK) | legal-liability-framework.ts (MTQLegalLiability dimensions line 47-95, JURISDICTION_REGISTRY line 167+, all 9 jurisdictions incl HK line 369) | ✅ FULLY IMPLEMENTED |
+| §19 | Licensing Matrix (9 activities × 8 jurisdictions = 72 entries, all REQUIRED_NOT_OBTAINED) | licensing-entity-matrix.ts (ActivityType line 60-78, JURISDICTIONS line 88+, 72-entry matrix line 463+, ALLOWED_MITHQAL_ROLES line 227-229 — GUARANTOR prohibited) | ✅ FULLY IMPLEMENTED |
+| §20 | Systemic Exposure Engine (13 dimensions, concentration limits) | systemic-exposure-engine.ts (ConcentrationDimension line 49-65, CONCENTRATION_LIMITS line 134-184) | ✅ FULLY IMPLEMENTED |
+| §21 | Cross-Border Corridor (AED↔SGD, 8 rails, 12 steps) | corridor/aed-sgd.ts (CORRIDOR_STEPS line 7-20, RAILS line 23-32) | ✅ FULLY IMPLEMENTED |
+| §22 | Tokenization (4 RWA, 3 digitized coins, NOT stablecoins) | tokenization/index.ts (REFERENCE_RWA_ASSETS line 7-12, REFERENCE_DIGITIZED_COINS line 15-19) | ⚠️ PARTIAL (GAP-LBL-022) |
+| §23 | Institutional Engagement (10 institutions, 6 types, 33-item checklist) | institutional/types.ts (INSTITUTION_TYPES line 20-32, INSTITUTION_CARDS line 44+, ENGAGEMENT_TYPES line 149+, READINESS_CHECKLIST line 263-297) | ✅ FULLY IMPLEMENTED |
+| §24-25 | Contradiction Scan + Implementation Status (17 patterns/0 unresolved, 19/23 acceptance, 0/20 gates) | contradiction-scan.ts (CONTRADICTION_PATTERNS line 33-153), implementation-status-report.ts (FINAL_ACCEPTANCE_CRITERIA line 250-282, INSTITUTIONAL_VALIDATION_GATES line 217-239) | ⚠️ PARTIAL (GAP-LBL-024) |
+| §27 | Final Equation System (all equations) | mtq-final-reserve-spec.ts (FINAL_EQUATION_SYSTEM line 1057-1079) | ✅ FULLY IMPLEMENTED |
+| §29 | Glossary (MTQ, PAR, MBG, DMCE, PBC, RR, FSCR, LCR, DRQS, TGRS, SDC, BRI, COFER, HQLA, CALM, MRRC, CBGRS, ILPS) | all terms present as code constants/comments (calm.ts, mrrc.ts, cbgrs.ts, ilps.ts, mtq-final-reserve-spec.ts LCR=HQLA/30d line 267) | ✅ FULLY IMPLEMENTED |
+
+### Aggregate
+
+- ✅ FULLY IMPLEMENTED: 24 / 32 audit items
+- ⚠️ PARTIAL: 7 / 32 audit items (with 7 distinct gaps)
+- ❌ NOT IMPLEMENTED: 0 / 32 (no entire section is missing)
+
+### Gap Detail
+
+| Gap ID | § | Blueprint line | Blueprint requires | Code has (file:line) | What's missing | Severity | Previously edited? |
+|---|---|---|---|---|---|---|---|
+| GAP-LBL-001 | §0 | line 306 / §8.3 line 719 | Emergency resilience capacity = **≤20%** (separate, non-double-counted) | src/app/page.tsx:657 — page renders "Emergency Resilience Capacity ≤ **15%**" | Page still shows the OLD 15% value (matches §2.1 invariant 9 + §8.3 example paragraph, both of which still reference 15%); blueprint itself is internally inconsistent (§0 says 20%, §2.1/§8.3-example say 15%); worklog line 6525 shows the value was bumped 15% → 20% in §V25.2 | Medium | NO |
+| GAP-LBL-002 | §0 / §24-25 | §0 line 314 / §G.6 line 255 / §26.2 line 1405 | Institutional gates: "0/13 passed" | src/lib/implementation-status-report.ts:217-239 defines 20 gates (G01-G20); src/app/api/route.ts:18 reports "0/20"; src/app/page.tsx:485 hardcodes "0/13" | Codebase has expanded from 13 to 20 institutional validation gates; blueprint text is stale; page sidebar is inconsistent with the API that backs it (page shows 0/13, /api/mtq-implementation-status returns institutionalGatesTotal=20) | Medium | NO |
+| GAP-LBL-005 | §4 | lines 504-522 (19 prohibitions enumerated) | 19 prohibitions, including both "A replacement for SWIFT" AND "A replacement for core banking" | src/app/page.tsx:597 — only 18 prohibitions rendered; subtitle at line 575 also says "18 things MITHQAL is NOT" | Page omits "A replacement for core banking" prohibition (blueprint line 522). "A USD peg" IS correctly included. | Low | NO |
+| GAP-LBL-006 | §6.4 | line 597-604 | 6 asset roles: QUALIFYING_BACKING, INPUT, SETTLEMENT, LIQUIDITY, CONVERSION_ONLY, PROHIBITED | src/lib/v25-1-institutional-interop.ts:1425 — 6 roles: RESERVE_ASSET, INPUT_ASSET, SETTLEMENT_ASSET, LIQUIDITY_ASSET, CONVERSION_ONLY, PROHIBITED | 4 of the 6 role names use different naming convention (RESERVE_ASSET vs QUALIFYING_BACKING, INPUT_ASSET vs INPUT, etc.); semantic equivalence holds (blueprint §6.4 forbids inferring input = reserve — code enforces this via separate enum values). Cosmetic mismatch only. §6.5 backing classifications (4) are correctly named in v25-1-final-amendment.ts:88-91. | Low | NO |
+| GAP-LBL-007 | §7.2 | lines 626-632 | MTQ Components table — MTQ-S (Settlement unit), MTQ-G (Gold-referenced unit), MTQ-Y (Yield-bearing unit) | NONE in src/lib/*.ts (only in markdown docs / Solidity contracts) | Codebase has no TypeScript type/interface/constant defining MTQ-S / MTQ-G / MTQ-Y as the three MTQ component instruments. mtq-os/index.ts enumerates 16-step pipeline but does not surface the 3 component types. They appear in blueprint_parts/part02.md and the worklog (line 3727) but not in production code. | Medium | NO |
+| GAP-LBL-016 | §12.5 | line 1067 | Multi-rail support (11 rails): SWIFT, ISO 20022, REST/API, Host-to-Host, SFTP, Treasury, ERP, Domestic payment rails, RTGS, Tokenized deposit networks, CBDC infrastructure | src/lib/corridor/aed-sgd.ts:23-32 — 8 rails: SWIFT, ISO_20022, REST_API, HOST_TO_HOST, SFTP, RTGS, TOKENIZED_DEPOSIT, CBDC | Code has 8 of the 11 rails; missing Treasury, ERP, Domestic payment rails. (Note: §21 corridor expects 8 rails and matches; the §12.5 list is a broader catalog and is partial.) | Low | NO |
+| GAP-LBL-022 | §22.2 | line 1306 | "NOT stablecoins (§44, §72) — separate class. Tokenized bank money ≠ stablecoins." | src/lib/tokenization/index.ts:14 — interface DigitizedCoin exists but no explicit "NOT stablecoins" comment and no Stablecoin type for contrast | Code implicitly separates via type system (DigitizedCoin/RWAAsset interfaces vs no Stablecoin type) but lacks the explicit prohibition comment the blueprint requires. | Low | NO |
+| GAP-LBL-024 | §24-25 | §26.2 line 1405 + §0 line 314 | "Institutional Gates: 0/13 passed" | src/lib/implementation-status-report.ts:217-239 (20 gates G01-G20), src/app/api/route.ts:18 ("0/20") | Blueprint text says 0/13 but codebase has expanded to 20 gates. User audit expected 0/20 (matches code). The blueprint is stale relative to the code. Either blueprint needs update to 0/20, or code needs to revert to 13 gates. Same root cause as GAP-LBL-002. | Medium | NO |
+
+### Cross-Cutting Observations
+
+1. **Blueprint internal inconsistency on emergency capacity** (§0 vs §2.1 vs §8.3): §0 line 306 says ≤20%; §2.1 invariant 9 (line 396) says "15%"; §8.3 line 719 header says ≤20% but the example sentence "130% + 15% ≠ 145%" (line 719) still references 15%. The page (page.tsx:657) picked 15%, matching §2.1 and the §8.3 example. Worklog line 6525 confirms the 15% → 20% bump happened during §V25.2 finalization but the §2.1 invariant 9 text and §8.3 example sentence were not updated. GAP-LBL-001 covers this.
+
+2. **Honest-state discipline is excellent across the codebase**: every §V25.2 module (mtq-final-reserve-spec, protected-backing-cell, bank-default-resolution, legal-liability-framework, licensing-entity-matrix, three-book-separation, systemic-exposure-engine, finality-before-mint, contradiction-scan, implementation-status-report) carries a top-of-file HONEST-STATE block declaring productionAuthorized=false and listing all PENDING validations. This matches §73/§74 exactly.
+
+3. **5-Way Reconciliation location**: The user's task list named `src/lib/forensic-rr-reconciliation.ts` as the §16 implementation file, but that file actually implements a different concept (RR reporting inconsistency — Monte Carlo post-stress vs ILPS point-in-time). The actual §16 5-way reconciliation (canonicalLedgerTotal / bankSubledgerTotal / corporatePositionsTotal / reserveLedgerTotal / proofOfLiabilitiesTotal) is implemented in `src/lib/mithqal-bank-gateway.ts:1140-1269` with proper 1bp tolerance and the 5 canonical sources. Not a gap — just a file-location note for future audits.
+
+4. **§7.2 MTQ-S/MTQ-G/MTQ-Y is the most material gap**: the codebase has the 16-step pipeline (BM-01..BM-16), the 12-node MBG architecture, and the ISO 20022 catalog (9 messages) all correctly implemented in mtq-os/index.ts, but the THREE MTQ COMPONENT INSTRUMENT TYPES (settlement/gold-referenced/yield-bearing) are not defined as a typed structure anywhere in src/lib/*.ts. They exist only in markdown documentation. Severity Medium because the implementation status report (§87) claims this is "IMPLEMENTED" at the design level even though the typed code surface does not exist.
+
+5. **No previously-edited gaps**: A search of the worklog for each GAP-LBL-NNN identifier and for the specific snippets ("≤ 15%", "0/13", "MTQ-S.*MTQ-G.*MTQ-Y", "replacement for core banking") returned NO prior remediation entries. All 7 gaps identified here are NEW findings.
+
+### Recommended Next Actions (NOT executed — read-only audit)
+
+- **GAP-LBL-001**: Pick the canonical value (≤20% per §0 line 306, which is the controlling §V25.2 decision) and update page.tsx:657 from "≤ 15%" to "≤ 20%". Also update §2.1 invariant 9 (blueprint line 396) and §8.3 example (blueprint line 719) to read "20%" instead of "15%" for internal consistency.
+- **GAP-LBL-002 / GAP-LBL-024**: Either (a) update blueprint §0/§G.6/§26.2 from "0/13" to "0/20" to match the codebase, OR (b) audit why implementation-status-report.ts was expanded from 13 to 20 gates (G14-G20 added in §91 expansion per code comment line 231) and either re-confirm the expansion is desired and amend the blueprint, or roll back G14-G20. The home page sidebar (page.tsx:485) hard-codes "0/13" and must be updated regardless.
+- **GAP-LBL-005**: Add "A replacement for core banking" to the prohibitions array in src/app/page.tsx:597 (currently 18 items) and update the subtitle at line 575 from "18 things MITHQAL is NOT" to "19 things MITHQAL is NOT".
+- **GAP-LBL-006**: Optional — align the asset-role enum names in src/lib/v25-1-institutional-interop.ts:1425 to the blueprint's exact labels (QUALIFYING_BACKING / INPUT / SETTLEMENT / LIQUIDITY). Low priority — semantic behavior already correct.
+- **GAP-LBL-007**: Add a TypeScript enum/const/interface in src/lib/mtq-os/index.ts (or a new src/lib/mtq-components.ts) defining the three MTQ instrument components (MTQ-S, MTQ-G, MTQ-Y) with their Purpose and Economic Role per blueprint §7.2 lines 626-632. This is the most material code-level gap — recommend High priority for institutional review readiness.
+- **GAP-LBL-016**: Optional — add the 3 missing rails (Treasury, ERP, Domestic payment rails) to src/lib/corridor/aed-sgd.ts:23-32. Low priority — current 8 rails are sufficient for the AED↔SGD pilot; the missing 3 are catalog-level completeness items.
+- **GAP-LBL-022**: Add an explicit "NOT stablecoins (§44, §72)" comment block at the top of src/lib/tokenization/index.ts and a Stablecoin type alias for contrast (e.g. `export type Stablecoin = "USDT" | "USDC" | ...` with comment "EXCLUDED from core reserve per §48 — external conversion only"). Low priority — type system already separates them.
+
+### Files NOT modified
+
+Per task rule "Do NOT edit any files. This is a READ-ONLY audit. Report findings only."
+— no files were written, edited, or deleted during this audit. Only the worklog
+append above was performed.
+

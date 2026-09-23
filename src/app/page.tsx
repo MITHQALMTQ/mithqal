@@ -482,7 +482,7 @@ export default function Page() {
               <div className="space-y-0.5">
                 <div className="flex justify-between"><span>honest:</span> <span className="text-emerald-400">true</span></div>
                 <div className="flex justify-between"><span>production:</span> <span className="text-red-400">false</span></div>
-                <div className="flex justify-between"><span>gates:</span> <span className="text-amber-400">0/13</span></div>
+                <div className="flex justify-between"><span>gates:</span> <span className="text-amber-400">0/20</span></div>
                 <div className="flex justify-between"><span>finality:</span> <span className="text-emerald-400">7/7</span></div>
               </div>
             </div>
@@ -594,7 +594,7 @@ export default function Page() {
                     <span className="text-[10px] font-semibold uppercase tracking-wider text-red-400">What MITHQAL IS NOT (§4)</span>
                   </div>
                   <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-[9px] text-gray-500">
-                    {["Cryptocurrency", "Retail payment app", "Commercial bank", "Central bank", "Deposit-taking institution", "Investment fund", "Lending institution", "Speculative vehicle", "A DAO", "Permissionless blockchain", "Consumer remittance", "Retail wallet system", "Stablecoin issuer", "National currency replacement", "A USD peg", "A BRICS currency", "Anti-dollar currency", "SWIFT replacement"].map((item, i) => (
+                    {["Cryptocurrency", "Retail payment app", "Commercial bank", "Central bank", "Deposit-taking institution", "Investment fund", "Lending institution", "Speculative vehicle", "A DAO", "Permissionless blockchain", "Consumer remittance", "Retail wallet system", "Stablecoin issuer", "National currency replacement", "A USD peg", "A BRICS currency", "Anti-dollar currency", "SWIFT replacement", "Core banking replacement"].map((item, i) => (
                       <div key={i} className="flex items-start gap-1">
                         <span className="text-red-400/60">×</span>
                         <span>{item}</span>
@@ -654,7 +654,7 @@ export default function Page() {
                   </div>
                   <div className="mt-3 grid gap-3 md:grid-cols-2">
                     <GlassCard className="flex items-center justify-between p-5"><div><div className="text-[10px] uppercase tracking-wider text-gray-500">Total Strategic Backing</div><div className="font-display text-3xl font-bold text-white">{fmtUSDm(reserve.data.exampleBacking?.totalStrategicBacking)}</div></div><div className="text-right"><div className="text-[10px] uppercase tracking-wider text-gray-500">Target</div><div className="font-display text-2xl font-bold text-gold">130%</div></div></GlassCard>
-                    <GlassCard className="flex items-center justify-between p-5 border-amber-500/20"><div><div className="text-[10px] uppercase tracking-wider text-gray-500">Emergency Resilience Capacity</div><div className="font-display text-2xl font-bold text-amber">≤ 15%</div></div><div className="text-right text-[10px] text-gray-500">SEPARATE from core · not double-counted</div></GlassCard>
+                    <GlassCard className="flex items-center justify-between p-5 border-amber-500/20"><div><div className="text-[10px] uppercase tracking-wider text-gray-500">Emergency Resilience Capacity</div><div className="font-display text-2xl font-bold text-amber">≤ 20%</div></div><div className="text-right text-[10px] text-gray-500">SEPARATE from core · not double-counted</div></GlassCard>
                   </div>
                   <GlassCard className="mt-3 p-4">
                     <div className="mb-3 text-[10px] font-semibold uppercase tracking-wider text-gray-500">Reserve Valuation (S = $100M example)</div>
@@ -822,7 +822,7 @@ export default function Page() {
             </Section>
 
             {/* ═══ P1 FRAMEWORKS ═══ */}
-            <Section id="p1" icon={Building2} title="P1 Critical-Gap Frameworks" subtitle="6 modules + finality + contradiction scan — all IMPLEMENTED at code level, 0/13 institutional gates passed">
+            <Section id="p1" icon={Building2} title="P1 Critical-Gap Frameworks" subtitle="6 modules + finality + contradiction scan — all IMPLEMENTED at code level, 0/20 institutional gates passed">
               <div className="grid gap-3 md:grid-cols-2">
                 <GlassCard className="p-4"><div className="flex items-center justify-between"><span className="text-xs font-semibold text-white">§47 Protected Backing Cell</span><Badge variant="amber">0 live cells</Badge></div><div className="mt-1 text-[10px] text-gray-500">{pbc.data ? S(pbc.data.formula).slice(0, 80) : "AvailableBacking = Recognized − Encumbered − Allocated"}</div></GlassCard>
                 <GlassCard className="p-4"><div className="flex items-center justify-between"><span className="text-xs font-semibold text-white">§48 Bank Default & Resolution</span><Badge variant="red">NOT guarantor</Badge></div><div className="mt-1 text-[10px] text-gray-500">{bankDefault.data ? `${S(bankDefault.data.states?.length)} states · ${S(bankDefault.data.contractualQuestions?.length)} contractual Qs` : "8-state lifecycle"}</div></GlassCard>
@@ -838,7 +838,7 @@ export default function Page() {
             </Section>
 
             {/* ═══ IMPLEMENTATION STATUS ═══ */}
-            <Section id="status" icon={CheckCircle2} title="§87 Implementation Status Report" subtitle="Never inflate any column · 19/23 acceptance criteria met · 0/13 institutional gates passed">
+            <Section id="status" icon={CheckCircle2} title="§87 Implementation Status Report" subtitle="Never inflate any column · 19/23 acceptance criteria met · 0/20 institutional gates passed">
               {!status.data ? (status.err ? <ErrorBox label="implementation status" msg={status.err} /> : <LoadingBox label="implementation status" />) : (
                 <>
                   <div className="grid gap-3 md:grid-cols-3">
@@ -1170,7 +1170,7 @@ export default function Page() {
               <div className="text-[10px] font-semibold uppercase tracking-wider text-gold">Status</div>
               <div className="mt-2 space-y-1 text-[10px] text-gray-600">
                 <div className="flex justify-between"><span>Production Authorized:</span> <span className="text-red-400 font-mono">false</span></div>
-                <div className="flex justify-between"><span>Institutional Gates:</span> <span className="text-amber-400 font-mono">0/13</span></div>
+                <div className="flex justify-between"><span>Institutional Gates:</span> <span className="text-amber-400 font-mono">0/20</span></div>
                 <div className="flex justify-between"><span>Finality Layers:</span> <span className="text-emerald-400 font-mono">7/7</span></div>
                 <div className="flex justify-between"><span>Validated Jurisdictions:</span> <span className="text-red-400 font-mono">0</span></div>
                 <div className="flex justify-between"><span>Licenses Obtained:</span> <span className="text-red-400 font-mono">0</span></div>

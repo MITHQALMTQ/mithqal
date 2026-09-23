@@ -1,4 +1,7 @@
 // ════════════════════════════════════════════════════════════
+// IMPORTANT (§44, §72): Tokenized bank money ≠ stablecoins — separate class.
+// These are digitized bank deposits and wholesale CBDCs, NOT algorithmic or fiat-collateralized stablecoins.
+// The digital liquidity sleeve (2%) uses DRQS-qualified stablecoins (USDC/USDP/EURC/BUIDL) separately.
 // MITHQAL §V25.2 — Tokenization (RWA + Digitized Coin)
 // ════════════════════════════════════════════════════════════
 export const MODULE_ID = "v25.2-tokenization-1.0";

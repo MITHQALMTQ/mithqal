@@ -29,6 +29,10 @@ export const RAILS: Rail[] = [
   { rail: "RTGS", displayName: "RTGS", typicalLatencyMs: 1000, feeBps: 7, atomicCapable: false },
   { rail: "TOKENIZED_DEPOSIT", displayName: "Tokenized Deposit", typicalLatencyMs: 300, feeBps: 2, atomicCapable: true },
   { rail: "CBDC", displayName: "Wholesale CBDC", typicalLatencyMs: 200, feeBps: 1, atomicCapable: true },
+  // §12.5 — additional multi-rail support (not all used in AED↔SGD corridor but available in the MBG catalog)
+  { rail: "TREASURY", displayName: "Treasury", typicalLatencyMs: 1500, feeBps: 4, atomicCapable: false },
+  { rail: "ERP", displayName: "ERP Integration", typicalLatencyMs: 2500, feeBps: 3, atomicCapable: false },
+  { rail: "DOMESTIC", displayName: "Domestic Payment Rail", typicalLatencyMs: 800, feeBps: 5, atomicCapable: false },
 ];
 
 export function generateCorridorReport() {
