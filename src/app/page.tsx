@@ -50,9 +50,9 @@ function useFetch<T = any>(url: string) {
   return { data, err };
 }
 
-// ─── UI primitives ───
+// ─── UI primitives (bank-level premium design) ───
 function GlassCard({ children, className = "", glow = false }: { children: React.ReactNode; className?: string; glow?: boolean }) {
-  return <div className={`${glow ? "glass-gold" : "glass"} rounded-2xl ${className}`}>{children}</div>;
+  return <div className={`${glow ? "glass-gold" : "glass"} rounded-3xl shadow-lg shadow-black/20 transition-all duration-300 hover:shadow-gold/10 hover:border-gold/20 ${className}`}>{children}</div>;
 }
 
 function Badge({ children, variant = "gray", className = "" }: { children: React.ReactNode; variant?: "emerald" | "amber" | "red" | "gold" | "gray"; className?: string }) {
@@ -69,10 +69,10 @@ function Badge({ children, variant = "gray", className = "" }: { children: React
 function StatBox({ label, value, sub, accent = "gold" }: { label: string; value: string; sub?: string; accent?: "gold" | "emerald" | "amber" | "red" }) {
   const colors: Record<string, string> = { gold: "text-gold", emerald: "text-emerald-400", amber: "text-amber-400", red: "text-red-400" };
   return (
-    <GlassCard className="p-4">
-      <div className="text-[10px] font-semibold uppercase tracking-wider text-gray-500">{label}</div>
-      <div className={`mt-1 font-display text-2xl font-bold ${colors[accent]}`}>{value}</div>
-      {sub && <div className="mt-0.5 text-[10px] text-gray-500">{sub}</div>}
+    <GlassCard className="p-5">
+      <div className="text-xs font-semibold uppercase tracking-wider text-gray-500">{label}</div>
+      <div className={`mt-2 font-display text-2xl font-bold ${colors[accent]}`}>{value}</div>
+      {sub && <div className="mt-1 text-xs text-gray-500">{sub}</div>}
     </GlassCard>
   );
 }
@@ -88,12 +88,12 @@ function Section({ id, icon: Icon, title, subtitle, children }: { id: string; ic
       className="scroll-mt-20"
     >
       <div className="mb-6 flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-gold/20 bg-gold/5">
-          <Icon className="h-5 w-5 text-gold" />
+        <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-gold/20 bg-gold/5 shadow-lg shadow-gold/5">
+          <Icon className="h-6 w-6 text-gold" />
         </div>
         <div>
-          <h2 className="font-display text-xl font-bold text-white">{title}</h2>
-          {subtitle && <p className="text-[11px] text-gray-500">{subtitle}</p>}
+          <h2 className="font-display text-2xl font-bold text-white">{title}</h2>
+          {subtitle && <p className="mt-0.5 text-xs text-gray-500">{subtitle}</p>}
         </div>
       </div>
       {children}
@@ -378,6 +378,7 @@ function DynamicCorridorSimulator() {
 
 // ─── NAV ───
 const NAV_ITEMS = [
+  { id: "mtq-value", label: "MTQ Value", icon: Coins },
   { id: "identity", label: "Identity", icon: Landmark },
   { id: "hero", label: "Live State", icon: Activity },
   { id: "reserve", label: "Reserve Architecture", icon: Shield },
@@ -509,6 +510,64 @@ export default function Page() {
         {/* ─── MAIN CONTENT ─── */}
         <main className="min-w-0 flex-1 px-4 py-6 sm:px-6 lg:px-8">
           <div className="space-y-16">
+            {/* ═══ MTQ VALUE REFERENCE — high-end design ═══ */}
+            <Section id="mtq-value" icon={Coins} title="MTQ Value Reference" subtitle="1 MTQ = $1.00 PAR (accounting reference, NOT a USD peg) · Live FX conversion to 11 basket currencies">
+              {!nav.data ? <LoadingBox label="live FX rates" /> : (
+                <>
+                  {/* Hero PAR card */}
+                  <GlassCard glow className="p-8 text-center">
+                    <div className="text-xs font-semibold uppercase tracking-[0.3em] text-gold">PAR — Accounting Reference</div>
+                    <div className="mt-4 font-display text-6xl font-bold text-gold">1 MTQ</div>
+                    <div className="mt-2 font-display text-3xl font-bold text-white">= $1.00 USD</div>
+                    <div className="mt-3 text-xs text-gray-500 max-w-lg mx-auto">PAR = 1.00 USD is an accounting/settlement reference convention. It is NOT a promise of redemption into USD, NOT an automatic statement of USD backing, and NOT a USD peg.</div>
+                  </GlassCard>
+
+                  {/* 11 currency reference cards */}
+                  <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                    {[
+                      { ccy: "USD", flag: "🇺🇸", name: "US Dollar", val: 1.0, pegged: true, live: true },
+                      { ccy: "EUR", flag: "🇪🇺", name: "Euro", val: N(nav.data.fxRates?.EUR), pegged: false, live: true },
+                      { ccy: "JPY", flag: "🇯🇵", name: "Japanese Yen", val: N(nav.data.fxRates?.JPY), pegged: false, live: true },
+                      { ccy: "GBP", flag: "🇬🇧", name: "Pound Sterling", val: N(nav.data.fxRates?.GBP), pegged: false, live: true },
+                      { ccy: "CHF", flag: "🇨🇭", name: "Swiss Franc", val: N(nav.data.fxRates?.CHF), pegged: false, live: true },
+                      { ccy: "CAD", flag: "🇨🇦", name: "Canadian Dollar", val: N(nav.data.fxRates?.CAD), pegged: false, live: true },
+                      { ccy: "AUD", flag: "🇦🇺", name: "Australian Dollar", val: N(nav.data.fxRates?.AUD), pegged: false, live: true },
+                      { ccy: "CNY", flag: "🇨🇳", name: "Chinese Yuan", val: N(nav.data.fxRates?.CNY), pegged: false, live: true },
+                      { ccy: "SGD", flag: "🇸🇬", name: "Singapore Dollar", val: 0.74, pegged: false, live: false },
+                      { ccy: "AED", flag: "🇦🇪", name: "UAE Dirham", val: 3.6725, pegged: true, live: false },
+                      { ccy: "SAR", flag: "🇸🇦", name: "Saudi Riyal", val: 3.75, pegged: true, live: false },
+                    ].map((c) => (
+                      <GlassCard key={c.ccy} className="p-4 transition-all duration-300 hover:border-gold/30">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <span className="text-2xl">{c.flag}</span>
+                            <div>
+                              <div className="text-sm font-bold text-white">{c.ccy}</div>
+                              <div className="text-[10px] text-gray-500">{c.name}</div>
+                            </div>
+                          </div>
+                          {c.pegged ? <Badge variant="gold">PEGGED</Badge> : c.live ? <Badge variant="emerald">LIVE</Badge> : <Badge variant="gray">REF</Badge>}
+                        </div>
+                        <div className="mt-3 border-t border-white/5 pt-2">
+                          <div className="text-[10px] uppercase tracking-wider text-gray-500">1 MTQ =</div>
+                          <div className="font-display text-xl font-bold text-gold">
+                            {c.val.toLocaleString("en-US", { minimumFractionDigits: c.ccy === "JPY" ? 0 : 4, maximumFractionDigits: c.ccy === "JPY" ? 0 : 4 })} {c.ccy}
+                          </div>
+                        </div>
+                      </GlassCard>
+                    ))}
+                  </div>
+
+                  <GlassCard className="mt-3 p-4 border-amber-500/10">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+                      <span className="text-xs text-gray-400">Live FX rates from open.er-api.com (8 currencies live). AED/SAR are USD-pegged at fixed rates. SGD uses reference value (live FX not available from this source). Gold spot: ${N(nav.data.goldUsd).toFixed(2)}/oz (LBMA live).</span>
+                    </div>
+                  </GlassCard>
+                </>
+              )}
+            </Section>
+
             {/* ═══ IDENTITY: WHAT MITHQAL IS / IS NOT ═══ */}
             <Section id="identity" icon={Landmark} title="What MITHQAL Is — & Is Not" subtitle="§3-§4 Constitutional Identity · 10 functions MITHQAL performs · 18 things MITHQAL is NOT">
               <div className="grid gap-3 md:grid-cols-2">
