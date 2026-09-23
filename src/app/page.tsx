@@ -511,31 +511,31 @@ export default function Page() {
         <main className="min-w-0 flex-1 px-4 py-6 sm:px-6 lg:px-8">
           <div className="space-y-16">
             {/* ═══ MTQ VALUE REFERENCE — high-end design ═══ */}
-            <Section id="mtq-value" icon={Coins} title="MTQ Value Reference" subtitle="1 MTQ = $1.00 PAR (accounting reference, NOT a USD peg) · Live FX conversion to 11 basket currencies">
+            <Section id="mtq-value" icon={Coins} title="MTQ Value Reference" subtitle="MTQ is NOT pegged to any currency · PAR = $1.00 is an accounting reference only · 11-currency basket backing with live FX conversion">
               {!nav.data ? <LoadingBox label="live FX rates" /> : (
                 <>
                   {/* Hero PAR card */}
                   <GlassCard glow className="p-8 text-center">
-                    <div className="text-xs font-semibold uppercase tracking-[0.3em] text-gold">PAR — Accounting Reference</div>
+                    <div className="text-xs font-semibold uppercase tracking-[0.3em] text-gold">PAR — Accounting Reference (NOT a Peg)</div>
                     <div className="mt-4 font-display text-6xl font-bold text-gold">1 MTQ</div>
                     <div className="mt-2 font-display text-3xl font-bold text-white">= $1.00 USD</div>
-                    <div className="mt-3 text-xs text-gray-500 max-w-lg mx-auto">PAR = 1.00 USD is an accounting/settlement reference convention. It is NOT a promise of redemption into USD, NOT an automatic statement of USD backing, and NOT a USD peg.</div>
+                    <div className="mt-3 text-xs text-gray-500 max-w-lg mx-auto">PAR = 1.00 USD is an accounting/settlement reference convention. MTQ is a <span className="text-gold font-semibold">neutral institutional cross-border settlement unit</span> backed by an 11-currency basket + gold. It is NOT pegged to USD, NOT pegged to any currency, NOT a promise of redemption into USD, and NOT a USD-backed instrument.</div>
                   </GlassCard>
 
                   {/* 11 currency reference cards */}
                   <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                     {[
-                      { ccy: "USD", flag: "🇺🇸", name: "US Dollar", val: 1.0, pegged: true, live: true },
-                      { ccy: "EUR", flag: "🇪🇺", name: "Euro", val: N(nav.data.fxRates?.EUR), pegged: false, live: true },
-                      { ccy: "JPY", flag: "🇯🇵", name: "Japanese Yen", val: N(nav.data.fxRates?.JPY), pegged: false, live: true },
-                      { ccy: "GBP", flag: "🇬🇧", name: "Pound Sterling", val: N(nav.data.fxRates?.GBP), pegged: false, live: true },
-                      { ccy: "CHF", flag: "🇨🇭", name: "Swiss Franc", val: N(nav.data.fxRates?.CHF), pegged: false, live: true },
-                      { ccy: "CAD", flag: "🇨🇦", name: "Canadian Dollar", val: N(nav.data.fxRates?.CAD), pegged: false, live: true },
-                      { ccy: "AUD", flag: "🇦🇺", name: "Australian Dollar", val: N(nav.data.fxRates?.AUD), pegged: false, live: true },
-                      { ccy: "CNY", flag: "🇨🇳", name: "Chinese Yuan", val: N(nav.data.fxRates?.CNY), pegged: false, live: true },
-                      { ccy: "SGD", flag: "🇸🇬", name: "Singapore Dollar", val: 0.74, pegged: false, live: false },
-                      { ccy: "AED", flag: "🇦🇪", name: "UAE Dirham", val: 3.6725, pegged: true, live: false },
-                      { ccy: "SAR", flag: "🇸🇦", name: "Saudi Riyal", val: 3.75, pegged: true, live: false },
+                      { ccy: "USD", flag: "🇺🇸", name: "US Dollar", val: 1.0, type: "par" as const },
+                      { ccy: "EUR", flag: "🇪🇺", name: "Euro", val: N(nav.data.fxRates?.EUR), type: "live" as const },
+                      { ccy: "JPY", flag: "🇯🇵", name: "Japanese Yen", val: N(nav.data.fxRates?.JPY), type: "live" as const },
+                      { ccy: "GBP", flag: "🇬🇧", name: "Pound Sterling", val: N(nav.data.fxRates?.GBP), type: "live" as const },
+                      { ccy: "CHF", flag: "🇨🇭", name: "Swiss Franc", val: N(nav.data.fxRates?.CHF), type: "live" as const },
+                      { ccy: "CAD", flag: "🇨🇦", name: "Canadian Dollar", val: N(nav.data.fxRates?.CAD), type: "live" as const },
+                      { ccy: "AUD", flag: "🇦🇺", name: "Australian Dollar", val: N(nav.data.fxRates?.AUD), type: "live" as const },
+                      { ccy: "CNY", flag: "🇨🇳", name: "Chinese Yuan", val: N(nav.data.fxRates?.CNY), type: "live" as const },
+                      { ccy: "SGD", flag: "🇸🇬", name: "Singapore Dollar", val: 0.74, type: "ref" as const },
+                      { ccy: "AED", flag: "🇦🇪", name: "UAE Dirham", val: 3.6725, type: "fx-peg" as const },
+                      { ccy: "SAR", flag: "🇸🇦", name: "Saudi Riyal", val: 3.75, type: "fx-peg" as const },
                     ].map((c) => (
                       <GlassCard key={c.ccy} className="p-4 transition-all duration-300 hover:border-gold/30">
                         <div className="flex items-center justify-between">
@@ -546,12 +546,15 @@ export default function Page() {
                               <div className="text-[10px] text-gray-500">{c.name}</div>
                             </div>
                           </div>
-                          {c.pegged ? <Badge variant="gold">PEGGED</Badge> : c.live ? <Badge variant="emerald">LIVE</Badge> : <Badge variant="gray">REF</Badge>}
+                          {c.type === "par" ? <Badge variant="gold">PAR REF</Badge> : c.type === "live" ? <Badge variant="emerald">LIVE FX</Badge> : c.type === "fx-peg" ? <Badge variant="amber">USD-PEG</Badge> : <Badge variant="gray">REF</Badge>}
                         </div>
                         <div className="mt-3 border-t border-white/5 pt-2">
-                          <div className="text-[10px] uppercase tracking-wider text-gray-500">1 MTQ =</div>
+                          <div className="text-[10px] uppercase tracking-wider text-gray-500">1 MTQ ≈</div>
                           <div className="font-display text-xl font-bold text-gold">
                             {c.val.toLocaleString("en-US", { minimumFractionDigits: c.ccy === "JPY" ? 0 : 4, maximumFractionDigits: c.ccy === "JPY" ? 0 : 4 })} {c.ccy}
+                          </div>
+                          <div className="text-[9px] text-gray-600 mt-0.5">
+                            {c.type === "par" ? "PAR accounting reference" : c.type === "live" ? "Live market FX rate" : c.type === "fx-peg" ? "Currency pegged to USD (not MTQ)" : "Reference value"}
                           </div>
                         </div>
                       </GlassCard>
@@ -561,7 +564,7 @@ export default function Page() {
                   <GlassCard className="mt-3 p-4 border-amber-500/10">
                     <div className="flex items-center gap-2">
                       <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-                      <span className="text-xs text-gray-400">Live FX rates from open.er-api.com (8 currencies live). AED/SAR are USD-pegged at fixed rates. SGD uses reference value (live FX not available from this source). Gold spot: ${N(nav.data.goldUsd).toFixed(2)}/oz (LBMA live).</span>
+                      <span className="text-xs text-gray-400">MTQ is backed by an 11-currency basket + 18% gold + 2% digital liquidity — it is NOT pegged to any single currency. Live FX rates from open.er-api.com (8 currencies). AED/SAR are USD-pegged currencies (they peg TO USD, not MTQ). Gold spot: ${N(nav.data.goldUsd).toFixed(2)}/oz (LBMA live).</span>
                     </div>
                   </GlassCard>
                 </>
