@@ -1,5 +1,5 @@
 // ============================================================================
-// §51 — THREE-BOOK ECONOMIC SEPARATION (§V25.2)
+// §51 — THREE-BOOK ECONOMIC SEPARATION (§V25.3)
 // ============================================================================
 // Implements §51 of the master directive: the MITHQAL institutional
 // architecture must keep three economically distinct books that RECONCILE
@@ -31,11 +31,11 @@
 //
 // All reference data is SIMULATED. No real bank, participant, asset, or
 // contract is bound by this module. finalStatus is unchanged from the
-// §V25.2 controlling specification: APPROVED CANDIDATE FOR CONTROLLED
+// §V25.3 controlling specification: APPROVED CANDIDATE FOR CONTROLLED
 // TESTING — NOT PRODUCTION-AUTHORIZED.
 // ============================================================================
 
-export const MODULE_ID = "v25.2-three-book-separation-1.0";
+export const MODULE_ID = "v25.3-three-book-separation-1.0";
 
 // ---------------------------------------------------------------------------
 // §51 — Book type discriminator
@@ -321,7 +321,7 @@ export function attemptCommingling(
         blocked: true,
         reason:
           "Corporate cash is a Book A operating asset. It cannot serve as " +
-          "Book B bank backing. Per §51 and §1 of the §V25.2 final reserve " +
+          "Book B bank backing. Per §51 and §1 of the §V25.3 final reserve " +
           "spec, the responsible BANK (not MITHQAL) holds the MTQ backing. " +
           "Routing corporate cash into Book B 'applicableBacking' would " +
           "economically commingle MITHQAL's operating accounts with the " +
@@ -357,7 +357,7 @@ export function attemptCommingling(
         reason:
           "Participant MTQ holdings (Book C) are positions held BY " +
           "participants, not assets owned BY MITHQAL. MITHQAL is " +
-          "non-custodial by default (§V25.2). Capitalizing participant " +
+          "non-custodial by default (§V25.3). Capitalizing participant " +
           "balances as Book A 'corporateAssets' would commingle " +
           "third-party monetary positions with the operating company's " +
           "balance sheet.",
@@ -492,7 +492,7 @@ export interface ReconciliationResult {
  *        gap is the position of participants not tracked in this
  *        Book C slice.
  *   2. Book B Σ(applicableBacking) ≥ 1.30 × Book B Σ(MTQ outstanding)
- *      — the 130% strategic backing target from §3 of the §V25.2
+ *      — the 130% strategic backing target from §3 of the §V25.3
  *        controlling reserve specification is met on the bank side.
  *   3. Book A profitLoss == revenue − expenses on every entry
  *      — no reserve gains or off-book income are commingled into the
@@ -943,7 +943,7 @@ export interface ThreeBookReport {
  * Returns the module id, the three-book summaries, the canonical entry
  * schemas, the four §83 anti-commingling tests (all `blocked: true`),
  * the reconciliation result, the honest state, the controlling
- * principle, and the unchanged §V25.2 final status.
+ * principle, and the unchanged §V25.3 final status.
  */
 export function generateThreeBookReport(): ThreeBookReport {
   const ledger = buildReferenceThreeBookLedger();

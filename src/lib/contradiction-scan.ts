@@ -1,5 +1,5 @@
 // ============================================================================
-// §V25.2 — CONTRADICTION SCAN (§77)
+// §V25.3 — CONTRADICTION SCAN (§77)
 // ============================================================================
 // Implements §77 of the master directive: search the entire project for the
 // 17 architectural contradiction patterns listed.
@@ -18,7 +18,7 @@
 // the library modules; it does NOT validate live runtime behavior.
 // ============================================================================
 
-export const MODULE_ID = "v25.2-contradiction-scan-1.0";
+export const MODULE_ID = "v25.3-contradiction-scan-1.0";
 export const SECTION = 77;
 
 // §77 — the 17 contradiction patterns to scan for

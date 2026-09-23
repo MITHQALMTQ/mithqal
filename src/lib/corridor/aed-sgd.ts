@@ -1,7 +1,7 @@
 // ════════════════════════════════════════════════════════════
-// MITHQAL §V25.2 — Cross-Border Settlement Corridor (AED ↔ SGD)
+// MITHQAL §V25.3 — Cross-Border Settlement Corridor (AED ↔ SGD)
 // ════════════════════════════════════════════════════════════
-export const MODULE_ID = "v25.2-corridor-aed-sgd-1.0";
+export const MODULE_ID = "v25.3-corridor-aed-sgd-1.0";
 
 export interface CorridorStep { id: string; stage: string; name: string; description: string; status: string; durationMs: number; }
 export const CORRIDOR_STEPS: CorridorStep[] = [

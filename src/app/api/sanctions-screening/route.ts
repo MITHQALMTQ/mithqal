@@ -1,6 +1,6 @@
 // Sanctions screening API — framework status + simulated screening
 // =====================================================================
-// Implements the MITHQAL §V25.2 sanctions screening API surface per
+// Implements the MITHQAL §V25.3 sanctions screening API surface per
 // bank audit Rec-6. INFRASTRUCTURE ONLY — not live, 0 screenings
 // performed, not production-authorized. Fail-closed per §V24.2.13.
 // =====================================================================
@@ -25,7 +25,7 @@ export async function GET() {
     generatedAt: new Date().toISOString(),
     module: "sanctions-screening",
     auditRec: "Rec-6",
-    blueprintRef: "§V25.2 / §V24.2.13",
+    blueprintRef: "§V25.3 / §V24.2.13",
 
     // Honest state — top-level for visibility
     honestState: honest,

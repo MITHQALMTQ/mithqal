@@ -22,7 +22,7 @@ import { computeLiveNav } from "@/lib/nav-compute";
  *   • Adjusts fiat/bullion/stablecoin ratios based on reserve ratio
  *     and gold volatility (clamped to §23.3 constitutional ranges).
  *   • Adjusts the gold/silver split (φ_t) within the bullion layer
- *     based on gold EWMA volatility (clamped to §25.2 band).
+ *     based on gold EWMA volatility (clamped to §25.3 band).
  *   • Keeps gold/silver PHYSICAL QUANTITIES FIXED at 2,122.86 oz and
  *     36,758 oz (Task 2-a invariant — quantity does NOT derive from price).
  *   • Keeps cash FIXED at $29,250,000 (v19.0.2 §4 over-collateralization

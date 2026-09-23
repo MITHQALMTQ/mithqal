@@ -17,7 +17,7 @@
  *
  *   1. The LAYER RATIOS (fiat/bullion/stablecoin) and the BULLION SPLIT
  *      (gold/silver) are DYNAMIC — they respond to reserve ratio and gold
- *      volatility, clamped to the constitutional ranges in §23.3 and §25.2.
+ *      volatility, clamped to the constitutional ranges in §23.3 and §25.3.
  *
  *   2. The PHYSICAL BULLION QUANTITIES are FIXED at 2,122.86 oz gold and
  *      36,758 oz silver (Task 2-a fix — the institution holds a fixed
@@ -74,13 +74,13 @@ export const LAYER_POLICY_TARGETS = {
 } as const;
 
 /**
- * §25.2 Bullion sub-allocation band for gold (φ_t).
+ * §25.3 Bullion sub-allocation band for gold (φ_t).
  * Silver is the complement (1 − φ_t), bounded to [0.05, 0.40].
  */
 export const BULLION_GOLD_BAND = { min: 0.60, max: 0.95 } as const;
 
 /**
- * §25.2 Policy target for gold's share of the bullion layer (φ_t default).
+ * §25.3 Policy target for gold's share of the bullion layer (φ_t default).
  */
 export const BULLION_GOLD_POLICY_TARGET = 0.80;
 
@@ -125,7 +125,7 @@ export interface ReserveAllocationInput {
   reserveRatio: number;
   /**
    * Current EWMA gold volatility (decimal, e.g. 0.015 for 1.5%). Used to
-   * adjust the gold/silver split within the bullion layer per §25.2 / §17.
+   * adjust the gold/silver split within the bullion layer per §25.3 / §17.
    */
   goldVolatility: number;
 }
@@ -135,7 +135,7 @@ export interface ReserveAllocationResult {
   fiatRatio: number;          // 0.70-0.80
   bullionRatio: number;       // 0.15-0.25
   stablecoinRatio: number;    // 0.02-0.08
-  // ---- Bullion sub-allocation (§25.2: φ_t dynamic in [0.60, 0.95]) ----
+  // ---- Bullion sub-allocation (§25.3: φ_t dynamic in [0.60, 0.95]) ----
   goldShare: number;          // φ_t
   silverShare: number;        // 1 − φ_t
   // ---- TARGET dollar values (derived from ratios × totalReserve) ----
@@ -222,7 +222,7 @@ export function computeDynamicReserveAllocation(
     );
   }
 
-  // ---- Step 3: dynamic gold/silver split within bullion (§25.2: φ_t) ----
+  // ---- Step 3: dynamic gold/silver split within bullion (§25.3: φ_t) ----
   let goldShare: number = BULLION_GOLD_POLICY_TARGET;   // 0.80
   let silverShare: number = 1 - goldShare;              // 0.20
   if (goldVolatility > 0.03) {
@@ -230,22 +230,22 @@ export function computeDynamicReserveAllocation(
     goldShare = 0.75;
     silverShare = 0.25;
     adjustments.push(
-      `§25.2 gold EWMA vol ${(goldVolatility * 100).toFixed(2)}% > 3% → φ_t = 75% (silver 25%)`
+      `§25.3 gold EWMA vol ${(goldVolatility * 100).toFixed(2)}% > 3% → φ_t = 75% (silver 25%)`
     );
   } else if (goldVolatility < 0.005) {
     // Low volatility → increase gold (more bullion conviction).
     goldShare = 0.85;
     silverShare = 0.15;
     adjustments.push(
-      `§25.2 gold EWMA vol ${(goldVolatility * 100).toFixed(2)}% < 0.5% → φ_t = 85% (silver 15%)`
+      `§25.3 gold EWMA vol ${(goldVolatility * 100).toFixed(2)}% < 0.5% → φ_t = 85% (silver 15%)`
     );
   } else {
     adjustments.push(
-      `§25.2 gold EWMA vol ${(goldVolatility * 100).toFixed(2)}% within [0.5, 3]% → φ_t = 80% (silver 20%)`
+      `§25.3 gold EWMA vol ${(goldVolatility * 100).toFixed(2)}% within [0.5, 3]% → φ_t = 80% (silver 20%)`
     );
   }
 
-  // ---- Step 4: clamp to constitutional ranges (§23.3, §25.2) ----
+  // ---- Step 4: clamp to constitutional ranges (§23.3, §25.3) ----
   fiatRatio = clamp(fiatRatio, LAYER_RANGES.fiat.min, LAYER_RANGES.fiat.max);
   bullionRatio = clamp(bullionRatio, LAYER_RANGES.bullion.min, LAYER_RANGES.bullion.max);
   stablecoinRatio = clamp(stablecoinRatio, LAYER_RANGES.stablecoin.min, LAYER_RANGES.stablecoin.max);
@@ -415,7 +415,7 @@ export function deriveCurrentLayerWeights(
 /**
  * Convenience helper: derive the CURRENT gold share of the bullion layer
  * (φ_t_current) from a list of reserveAssets. Used by the rebalance engine
- * to detect §25.2 band breaches.
+ * to detect §25.3 band breaches.
  */
 export function deriveCurrentBullionGoldShare(
   assets: ReserveAsset[]

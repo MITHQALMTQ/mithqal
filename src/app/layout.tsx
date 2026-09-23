@@ -7,8 +7,8 @@ const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"]
 const fraunces = Fraunces({ variable: "--font-fraunces", subsets: ["latin"], weight: ["400", "500", "600", "700"], style: ["normal"] });
 
 export const metadata: Metadata = {
-  title: "MITHQAL — §V25.2 Institutional Command Center",
-  description: "Neutral wholesale settlement infrastructure. §V25.2 Final Reserve Mathematical Specification — 130% backing, 80/18/2 allocation, 11-currency basket, 7/7 finality enforcement.",
+  title: "MITHQAL — §V25.3 Institutional Command Center",
+  description: "Neutral wholesale settlement infrastructure. §V25.3 Final Reserve Mathematical Specification — 130% backing, 80/18/2 allocation, 11-currency basket, 7/7 finality enforcement.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

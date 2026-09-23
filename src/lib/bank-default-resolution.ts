@@ -1,5 +1,5 @@
 // ============================================================================
-// §V25.2 — §48 BANK DEFAULT & RESOLUTION FRAMEWORK
+// §V25.3 — §48 BANK DEFAULT & RESOLUTION FRAMEWORK
 // ============================================================================
 // This module implements §48 of the master directive: the eight-state bank
 // default and resolution lifecycle for participating MTQ-issuing banks.
@@ -55,8 +55,8 @@
 //   not yet live.
 // ============================================================================
 
-export const MODULE_ID = "v25.2-bank-default-resolution-1.0";
-export const SPEC_VERSION = "v25.2 §48 — Bank Default & Resolution Framework";
+export const MODULE_ID = "v25.3-bank-default-resolution-1.0";
+export const SPEC_VERSION = "v25.3 §48 — Bank Default & Resolution Framework";
 export const DIRECTIVE_SECTION = 48;
 
 /**

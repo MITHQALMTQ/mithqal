@@ -1,4 +1,4 @@
-// §V25.2 — Final MTQ Institutional Backing Architecture API
+// §V25.3 — Final MTQ Institutional Backing Architecture API
 // Returns the comprehensive final reserve mathematical specification report.
 import { NextResponse } from "next/server";
 import { generateFinalReserveSpecReport, MODULE_ID } from "@/lib/mtq-final-reserve-spec";

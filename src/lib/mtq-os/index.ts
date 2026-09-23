@@ -1,8 +1,8 @@
 // ════════════════════════════════════════════════════════════
-// MITHQAL §V25.2 — MTQ Operating System
+// MITHQAL §V25.3 — MTQ Operating System
 // 16-step issuance pipeline + bank integration + ISO 20022
 // ════════════════════════════════════════════════════════════
-export const MODULE_ID = "v25.2-mtq-os-1.0";
+export const MODULE_ID = "v25.3-mtq-os-1.0";
 export const HONEST_STATE = { productionAuthorized: false, simulated: true };
 
 export interface IssuanceStep { id: string; name: string; description: string; phase: string; }

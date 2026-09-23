@@ -68,7 +68,7 @@ export default function OSPage() {
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
           <Link href="/" className="flex items-center gap-3">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-gold to-gold-soft"><Landmark className="h-4 w-4 text-black" /></div>
-            <div><div className="font-display text-sm font-bold text-white">MITHQAL OS</div><div className="text-[9px] text-gray-500">§V25.2 Operating System</div></div>
+            <div><div className="font-display text-sm font-bold text-white">MITHQAL OS</div><div className="text-[9px] text-gray-500">§V25.3 Operating System</div></div>
           </Link>
           <div className="flex items-center gap-2"><Badge variant="amber">SIMULATED</Badge><Link href="/"><Badge variant="gray">← Dashboard</Badge></Link></div>
         </div>
@@ -79,7 +79,7 @@ export default function OSPage() {
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
             <h1 className="font-display text-3xl font-bold text-white">MTQ Operating System</h1>
             <p className="mt-2 text-sm text-gray-500">Complete institutional operating layer — bank integration, issuance pipeline, reserve simulation, cross-border corridor, and tokenization</p>
-            <div className="mt-3 flex flex-wrap gap-2"><Badge variant="gold">§V25.2</Badge><Badge variant="emerald">7/7 Finality</Badge><Badge variant="amber">130% Target</Badge><Badge variant="red">0/13 Gates</Badge></div>
+            <div className="mt-3 flex flex-wrap gap-2"><Badge variant="gold">§V25.3</Badge><Badge variant="emerald">7/7 Finality</Badge><Badge variant="amber">130% Target</Badge><Badge variant="red">0/13 Gates</Badge></div>
           </motion.div>
 
           {/* ISSUANCE PIPELINE */}
@@ -170,7 +170,7 @@ export default function OSPage() {
         </div>
       </main>
 
-      <footer className="mt-auto border-t border-white/5 bg-[#0a0a0b]"><div className="mx-auto max-w-7xl px-4 py-4 text-center"><p className="text-[10px] text-gray-500">MITHQAL §V25.2 Operating System · SIMULATED · NOT PRODUCTION-AUTHORIZED · 7/7 finality · 0/13 gates</p></div></footer>
+      <footer className="mt-auto border-t border-white/5 bg-[#0a0a0b]"><div className="mx-auto max-w-7xl px-4 py-4 text-center"><p className="text-[10px] text-gray-500">MITHQAL §V25.3 Operating System · SIMULATED · NOT PRODUCTION-AUTHORIZED · 7/7 finality · 0/13 gates</p></div></footer>
     </div>
   );
 }

@@ -1,5 +1,5 @@
 // ============================================================================
-// §V25.2 — LICENSING / ENTITY MATRIX (§50 of the master COO/CTO directive)
+// §V25.3 — LICENSING / ENTITY MATRIX (§50 of the master COO/CTO directive)
 // ============================================================================
 // This module implements the Licensing / Entity Matrix required by §50 of the
 // master directive. For every (financial activity × jurisdiction) pair it maps:
@@ -35,16 +35,16 @@
 // evidence = "NONE".
 //
 // Where this module conflicts with the older `LicensingRequirement` shape in
-// `src/lib/v25-1-final-amendment.ts`, this module is the controlling §V25.2
+// `src/lib/v25-1-final-amendment.ts`, this module is the controlling §V25.3
 // specification per the §49 blueprint conflict reconciliation directive: the
 // v25.1 status set ("NOT_ANALYZED" / "ANALYZED" / "LICENSE_OBTAINED" / ...) is
-// superseded here by the v25.2 status set
+// superseded here by the v25.3 status set
 // ("REQUIRED_NOT_OBTAINED" / "PENDING_APPLICATION" / "OBTAINED" / "EXEMPT" /
 // "PROHIBITED") and the matrix is expanded from 6 activities × 1 jurisdiction
 // to 9 activities × 8 jurisdictions.
 // ============================================================================
 
-export const MODULE_ID = "v25.2-licensing-entity-matrix-1.0";
+export const MODULE_ID = "v25.3-licensing-entity-matrix-1.0";
 
 // ----------------------------------------------------------------------------
 // §50.1 — Financial activities (9)

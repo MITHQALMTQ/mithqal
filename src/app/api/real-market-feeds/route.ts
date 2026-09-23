@@ -26,7 +26,7 @@ import {
  *       https://query1.finance.yahoo.com/v8/finance/chart/%5EBAA
  *   - 10-year Treasury yield (^TNX) — live from Yahoo (secondary indicator)
  *
- * Honest-state constraint (blueprint §V25.2):
+ * Honest-state constraint (blueprint §V25.3):
  *   productionAuthorized = false
  *   institutionalGatesPassed = 0 / 13
  *   This endpoint does NOT claim real bank integrations or real legal
@@ -93,7 +93,7 @@ export async function GET() {
         bis: BIS_TRIENNIAL_2022_REFERENCE,
       },
       disclaimer:
-        "Real market data from free public APIs. productionAuthorized=false per blueprint §V25.2. " +
+        "Real market data from free public APIs. productionAuthorized=false per blueprint §V25.3. " +
         "Reference constants are the latest published values from each authority — " +
         "used only when the live API is unreachable or doesn't exist (SWIFT/BIS).",
       documentation: {

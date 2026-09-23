@@ -57,7 +57,7 @@
 //   7. Gold / Silver — already live via gold-api.com (multi-oracle.ts).
 //
 // ─── HONEST-STATE CONSTRAINT ───────────────────────────────────────────────
-//   The blueprint (§V25.2) explicitly states:
+//   The blueprint (§V25.3) explicitly states:
 //     productionAuthorized = false
 //     institutionalGatesPassed = 0 / 20
 //   This module connects to FREE PUBLIC data APIs for market data ONLY.
@@ -205,7 +205,7 @@ export interface RealMarketData {
  * Values reflect allocated FX reserves share per currency.
  *
  * Note: AED and SAR are NOT separately reported by the IMF — they fall
- * within "Other currencies". The blueprint §V25.2 says: use their USD-peg
+ * within "Other currencies". The blueprint §V25.3 says: use their USD-peg
  * factor 1.0 — i.e., treat them as USD-pegged. The reference values below
  * are nominal small shares that represent their implicit presence in the
  * "Other" residual (~3-4% combined). They are clearly labelled and the
@@ -288,7 +288,7 @@ export const CREDIT_SPREAD_LATEST_PUBLISHED_REFERENCE = 1.02; // percentage poin
 export const VIX_LATEST_PUBLISHED_REFERENCE = 16.5;
 
 // ---------------------------------------------------------------------------
-// The 11 eligible basket currencies per the §V25.2 specification.
+// The 11 eligible basket currencies per the §V25.3 specification.
 // Used to filter and map incoming COFER / SWIFT / BIS data.
 // ---------------------------------------------------------------------------
 export const BASKET_CURRENCIES = [

@@ -1,7 +1,7 @@
 "use client";
 
 /* ════════════════════════════════════════════════════════════
- * MITHQAL §V25.2 — Institutional Command Center
+ * MITHQAL §V25.3 — Institutional Command Center
  * Rebuilt with institutional engagement links
  * ════════════════════════════════════════════════════════════ */
 
@@ -433,7 +433,7 @@ export default function Page() {
             </div>
             <div>
               <div className="font-display text-base font-bold tracking-tight text-white">MITHQAL</div>
-              <div className="text-[10px] font-medium text-gold">§V25.2 Institutional Command Center</div>
+              <div className="text-[10px] font-medium text-gold">§V25.3 Institutional Command Center</div>
             </div>
           </div>
           {/* Mobile-friendly nav */}
@@ -572,7 +572,7 @@ export default function Page() {
             </Section>
 
             {/* ═══ IDENTITY: WHAT MITHQAL IS / IS NOT ═══ */}
-            <Section id="identity" icon={Landmark} title="What MITHQAL Is — & Is Not" subtitle="§3-§4 Constitutional Identity · 10 functions MITHQAL performs · 18 things MITHQAL is NOT">
+            <Section id="identity" icon={Landmark} title="What MITHQAL Is — & Is Not" subtitle="§3-§4 Constitutional Identity · 10 functions MITHQAL performs · 26 things MITHQAL is NOT">
               <div className="grid gap-3 md:grid-cols-2">
                 <GlassCard glow className="p-5">
                   <div className="mb-3 flex items-center gap-2">
@@ -594,7 +594,7 @@ export default function Page() {
                     <span className="text-[10px] font-semibold uppercase tracking-wider text-red-400">What MITHQAL IS NOT (§4)</span>
                   </div>
                   <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-[9px] text-gray-500">
-                    {["Cryptocurrency", "Retail payment app", "Commercial bank", "Central bank", "Deposit-taking institution", "Investment fund", "Lending institution", "Speculative vehicle", "A DAO", "Permissionless blockchain", "Consumer remittance", "Retail wallet system", "Stablecoin issuer", "National currency replacement", "A USD peg", "A BRICS currency", "Anti-dollar currency", "SWIFT replacement", "Core banking replacement"].map((item, i) => (
+                    {["Cryptocurrency", "Retail application", "Bank", "Stablecoin", "USD-pegged", "Sovereign currency", "CBDC", "Central bank", "Exchange", "Brokerage", "Market maker", "Lender", "Investment manager", "Wealth manager", "Trade-finance institution", "DeFi protocol", "Speculative vehicle", "Custodian (by default)", "SWIFT replacement", "Bank-core replacement", "Sovereign reserve holder", "Financial guarantor", "Government authority", "Sanctions-evasion infrastructure", "Anonymity network", "Token-issuance-for-profit"].map((item, i) => (
                       <div key={i} className="flex items-start gap-1">
                         <span className="text-red-400/60">×</span>
                         <span>{item}</span>
@@ -644,7 +644,7 @@ export default function Page() {
             </Section>
 
             {/* ═══ RESERVE ARCHITECTURE ═══ */}
-            <Section id="reserve" icon={Shield} title="Reserve Architecture — §V25.2" subtitle="130% institutional backing target · 80% fiat / 18% gold / 2% digital">
+            <Section id="reserve" icon={Shield} title="Reserve Architecture — §V25.3" subtitle="130% institutional backing target · 80% fiat / 18% gold / 2% digital">
               {!reserve.data ? (reserve.err ? <ErrorBox label="reserve architecture" msg={reserve.err} /> : <LoadingBox label="reserve architecture" />) : (
                 <>
                   <div className="grid gap-3 md:grid-cols-3">
@@ -882,7 +882,7 @@ export default function Page() {
             </Section>
 
             {/* ═══ DYNAMIC RESERVE SIMULATOR ═══ */}
-            <Section id="simulator" icon={Zap} title="Dynamic Reserve Weighting Simulator" subtitle="Interactive stress-testing · Adjust parameters and simulate in real-time · Monte Carlo (1000 iterations) · §V25.2 formulas">
+            <Section id="simulator" icon={Zap} title="Dynamic Reserve Weighting Simulator" subtitle="Interactive stress-testing · Adjust parameters and simulate in real-time · Monte Carlo (1000 iterations) · §V25.3 formulas">
               <DynamicReserveSimulator />
             </Section>
 
@@ -1153,7 +1153,7 @@ export default function Page() {
                 </div>
                 <span className="font-display text-sm font-bold text-white">MITHQAL</span>
               </div>
-              <p className="mt-2 text-[10px] leading-relaxed text-gray-600">Constitutional Settlement Institution. §V25.2 Final Reserve Mathematical Specification. 130% institutional backing. 80% fiat / 18% gold / 2% digital. 11-currency basket. 20% hard cap. 7/7 finality enforcement.</p>
+              <p className="mt-2 text-[10px] leading-relaxed text-gray-600">Constitutional Settlement Institution. §V25.3 Final Reserve Mathematical Specification. 130% institutional backing. 80% fiat / 18% gold / 2% digital. 11-currency basket. 20% hard cap. 7/7 finality enforcement.</p>
             </div>
             {/* Links */}
             <div>

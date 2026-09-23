@@ -2574,10 +2574,10 @@ export interface RebalanceContext {
   /** §29.1 Constitutional per-layer ranges, e.g. {"fiat":{min:0.70,max:0.80},...}. */
   layerRanges?: Map<string, { min: number; max: number }>;
 
-  // ---- NEW — for bullion_band (§29.1, §25.2) ----
-  /** §25.2 Gold's share of the bullion layer (φ_t), expected in [0.60, 0.95]. */
+  // ---- NEW — for bullion_band (§29.1, §25.3) ----
+  /** §25.3 Gold's share of the bullion layer (φ_t), expected in [0.60, 0.95]. */
   bullionGoldShare?: number;
-  /** §25.2 Constitutional band for gold's share of bullion, default {min:0.60,max:0.95}. */
+  /** §25.3 Constitutional band for gold's share of bullion, default {min:0.60,max:0.95}. */
   bullionGoldRange?: { min: number; max: number };
 
   // ---- NEW — for stablecoin_eligibility (§27) & currency_eligibility (§12) ----
@@ -2666,7 +2666,7 @@ export function detectRebalanceTriggers(
   }
 
   // ============================================================
-  // (3) §29.1 / §25.2 bullion_band — gold's share of the bullion
+  // (3) §29.1 / §25.3 bullion_band — gold's share of the bullion
   //     layer (φ_t) must remain within [0.60, 0.95]. Approaching
   //     the band edge (within 2 pp) is a "medium" warning; an
   //     actual breach is "high".
@@ -3084,7 +3084,7 @@ function pairLayerDeltas(
 }
 
 /**
- * §24 / §25.2 Sub-asset splitter for a single layer-side trade.
+ * §24 / §25.3 Sub-asset splitter for a single layer-side trade.
  *
  *   • Bullion layer  → split into gold (φ_t) + silver (1 − φ_t).
  *   • Fiat layer     → split into cash (2/3 §24) + sovereign (1/3 §24).
@@ -3236,7 +3236,7 @@ export function generateCrossAssetRebalancePlan(
         action: goldOverweight ? "sell" : "buy",
         amount: swapUsd,
         executionMethod: "TWAP",
-        reason: `§25.2 intra-bullion swap ${pairId}: ${goldOverweight ? "sell gold / buy silver" : "sell silver / buy gold"} (φ_t=${(t.currentValue * 100).toFixed(2)}% → ${(t.targetValue * 100).toFixed(2)}%)`,
+        reason: `§25.3 intra-bullion swap ${pairId}: ${goldOverweight ? "sell gold / buy silver" : "sell silver / buy gold"} (φ_t=${(t.currentValue * 100).toFixed(2)}% → ${(t.targetValue * 100).toFixed(2)}%)`,
         pairId,
       },
       {
@@ -3245,7 +3245,7 @@ export function generateCrossAssetRebalancePlan(
         action: goldOverweight ? "buy" : "sell",
         amount: swapUsd,
         executionMethod: "TWAP",
-        reason: `§25.2 intra-bullion swap ${pairId}: ${goldOverweight ? "buy silver (sell gold proceeds)" : "sell silver (buy gold proceeds)"}`,
+        reason: `§25.3 intra-bullion swap ${pairId}: ${goldOverweight ? "buy silver (sell gold proceeds)" : "sell silver (buy gold proceeds)"}`,
         pairId,
       }
     );

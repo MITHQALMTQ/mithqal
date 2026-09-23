@@ -1,7 +1,7 @@
 "use client";
 
 /* ============================================================
- * MITHQAL §V25.2 — Institutional Pilot Readiness
+ * MITHQAL §V25.3 — Institutional Pilot Readiness
  * ------------------------------------------------------------
  * Static, evidence-driven readiness surface for institutional
  * counterparts, regulators, and reviewers. NO fake percentages,
@@ -223,7 +223,7 @@ function PageHeader() {
         >
           <div className="mb-4 flex items-center gap-3">
             <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-[color:var(--gold)]">
-              MITHQAL §V25.2 · Pilot Readiness
+              MITHQAL §V25.3 · Pilot Readiness
             </span>
             <span className="h-px w-12 bg-[color:var(--gold)]/40" />
           </div>

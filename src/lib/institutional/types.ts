@@ -1,5 +1,5 @@
 // ════════════════════════════════════════════════════════════
-// MITHQAL §V25.2 — Institutional Engagement Data Models
+// MITHQAL §V25.3 — Institutional Engagement Data Models
 // Centralized TypeScript types + config for all institutional UI
 // ════════════════════════════════════════════════════════════
 

@@ -1,11 +1,11 @@
 // ════════════════════════════════════════════════════════════
-// MITHQAL §V25.2 — Reserve Weighting Simulator
-// Interactive stress-testing · Monte Carlo (250K paths) · §V25.2 formulas
+// MITHQAL §V25.3 — Reserve Weighting Simulator
+// Interactive stress-testing · Monte Carlo (250K paths) · §V25.3 formulas
 // ════════════════════════════════════════════════════════════
-export const MODULE_ID = "v25.2-reserve-simulator-1.0";
+export const MODULE_ID = "v25.3-reserve-simulator-1.0";
 
-// §V25.2 — Formal stress testing uses 250,000 paths with seed=42
-// for stable tail estimates (per blueprint §V25.2 Monte Carlo spec).
+// §V25.3 — Formal stress testing uses 250,000 paths with seed=42
+// for stable tail estimates (per blueprint §V25.3 Monte Carlo spec).
 // The interactive simulator runs a lighter 10K-path preview for responsiveness.
 export const MC_FORMAL_PATHS = 250_000;
 export const MC_INTERACTIVE_PATHS = 10_000;

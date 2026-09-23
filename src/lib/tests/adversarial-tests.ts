@@ -683,7 +683,7 @@ attack("50% redemption in 1 hour (27M MTQ)", "27M MTQ redeemed simultaneously. D
   // Pre-redemption: R = $56M (baseline), S = 54M, NAV = $1.037
   // Redeem 27M MTQ: redeemer claims 27M × NAV_m = $28M
   // §34 hierarchy: drain stablecoin ($2.8M), cash ($28M), sov ($14M)... total = $44.8M available before bullion
-  // $28M claim: stablecoin ($2.8M) + cash ($25.2M) = $28M. No sov/silver/gold touched.
+  // $28M claim: stablecoin ($2.8M) + cash ($25.3M) = $28M. No sov/silver/gold touched.
   const claim = 54_000_000 * baseline.nav.market;
   const plan = computeRedemptionSequence(claim, baselineReserve);
   // Post-redemption: R halves, S halves → NAV unchanged

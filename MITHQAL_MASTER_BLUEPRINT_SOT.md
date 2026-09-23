@@ -1,7 +1,7 @@
 # MITHQAL — MASTER BLUEPRINT
 ## THE SINGLE AUTHORITATIVE SOURCE OF TRUTH
 ## THE SINGLE AUTHORITATIVE SOURCE OF TRUTH — This IS the architecture.
-## Version: v25.2 (FINAL — CONTROLLING)
+## Version: v25.3 (FINAL — CONTROLLING)
 ## Date: 2026-08-22
 ## Status: APPROVED CANDIDATE FOR CONTROLLED TESTING — NOT PRODUCTION-AUTHORIZED
 
@@ -11,47 +11,47 @@
 
 ## A.1 Forensic Review Summary
 
-A complete forensic review was performed comparing the original MITHQAL blueprint (v24.2.1, ~76,000 lines) against all modifications, amendments, and decisions from the project chat history through v25.2.
+A complete forensic review was performed comparing the original MITHQAL blueprint (v24.2.1, ~76,000 lines) against all modifications, amendments, and decisions from the project chat history through v25.3.
 
 ## A.2 Reconciliation Matrix
 
 | # | Item | Original State | Later Modification | Current Approved State | Status |
 |---|---|---|---|---|---|
-| 1 | Reserve Ratio target | RR = 120% | §V25.2: 130% strategic target | RR = 130% | REPLACED |
-| 2 | Reserve sleeve composition | 15% gold + 5% tokenized gold + 2.5% digital | §V25.2: 80% fiat / 18% gold / 2% digital | 80/18/2 | REPLACED |
-| 3 | Digital liquidity target | USDC 2% + USDP 0.5% + EURC 0.5% + BUIDL 0.5% = 3.5% | §V25.2: Digital normal = 2% | 2% (individual weights are optimizer outputs) | REPLACED |
-| 4 | Per-currency cap | 60% constitutional ceiling | §V25.2: Preferred 15%, Hard 20% | 20% operative (60% retained as sanity only) | MODIFIED |
-| 5 | Currency weight formula | 0.35·COFER + 0.25·FXTurnover + 0.20·Trade + 0.20·InstQuality | §V25.2: 0.50·COFER + 0.40·SWIFT + 0.10·BIS | New formula | REPLACED |
-| 6 | Number of currencies | 8 currencies | §V25.2: 11 reserve + 10 settlement-only | 11 reserve currencies | EXPANDED |
-| 7 | Gold allocation | 15% physical + 5% tokenized (PAXG) | §V25.2: 18% gold (silver 0%, tokenized conditional) | 18% gold, silver 0% | MODIFIED |
-| 8 | Silver | Mandatory silver allocation | §V25.2: SDC ≤ 0 → 0% | 0% (conditional) | REPLACED |
-| 9 | USDT | Included in digital reserve | §V25.2: Excluded from core, external conversion only | Excluded from core | REPLACED |
-| 10 | Emergency resilience | Not separate | §V25.2: ≤20% separate, non-double-counted | ≤20% separate | NEW |
-| 11 | Effective USD exposure | Direct USD only | §V25.2: direct + AED/SAR peg + synthetic + digital, ceiling 35% | 35% ceiling | NEW |
-| 12 | Currency lifecycle | Not defined | §V25.2: WATCH/REDUCE/SUSPEND/SUBSTITUTE/REINSTATE | 5-state lifecycle | NEW |
-| 13 | Minimum floor | Not defined | §V25.2: 0.5% with Q1-Q4 removal ladder | 0.5% floor | NEW |
-| 14 | Normalization | Not specified | §V25.2: Proportional (NOT softmax) | Proportional | NEW |
-| 15 | EWMA volatility | Not defined | §V25.2: λ=0.94, attenuation 0.5-1.0 | EWMA with attenuation | NEW |
-| 16 | Finality enforcement | 3/7 layers | §V25.2: 7/7 enforced at code level | 7/7 enforced | MODIFIED |
-| 17 | Protected Backing Cell | Not defined | §V25.2: 17-field schema, anti-double-count | 17-field PBC | NEW |
-| 18 | Bank Default & Resolution | Not defined | §V25.2: 8-state lifecycle, 11 contractual questions | 8-state lifecycle | NEW |
-| 19 | Legal Liability | Not defined | §V25.2: 13 dimensions, 9 jurisdictions (ALL PENDING) | 0 validated | NEW |
-| 20 | Licensing Matrix | Not defined | §V25.2: 9×8=72 entries, ALL REQUIRED_NOT_OBTAINED | 0 licenses | NEW |
-| 21 | Three-Book Separation | Not defined | §V25.2: Book A/B/C, 4 anti-commingling tests | Design only | NEW |
-| 22 | Systemic Exposure | Not defined | §V25.2: 13 dimensions, concentration limits | Design only | NEW |
-| 23 | Contradiction Scan | Not defined | §V25.2: 17 patterns, 0 unresolved | Target met | NEW |
-| 24 | Implementation Status | Not defined | §V25.2: 19/23 acceptance, 0/13 gates | Honest reporting | NEW |
-| 25 | Institutional Engagement | Not defined | §V25.2: 10 institutions, 6 types, 33-item checklist | Full engagement layer | NEW |
-| 26 | MTQ Operating System | Not defined | §V25.2: 16-step issuance, MBG, ISO 20022 | Full OS | NEW |
-| 27 | Reserve Simulator | Not defined | §V25.2: Monte Carlo, 5 shocks, interactive | Full simulator | NEW |
-| 28 | Cross-Border Corridor | Not defined | §V25.2: AED↔SGD, 8 rails, 12 steps | Full corridor | NEW |
-| 29 | Tokenization | Not defined | §V25.2: 4 RWA + 3 digitized coins | Full tokenization | NEW |
+| 1 | Reserve Ratio target | RR = 120% | §V25.3: 130% strategic target | RR = 130% | REPLACED |
+| 2 | Reserve sleeve composition | 15% gold + 5% tokenized gold + 2.5% digital | §V25.3: 80% fiat / 18% gold / 2% digital | 80/18/2 | REPLACED |
+| 3 | Digital liquidity target | USDC 2% + USDP 0.5% + EURC 0.5% + BUIDL 0.5% = 3.5% | §V25.3: Digital normal = 2% | 2% (individual weights are optimizer outputs) | REPLACED |
+| 4 | Per-currency cap | 60% constitutional ceiling | §V25.3: Preferred 15%, Hard 20% | 20% operative (60% retained as sanity only) | MODIFIED |
+| 5 | Currency weight formula | 0.35·COFER + 0.25·FXTurnover + 0.20·Trade + 0.20·InstQuality | §V25.3: 0.50·COFER + 0.40·SWIFT + 0.10·BIS | New formula | REPLACED |
+| 6 | Number of currencies | 8 currencies | §V25.3: 11 reserve + 10 settlement-only | 11 reserve currencies | EXPANDED |
+| 7 | Gold allocation | 15% physical + 5% tokenized (PAXG) | §V25.3: 18% gold (silver 0%, tokenized conditional) | 18% gold, silver 0% | MODIFIED |
+| 8 | Silver | Mandatory silver allocation | §V25.3: SDC ≤ 0 → 0% | 0% (conditional) | REPLACED |
+| 9 | USDT | Included in digital reserve | §V25.3: Excluded from core, external conversion only | Excluded from core | REPLACED |
+| 10 | Emergency resilience | Not separate | §V25.3: ≤20% separate, non-double-counted | ≤20% separate | NEW |
+| 11 | Effective USD exposure | Direct USD only | §V25.3: direct + AED/SAR peg + synthetic + digital, ceiling 35% | 35% ceiling | NEW |
+| 12 | Currency lifecycle | Not defined | §V25.3: WATCH/REDUCE/SUSPEND/SUBSTITUTE/REINSTATE | 5-state lifecycle | NEW |
+| 13 | Minimum floor | Not defined | §V25.3: 0.5% with Q1-Q4 removal ladder | 0.5% floor | NEW |
+| 14 | Normalization | Not specified | §V25.3: Proportional (NOT softmax) | Proportional | NEW |
+| 15 | EWMA volatility | Not defined | §V25.3: λ=0.94, attenuation 0.5-1.0 | EWMA with attenuation | NEW |
+| 16 | Finality enforcement | 3/7 layers | §V25.3: 7/7 enforced at code level | 7/7 enforced | MODIFIED |
+| 17 | Protected Backing Cell | Not defined | §V25.3: 17-field schema, anti-double-count | 17-field PBC | NEW |
+| 18 | Bank Default & Resolution | Not defined | §V25.3: 8-state lifecycle, 11 contractual questions | 8-state lifecycle | NEW |
+| 19 | Legal Liability | Not defined | §V25.3: 13 dimensions, 9 jurisdictions (ALL PENDING) | 0 validated | NEW |
+| 20 | Licensing Matrix | Not defined | §V25.3: 9×8=72 entries, ALL REQUIRED_NOT_OBTAINED | 0 licenses | NEW |
+| 21 | Three-Book Separation | Not defined | §V25.3: Book A/B/C, 4 anti-commingling tests | Design only | NEW |
+| 22 | Systemic Exposure | Not defined | §V25.3: 13 dimensions, concentration limits | Design only | NEW |
+| 23 | Contradiction Scan | Not defined | §V25.3: 17 patterns, 0 unresolved | Target met | NEW |
+| 24 | Implementation Status | Not defined | §V25.3: 19/23 acceptance, 0/13 gates | Honest reporting | NEW |
+| 25 | Institutional Engagement | Not defined | §V25.3: 10 institutions, 6 types, 33-item checklist | Full engagement layer | NEW |
+| 26 | MTQ Operating System | Not defined | §V25.3: 16-step issuance, MBG, ISO 20022 | Full OS | NEW |
+| 27 | Reserve Simulator | Not defined | §V25.3: Monte Carlo, 5 shocks, interactive | Full simulator | NEW |
+| 28 | Cross-Border Corridor | Not defined | §V25.3: AED↔SGD, 8 rails, 12 steps | Full corridor | NEW |
+| 29 | Tokenization | Not defined | §V25.3: 4 RWA + 3 digitized coins | Full tokenization | NEW |
 | 30 | Organizational structure | 2 entities | §V25.0.D: 5 entities (Foundation, Holding, Operating, Technology, Founder) | 5 entities | EXPANDED |
-| 31 | Version labels | v24.2.1 | §V25.2: all labels updated to v25.2 | v25.2 | MODIFIED |
-| 32 | L_MAX (concentration cap) | 0.60 | §V25.2: 0.20 | 0.20 | MODIFIED |
-| 33 | CALM rrTarget | 1.20 | §V25.2: 1.30 | 1.30 | MODIFIED |
-| 34 | policyTarget | 1.02 | §V25.2: 1.30 | 1.30 | MODIFIED |
-| 35 | strategicRR | 120 | §V25.2: 130 | 130 | MODIFIED |
+| 31 | Version labels | v24.2.1 | §V25.3: all labels updated to v25.3 | v25.3 | MODIFIED |
+| 32 | L_MAX (concentration cap) | 0.60 | §V25.3: 0.20 | 0.20 | MODIFIED |
+| 33 | CALM rrTarget | 1.20 | §V25.3: 1.30 | 1.30 | MODIFIED |
+| 34 | policyTarget | 1.02 | §V25.3: 1.30 | 1.30 | MODIFIED |
+| 35 | strategicRR | 120 | §V25.3: 130 | 130 | MODIFIED |
 
 ## A.3 Unchanged Components (from blueprint)
 
@@ -79,7 +79,7 @@ The following core architecture from the blueprint remains unchanged:
 | 7 | USDT in core vs excluded | USDT excluded from core; external conversion only |
 | 8 | Silver mandatory vs 0% | SDC ≤ 0 → 0% (conditional) |
 | 9 | 3/7 finality vs 7/7 | 7/7 enforced at code level |
-| 10 | v24.2.1 labels vs v25.2 | All labels updated to v25.2 |
+| 10 | v24.2.1 labels vs v25.3 | All labels updated to v25.3 |
 
 All contradictions: **RESOLVED**. Zero unresolved.
 
@@ -97,13 +97,13 @@ MITHQAL is a **Constitutional Monetary and Institutional Settlement Infrastructu
 |---|---|---|
 | Identity | Constitutional settlement institution (not crypto/bank/stablecoin) | APPROVED |
 | Settlement model | Bank-mediated (not direct retail) | APPROVED |
-| Reserve target | 130% strategic (not 120%) | APPROVED (§V25.2) |
-| Reserve composition | 80% fiat / 18% gold / 2% digital | APPROVED (§V25.2) |
-| Currency basket | 11 reserve + 10 settlement-only | APPROVED (§V25.2) |
-| Concentration cap | 20% hard (not 60%) | APPROVED (§V25.2) |
-| Gold | 18% target, silver 0% | APPROVED (§V25.2) |
-| Digital | 2% normal, USDT excluded from core | APPROVED (§V25.2) |
-| Finality | 7/7 layers enforced | APPROVED (§V25.2) |
+| Reserve target | 130% strategic (not 120%) | APPROVED (§V25.3) |
+| Reserve composition | 80% fiat / 18% gold / 2% digital | APPROVED (§V25.3) |
+| Currency basket | 11 reserve + 10 settlement-only | APPROVED (§V25.3) |
+| Concentration cap | 20% hard (not 60%) | APPROVED (§V25.3) |
+| Gold | 18% target, silver 0% | APPROVED (§V25.3) |
+| Digital | 2% normal, USDT excluded from core | APPROVED (§V25.3) |
+| Finality | 7/7 layers enforced | APPROVED (§V25.3) |
 | Production | NOT AUTHORIZED (0/13 gates) | HONEST |
 
 ## B.3 Technology Stack
@@ -125,21 +125,21 @@ MITHQAL is a **Constitutional Monetary and Institutional Settlement Infrastructu
 
 | Section | Parameter | Current Value | Reason | Source | Final Status |
 |---|---|---|---|---|---|
-| RR target | 120% | 130% | §V25.2 directive | COO decision | IMPLEMENTED |
-| Sleeve composition | 15%+5%+2.5% | 80/18/2 | §V25.2 directive | COO decision | IMPLEMENTED |
-| Digital target | 3.5% | 2% | §V25.2 directive | COO decision | IMPLEMENTED |
-| Currency cap | 60% | 20% | §V25.2 directive | COO decision | IMPLEMENTED |
-| Currency formula | 0.35/0.25/0.20/0.20 | 0.50/0.40/0.10 | §V25.2 directive | COO decision | IMPLEMENTED |
-| Currency count | 8 | 11 | §V25.2 directive | COO decision | IMPLEMENTED |
-| Gold allocation | 15%+5% PAXG | 18% (conditional PAXG) | §V25.2 directive | COO decision | IMPLEMENTED |
-| Silver | Mandatory | 0% (SDC) | §V25.2 directive | SDC validation | IMPLEMENTED |
-| USDT | In core | Excluded | §V25.2 directive | BIS 2026 analysis | IMPLEMENTED |
-| Finality | 3/7 | 7/7 | §V25.2 directive | Code hardening | IMPLEMENTED |
-| Version labels | v24.2.1 | v25.2 | §V25.2 directive | Reconciliation | IMPLEMENTED |
-| L_MAX | 0.60 | 0.20 | §V25.2 directive | Concentration policy | IMPLEMENTED |
-| CALM rrTarget | 1.20 | 1.30 | §V25.2 directive | Strategic target | IMPLEMENTED |
-| policyTarget | 1.02 | 1.30 | §V25.2 directive | Strategic target | IMPLEMENTED |
-| strategicRR | 120 | 130 | §V25.2 directive | Strategic target | IMPLEMENTED |
+| RR target | 120% | 130% | §V25.3 directive | COO decision | IMPLEMENTED |
+| Sleeve composition | 15%+5%+2.5% | 80/18/2 | §V25.3 directive | COO decision | IMPLEMENTED |
+| Digital target | 3.5% | 2% | §V25.3 directive | COO decision | IMPLEMENTED |
+| Currency cap | 60% | 20% | §V25.3 directive | COO decision | IMPLEMENTED |
+| Currency formula | 0.35/0.25/0.20/0.20 | 0.50/0.40/0.10 | §V25.3 directive | COO decision | IMPLEMENTED |
+| Currency count | 8 | 11 | §V25.3 directive | COO decision | IMPLEMENTED |
+| Gold allocation | 15%+5% PAXG | 18% (conditional PAXG) | §V25.3 directive | COO decision | IMPLEMENTED |
+| Silver | Mandatory | 0% (SDC) | §V25.3 directive | SDC validation | IMPLEMENTED |
+| USDT | In core | Excluded | §V25.3 directive | BIS 2026 analysis | IMPLEMENTED |
+| Finality | 3/7 | 7/7 | §V25.3 directive | Code hardening | IMPLEMENTED |
+| Version labels | v24.2.1 | v25.3 | §V25.3 directive | Reconciliation | IMPLEMENTED |
+| L_MAX | 0.60 | 0.20 | §V25.3 directive | Concentration policy | IMPLEMENTED |
+| CALM rrTarget | 1.20 | 1.30 | §V25.3 directive | Strategic target | IMPLEMENTED |
+| policyTarget | 1.02 | 1.30 | §V25.3 directive | Strategic target | IMPLEMENTED |
+| strategicRR | 120 | 130 | §V25.3 directive | Strategic target | IMPLEMENTED |
 | PBC | N/A | 17-field schema | §47 | P1 framework | IMPLEMENTED |
 | Bank Default | N/A | 8-state lifecycle | §48 | P1 framework | IMPLEMENTED |
 | Legal Liability | N/A | 13 dimensions | §49 | P1 framework | IMPLEMENTED |
@@ -170,7 +170,7 @@ MITHQAL is a **Constitutional Monetary and Institutional Settlement Infrastructu
 | G — Regulatory Consistency | Are regulatory assumptions separated from architectural capabilities? | ✅ PASS |
 | H — Technical Consistency | Do services, data flows, APIs, events, ledger, security agree? | ✅ PASS |
 | I — Operational Consistency | Can workflows operate as described? | ✅ PASS |
-| J — Version Consistency | Is there one clearly identified authoritative version? | ✅ PASS (v25.2) |
+| J — Version Consistency | Is there one clearly identified authoritative version? | ✅ PASS (v25.3) |
 | K — Change Traceability | Can every modification be traced? | ✅ PASS (35 items in register) |
 | L — Production Readiness | Are implementation and testing requirements complete? | ✅ PASS (19/23 acceptance, 0/13 gates) |
 
@@ -262,8 +262,8 @@ MITHQAL is a **Constitutional Monetary and Institutional Settlement Infrastructu
 - [x] Vercel deployment (mithqal.vercel.app)
 - [x] Turso database (44 tables)
 - [x] Branch protection (enforce_admins=true)
-- [x] Tag v25.2-final (FROZEN)
-- [x] Backup branch (v25.2-hardened-backup)
+- [x] Tag v25.3-final (FROZEN)
+- [x] Backup branch (v25.3-hardened-backup)
 - [ ] Monitoring live
 - [ ] Incident response tested
 - [ ] Disaster recovery tested
@@ -283,9 +283,9 @@ MITHQAL is a **Constitutional Monetary and Institutional Settlement Infrastructu
 
 ---
 
-# MITHQAL — MASTER BLUEPRINT v25.2
+# MITHQAL — MASTER BLUEPRINT v25.3
 
-## Version: v25.2 (FINAL — CONTROLLING)
+## Version: v25.3 (FINAL — CONTROLLING)
 ## Date: 2026-08-22
 ## Status: APPROVED CANDIDATE FOR CONTROLLED TESTING — NOT PRODUCTION-AUTHORIZED
 
@@ -297,7 +297,7 @@ MITHQAL is a **Constitutional Monetary and Institutional Settlement Infrastructu
 
 MITHQAL is a **Constitutional Monetary and Institutional Settlement Infrastructure** — a neutral, fully-reserved, gold-anchored settlement system designed for institutional cross-border trade settlement. It operates beside existing banking infrastructure through the MITHQAL Bank Gateway (MBG), which follows the principle of **"TRANSLATION, NOT TRANSFORMATION"** — bank systems remain authoritative.
 
-### Current Architecture (v25.2 — Controlling)
+### Current Architecture (v25.3 — Controlling)
 
 | Parameter | Value | Status |
 |---|---|---|
@@ -691,7 +691,7 @@ No bank, human, Foundation, Holding, Operating, or Technology Company may arbitr
 
 ---
 
-## 8. RESERVE ARCHITECTURE (§V25.2 — CONTROLLING)
+## 8. RESERVE ARCHITECTURE (§V25.3 — CONTROLLING)
 
 ### 8.1 Strategic Reserve Coverage Target
 
@@ -1461,7 +1461,7 @@ Gold Fall:           RR' = RR · (1 − 0.18 · d_G)
 
 | Version | Date | Status |
 |---|---|---|
-| **v25.2** | **2026-08-22** | **CURRENT AUTHORITATIVE — SINGLE SOURCE OF TRUTH** |
+| **v25.3** | **2026-08-22** | **CURRENT AUTHORITATIVE — SINGLE SOURCE OF TRUTH** |
 
 ---
 
@@ -1490,7 +1490,7 @@ Gold Fall:           RR' = RR · (1 − 0.18 · d_G)
 
 ---
 
-**END OF MITHQAL MASTER BLUEPRINT v25.2**
+**END OF MITHQAL MASTER BLUEPRINT v25.3**
 
 > This is the **single, definitive, latest, fully expanded MITHQAL Master Blueprint** with no internal contradictions and with complete traceability from the original architecture to the current architecture.
 

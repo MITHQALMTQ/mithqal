@@ -25,7 +25,7 @@
  * 1. Gold price shocks (up/down)
  * 2. Individual currency crashes (each of 8 currencies)
  * 3. Currency suspension/removal (§12, §33 SDP)
- * 4. Silver ratio adjustment (§25.2 φ_t)
+ * 4. Silver ratio adjustment (§25.3 φ_t)
  * 5. Reserve allocation shifts (§23-29)
  * 6. NAV changes under stress
  * 7. Emergency governance triggers (§44)
@@ -286,7 +286,7 @@ runScenario("SDP trigger: JPY deviates >5% from gold reference (§33)", () => {
   console.log(`  ANALYSIS: If sustained, Council reviews JPY for suspension (§12.8)`);
 });
 
-// ============ 4. GOLD/SILVER RATIO ADJUSTMENT (§25.2 φ_t) ============
+// ============ 4. GOLD/SILVER RATIO ADJUSTMENT (§25.3 φ_t) ============
 
 runScenario("Gold/Silver ratio: Silver +100% (silver rally)", () => {
   const newSilver = BASE_SILVER * 2.0;
@@ -299,7 +299,7 @@ runScenario("Gold/Silver ratio: Silver +100% (silver rally)", () => {
   console.log(`  NAV_m: $${fmt(baseline.nav.market)} → $${fmt(state.nav.market)}`);
   console.log(`  Reserve Ratio: ${fmt(baseline.reserveRatio.ratio, 2)}% → ${fmt(state.reserveRatio.ratio, 2)}%`);
   console.log(`  ANALYSIS: Silver rally increases bullion layer value`);
-  console.log(`  ANALYSIS: §25.2: Silver share of bullion increases (toward 40% max)`);
+  console.log(`  ANALYSIS: §25.3: Silver share of bullion increases (toward 40% max)`);
   console.log(`  ANALYSIS: Gold share φ_t decreases (toward 60% min)`);
   console.log(`  ANALYSIS: Rebalancing NOT triggered while 75% ≤ Gold ≤ 85%`);
 });
@@ -315,7 +315,7 @@ runScenario("Gold/Silver ratio: Silver -50% (silver crash)", () => {
   console.log(`  NAV_m: $${fmt(baseline.nav.market)} → $${fmt(state.nav.market)}`);
   console.log(`  Reserve Ratio: ${fmt(baseline.reserveRatio.ratio, 2)}% → ${fmt(state.reserveRatio.ratio, 2)}%`);
   console.log(`  ANALYSIS: Silver crash decreases bullion layer value`);
-  console.log(`  ANALYSIS: §25.2: Silver share of bullion decreases (toward 5% min)`);
+  console.log(`  ANALYSIS: §25.3: Silver share of bullion decreases (toward 5% min)`);
   console.log(`  ANALYSIS: Gold share φ_t increases (toward 95% max)`);
 });
 

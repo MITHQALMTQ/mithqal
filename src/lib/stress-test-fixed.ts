@@ -647,7 +647,7 @@ runScenario("SDP math: JPY -50% (deviation > 5%, emergency weight computed)", BA
 });
 
 // ============================================================
-// 5. SILVER RATIO ADJUSTMENT (§25.2)
+// 5. SILVER RATIO ADJUSTMENT (§25.3)
 // ============================================================
 
 runScenario("Silver +100% (silver rally)", BASELINE_NAV, BASELINE_RATIO, () => {

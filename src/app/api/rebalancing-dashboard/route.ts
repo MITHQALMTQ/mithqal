@@ -150,7 +150,7 @@ export async function GET() {
       solvency: {
         rr,
         policyRR: 105,
-        strategicRR: 130, // §V25.2
+        strategicRR: 130, // §V25.3
         stressRR: rr * 0.85,
         requiredRR: 100,
         calm,

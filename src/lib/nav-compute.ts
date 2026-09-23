@@ -56,7 +56,7 @@ const DIGITAL_ASSETS = [
 ];
 
 // Target total R_a with 20% buffer
-const TARGET_RA = 70_200_000 // §V25.2; // $54M × 1.167 ≈ $63M
+const TARGET_RA = 70_200_000 // §V25.3; // $54M × 1.167 ≈ $63M
 
 const BASELINE_SUPPLY = 54_000_000;
 const FALLBACK_SILVER_USD = 58.76;
@@ -351,7 +351,7 @@ export async function computeLiveNav(): Promise<NavResult> {
  * The 10 supported deposit/redeem currencies.
  *   - 8 basket currencies per §12 (USD, EUR, JPY, GBP, CNY, CHF, AUD, CAD)
  *   - XAU (gold ounces, per §25.1 bullion layer)
- *   - XAG (silver ounces, per §25.2 bullion layer)
+ *   - XAG (silver ounces, per §25.3 bullion layer)
  */
 export const SUPPORTED_CURRENCIES = [
   "USD", "EUR", "CHF", "JPY", "GBP", "SGD", "AED", "SAR", "CNY", "CAD", "AUD",

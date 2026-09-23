@@ -1,15 +1,15 @@
 // ============================================================================
-// §V25.2 — IMPLEMENTATION STATUS REPORT (§87)
+// §V25.3 — IMPLEMENTATION STATUS REPORT (§87)
 // ============================================================================
 // Implements §87 of the master directive: after all modifications, return a
 // table mapping each requirement to { Design, Implementation, Integration,
 // Testing, Institutional Validation, Production } — never inflating any column.
 //
 // Also implements §74 (current honest state) and §91 (institutional validation
-// gates) aggregating across all §V25.2 modules.
+// gates) aggregating across all §V25.3 modules.
 // ============================================================================
 
-export const MODULE_ID = "v25.2-implementation-status-1.0";
+export const MODULE_ID = "v25.3-implementation-status-1.0";
 export const SECTION = 87;
 
 // §73 — evidence-state discipline (exact states allowed)
@@ -41,7 +41,7 @@ export interface RequirementStatus {
   evidence: string;
 }
 
-// §87 status table — covers all §V25.2 deliverables
+// §87 status table — covers all §V25.3 deliverables
 export const IMPLEMENTATION_STATUS_TABLE: RequirementStatus[] = [
   // §47 Protected Backing Cell
   {
@@ -117,11 +117,11 @@ export const IMPLEMENTATION_STATUS_TABLE: RequirementStatus[] = [
   },
   // §88 Blueprint Update
   {
-    requirement: "Blueprint Update (§V25.2 + §V25.2.AUDIT-CLOSURE appended, idempotent)",
+    requirement: "Blueprint Update (§V25.3 + §V25.3.AUDIT-CLOSURE appended, idempotent)",
     section: "§88", module: "MITHQAL_MASTER_BLUEPRINT_SOT.md",
     design: "IMPLEMENTED", implementation: "IMPLEMENTED", integration: "INTEGRATED",
     testing: "TESTED", institutionalValidation: "DESIGNED", production: "DESIGNED",
-    evidence: "§V25.2 appended (+650 lines) + §V25.2.AUDIT-CLOSURE appended · idempotent scripts verified",
+    evidence: "§V25.3 appended (+650 lines) + §V25.3.AUDIT-CLOSURE appended · idempotent scripts verified",
   },
   // §49 Legal Obligation Register (evidence-intake infrastructure)
   {
@@ -251,7 +251,7 @@ export const FINAL_ACCEPTANCE_CRITERIA: AcceptanceCriterion[] = [
   // Architecture
   { id: "AC01", category: "Architecture", criterion: "All responsibilities are defined", met: true, evidence: "9 modules covering all directive sections" },
   { id: "AC02", category: "Architecture", criterion: "No contradictions exist", met: true, evidence: "§77 scan: 0 unresolved" },
-  { id: "AC03", category: "Architecture", criterion: "Single active reserve configuration exists", met: true, evidence: "§V25.2 canonical; §49 conflicts reconciled" },
+  { id: "AC03", category: "Architecture", criterion: "Single active reserve configuration exists", met: true, evidence: "§V25.3 canonical; §49 conflicts reconciled" },
   // Banking
   { id: "AC04", category: "Banking", criterion: "MBG architecture remains correct", met: true, evidence: "mithqal-bank-gateway.ts preserved (translation not transformation)" },
   { id: "AC05", category: "Banking", criterion: "Bank core remains authoritative", met: true, evidence: "MBG preserves bank systems authority" },
@@ -319,7 +319,7 @@ export function generateImplementationStatusReport(): ImplementationStatusReport
     institutionalGatesPassed: gatesPassed,
     institutionalGatesTotal: INSTITUTIONAL_VALIDATION_GATES.length,
     finalStatus:
-      "§87 IMPLEMENTATION STATUS — 9 §V25.2 MODULES DELIVERED · " +
+      "§87 IMPLEMENTATION STATUS — 9 §V25.3 MODULES DELIVERED · " +
       `${acMet}/${acTotal} acceptance criteria met · ` +
       `${gatesPassed}/${INSTITUTIONAL_VALIDATION_GATES.length} institutional gates passed · ` +
       "NOT PRODUCTION-AUTHORIZED (institutional validation pending)",

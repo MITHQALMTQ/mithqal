@@ -1,5 +1,5 @@
 // ════════════════════════════════════════════════════════════
-// MITHQAL §V25.2 — INSTITUTIONAL-GRADE STRESS TESTING SUITE
+// MITHQAL §V25.3 — INSTITUTIONAL-GRADE STRESS TESTING SUITE
 // Honest, transparent, real-historical-scenario-based stress tests
 // ════════════════════════════════════════════════════════════
 //
@@ -17,9 +17,9 @@
 // CoinGecko historical, Yahoo Finance historical, academic papers.
 // ════════════════════════════════════════════════════════════
 
-export const MODULE_ID = "v25.2-institutional-stress-tests-1.0";
+export const MODULE_ID = "v25.3-institutional-stress-tests-1.0";
 
-// ─── Base reserve configuration (§V25.2) ───
+// ─── Base reserve configuration (§V25.3) ───
 const BASE_RESERVE = {
   L: 100_000_000,           // $100M liability (PAR = $1.00)
   R_target: 130_000_000,    // 130% strategic target

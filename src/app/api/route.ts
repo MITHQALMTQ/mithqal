@@ -9,9 +9,9 @@ import { NextResponse } from "next/server";
 export async function GET() {
   return NextResponse.json({
     name: "MITHQAL API",
-    version: "v25.2",
+    version: "v25.3",
     description:
-      "Constitutional settlement infrastructure API. §V25.2 Final Reserve Mathematical Specification.",
+      "Constitutional settlement infrastructure API. §V25.3 Final Reserve Mathematical Specification.",
     honestState: {
       productionAuthorized: false,
       institutionalGatesPassed: "0/20",
@@ -22,7 +22,7 @@ export async function GET() {
       legalObligationRegisterSeeded: 117,
     },
     versions: [
-      { id: "v25.2", status: "CURRENT", path: "/api/mtq-final-reserve" },
+      { id: "v25.3", status: "CURRENT", path: "/api/mtq-final-reserve" },
       { id: "v25.1", status: "ACTIVE", path: "/api/v25.1" },
       { id: "v25.0", status: "ACTIVE", path: "/api/v25.0" },
       { id: "v24.2.1", status: "ACTIVE", path: "/api/v24.2.1" },
@@ -32,7 +32,7 @@ export async function GET() {
     ],
     modules: {
       core: [
-        { id: "mtq-final-reserve", path: "/api/mtq-final-reserve", description: "§V25.2 Final Reserve Mathematical Specification" },
+        { id: "mtq-final-reserve", path: "/api/mtq-final-reserve", description: "§V25.3 Final Reserve Mathematical Specification" },
         { id: "mtq-finality-before-mint", path: "/api/mtq-finality-before-mint", description: "§54 7-layer finality enforcement + 10 bypass tests" },
         { id: "mtq-implementation-status", path: "/api/mtq-implementation-status", description: "§87 implementation status report" },
         { id: "mtq-os", path: "/api/mtq-os", description: "MTQ Operating System — issuance pipeline + bank integration + ISO 20022" },

@@ -12,7 +12,7 @@
  * engine's own assertions. Each test either:
  *   - asserts a constitutionally-required inequality (§4 RR ≥ 100%, §5 LCR
  *     ≥ 1.0, §8 duration ≤ 0.75, §10 exposure limits, §23 layer ranges,
- *     §25.2 bullion band), OR
+ *     §25.3 bullion band), OR
  *   - reports a quantified metric (VaR, CVaR, break-even volume, capital
  *     trajectory) with explicit pass/fail thresholds drawn from institutional
  *     risk-management practice (Basel III, IFRS 9 ECL, ICAAP).
@@ -685,7 +685,7 @@ check("5.1a Fiat in [70%, 80%]",       layerWeights.fiat       >= LAYER_RANGES.f
 check("5.1b Bullion in [15%, 25%]",    layerWeights.bullion    >= LAYER_RANGES.bullion.min    && layerWeights.bullion    <= LAYER_RANGES.bullion.max,    `${fmtPct(layerWeights.bullion * 100)}`);
 check("5.1c Stablecoin in [2%, 8%]",   layerWeights.stablecoin >= LAYER_RANGES.stablecoin.min && layerWeights.stablecoin <= LAYER_RANGES.stablecoin.max, `${fmtPct(layerWeights.stablecoin * 100)}`);
 
-// 5.2 Gold/silver ratio band (§25.2)
+// 5.2 Gold/silver ratio band (§25.3)
 const goldShareOfBullion = GOLD_MV / (GOLD_MV + SILVER_MV);
 const silverShareOfBullion = 1 - goldShareOfBullion;
 info("Gold share of bullion",   fmtPct(goldShareOfBullion * 100));

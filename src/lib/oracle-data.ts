@@ -16,7 +16,7 @@
 // deterministically over "time" (operation index) so the engine's
 // momentum, mean-reversion, shock-absorber and SDP mechanics are all live.
 //
-// HONEST-STATE CONSTRAINT (blueprint §V25.2):
+// HONEST-STATE CONSTRAINT (blueprint §V25.3):
 //   productionAuthorized = false
 //   institutionalGatesPassed = 0 / 13
 // This module connects to FREE PUBLIC data APIs only — it does NOT claim
@@ -80,7 +80,7 @@ export interface OracleSnapshot {
   fxAgo1d: Record<string, number>;
 }
 
-// The 11 eligible basket currencies per the §V25.2 specification.
+// The 11 eligible basket currencies per the §V25.3 specification.
 // §12: all 11 are at "full" lifecycle status (fully included in the basket),
 // admitted on 2024-01-01 (placeholder genesis date).
 //

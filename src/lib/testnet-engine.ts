@@ -19,7 +19,7 @@ import type { TestnetOperation } from "@prisma/client";
 //   Bullion Layer:      15% ≤ Bullion ≤ 25%    (policy target: 20%)
 //   Stablecoin Layer:   2% ≤ Stable ≤ 8%       (policy target: 5%)
 //
-// §25.2 Bullion sub-allocation (DYNAMIC, §25.4: "not constitutionally fixed"):
+// §25.3 Bullion sub-allocation (DYNAMIC, §25.4: "not constitutionally fixed"):
 //   Gold:  60% ≤ Gold ≤ 95% of bullion   (policy target: 80%, φ_t variable)
 //   Silver: 5% ≤ Silver ≤ 40% of bullion  (policy target: 20%)
 //
@@ -29,7 +29,7 @@ import type { TestnetOperation } from "@prisma/client";
 //
 // The ACTUAL allocation shifts dynamically based on:
 //   - Reserve ratio (§4, §29.1)
-//   - Gold volatility (§17, §25.2)
+//   - Gold volatility (§17, §25.3)
 //   - CRI (§9, §29.1)
 //
 // Each tier stores its constitutional RANGE, not a fixed target.
@@ -40,10 +40,10 @@ export interface TierConfig {
   layer: "fiat" | "bullion" | "stablecoin";
   assets: string;
   assetClass: "cash" | "sovereign" | "gold" | "silver" | "stablecoin";
-  // Constitutional RANGE (§23.3, §25.2) — NOT a fixed percentage
+  // Constitutional RANGE (§23.3, §25.3) — NOT a fixed percentage
   minWeight: number;  // constitutional minimum
   maxWeight: number;  // constitutional maximum
-  policyTarget: number; // preferred operating point (§23.1, §25.2)
+  policyTarget: number; // preferred operating point (§23.1, §25.3)
 }
 
 export const TIERS: TierConfig[] = [
@@ -73,7 +73,7 @@ export const LAYER_RANGES = {
   stablecoin: { min: 0.02, max: 0.08, target: 0.05 },
 };
 
-// Bullion split ranges (§25.2)
+// Bullion split ranges (§25.3)
 export const BULLION_SPLIT = {
   gold: { min: 0.60, max: 0.95, target: 0.80 },
   silver: { min: 0.05, max: 0.40, target: 0.20 },
@@ -90,8 +90,8 @@ export interface TierState {
   name: string;
   layer: string;
   targetWeight: number; // dynamic policy target (shifts based on conditions)
-  minWeight: number;    // constitutional minimum (§23.3, §25.2)
-  maxWeight: number;    // constitutional maximum (§23.3, §25.2)
+  minWeight: number;    // constitutional minimum (§23.3, §25.3)
+  maxWeight: number;    // constitutional maximum (§23.3, §25.3)
   assets: string;
   assetClass: string;
   usdValue: number;

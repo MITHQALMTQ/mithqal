@@ -150,7 +150,7 @@ async function buildRebalanceContext(): Promise<RebalanceContext> {
   // §29.1 layerWeights — current (from live NAV) + target (from allocation).
   const layerWeights = deriveCurrentLayerWeights(nav.reserveAssets);
 
-  // §25.2 bullionGoldShare (φ_t) — current from live NAV's bullion layer.
+  // §25.3 bullionGoldShare (φ_t) — current from live NAV's bullion layer.
   const bullionGoldShare = deriveCurrentBullionGoldShare(nav.reserveAssets);
 
   // §29.1 layerRanges — constitutional per-layer ranges from LAYER_SPEC.

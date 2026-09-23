@@ -26,7 +26,7 @@
 // state, NOT a current state for any reference cell.
 // ============================================================================
 
-export const MODULE_ID = "v25.2-protected-backing-cell-1.0";
+export const MODULE_ID = "v25.3-protected-backing-cell-1.0";
 export const PBC_SECTION = 47;
 
 // ----------------------------------------------------------------------------

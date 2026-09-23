@@ -3,7 +3,7 @@
 // ============================================================================
 // This module models the legal/economic liability characterization of the
 // MTQ instrument across jurisdictions. It is the LEGAL-CHARACTERIZATION
-// companion to the §V25.2 reserve mathematical specification in
+// companion to the §V25.3 reserve mathematical specification in
 // `mtq-final-reserve-spec.ts`.
 //
 // CRITICAL PRINCIPLE (per §74 honest-state discipline):
@@ -25,7 +25,7 @@
 // advice and MUST NOT be presented as a definitive classification.
 // ============================================================================
 
-export const MODULE_ID = "v25.2-legal-liability-framework-1.0";
+export const MODULE_ID = "v25.3-legal-liability-framework-1.0";
 
 /**
  * §49 — Legal classification state for a single jurisdiction.

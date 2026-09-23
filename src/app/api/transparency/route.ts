@@ -79,7 +79,7 @@ export async function GET() {
     //   Bullion Layer:      15% ≤ Bullion ≤ 25%  (policy target: 20%)
     //   Stablecoin Layer:   2% ≤ Stable ≤ 8%    (policy target: 5%)
     //
-    // §25.1-25.2 Bullion allocation is DYNAMIC (§25.4: "not constitutionally fixed"):
+    // §25.1-25.3 Bullion allocation is DYNAMIC (§25.4: "not constitutionally fixed"):
     //   Gold:  60-95% of bullion (policy target: 80%, φ_t variable)
     //   Silver: 5-40% of bullion (policy target: 20%)
     //   Rebalancing band: ±5% around target (75% ≤ Gold ≤ 85% → no rebalance)
@@ -118,7 +118,7 @@ export async function GET() {
 
     // Current EWMA gold volatility — used both by the monetary engine's
     // shock absorber (§17) and by the dynamic allocation's gold/silver
-    // split (§25.2). Falls back to 0.015 (1.5%) when the series is empty.
+    // split (§25.3). Falls back to 0.015 (1.5%) when the series is empty.
     const goldVolatility = ewmaReturns.length >= 2
       ? ewmaReturns.reduce((s, r) => s + r * r, 0) / ewmaReturns.length
       : 0.015;

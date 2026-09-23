@@ -1,5 +1,5 @@
 // ============================================================================
-// §V25.2 — LEGAL OBLIGATION REGISTER (§49 / §74 / §91 companion)
+// §V25.3 — LEGAL OBLIGATION REGISTER (§49 / §74 / §91 companion)
 // ============================================================================
 // Infrastructure for tracking legal obligations across jurisdictions.
 //
@@ -33,7 +33,7 @@
 // and an opinion artifact must be filed via `registerOpinion()`.
 // ============================================================================
 
-export const MODULE_ID = "v25.2-legal-obligation-register-1.0";
+export const MODULE_ID = "v25.3-legal-obligation-register-1.0";
 export const SECTION = 49;
 
 // ----------------------------------------------------------------------------

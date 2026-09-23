@@ -214,14 +214,14 @@ export const LAYER_SPEC = {
 } as const;
 
 // ============================================================
-// §25.2 — Gold/Silver Ratio φ_t
+// §25.3 — Gold/Silver Ratio φ_t
 // ============================================================
 export const PHI_T_SPEC = {
-  /** Constitutional hard floor: φ_t ≥ 60% (§25.2) */
+  /** Constitutional hard floor: φ_t ≥ 60% (§25.3) */
   PHI_MIN: 0.60,
-  /** Constitutional hard cap: φ_t ≤ 95% (§25.2) */
+  /** Constitutional hard cap: φ_t ≤ 95% (§25.3) */
   PHI_MAX: 0.95,
-  /** Default policy target: φ_t = 80% (§25.2) */
+  /** Default policy target: φ_t = 80% (§25.3) */
   DEFAULT_TARGET: 0.80,
   /** Normal band lower: 75% (Phase 3 §5.1) */
   NORMAL_BAND_MIN: 0.75,
@@ -235,7 +235,7 @@ export const PHI_T_SPEC = {
   GOLD_VOL_HIGH_THRESHOLD: 0.03,
   /** Gold EWMA vol threshold for φ_t increase: <0.5% */
   GOLD_VOL_LOW_THRESHOLD: 0.005,
-  /** Silver = 1 − φ_t. Silver share band: [5%, 40%] (§25.2) */
+  /** Silver = 1 − φ_t. Silver share band: [5%, 40%] (§25.3) */
   SILVER_MIN: 0.05,
   SILVER_MAX: 0.40,
 } as const;

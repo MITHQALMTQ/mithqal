@@ -31,7 +31,7 @@ export const BREACH_PROBABILITY_DEFINITION = {
   oracleFailure: "Bernoulli p=0.01/path",
   executionCost: "Linear in trade size + stress multiplier (1x/2x/3x)",
   markToMarket: "Yes — all assets marked to market daily",
-  realizableValue: "After haircuts (v25.2 controlling per MITHQAL_MASTER_BLUEPRINT_SOT.md §V25.2): gold 18%; silver 0% (SDC ≤ 0); tokenized gold (PAXG) conditional — NOT auto-added on top of 18% gold; FX 2%; digital 2% normal. NOTE: legacy v24.2.1 values were gold 5% / PAXG 5.5% / silver 7% / FX 2% / stablecoins 2% — superseded.",
+  realizableValue: "After haircuts (v25.3 controlling per MITHQAL_MASTER_BLUEPRINT_SOT.md §V25.3): gold 18%; silver 0% (SDC ≤ 0); tokenized gold (PAXG) conditional — NOT auto-added on top of 18% gold; FX 2%; digital 2% normal. NOTE: legacy v24.2.1 values were gold 5% / PAXG 5.5% / silver 7% / FX 2% / stablecoins 2% — superseded.",
   liquidityAssumptions: "Bid-ask spread expansion 2x normal, 3x crisis; Article X liquidation order",
   modelLimitations: [
     "30-day horizon may understate long-tail risks",
@@ -74,7 +74,7 @@ export const ILPS_LAYERS: ILPSLayer[] = [
     jurisdiction: "Multi",
     custodian: "Regulated banks",
     stressAssumption: "0% haircut; immediately available for settlement",
-    // §V25.2 LCR calibration: increased from $2.7M to $5.4M (5% of $54M liability × 2x float)
+    // §V25.3 LCR calibration: increased from $2.7M to $5.4M (5% of $54M liability × 2x float)
     // to reduce P(LCR<1) toward zero. HQLA Layer 1 = Level 1 HQLA (0% haircut under Basel III).
     amountUsd: 5_400_000,
   },
@@ -88,7 +88,7 @@ export const ILPS_LAYERS: ILPSLayer[] = [
     jurisdiction: "Multi",
     custodian: "Multiple regulated banks",
     stressAssumption: "2% haircut; available T+0 to T+1 for redemption",
-    // §V25.2 LCR calibration: increased from $16.2M to $21.6M (40% of $54M liability in fiat HQLA)
+    // §V25.3 LCR calibration: increased from $16.2M to $21.6M (40% of $54M liability in fiat HQLA)
     // to bring P(LCR<1) closer to zero. HQLA Layer 2 = Level 1 HQLA (central bank reserves + sovereigns).
     amountUsd: 21_600_000,
   },
@@ -102,7 +102,7 @@ export const ILPS_LAYERS: ILPSLayer[] = [
     jurisdiction: "Multi",
     custodian: "Multiple custodians",
     stressAssumption: "5% haircut; available T+1 to T+3 under stress",
-    // §V25.2 LCR calibration: increased from $10.8M to $13.5M (25% of liability in emergency liquidity)
+    // §V25.3 LCR calibration: increased from $10.8M to $13.5M (25% of liability in emergency liquidity)
     amountUsd: 13_500_000,
   },
   {
@@ -110,14 +110,14 @@ export const ILPS_LAYERS: ILPSLayer[] = [
     type: "STRUCTURAL",
     name: "Structural Reserve",
     assetEligibility: ["Physical allocated gold", "Tokenized allocated gold (PAXG)"],
-    // TODO(BP-GAP-005-010-011): v25.2 controlling haircut for gold = 18% (NOT 5%) per MITHQAL_MASTER_BLUEPRINT_SOT.md §V25.2;
+    // TODO(BP-GAP-005-010-011): v25.3 controlling haircut for gold = 18% (NOT 5%) per MITHQAL_MASTER_BLUEPRINT_SOT.md §V25.3;
     //   PAXG is conditional separate exposure — NOT auto-added. liquidityHaircut: 0.05 below is the legacy v24.2.1 value
     //   and remains a COMPUTATION value (not changed here) — pending re-calibration by Quantitative Risk Architect.
     liquidityHaircut: 0.05,
     availabilityState: "RESERVED",
     jurisdiction: "Multi (vault jurisdictions)",
     custodian: "Brink's / Loomis (gold); Paxos (PAXG)",
-    stressAssumption: "5% haircut (legacy v24.2.1; v25.2 controlling = gold 18%, PAXG conditional — re-calibration pending); available T+3 to T+7; requires Exhaustion Certificate",
+    stressAssumption: "5% haircut (legacy v24.2.1; v25.3 controlling = gold 18%, PAXG conditional — re-calibration pending); available T+3 to T+7; requires Exhaustion Certificate",
     amountUsd: 12_960_000,  // 20% bullion of $64.8M R_a
   },
   {
@@ -130,16 +130,16 @@ export const ILPS_LAYERS: ILPSLayer[] = [
     jurisdiction: "Per facility agreement",
     custodian: "External financial institutions",
     stressAssumption: "10% haircut; available subject to facility terms; NOT counted in R_a",
-    // §V25.2 LCR calibration: increased from $5.4M to $8.1M (15% of liability in committed external facility)
+    // §V25.3 LCR calibration: increased from $5.4M to $8.1M (15% of liability in committed external facility)
     amountUsd: 8_100_000,
   },
 ];
 
-// §V25.2 LCR calibration policy (per blueprint §41 + §V25.2 LCR target ≥ 1.00)
+// §V25.3 LCR calibration policy (per blueprint §41 + §V25.3 LCR target ≥ 1.00)
 // The LCR target is raised from 1.00 to 1.30 to match the strategic RR target,
 // ensuring HQLA comfortably covers 30-day stressed net outflows.
 export const LCR_CALIBRATION = {
-  target: 1.30,           // §V25.2 strategic LCR target (was 1.00)
+  target: 1.30,           // §V25.3 strategic LCR target (was 1.00)
   defensive: 1.10,        // defensive threshold
   stressed: 1.00,         // stressed floor (regulatory minimum)
   breach: 1.00,           // below this = BREACH
@@ -148,7 +148,7 @@ export const LCR_CALIBRATION = {
   hqlaLevel2Cap: 0.40,    // Level 2 HQLA: max 40% of total HQLA
   hqlaLevel2AHaircut: 0.15, // Level 2A: 15% haircut
   hqlaLevel2BHaircut: 0.50,  // Level 2B: 50% haircut
-  // §V25.2 calibration: P(LCR<1) target ≤ 2% (was ~21%)
+  // §V25.3 calibration: P(LCR<1) target ≤ 2% (was ~21%)
   // Achieved by: (1) increasing Settlement Layer from 2.5% to 5% of liability,
   // (2) increasing Redemption Layer from 30% to 40%, (3) raising LCR target to 1.30.
   // Result: P(LCR<1) reduced from ~21% to <2% in 250K-path Monte Carlo (seed=42).

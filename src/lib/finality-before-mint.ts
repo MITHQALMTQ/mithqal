@@ -1,5 +1,5 @@
 // ============================================================================
-// §V25.2 — FINALITY-BEFORE-MINT ENFORCEMENT (§54)
+// §V25.3 — FINALITY-BEFORE-MINT ENFORCEMENT (§54)
 // ============================================================================
 // Implements §54 of the master directive: the hard invariant
 //   NO FINAL SETTLEMENT ⇒ NO MTQ MINT
@@ -32,7 +32,7 @@
 //     validation (pilot bank contract, legal opinion, regulator sign-off).
 // ============================================================================
 
-export const MODULE_ID = "v25.2-finality-before-mint-1.0";
+export const MODULE_ID = "v25.3-finality-before-mint-1.0";
 export const SECTION = 54;
 
 // §54 — the hard invariant

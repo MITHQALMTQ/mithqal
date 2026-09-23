@@ -1,5 +1,5 @@
 // ============================================================================
-// §V25.2 §52 — SYSTEM-WIDE EXPOSURE & CONCENTRATION ENGINE
+// §V25.3 §52 — SYSTEM-WIDE EXPOSURE & CONCENTRATION ENGINE
 // ============================================================================
 // This module implements §52 of the master directive: System-Wide Exposure
 // & Concentration. It provides the 13-dimension concentration measurement
@@ -35,8 +35,8 @@
 //   Any live-monitoring claim would be dishonest and is therefore NOT made.
 // ============================================================================
 
-export const MODULE_ID = "v25.2-systemic-exposure-engine-1.0";
-export const SPEC_VERSION = "v25.2 §52 System-Wide Exposure & Concentration";
+export const MODULE_ID = "v25.3-systemic-exposure-engine-1.0";
+export const SPEC_VERSION = "v25.3 §52 System-Wide Exposure & Concentration";
 export const DIRECTIVE_SECTION = "§52";
 export const CONCENTRATION_DIMENSION_COUNT = 13;
 

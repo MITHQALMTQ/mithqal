@@ -12,7 +12,7 @@ import { NextResponse } from "next/server";
  *   - frequency ("QUARTERLY" | "TRIENNIAL" | "MONTHLY" | "DAILY" | ...)
  *   - status ("HEALTHY" | "DEGRADED" | "ERROR" | "PUBLICATION_ONLY")
  *
- * Honest-state constraint (blueprint §V25.2):
+ * Honest-state constraint (blueprint §V25.3):
  *   productionAuthorized = false
  *   These health checks are DESIGN-TIME — they verify the upstream APIs are
  *   alive, they do NOT authorize production use of the platform.

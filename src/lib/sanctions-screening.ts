@@ -3,7 +3,7 @@
 // =====================================================================
 // HONEST STATE: not live, 0 screenings performed, production not authorized
 //
-// This module implements the MITHQAL §V25.2 blueprint requirement for
+// This module implements the MITHQAL §V25.3 blueprint requirement for
 // OFAC/UN/EU/HMT sanctions screening with fail-closed semantics per
 // §V24.2.13. It is INFRASTRUCTURE ONLY: ready to be wired to a real
 // provider (Chainalysis, Elliptic, TRM Labs) once a bank partnership is
@@ -75,7 +75,7 @@ export interface ScreeningHonestState {
   };
   lastRealProviderCallAt: null | string; // null — never made a real call
   auditRec: "Rec-6";
-  blueprintRef: "§V25.2 / §V24.2.13";
+  blueprintRef: "§V25.3 / §V24.2.13";
   notes: string[];
 }
 
@@ -163,7 +163,7 @@ export function getSanctionsScreeningHonestState(): ScreeningHonestState {
     listVersions: { ...SIMULATED_LIST_VERSIONS },
     lastRealProviderCallAt,
     auditRec: "Rec-6",
-    blueprintRef: "§V25.2 / §V24.2.13",
+    blueprintRef: "§V25.3 / §V24.2.13",
     notes: [
       "Framework is INFRASTRUCTURE ONLY — not live, not production-authorized.",
       "0 bank integrations contracted; no real provider API is wired.",

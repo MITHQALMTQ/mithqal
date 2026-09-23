@@ -1,7 +1,7 @@
 "use client";
 
 /* ============================================================================
- * MITHQAL §V25.2 — Institutional Engagement Page
+ * MITHQAL §V25.3 — Institutional Engagement Page
  * ----------------------------------------------------------------------------
  * The institutional front-door for regulated institutions, monetary
  * authorities, regulators, infrastructure providers and independent assurance
@@ -292,7 +292,7 @@ export default function InstitutionalEngagementPage() {
             >
               <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-gold/30 bg-gold/5 px-3 py-1 text-[11px] font-medium uppercase tracking-[0.22em] text-gold">
                 <span className="live-dot inline-block h-1.5 w-1.5 rounded-full bg-gold" />
-                Institutional Engagement · §V25.2
+                Institutional Engagement · §V25.3
               </div>
 
               <h1 className="font-display text-balance text-4xl leading-[1.05] text-foreground sm:text-5xl lg:text-6xl">
@@ -975,7 +975,7 @@ function EngagementFooter() {
             </div>
             <p className="max-w-2xl text-xs leading-relaxed text-fg-muted">
               {S(DISCLAIMER)} This page describes MITHQAL&apos;s institutional
-              engagement model under §V25.2. Nothing on this page constitutes a
+              engagement model under §V25.3. Nothing on this page constitutes a
               license, a legal opinion, a regulatory clearance, an offer to
               enter into a partnership, or a commitment to deploy. All
               engagement is subject to institutional, legal, regulatory,
@@ -1007,7 +1007,7 @@ function EngagementFooter() {
         <div className="mt-10 border-t border-line/40 pt-6">
           <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
             <div className="text-[10px] uppercase tracking-[0.22em] text-fg-muted">
-              MITHQAL · §V25.2 · Institutional Engagement
+              MITHQAL · §V25.3 · Institutional Engagement
             </div>
             <Badge variant="gray">{S(DISCLAIMER)}</Badge>
           </div>
