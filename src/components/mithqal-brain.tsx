@@ -243,8 +243,15 @@ function BrainModelCards() {
     { model: "groq", label: "Groq", connected: false, configured: false, latencyMs: 0 },
   ];
 
+  // R5: detect zero-provider fallback. The Brain lib probes 5 providers
+  // (Gemini, HuggingFace, GROQ, OpenRouter, NVIDIA). When the status payload
+  // reports zero connected providers, surface a clear degraded message so
+  // the operator understands advisory AI is offline (settlement is unaffected).
+  const connectedCount = models.filter((m) => m.connected).length;
+  const allProvidersDown = status !== null && connectedCount === 0;
+
   return (
-    <div className="rounded-xl border border-line bg-ink-soft p-5">
+    <div className="rounded-xl border border-line bg-ink-soft p-5" aria-live="polite" aria-atomic="true">
       <div className="flex items-center gap-2">
         <Activity className="h-3.5 w-3.5 text-gold" />
         <h3 className="text-[11px] font-semibold uppercase tracking-[0.18em] text-fg-muted">
@@ -301,6 +308,15 @@ function BrainModelCards() {
           </div>
         ))}
       </div>
+      {allProvidersDown && (
+        <div
+          role="status"
+          className="mt-4 rounded-lg border border-gold/30 bg-gold/[0.06] p-3 text-[11px] text-gold"
+        >
+          AI advisory temporarily unavailable — all 5 providers did not
+          respond. This does not affect settlement operations.
+        </div>
+      )}
       {status && (
         <div className="mt-3 text-[10px] text-fg-muted">
           Consensus-eligible:{" "}

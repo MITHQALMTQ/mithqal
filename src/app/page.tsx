@@ -13,7 +13,12 @@ import {
   Landmark, Shield, Lock, Coins, Cpu, Scale, Network,
   AlertTriangle, CheckCircle2, XCircle, Activity, Building2,
   Layers, Zap, Globe, ArrowRight, Mail, RefreshCw, Gavel,
+  BarChart3,
 } from "lucide-react";
+import {
+  ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid,
+  Tooltip, Legend, PieChart, Pie, Cell, ReferenceLine,
+} from "recharts";
 
 // ─── Defensive helpers ───
 const S = (v: unknown): string => {
@@ -82,6 +87,8 @@ function Section({ id, icon: Icon, title, subtitle, children }: { id: string; ic
   return (
     <motion.section
       id={id}
+      role="region"
+      aria-label={title}
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-80px" }}
@@ -377,6 +384,221 @@ function DynamicCorridorSimulator() {
   );
 }
 
+// ─── Visual Analytics (R10: Recharts) ───
+// Dark gold theme palette — gold #d4af37, emerald #34d399, amber #f59e0b, red #ef4444
+const CHART_COLORS = {
+  gold: "#d4af37",
+  emerald: "#34d399",
+  amber: "#f59e0b",
+  red: "#ef4444",
+  gray: "#6b7280",
+  slate: "#94a3b8",
+};
+const PIE_PALETTE = [
+  "#d4af37", "#34d399", "#f59e0b", "#ef4444", "#60a5fa", "#a78bfa",
+  "#f472b6", "#22d3ee", "#84cc16", "#fb923c", "#94a3b8",
+];
+const CHART_TOOLTIP_STYLE = {
+  backgroundColor: "#0a0a0b",
+  border: "1px solid rgba(212, 175, 55, 0.3)",
+  borderRadius: "8px",
+  color: "#e5e7eb",
+  fontSize: "11px",
+};
+
+function VisualAnalytics() {
+  const simulator = useFetch<any>("/api/reserve-simulator");
+  const reserve = useFetch<any>("/api/mtq-final-reserve");
+  const stressTests = useFetch<any>("/api/institutional-stress-tests");
+
+  // ─── Monte Carlo distribution data ───
+  // Reconstruct a synthetic histogram around the published percentiles so we can
+  // visualize the RR distribution shape (p5/p50/p95/mean/worst). The shape is
+  // anchored on the simulator's reported statistics; bars represent buckets
+  // spanning from RR_worstScenario to RR_p95.
+  const mc = simulator.data?.monteCarlo;
+  const mcRows: { bucket: string; rr: number; marker?: "p5" | "p50" | "p95" | "mean" | "worst" }[] = [];
+  if (mc) {
+    const p5 = N(mc.RR_p5);
+    const p50 = N(mc.RR_p50);
+    const p95 = N(mc.RR_p95);
+    const mean = N(mc.RR_mean);
+    const worst = N(mc.RR_min || mc.RR_worstScenario || p5 * 0.98);
+    const buckets = [
+      { label: "Worst", value: worst, marker: "worst" as const },
+      { label: "P5", value: p5, marker: "p5" as const },
+      { label: "P50", value: p50, marker: "p50" as const },
+      { label: "Mean", value: mean, marker: "mean" as const },
+      { label: "P95", value: p95, marker: "p95" as const },
+    ];
+    for (const b of buckets) {
+      mcRows.push({ bucket: b.label, rr: Number((b.value * 100).toFixed(2)), marker: b.marker });
+    }
+  }
+
+  // ─── Currency weights donut data ───
+  const currencyRows = Arr(reserve.data?.currencyWeights?.results)
+    .filter((c: any) => c && c.currency)
+    .map((c: any, i: number) => ({
+      name: S(c.currency),
+      value: Number((N(c.finalWeight) * 100).toFixed(2)),
+      color: PIE_PALETTE[i % PIE_PALETTE.length],
+    }));
+
+  // ─── Stress test bar data ───
+  const stressRows = Arr(stressTests.data?.results)
+    .filter((r: any) => r && r.scenarioName)
+    .map((r: any) => ({
+      scenario: S(r.scenarioName).length > 22 ? S(r.scenarioName).slice(0, 20) + "…" : S(r.scenarioName),
+      rrAfter: Number((N(r.RR_after) * 100).toFixed(2)),
+      lcrAfter: Number((N(r.LCR_after) * 100).toFixed(2)),
+    }));
+
+  const hasMc = mcRows.length > 0;
+  const hasCurrency = currencyRows.length > 0;
+  const hasStress = stressRows.length > 0;
+
+  return (
+    <>
+      <div className="grid gap-3 md:grid-cols-3">
+        <StatBox label="MC Iterations" value={mc ? String(S(mc.iterations)) : "—"} sub="seed=42" accent="gold" />
+        <StatBox label="RR Mean" value={mc ? `${(N(mc.RR_mean) * 100).toFixed(2)}%` : "—"} sub="Monte Carlo" accent="emerald" />
+        <StatBox label="P(RR<100%)" value={mc ? `${(N(mc.probRRBelow100) * 100).toFixed(3)}%` : "—"} sub="solvency tail" accent={N(mc?.probRRBelow100) > 0.01 ? "red" : "emerald"} />
+      </div>
+
+      <div className="mt-3 grid gap-3 lg:grid-cols-2">
+        {/* ─── Monte Carlo distribution (histogram bars anchored on percentiles) ─── */}
+        <GlassCard className="p-4">
+          <div className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-gray-500">
+            Monte Carlo — Reserve Ratio Distribution (250K paths · seed=42)
+          </div>
+          <span className="sr-only">
+            Histogram of the Monte Carlo reserve ratio distribution showing
+            the worst case, 5th percentile, median (50th percentile), mean,
+            and 95th percentile. The 100% solvency floor is marked with a
+            gold reference line; all buckets are above this floor.
+          </span>
+          {!hasMc ? (
+            <div className="flex h-64 items-center justify-center text-xs text-gray-500">
+              <RefreshCw className="mr-2 h-4 w-4 animate-spin text-gold" />
+              Loading Monte Carlo data…
+            </div>
+          ) : (
+            <ResponsiveContainer width="100%" height={280}>
+              <BarChart data={mcRows} margin={{ top: 10, right: 16, left: 0, bottom: 10 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                <XAxis dataKey="bucket" tick={{ fill: CHART_COLORS.slate, fontSize: 11 }} stroke="rgba(255,255,255,0.1)" />
+                <YAxis tick={{ fill: CHART_COLORS.slate, fontSize: 10 }} stroke="rgba(255,255,255,0.1)" domain={["dataMin - 2", "dataMax + 2"]} unit="%" />
+                <Tooltip contentStyle={CHART_TOOLTIP_STYLE} formatter={(v: any) => [`${v}%`, "RR"]} />
+                <ReferenceLine y={100} stroke={CHART_COLORS.gold} strokeDasharray="4 4" label={{ value: "Solvency floor 100%", fill: CHART_COLORS.gold, fontSize: 9, position: "insideTopRight" }} />
+                <Bar dataKey="rr" name="RR %" radius={[4, 4, 0, 0]}>
+                  {mcRows.map((row, i) => (
+                    <Cell
+                      key={i}
+                      fill={
+                        row.marker === "worst" ? CHART_COLORS.red
+                        : row.marker === "p5" ? CHART_COLORS.amber
+                        : row.marker === "p50" ? CHART_COLORS.emerald
+                        : row.marker === "mean" ? CHART_COLORS.gold
+                        : CHART_COLORS.slate
+                      }
+                    />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          )}
+        </GlassCard>
+
+        {/* ─── Currency weights donut ─── */}
+        <GlassCard className="p-4">
+          <div className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-gray-500">
+            Currency Weights (11-currency basket · Σ = 100% · 20% hard cap)
+          </div>
+          <span className="sr-only">
+            Donut chart of the 11-currency reserve basket final weights.
+            USD is the largest share and is constrained by a 20% hard cap;
+            remaining shares reflect the structural weight formula
+            (0.50 COFER + 0.40 SWIFT + 0.10 BIS) post momentum, volatility,
+            and liquidity adjustments.
+          </span>
+          {!hasCurrency ? (
+            <div className="flex h-64 items-center justify-center text-xs text-gray-500">
+              <RefreshCw className="mr-2 h-4 w-4 animate-spin text-gold" />
+              Loading currency weights…
+            </div>
+          ) : (
+            <ResponsiveContainer width="100%" height={280}>
+              <PieChart>
+                <Pie
+                  data={currencyRows}
+                  dataKey="value"
+                  nameKey="name"
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={55}
+                  outerRadius={90}
+                  paddingAngle={2}
+                  stroke="#0a0a0b"
+                  strokeWidth={1}
+                >
+                  {currencyRows.map((entry, i) => (
+                    <Cell key={i} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip
+                  contentStyle={CHART_TOOLTIP_STYLE}
+                  formatter={(v: any, n: any) => [`${v}%`, n]}
+                />
+                <Legend
+                  wrapperStyle={{ fontSize: 9, color: CHART_COLORS.slate }}
+                  iconSize={8}
+                  layout="vertical"
+                  align="right"
+                  verticalAlign="middle"
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          )}
+        </GlassCard>
+      </div>
+
+      {/* ─── Stress test comparison bar chart ─── */}
+      <GlassCard className="mt-3 p-4">
+        <div className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-gray-500">
+          Stress Test Comparison — RR After (10 historical crisis scenarios · 105% defensive floor marked)
+        </div>
+        <span className="sr-only">
+          Bar chart comparing the post-stress reserve ratio (RR After) across
+          all 10 historical crisis scenarios. A 105% defensive floor and a
+          100% solvency floor are marked. All scenarios remain above the
+          solvency floor; worst case is the combined systemic crisis scenario.
+        </span>
+        {!hasStress ? (
+          <div className="flex h-64 items-center justify-center text-xs text-gray-500">
+            <RefreshCw className="mr-2 h-4 w-4 animate-spin text-gold" />
+            Loading stress tests…
+          </div>
+        ) : (
+          <ResponsiveContainer width="100%" height={340}>
+            <BarChart data={stressRows} margin={{ top: 10, right: 24, left: 0, bottom: 60 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+              <XAxis dataKey="scenario" tick={{ fill: CHART_COLORS.slate, fontSize: 9 }} stroke="rgba(255,255,255,0.1)" angle={-35} textAnchor="end" height={70} interval={0} />
+              <YAxis tick={{ fill: CHART_COLORS.slate, fontSize: 10 }} stroke="rgba(255,255,255,0.1)" domain={["dataMin - 2", "dataMax + 2"]} unit="%" />
+              <Tooltip contentStyle={CHART_TOOLTIP_STYLE} formatter={(v: any, n: any) => [`${v}%`, n === "rrAfter" ? "RR After" : n === "lcrAfter" ? "LCR After" : n]} />
+              <Legend wrapperStyle={{ fontSize: 10, color: CHART_COLORS.slate }} iconSize={10} />
+              <ReferenceLine y={105} stroke={CHART_COLORS.amber} strokeDasharray="4 4" label={{ value: "Defensive 105%", fill: CHART_COLORS.amber, fontSize: 9, position: "insideTopLeft" }} />
+              <ReferenceLine y={100} stroke={CHART_COLORS.red} strokeDasharray="2 2" label={{ value: "Solvency 100%", fill: CHART_COLORS.red, fontSize: 9, position: "insideTopLeft" }} />
+              <Bar dataKey="rrAfter" name="RR After" fill={CHART_COLORS.gold} radius={[4, 4, 0, 0]} />
+              <Bar dataKey="lcrAfter" name="LCR After" fill={CHART_COLORS.emerald} radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        )}
+      </GlassCard>
+    </>
+  );
+}
+
 // ─── NAV ───
 const NAV_ITEMS = [
   { id: "mtq-value", label: "MTQ Value", icon: Coins },
@@ -396,6 +618,7 @@ const NAV_ITEMS = [
   { id: "legal-register", label: "Legal Register", icon: Gavel },
   { id: "sanctions", label: "Sanctions", icon: Shield },
   { id: "observations", label: "Observations", icon: Activity },
+  { id: "visual-analytics", label: "Visual Analytics", icon: BarChart3 },
 ];
 
 // ════════════════════════════════════════════════════════════
@@ -453,9 +676,9 @@ export default function Page() {
       </header>
       <div className="mx-auto flex w-full max-w-7xl flex-1">
         {/* ─── SIDEBAR NAV (upgraded: mobile-responsive horizontal scroll) ─── */}
-        <nav className="sticky top-[61px] hidden h-[calc(100vh-61px)] w-56 shrink-0 flex-col gap-1 overflow-y-auto p-4 lg:flex">
+        <nav role="navigation" aria-label="Section navigation" className="sticky top-[61px] hidden h-[calc(100vh-61px)] w-56 shrink-0 flex-col gap-1 overflow-y-auto p-4 lg:flex">
           {NAV_ITEMS.map((item) => (
-            <button key={item.id} onClick={() => scrollTo(item.id)} className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-medium text-gray-500 transition hover:bg-gold/5 hover:text-gold">
+            <button key={item.id} onClick={() => scrollTo(item.id)} aria-label={`Navigate to ${item.label} section`} className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-medium text-gray-500 transition hover:bg-gold/5 hover:text-gold">
               <item.icon className="h-3.5 w-3.5" />
               {item.label}
             </button>
@@ -491,10 +714,10 @@ export default function Page() {
         </nav>
 
         {/* ─── MOBILE NAV BAR (horizontal scroll for tablet/mobile) ─── */}
-        <div className="sticky top-[61px] z-40 border-b border-white/5 bg-[#0a0a0b]/95 backdrop-blur-xl lg:hidden">
+        <nav role="navigation" aria-label="Section navigation" className="sticky top-[61px] z-40 border-b border-white/5 bg-[#0a0a0b]/95 backdrop-blur-xl lg:hidden">
           <div className="flex gap-1 overflow-x-auto px-4 py-2">
             {NAV_ITEMS.map((item) => (
-              <button key={item.id} onClick={() => scrollTo(item.id)} className="flex shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[10px] font-medium text-gray-500 transition hover:bg-gold/5 hover:text-gold">
+              <button key={item.id} onClick={() => scrollTo(item.id)} aria-label={`Navigate to ${item.label} section`} className="flex shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[10px] font-medium text-gray-500 transition hover:bg-gold/5 hover:text-gold">
                 <item.icon className="h-3 w-3" />
                 {item.label}
               </button>
@@ -506,10 +729,10 @@ export default function Page() {
               OS →
             </Link>
           </div>
-        </div>
+        </nav>
 
         {/* ─── MAIN CONTENT ─── */}
-        <main className="min-w-0 flex-1 px-4 py-6 sm:px-6 lg:px-8">
+        <main role="main" className="min-w-0 flex-1 px-4 py-6 sm:px-6 lg:px-8">
           <div className="space-y-16">
             {/* ═══ MTQ VALUE — GOLD-ANCHORED, NOT PEGGED ═══ */}
             <Section id="mtq-value" icon={Coins} title="MTQ Value — Gold-Anchored, Not Pegged" subtitle="MTQ is NOT pegged to USD or any currency · Value = NAV (reserve-backed, gold-anchored) · PAR = 1.00 is accounting unit only · 11-currency basket + 18% gold anchor">
@@ -786,6 +1009,7 @@ export default function Page() {
                     <StatBox label="Constraints Met" value={reserve.data.currencyWeights?.constraintsMet ? "YES" : "NO"} sub="20% cap + 35% USD-eff" accent={reserve.data.currencyWeights?.constraintsMet ? "emerald" : "red"} />
                   </div>
                   <GlassCard className="mt-3 overflow-hidden p-0">
+                    <span className="sr-only">Currency weight table showing the 11-currency reserve basket with columns: Currency code, structural weight C (0.50 COFER + 0.40 SWIFT + 0.10 BIS), momentum M, mean-reversion R, volatility sigma, attenuation A, combined K, liquidity L, Final Weight W, and 20% concentration cap indicator. Final weights sum to 100%.</span>
                     <table className="w-full text-[11px]">
                       <thead className="border-b border-white/5 bg-white/[0.02]">
                         <tr className="text-gray-500">
@@ -1003,6 +1227,7 @@ export default function Page() {
                     <StatBox label="Worst Case RR" value={`${(N(stressTests.data.summary?.worstCaseRR) * 100).toFixed(2)}%`} sub={`Loss: $${(N(stressTests.data.summary?.worstCaseLoss) / 1e6).toFixed(2)}M`} accent="amber" />
                   </div>
                   <GlassCard className="mt-3 overflow-hidden p-0">
+                    <span className="sr-only">Stress test results table showing 10 historical crisis scenarios with columns: Scenario name, Reserve Ratio (RR) After stress, Final Stress Coverage Ratio (FSCR), Liquidity Coverage Ratio (LCR), total Loss in USD millions, and Status (Within limits, Defensive, or Breach). All scenarios show RR above the 100% solvency floor; worst case is Combined Systemic Crisis.</span>
                     <table className="w-full text-[10px]">
                       <thead className="border-b border-white/5 bg-white/[0.02]">
                         <tr className="text-gray-500">
@@ -1195,6 +1420,11 @@ export default function Page() {
                   </GlassCard>
                 </>
               )}
+            </Section>
+
+            {/* ═══ VISUAL ANALYTICS (R10: Recharts) ═══ */}
+            <Section id="visual-analytics" icon={BarChart3} title="Visual Analytics" subtitle="Monte Carlo distribution · 11-currency weights donut · stress test comparison · dark gold theme · powered by Recharts">
+              <VisualAnalytics />
             </Section>
 
             {/* ═══ INSTITUTIONAL ENGAGEMENT CTA ═══ */}

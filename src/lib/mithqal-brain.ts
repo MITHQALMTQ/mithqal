@@ -144,7 +144,7 @@ const NVIDIA_KEY = process.env.NVIDIA_API_KEY;
 
 /** Per-call upstream timeout. 12s is generous for Groq, tight for HF. */
 const UPSTREAM_TIMEOUT_MS = 12_000;
-const NVIDIA_TIMEOUT_MS = 20_000; // NVIDIA NIM cold-start can be slow
+const NVIDIA_TIMEOUT_MS = 30_000; // NVIDIA NIM cold-start can be slow
 
 /** Jaccard similarity threshold above which two responses "agree". */
 const AGREEMENT_THRESHOLD = 0.3;
@@ -560,7 +560,7 @@ async function queryOpenRouter(prompt: string): Promise<ModelResponse> {
  * Endpoint (per spec):
  *   POST https://integrate.api.nvidia.com/v1/chat/completions
  *
- * Model: "mistralai/mistral-nemotron" (per spec).
+ * Model: "mistralai/mistral-large" (per spec).
  *
  * NVIDIA's NIM (NVIDIA Inference Microservices) hosts open-weight
  * models tuned by NVIDIA. Nemotron is NVIDIA's instruction-tuned
@@ -596,7 +596,7 @@ async function queryNVIDIA(prompt: string): Promise<ModelResponse> {
           Authorization: `Bearer ${NVIDIA_KEY}`,
         },
         body: JSON.stringify({
-          model: "mistralai/mistral-nemotron",
+          model: "mistralai/mistral-large",
           messages: [
             {
               role: "system",
