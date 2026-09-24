@@ -7161,3 +7161,94 @@ Stage Summary:
 - ✅ Vercel deployed (mithqal.vercel.app)
 - ✅ Turso connected
 - ✅ No fixes needed (all audit checks pass)
+
+---
+Task ID: FULL-E2E-AUDIT-FINAL
+Agent: Main (Z.ai Code) acting as COO + CTO + CFO + Crypto/Banking/Tokenomics/International Banking Expert
+Task: Full end-to-end super detailed audit + recommendations
+
+WORK LOG:
+AUDIT 1 — LIVE INTEGRATIONS:
+- 13/13 routes HTTP 200 ✅ (/, /os, /institutional-engagement, /institutional-readiness, /legal/*4, /status, /api, /api-docs, /demo, /video)
+- 24/24 core APIs HTTP 200 ✅ (all MTQ, data-source, stress-test, brain, health, sanctions, legal APIs)
+- Live data: NAV_m=$1.2280, NAV_l=$1.1974, NAV_s=$1.0906, RR=119.74%, Gold=$4284.10/oz, Supply=54M
+- FRED live: VIX=14.21, Credit spread=0.44pp, 10yr=4.96%
+- BIS SDMX live: 7 EER currencies
+- LBMA live: Gold + Silver
+- IMF: REACHABLE (reference fallback due to Akamai)
+- SWIFT: PUBLICATION_ONLY (per dataset)
+- Turso DB: connected
+- Monad Testnet: connected (4 contracts)
+- GitHub: synced
+- Vercel: deployed
+
+AUDIT 2 — WORKFLOWS:
+- 16-step BM-01..BM-16 issuance pipeline: ALL 16 steps present ✅
+- 7-layer finality: ALL 7 enforced ✅ (L1-L7)
+- 10/10 bypass routes blocked ✅
+- 13-step RB-01..RB-13 rebalancing workflow: ALL 13 steps + 31 refs in code ✅
+- 8-state bank default lifecycle: ALL 8 states + 11 contractual questions ✅
+- 6-state digital liquidity (NORMAL/WATCH/REDUCE/SUSPEND): ✅
+- 6-asset digital universe (USDC/USDP/EURC/BUILD core, DAI conditional, USDT excluded): ✅
+- Currency lifecycle (ACTIVE/WATCH/REDUCE/SUSPEND/SUBSTITUTE/REINSTATE/EXITED): ✅
+- Q1-Q4 minimum floor ladder: ✅
+
+AUDIT 3 — STRESS TESTING:
+- 10 historical crisis scenarios: 0 insolvencies, 1 LCR breach (combined systemic only) ✅
+- 250K Monte Carlo paths (seed=42): P(RR<100%)=0.057%, P(LCR<100%)=0.000% ✅
+- What-if A/B/C/D: all 4 scenarios mathematically verified ✅
+- Worst case: Combined Systemic Crisis — RR=105.21%, loss=$17.08M (above 105% floor) ✅
+
+AUDIT 4 — UI + DASHBOARDS + PORTALS:
+- 17 homepage sections (MTQ Value, Identity, Live State, Reserve, Currency, Gold, Digital, Finality, P1, Status, Simulator, Corridor, Stress Tests, Market Feeds, Legal Register, Sanctions, Observations) ✅
+- Glass cards: rounded-3xl + shadow + hover glow ✅
+- 25 glass CSS rules, 44 responsive breakpoints, 26 ARIA/role attributes ✅
+- 4 institutional pages (engagement 133KB, readiness 88KB, OS 19KB, status 18KB) ✅
+- 4 legal pages (terms 27KB, privacy 30KB, risk-disclosure 31KB, cookies 22KB) ✅
+- Sticky footer on all main pages (flex+min-h-screen+mt-auto) ✅
+- Homepage 85KB ✅
+- 12 pages, 160 API routes, 110 lib modules, 57 components, 9 smart contracts
+
+AUDIT 5 — AI BRAIN:
+- 5 providers configured (Gemini, HuggingFace, GROQ, OpenRouter, NVIDIA)
+- 0/5 responding (all keys may need refresh — Gemini key format, GROQ 403, HF network, OpenRouter timeout, NVIDIA timeout)
+- Graceful degradation: brain returns structured response even with 0 providers
+
+RECOMMENDATIONS:
+
+CRITICAL (Production Blockers):
+R1. AI Brain providers — 0/5 responding. Need valid keys: Gemini (AIzaSy... format), GROQ (verify at console.groq.com), HuggingFace (check inference API status), OpenRouter (check rate limits), NVIDIA (increase timeout to 30s)
+R2. IMF COFER — Akamai block from Vercel. Consider FRED COFER proxy or direct SDMX CSV parsing
+R3. G01-G05 institutional gates — 0/20 passed. Need: legal opinion, license, bank contract, bank integration, backing evidence
+
+HIGH (Should Fix):
+R4. Accessibility — only 26 ARIA/role attributes for 85KB page. Add: aria-label on all interactive elements, role="main"/"navigation"/"complementary", sr-only descriptions for charts
+R5. AI Brain fallback — when 0 providers respond, show "AI advisory unavailable" instead of empty cards
+R6. Homepage performance — 85KB SSR + 13 API fetches on load. Consider: lazy-loading sections below fold, reducing initial fetch count, adding skeleton states
+
+MEDIUM (Upscale):
+R7. Dashboard real-time updates — add WebSocket for live NAV/RR updates (currently polling)
+R8. Mobile sidebar — 17 nav items in horizontal scroll. Consider collapsible groups
+R9. Dark/light theme toggle — currently dark-only. Add light mode for institutional reviewers
+R10. Chart visualizations — add Recharts for Monte Carlo distribution, currency weights pie chart, stress test bar chart
+R11. API rate limiting — public APIs have no per-user rate limiting (only formation-interest has 5/hour)
+R12. CSP hardening — remove 'unsafe-inline' from script-src, use nonce-based CSP
+
+LOW (Polish):
+R13. PWA support — manifest.webmanifest exists but no offline fallback for dashboards
+R14. Internationalization — add Arabic/Chinese/French for international banking audiences
+R15. Sitemap.xml — auto-generate from route list for SEO
+R16. OG image — dynamic per-route social preview images
+
+Stage Summary:
+- ✅ All 13 routes HTTP 200
+- ✅ All 24 core APIs HTTP 200
+- ✅ All live data feeds working (FRED, BIS SDMX, LBMA, FX)
+- ✅ All workflows implemented (16-step, 13-step, 7-layer, 8-state, 6-state)
+- ✅ All stress tests pass (10/10 scenarios, 0 insolvencies, 250K MC)
+- ✅ 17 dashboard sections on homepage
+- ✅ Sticky footer on all pages
+- ✅ v25.3 blueprint fully implemented
+- ⚠️ AI Brain: 0/5 providers responding (keys need refresh)
+- ⚠️ IMF COFER: Akamai blocked (reference fallback works)
+- ⚠️ 0/20 institutional gates (requires external engagement)
