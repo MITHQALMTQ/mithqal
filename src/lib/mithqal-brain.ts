@@ -275,7 +275,7 @@ async function queryGemini(prompt: string): Promise<ModelResponse> {
  * Endpoint (per spec):
  *   POST https://api.groq.com/openai/v1/chat/completions
  *
- * Model: "llama-3.1-8b-instant" (per spec).
+ * Model: "llama-3.3-70b-versatile" (per spec).
  */
 async function queryGroq(prompt: string): Promise<ModelResponse> {
   const start = Date.now();
@@ -303,7 +303,7 @@ async function queryGroq(prompt: string): Promise<ModelResponse> {
           Authorization: `Bearer ${GROQ_KEY}`,
         },
         body: JSON.stringify({
-          model: "llama-3.1-8b-instant",
+          model: "llama-3.3-70b-versatile",
           messages: [
             { role: "system", content: "You are the Mithqal Brain, a multi-model consensus AI for a gold-backed stablecoin. Be precise, structured, and concise." },
             { role: "user", content: prompt },
@@ -560,7 +560,7 @@ async function queryOpenRouter(prompt: string): Promise<ModelResponse> {
  * Endpoint (per spec):
  *   POST https://integrate.api.nvidia.com/v1/chat/completions
  *
- * Model: "mistralai/mistral-large" (per spec).
+ * Model: "mistralai/mistral-nemotron" (per spec).
  *
  * NVIDIA's NIM (NVIDIA Inference Microservices) hosts open-weight
  * models tuned by NVIDIA. Nemotron is NVIDIA's instruction-tuned
@@ -596,7 +596,7 @@ async function queryNVIDIA(prompt: string): Promise<ModelResponse> {
           Authorization: `Bearer ${NVIDIA_KEY}`,
         },
         body: JSON.stringify({
-          model: "mistralai/mistral-large",
+          model: "mistralai/mistral-nemotron",
           messages: [
             {
               role: "system",
