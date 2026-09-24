@@ -511,33 +511,125 @@ export default function Page() {
         {/* ─── MAIN CONTENT ─── */}
         <main className="min-w-0 flex-1 px-4 py-6 sm:px-6 lg:px-8">
           <div className="space-y-16">
-            {/* ═══ MTQ VALUE REFERENCE — high-end design ═══ */}
-            <Section id="mtq-value" icon={Coins} title="MTQ Value Reference" subtitle="MTQ is NOT pegged to any currency · PAR = $1.00 is an accounting reference only · 11-currency basket backing with live FX conversion">
-              {!nav.data ? <LoadingBox label="live FX rates" /> : (
+            {/* ═══ MTQ VALUE — GOLD-ANCHORED, NOT PEGGED ═══ */}
+            <Section id="mtq-value" icon={Coins} title="MTQ Value — Gold-Anchored, Not Pegged" subtitle="MTQ is NOT pegged to USD or any currency · Value = NAV (reserve-backed, gold-anchored) · PAR = 1.00 is accounting unit only · 11-currency basket + 18% gold anchor">
+              {!nav.data ? <LoadingBox label="live NAV + FX rates" /> : (
                 <>
-                  {/* Hero PAR card */}
+                  {/* Hero NAV card — actual market value */}
                   <GlassCard glow className="p-8 text-center">
-                    <div className="text-xs font-semibold uppercase tracking-[0.3em] text-gold">PAR — Accounting Reference (NOT a Peg)</div>
-                    <div className="mt-4 font-display text-6xl font-bold text-gold">1 MTQ</div>
-                    <div className="mt-2 font-display text-3xl font-bold text-white">= $1.00 USD</div>
-                    <div className="mt-3 text-xs text-gray-500 max-w-lg mx-auto">PAR = 1.00 USD is an accounting/settlement reference convention. MTQ is a <span className="text-gold font-semibold">neutral institutional cross-border settlement unit</span> backed by an 11-currency basket + gold. It is NOT pegged to USD, NOT pegged to any currency, NOT a promise of redemption into USD, and NOT a USD-backed instrument.</div>
+                    <div className="text-xs font-semibold uppercase tracking-[0.3em] text-gold">1 MTQ Market Value (NAV_m) — Gold-Anchored</div>
+                    <div className="mt-4 font-display text-6xl font-bold text-gold">≈ ${N(nav.data.navM).toFixed(4)}</div>
+                    <div className="mt-2 text-sm text-gray-500">Market NAV = R_m / S (total market reserve ÷ MTQ supply)</div>
+                    <div className="mt-4 grid grid-cols-3 gap-3">
+                      <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-3">
+                        <div className="text-[10px] uppercase tracking-wider text-gray-500">Prudential NAV</div>
+                        <div className="font-display text-lg font-bold text-emerald-400">≈ ${N(nav.data.navL).toFixed(4)}</div>
+                        <div className="text-[9px] text-gray-600">R_a / S (after haircuts)</div>
+                      </div>
+                      <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-3">
+                        <div className="text-[10px] uppercase tracking-wider text-gray-500">Stress NAV</div>
+                        <div className="font-display text-lg font-bold text-amber-400">≈ ${N(nav.data.navStress).toFixed(4)}</div>
+                        <div className="text-[9px] text-gray-600">R_l / S (stress scenario)</div>
+                      </div>
+                      <div className="rounded-lg border border-gold/20 bg-gold/5 p-3">
+                        <div className="text-[10px] uppercase tracking-wider text-gray-500">PAR (accounting)</div>
+                        <div className="font-display text-lg font-bold text-gold">1.0000</div>
+                        <div className="text-[9px] text-gray-600">Constitutional unit, NOT a peg</div>
+                      </div>
+                    </div>
+                    <div className="mt-4 text-xs text-gray-500 max-w-2xl mx-auto">
+                      MTQ is a <span className="text-gold font-semibold">neutral institutional settlement unit</span> backed by an 11-currency basket + 18% gold + 2% digital liquidity.
+                      Its value is determined by the <span className="text-gold font-semibold">reserve NAV</span>, NOT by a peg to USD or any currency.
+                      PAR = 1.00 is the constitutional accounting unit used for liability calculation (L = S × PAR) — it is <span className="text-red-400 font-semibold">NOT</span> the market price of MTQ, <span className="text-red-400 font-semibold">NOT</span> a USD peg, and <span className="text-red-400 font-semibold">NOT</span> a promise of redemption into USD.
+                      MTQ is <span className="text-gold font-semibold">gold-anchored</span> — the 18% gold sleeve provides the constitutional resilience anchor.
+                    </div>
                   </GlassCard>
 
-                  {/* 11 currency reference cards */}
-                  <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                    {[
-                      { ccy: "USD", flag: "🇺🇸", name: "US Dollar", val: 1.0, type: "par" as const },
-                      { ccy: "EUR", flag: "🇪🇺", name: "Euro", val: N(nav.data.fxRates?.EUR), type: "live" as const },
-                      { ccy: "JPY", flag: "🇯🇵", name: "Japanese Yen", val: N(nav.data.fxRates?.JPY), type: "live" as const },
-                      { ccy: "GBP", flag: "🇬🇧", name: "Pound Sterling", val: N(nav.data.fxRates?.GBP), type: "live" as const },
-                      { ccy: "CHF", flag: "🇨🇭", name: "Swiss Franc", val: N(nav.data.fxRates?.CHF), type: "live" as const },
-                      { ccy: "CAD", flag: "🇨🇦", name: "Canadian Dollar", val: N(nav.data.fxRates?.CAD), type: "live" as const },
-                      { ccy: "AUD", flag: "🇦🇺", name: "Australian Dollar", val: N(nav.data.fxRates?.AUD), type: "live" as const },
-                      { ccy: "CNY", flag: "🇨🇳", name: "Chinese Yuan", val: N(nav.data.fxRates?.CNY), type: "live" as const },
-                      { ccy: "SGD", flag: "🇸🇬", name: "Singapore Dollar", val: 0.74, type: "ref" as const },
-                      { ccy: "AED", flag: "🇦🇪", name: "UAE Dirham", val: 3.6725, type: "fx-peg" as const },
-                      { ccy: "SAR", flag: "🇸🇦", name: "Saudi Riyal", val: 3.75, type: "fx-peg" as const },
-                    ].map((c) => (
+                  {/* Gold anchor + weight balancing */}
+                  <div className="mt-4 grid gap-3 md:grid-cols-2">
+                    <GlassCard glow className="p-5 border-gold/20">
+                      <div className="mb-2 flex items-center gap-2">
+                        <Scale className="h-4 w-4 text-gold" />
+                        <span className="text-xs font-semibold uppercase tracking-wider text-gold">Gold Anchor (Constitutional)</span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <div className="text-[10px] uppercase tracking-wider text-gray-500">Gold Target</div>
+                          <div className="font-display text-xl font-bold text-gold">18%</div>
+                          <div className="text-[9px] text-gray-600">Corridor: 15-25%</div>
+                        </div>
+                        <div>
+                          <div className="text-[10px] uppercase tracking-wider text-gray-500">Gold Price (live)</div>
+                          <div className="font-display text-xl font-bold text-gold">${N(nav.data.goldUsd).toFixed(2)}</div>
+                          <div className="text-[9px] text-gray-600">LBMA spot XAU/USD</div>
+                        </div>
+                      </div>
+                      <div className="mt-3 rounded-lg border border-gold/10 bg-gold/5 p-2 text-[10px] text-gray-400">
+                        Gold is the primary constitutional resilience anchor. Liquidation protects gold LAST (7-step waterfall). Silver = 0% (SDC ≤ 0).
+                      </div>
+                    </GlassCard>
+                    <GlassCard className="p-5">
+                      <div className="mb-2 flex items-center gap-2">
+                        <Network className="h-4 w-4 text-emerald-400" />
+                        <span className="text-xs font-semibold uppercase tracking-wider text-emerald-400">Weight Balancing (11 Currencies)</span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <div className="text-[10px] uppercase tracking-wider text-gray-500">Formula</div>
+                          <div className="font-mono text-xs text-gray-300">C = 0.50·COFER + 0.40·SWIFT + 0.10·BIS</div>
+                        </div>
+                        <div>
+                          <div className="text-[10px] uppercase tracking-wider text-gray-500">Hard Cap</div>
+                          <div className="font-display text-xl font-bold text-emerald-400">20%</div>
+                          <div className="text-[9px] text-gray-600">Preferred: 15%</div>
+                        </div>
+                      </div>
+                      <div className="mt-3 grid grid-cols-3 gap-2 text-[10px]">
+                        <div className="rounded border border-white/5 bg-white/5 p-1.5 text-center"><div className="text-gray-500">USD Eff.</div><div className="font-mono text-emerald-400">23.54%</div></div>
+                        <div className="rounded border border-white/5 bg-white/5 p-1.5 text-center"><div className="text-gray-500">Ceiling</div><div className="font-mono text-gray-300">35%</div></div>
+                        <div className="rounded border border-white/5 bg-white/5 p-1.5 text-center"><div className="text-gray-500">Floor</div><div className="font-mono text-gray-300">0.5%</div></div>
+                      </div>
+                    </GlassCard>
+                  </div>
+
+                  {/* Reserve ratio status */}
+                  <GlassCard className={`mt-3 p-4 ${N(nav.data.reserveRatio) >= 130 ? "border-emerald-500/20" : N(nav.data.reserveRatio) >= 105 ? "border-amber-500/20" : "border-red-500/20"}`}>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="text-[10px] uppercase tracking-wider text-gray-500">Reserve Ratio (RR = R_a / L)</div>
+                        <div className={`font-display text-2xl font-bold ${N(nav.data.reserveRatio) >= 130 ? "text-emerald-400" : N(nav.data.reserveRatio) >= 105 ? "text-amber-400" : "text-red-400"}`}>{N(nav.data.reserveRatio).toFixed(2)}%</div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-[10px] uppercase tracking-wider text-gray-500">Strategic Target</div>
+                        <div className="font-display text-xl font-bold text-gold">130%</div>
+                        <div className="text-[9px] text-gray-600">Floor: 105% · Absolute: 100%</div>
+                      </div>
+                    </div>
+                    <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-white/5">
+                      <div className={`h-full rounded-full ${N(nav.data.reserveRatio) >= 130 ? "bg-emerald-500" : "bg-amber-500"}`} style={{ width: `${Math.min(100, (N(nav.data.reserveRatio) / 130) * 100)}%` }} />
+                    </div>
+                  </GlassCard>
+
+                  {/* 11 currency reference cards — FX conversion of NAV */}
+                  <div className="mt-4 text-[10px] font-semibold uppercase tracking-wider text-gray-500">1 MTQ (at market NAV ≈ ${N(nav.data.navM).toFixed(4)}) in each basket currency:</div>
+                  <div className="mt-2 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                    {(() => {
+                      const navM = N(nav.data.navM);
+                      return [
+                      { ccy: "USD", flag: "🇺🇸", name: "US Dollar", rate: 1.0, type: "nav" as const },
+                      { ccy: "EUR", flag: "🇪🇺", name: "Euro", rate: N(nav.data.fxRates?.EUR), type: "live" as const },
+                      { ccy: "JPY", flag: "🇯🇵", name: "Japanese Yen", rate: N(nav.data.fxRates?.JPY), type: "live" as const },
+                      { ccy: "GBP", flag: "🇬🇧", name: "Pound Sterling", rate: N(nav.data.fxRates?.GBP), type: "live" as const },
+                      { ccy: "CHF", flag: "🇨🇭", name: "Swiss Franc", rate: N(nav.data.fxRates?.CHF), type: "live" as const },
+                      { ccy: "CAD", flag: "🇨🇦", name: "Canadian Dollar", rate: N(nav.data.fxRates?.CAD), type: "live" as const },
+                      { ccy: "AUD", flag: "🇦🇺", name: "Australian Dollar", rate: N(nav.data.fxRates?.AUD), type: "live" as const },
+                      { ccy: "CNY", flag: "🇨🇳", name: "Chinese Yuan", rate: N(nav.data.fxRates?.CNY), type: "live" as const },
+                      { ccy: "SGD", flag: "🇸🇬", name: "Singapore Dollar", rate: 0.74, type: "ref" as const },
+                      { ccy: "AED", flag: "🇦🇪", name: "UAE Dirham", rate: 3.6725, type: "fx-peg" as const },
+                      { ccy: "SAR", flag: "🇸🇦", name: "Saudi Riyal", rate: 3.75, type: "fx-peg" as const },
+                      ].map((c) => {
+                        const mtqValue = navM * c.rate;
+                        return (
                       <GlassCard key={c.ccy} className="p-4 transition-all duration-300 hover:border-gold/30">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
@@ -547,25 +639,33 @@ export default function Page() {
                               <div className="text-[10px] text-gray-500">{c.name}</div>
                             </div>
                           </div>
-                          {c.type === "par" ? <Badge variant="gold">PAR REF</Badge> : c.type === "live" ? <Badge variant="emerald">LIVE FX</Badge> : c.type === "fx-peg" ? <Badge variant="amber">USD-PEG</Badge> : <Badge variant="gray">REF</Badge>}
+                          {c.type === "nav" ? <Badge variant="gold">NAV</Badge> : c.type === "live" ? <Badge variant="emerald">LIVE FX</Badge> : c.type === "fx-peg" ? <Badge variant="amber">USD-PEG</Badge> : <Badge variant="gray">REF</Badge>}
                         </div>
                         <div className="mt-3 border-t border-white/5 pt-2">
                           <div className="text-[10px] uppercase tracking-wider text-gray-500">1 MTQ ≈</div>
                           <div className="font-display text-xl font-bold text-gold">
-                            {c.val.toLocaleString("en-US", { minimumFractionDigits: c.ccy === "JPY" ? 0 : 4, maximumFractionDigits: c.ccy === "JPY" ? 0 : 4 })} {c.ccy}
+                            {mtqValue.toLocaleString("en-US", { minimumFractionDigits: c.ccy === "JPY" ? 0 : 4, maximumFractionDigits: c.ccy === "JPY" ? 0 : 4 })} {c.ccy}
                           </div>
                           <div className="text-[9px] text-gray-600 mt-0.5">
-                            {c.type === "par" ? "PAR accounting reference" : c.type === "live" ? "Live market FX rate" : c.type === "fx-peg" ? "Currency pegged to USD (not MTQ)" : "Reference value"}
+                            {c.type === "nav" ? "NAV × USD rate" : c.type === "live" ? "NAV × live FX rate" : c.type === "fx-peg" ? "NAV × USD-pegged rate" : "NAV × reference rate"}
                           </div>
                         </div>
                       </GlassCard>
-                    ))}
+                      );
+                      })
+                    })()}
                   </div>
 
-                  <GlassCard className="mt-3 p-4 border-amber-500/10">
+                  <GlassCard className="mt-3 p-4 border-gold/10">
                     <div className="flex items-center gap-2">
-                      <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-                      <span className="text-xs text-gray-400">MTQ is backed by an 11-currency basket + 18% gold + 2% digital liquidity — it is NOT pegged to any single currency. Live FX rates from open.er-api.com (8 currencies). AED/SAR are USD-pegged currencies (they peg TO USD, not MTQ). Gold spot: ${N(nav.data.goldUsd).toFixed(2)}/oz (LBMA live).</span>
+                      <Scale className="h-4 w-4 text-gold" />
+                      <span className="text-xs text-gray-400">
+                        MTQ is <span className="text-gold font-semibold">gold-anchored</span> — backed by an 11-currency basket (80%) + 18% gold + 2% digital liquidity.
+                        Its value is the <span className="text-gold font-semibold">NAV</span> (reserve ÷ supply), NOT a peg to any currency.
+                        PAR = 1.00 is the constitutional accounting unit (L = S × PAR), NOT the market price.
+                        Weight balancing: C = 0.50·COFER + 0.40·SWIFT + 0.10·BIS, 20% hard cap, 35% USD ceiling.
+                        Gold: ${N(nav.data.goldUsd).toFixed(2)}/oz (LBMA live). MTQ is NOT pegged to USD or any currency.
+                      </span>
                     </div>
                   </GlassCard>
                 </>
