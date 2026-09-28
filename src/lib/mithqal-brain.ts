@@ -169,11 +169,25 @@ const MODEL_LABELS: Record<ModelResponse["model"], string> = {
  *
  * The first entry is the "primary" model (per the original spec); the
  * remaining entries are fallbacks of the same family/provider.
+ *
+ * v25.5 (D3 — AI Brain Failover Architect): every provider's list
+ * extended with additional publicly-documented known-good models so
+ * the per-provider chain survives more deprecation events before
+ * surfacing a "provider-down" card to the operator. The query
+ * functions' internal loop logic is unchanged — only the constant's
+ * contents grew. References:
+ *   - Gemini:   https://ai.google.dev/gemini-api/docs/models
+ *   - Groq:     https://console.groq.com/docs/models
+ *   - HF:       https://huggingface.co/models?other=inference
+ *   - OpenRtr:  https://openrouter.ai/models
+ *   - NVIDIA:   https://build.nvidia.com/explore/discover/models
  */
 const MODEL_FALLBACKS: Record<ModelResponse["model"], string[]> = {
   groq: [
     "llama-3.3-70b-versatile",
     "llama-3.1-8b-instant",
+    "llama-3.2-3b-preview",
+    "llama-3.2-1b-preview",
     "mixtral-8x7b-32768",
     "gemma2-9b-it",
   ],
@@ -182,14 +196,21 @@ const MODEL_FALLBACKS: Record<ModelResponse["model"], string[]> = {
     "nvidia/llama-3.1-nemotron-70b-instruct",
     "nvidia/llama-3.1-nemotron-51b-instruct",
     "meta/llama-3.2-90b-vision-instruct",
+    "nvidia/llama-3.3-nemotron-super-49b",
+    "meta/llama-3.1-405b-instruct",
   ],
   openrouter: [
     "meta-llama/llama-3.3-70b-instruct",
     "google/gemini-2.0-flash-exp:free",
     "meta-llama/llama-3.1-70b-instruct",
+    "deepseek/deepseek-chat-v3-0324:free",
+    "qwen/qwen-2.5-72b-instruct:free",
+    "microsoft/phi-4:free",
   ],
   gemini: [
     "gemini-2.0-flash",
+    "gemini-2.5-flash",
+    "gemini-2.5-pro",
     "gemini-1.5-flash",
     "gemini-1.5-pro",
   ],
@@ -197,7 +218,31 @@ const MODEL_FALLBACKS: Record<ModelResponse["model"], string[]> = {
     "meta-llama/Llama-3.1-70B-Instruct",
     "meta-llama/Meta-Llama-3-8B-Instruct",
     "mistralai/Mistral-7B-Instruct-v0.3",
+    "mistralai/Mistral-Nemo-Instruct-2407",
+    "Qwen/Qwen2.5-7B-Instruct",
   ],
+};
+
+/**
+ * Coarse model-family classifier for each provider's PRIMARY model.
+ *
+ * Used by `crossProviderFailover()` to determine which providers are
+ * acceptable substitutes for one another when a provider's entire call
+ * fails (e.g. revoked API key, all fallback models 5xx'd). Two
+ * providers are considered "same family" if their primaries share the
+ * same coarse identifier — e.g. groq's `llama-3.3-70b-versatile` and
+ * openrouter's `meta-llama/llama-3.3-70b-instruct` both classify as
+ * `llama-3.3-70b`, so OpenRouter can fill in for a dead GROQ.
+ *
+ * Hand-curated (rather than derived) so the cross-provider peering is
+ * auditable and stable across model-list churn.
+ */
+const PRIMARY_FAMILY: Record<ModelResponse["model"], string> = {
+  gemini: "gemini-2.0-flash",
+  huggingface: "llama-3.1-70b",
+  groq: "llama-3.3-70b",
+  openrouter: "llama-3.3-70b",
+  nvidia: "mistral-nemotron",
 };
 
 /* ------------------------------------------------------------------ */
@@ -954,6 +999,123 @@ export function extractRecommendations(text: string): string[] {
 }
 
 /* ------------------------------------------------------------------ */
+/*  Cross-provider failover (v25.5 / D3)                               */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Cross-provider failover — RECOVER a failed provider's slot by
+ * substituting the response from a successful alternate provider
+ * whose primary model is in the same coarse family.
+ *
+ * MOTIVATION:
+ *   The per-provider fallback loop (inside each `queryXxx()` function)
+ *   only swaps models WITHIN a single provider. If GROQ's API key is
+ *   revoked, every model in the Groq chain 401s and the Groq card goes
+ *   red — even if OpenRouter's `meta-llama/llama-3.3-70b-instruct`
+ *   (same "llama-3.3-70b" family) just answered successfully. This
+ *   function fills that gap: it LOANS the alternate's response into
+ *   the failed provider's slot, preserving the failed slot's identity
+ *   so the UI continues to render one card per provider.
+ *
+ * NON-MUTATING:
+ *   Returns a NEW array of NEW `ModelResponse` objects. The input
+ *   array and its objects are never modified. (Shallow copy is
+ *   sufficient because every `ModelResponse` field is a primitive.)
+ *
+ * SUBSTITUTION SHAPE:
+ *   For each failed `ModelResponse` (`ok: false`) for which a same-
+ *   family successful alternate is found, the replacement object has:
+ *     - `model`:           preserved (the failed provider's id —
+ *                          the UI still renders the Groq card).
+ *     - `label`:           augmented to `"<ProviderLabel> (failover
+ *                          via <AltLabel>)"` so the operator can see
+ *                          the substitution in the rendered card.
+ *     - `response`,
+ *       `confidence`,
+ *       `latencyMs`:       copied verbatim from the alternate.
+ *     - `ok`:              `true` (the slot is now considered
+ *                          successful — consensus can use it).
+ *     - `error`:           omitted (no error to surface).
+ *
+ * ALTERNATE SELECTION:
+ *   Among all successful alternates in the same family, the one with
+ *   the LOWEST `latencyMs` is chosen — a coarse proxy for "best
+ *   available". A failed provider is never used as its own alternate.
+ *
+ * LIMITS (intentional):
+ *   - This is a POST-HOC substitution, not a re-dispatch. No new HTTP
+ *     calls are made. The "best alternate" is whichever alternate
+ *     ALREADY succeeded in the parallel `Promise.allSettled` batch.
+ *   - Family matching is coarse and hand-curated in `PRIMARY_FAMILY`.
+ *     If no alternate shares the failed provider's family, the slot
+ *     stays red. (E.g. Gemini ↔ no peer; NVIDIA Nemotron ↔ no peer.)
+ *   - The substitution is purely additive to consensus: the alternate's
+ *     own slot is unchanged, so the alternate now "votes twice" (once
+ *     in its own slot, once in the recovered slot). This is the
+ *     intended behavior — a single successful answer from a reliable
+ *     provider is more useful than a missing vote. The consensus
+ *     layer's Jaccard similarity will trivially register 1.0 between
+ *     the two copies, so the largest pairwise-agreement clique grows
+ *     by 1 — the consensus level may rise from "medium" to "high".
+ *
+ * Signature: `(results: ModelResponse[]) => ModelResponse[]` — pure
+ * function, no side effects, no I/O. Safe to call from
+ * `queryAllModels()` after `Promise.allSettled` returns.
+ */
+export function crossProviderFailover(
+  results: ModelResponse[]
+): ModelResponse[] {
+  // Immutability: shallow-copy each ModelResponse. The fields are all
+  // primitives (string/number/boolean) so a shallow copy is sufficient
+  // to guarantee we never mutate the caller's objects.
+  const out: ModelResponse[] = results.map((r) => ({ ...r }));
+
+  // Index the successful responses by their PRIMARY family. The list
+  // for each family is sorted by latency ascending so the first entry
+  // is the "best available" alternate.
+  const successByFamily = new Map<string, ModelResponse[]>();
+  for (const r of results) {
+    if (!r.ok) continue;
+    const fam = PRIMARY_FAMILY[r.model];
+    if (!fam) continue;
+    const list = successByFamily.get(fam) ?? [];
+    list.push(r);
+    successByFamily.set(fam, list);
+  }
+  for (const list of successByFamily.values()) {
+    list.sort((a, b) => a.latencyMs - b.latencyMs);
+  }
+
+  // For each failed slot, find the best alternate (same family, OK,
+  // not the same provider) and substitute its response into the slot.
+  for (let i = 0; i < out.length; i++) {
+    const failed = out[i];
+    if (failed.ok) continue;
+
+    const fam = PRIMARY_FAMILY[failed.model];
+    if (!fam) continue;
+
+    const alternates = successByFamily.get(fam) ?? [];
+    // The alternate must NOT be the same provider as the failed slot
+    // (a provider can never substitute for itself).
+    const alt = alternates.find((a) => a.model !== failed.model);
+    if (!alt) continue;
+
+    out[i] = {
+      model: failed.model, // preserve slot identity (UI renders Groq card)
+      label: `${MODEL_LABELS[failed.model]} (failover via ${alt.label})`,
+      response: alt.response,
+      confidence: alt.confidence,
+      latencyMs: alt.latencyMs,
+      ok: true,
+      // `error` deliberately omitted — `ok: true` signals success.
+    };
+  }
+
+  return out;
+}
+
+/* ------------------------------------------------------------------ */
 /*  Parallel query                                                     */
 /* ------------------------------------------------------------------ */
 
@@ -966,6 +1128,13 @@ export function extractRecommendations(text: string): string[] {
  *
  * The optional `systemContext` is prepended to the prompt to give all 5
  * models the same framing.
+ *
+ * v25.5 (D3): after `Promise.allSettled` returns, the result array is
+ * passed through `crossProviderFailover()` so a provider whose entire
+ * call failed (revoked API key, all fallbacks 5xx'd) can be RECOVERED
+ * by substituting the response of an alternate provider whose primary
+ * model is in the same coarse family. See the docstring on
+ * `crossProviderFailover()` for the full rationale + limits.
  */
 export async function queryAllModels(
   prompt: string,
@@ -981,7 +1150,7 @@ export async function queryAllModels(
     queryOpenRouter(fullPrompt),
     queryNVIDIA(fullPrompt),
   ]);
-  return [
+  const results: ModelResponse[] = [
     gemini.status === "fulfilled"
       ? gemini.value
       : { model: "gemini" as const, label: MODEL_LABELS.gemini, response: "", confidence: 0, latencyMs: 0, ok: false, error: "Gemini rejected" },
@@ -998,6 +1167,12 @@ export async function queryAllModels(
       ? nvidia.value
       : { model: "nvidia" as const, label: MODEL_LABELS.nvidia, response: "", confidence: 0, latencyMs: 0, ok: false, error: "NVIDIA rejected" },
   ];
+
+  // v25.5 (D3): apply cross-provider failover to recover any slot
+  // whose entire call failed, by substituting the response of an
+  // alternate provider whose primary model is in the same family.
+  // Pure function, non-mutating — `results` is unchanged.
+  return crossProviderFailover(results);
 }
 
 /* ------------------------------------------------------------------ */
