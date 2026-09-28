@@ -14,6 +14,25 @@ import { dirname } from 'node:path'
  *   DATABASE_AUTH_TOKEN=<turso-token>
  *
  * For local dev, DATABASE_URL can be file:./db/custom.db (no auth token needed).
+ *
+ * -------------------------------------------------------------------
+ * NEON FALLBACK (per task AI-FALLBACK-INNGEST-NEON)
+ * -------------------------------------------------------------------
+ * Turso is the PRIMARY database today. Neon (serverless Postgres) is
+ * available as a MIGRATION TARGET / FALLBACK if Turso becomes
+ * unreachable (regional outage, libsql protocol regression, or token
+ * expiry). The fallback is NOT wired in here today — see
+ * /NEON-SETUP.md for the runbook. When the fallback is needed, set
+ * `NEON_DATABASE_URL=postgresql://user:pass@ep-xxx.us-east-2.aws.neon.tech/dbname?sslmode=require`
+ * in Vercel project env vars and add the conditional selection logic
+ * described in NEON-SETUP.md to `createDbClient()` below. The
+ * `@libsql/client` API is wire-compatible with Postgres for the
+ * subset of SQL Mithqal uses, so no schema migration is required —
+ * but for true Postgres you would swap `@libsql/client` for
+ * `@neondatabase/serverless` (drop-in: same `Client` interface).
+ *
+ * Intentionally we do NOT change the default connection logic above.
+ * Adding the fallback is a deliberate operator action — never silent.
  */
 
 const globalForDb = globalThis as unknown as {

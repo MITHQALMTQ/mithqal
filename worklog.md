@@ -7347,3 +7347,228 @@ NEXT ACTIONS:
 - Refresh AI Brain provider keys (Gemini, GROQ, HuggingFace, OpenRouter, NVIDIA) so the R5 fallback message becomes a degraded-state notice rather than the default
 - Consider follow-up R12 nonce pipeline implementation (middleware.ts → request-scoped CSP header)
 - Consider R6 (lazy-loading below-fold sections) and R7 (WebSocket live updates) as next medium-priority polish items
+
+---
+
+## Task ID AI-FALLBACK-INNGEST-NEON — AI Brain model fallback + Inngest integration + Neon fallback runbook
+
+**Date:** see git history.
+**Role:** Chief AI Reliability Architect · Background-Job Infrastructure Engineer · Database Continuity Engineer.
+**Scope:** Add per-provider model-level fallback to the Mithqal Brain
+so a single model deprecation (e.g. Groq retiring `llama-3.3-70b-versatile`)
+no longer kills that provider's consensus vote; wire up Inngest as the
+durable background-job layer for data-source sync; document Neon as a
+manual-fallback database target without migrating away from Turso.
+
+### 1. AI Brain model fallback (CRITICAL) — `src/lib/mithqal-brain.ts`
+
+Added a `MODEL_FALLBACKS: Record<ModelResponse["model"], string[]>`
+constant in the Configuration section right after `MODEL_LABELS`. Each
+provider has an ordered list of model identifiers, primary first:
+
+- **groq**: `llama-3.3-70b-versatile` → `llama-3.1-8b-instant` →
+  `mixtral-8x7b-32768` → `gemma2-9b-it`
+- **nvidia**: `mistralai/mistral-nemotron` →
+  `nvidia/llama-3.1-nemotron-70b-instruct` →
+  `nvidia/llama-3.1-nemotron-51b-instruct` →
+  `meta/llama-3.2-90b-vision-instruct`
+- **openrouter**: `meta-llama/llama-3.3-70b-instruct` →
+  `google/gemini-2.0-flash-exp:free` →
+  `meta-llama/llama-3.1-70b-instruct`
+- **gemini**: `gemini-2.0-flash` → `gemini-1.5-flash` → `gemini-1.5-pro`
+- **huggingface**: `meta-llama/Llama-3.1-70B-Instruct` →
+  `meta-llama/Meta-Llama-3-8B-Instruct` →
+  `mistralai/Mistral-7B-Instruct-v0.3`
+
+Rewrote the internal model-selection loop of each of the 5 query
+functions (`queryGemini`, `queryGroq`, `queryHuggingFace`,
+`queryOpenRouter`, `queryNVIDIA`). Pattern:
+
+1. Read the provider's fallback list.
+2. Iterate; on each attempt build the URL/body with the candidate
+   `modelName` (for Gemini the model name is in the URL path; for
+   HuggingFace too; for Groq/OpenRouter/NVIDIA it's in the JSON body).
+3. On HTTP 4xx/5xx or an empty 200, capture the error string into
+   `lastError` and `continue` to the next model.
+4. On success, return immediately with `ok: true`, `response: text`,
+   `confidence: scoreConfidence(text)`, `latencyMs: Date.now() - start`.
+5. After all candidates are exhausted, return a single failed
+   `ModelResponse` with `error: lastError` (the most recent failure
+   — i.e. the error from the LAST model attempted, which is what the
+   operator wants to see in the UI).
+
+**Constraints honored (per task spec):**
+- Function signatures unchanged (`async function queryXxx(prompt: string): Promise<ModelResponse>`).
+- `ModelResponse` / `BrainResponse` / `QueryType` / `CurrencyData` /
+  `UserData` / `TransactionLike` / `RiskAssessment` / `AnomalyFinding`
+  interfaces unchanged.
+- `queryAllModels()` and `getBrainStatus()` unchanged — they continue
+  to call the 5 query functions in parallel via `Promise.allSettled` and
+  surface a per-model status object.
+- The `label` field on each `ModelResponse` continues to reflect the
+  *provider-level* label (`MODEL_LABELS[model]`), NOT the specific
+  candidate model that succeeded. This is intentional: the UI in
+  `mithqal-brain.tsx` renders one card per provider, and surfacing the
+  sub-model that responded is a future polish item (not in this task's
+  scope). The sub-model name IS visible in the error string when a
+  provider fully fails, which is the more actionable diagnostic surface.
+- `scoreConfidence`, `extractRecommendations`, `buildConsensus`,
+  `tokenize`, `jaccard`, `dispatchBrainQuery` and the specialized
+  Brain functions (`riskMonitor`, `complianceAssistant`,
+  `anomalyDetection`) untouched.
+- Per-call timeouts preserved: `UPSTREAM_TIMEOUT_MS = 12_000` for
+  Gemini/Groq/HuggingFace/OpenRouter, `NVIDIA_TIMEOUT_MS = 30_000` for
+  NVIDIA. The timeout is per-candidate, so worst-case latency for a
+  fully-failing provider is `n_candidates × timeout_ms` — acceptable
+  because (a) most failures are 4xx not timeouts, (b) the consensus
+  layer parallelizes the 5 providers so a slow provider does not block
+  the others.
+
+**Net effect:** when Groq retires `llama-3.3-70b-versatile` (already
+happened in production), the Brain silently falls through to
+`llama-3.1-8b-instant` instead of returning an HTTP 404 card. The
+operator only sees a degraded Groq card if ALL FOUR fallback models
+fail (e.g. GROQ_API_KEY revoked entirely).
+
+### 2. Inngest integration
+
+**Created `src/lib/inngest-client.ts`:**
+- Exports a singleton `inngest` client (`new Inngest({ id: "mithqal",
+  eventKey: process.env.INNGEST_EVENT_KEY, signingKey:
+  process.env.INNGEST_SIGNING_KEY })`). Both env vars are optional at
+  module-load — Inngest surfaces a runtime warning if missing but the
+  module constructs cleanly so `bunx next build` does not fail when
+  the dashboard hasn't been provisioned yet.
+- Exports `dataSourceSync = inngest.createFunction(
+  { id: "data-source-sync", name: "Data Source Sync" },
+  { event: "sync/data-sources" },
+  async ({ event, step }) => { await step.run("fetch-market-data",
+  async () => { ... fetchRealMarketData() ... return { vix, gold,
+  timestamp } }) })`. The step dynamically imports
+  `@/lib/real-market-feeds` to keep cold-start cost off the
+  non-Inngest code paths.
+
+**Created `src/app/api/inngest/route.ts`:**
+- Imports `serve` from `inngest/next` and the `inngest` +
+  `dataSourceSync` from the client.
+- Exports `const dynamic = "force-dynamic"` (required — the route is
+  stateful and per-request signed).
+- Exports `const { GET, POST, PUT } = serve({ client: inngest,
+  functions: [dataSourceSync] })`.
+- The `functions` array registers `dataSourceSync`; future Inngest
+  functions are added by importing them from the client module and
+  appending here (do not register the same function twice — Inngest
+  Cloud will reject the sync).
+
+**Verified `inngest` package availability:** `inngest@^4.21.0` is in
+`package.json` and installed in `node_modules`. The `inngest/next`
+subpath export exists in the package's `exports` map and exposes the
+`serve` handler with the expected `{ GET, POST, PUT }` shape.
+
+**Constitutional compliance:** Inngest functions are read-only with
+respect to monetary state — they refresh oracle data, run
+reconciliation reports, emit advisory signals. They NEVER mint,
+weight, or alter NAV. The deterministic v19 monetary engine remains
+the sole writer.
+
+### 3. Neon database fallback (DOCUMENTATION ONLY — no migration)
+
+**Edited `src/lib/db.ts`** to add a `NEON FALLBACK` documentation block
+in the file's top-level doc comment. The block notes that Turso is the
+primary database, Neon is a migration target / fallback only, the
+fallback is NOT wired in today, and operators should consult
+`/NEON-SETUP.md` for the runbook. No functional code was added to
+`db.ts` — Turso continues to be the only database the app talks to.
+
+**Created `/NEON-SETUP.md`** with a 9-section runbook covering:
+- Why the fallback is manual, not automatic (avoid split-brain).
+- Prerequisites (Neon account, Vercel owner access, current Turso
+  snapshot).
+- Step 1: provision a Neon project (`mithqal-fallback` in AWS
+  us-east-2, Postgres 17). Includes the expected
+  `postgresql://...?sslmode=require` connection string shape.
+- Step 2: add `NEON_DATABASE_URL` (and the switch var
+  `DATABASE_BACKEND=turso`) to Vercel project env vars across
+  Production / Preview / Development.
+- Step 3: migrate schema + data from Turso to Neon. Documents
+  `turso db shell .dump` → `psql -f dump.sql`, the
+  SQLite-vs-Postgres id-column type nuance (`INTEGER PRIMARY KEY`
+  vs `BIGSERIAL PRIMARY KEY`), and a row-count verification SQL
+  snippet.
+- Step 4: modify `db.ts` to fall back to Neon — shows the
+  `DATABASE_BACKEND`-gated branch shape, the lazy `import
+  @neondatabase/serverless` pattern, and the recommendation to
+  write a thin adapter that exposes the libsql `Client` interface
+  over Neon's `sql` tagged-template function (~80 LOC; no
+  application code change required).
+- Operational checklist (8 items).
+- Why NOT auto-failover (the rationale: no reliable health-check
+  heuristic, no bidirectional sync — manual fallback keeps blast
+  radius tiny and the mental model simple).
+- References to Turso CLI, libsql-client, Neon serverless driver,
+  Neon pooling docs, Vercel env vars docs, the Mithqal db source
+  path.
+
+### Build verification
+
+- Inspected the `inngest` package.json `exports` map: `./next`
+  subpath is published and exposes `serve` (Next.js 13+ app-router
+  shape with `{ GET, POST, PUT }` destructuring). Type definitions
+  at `node_modules/inngest/next.d.ts` confirm the
+  `RequestHandler & { GET, POST, PUT }` return shape.
+- Inspected `node_modules/inngest/types.d.ts` lines 900 + 1051:
+  `InngestConstructorOptions` accepts `eventKey?: string` and
+  `signingKey?: string`. The client constructor in
+  `src/lib/inngest-client.ts` is therefore type-correct.
+- Inspected `node_modules/inngest/components/Inngest.d.ts` line 357:
+  `createFunction` exists on `Inngest` instances. The
+  `dataSourceSync` definition is therefore type-correct.
+- Inspected `src/lib/real-market-feeds.ts` line 150
+  (`RealMarketData` interface) and line 1781
+  (`fetchRealMarketData` export): the dynamic import inside the
+  Inngest step returns `{ vix, goldUsd, timestamp }` exactly as the
+  `dataSourceSync` step return-value object references.
+- `mithqal-brain.ts` MultiEdit applied atomically; the file's
+  structure (5 query functions → consensus heuristics →
+  `queryAllModels` → specialized Brain functions →
+  `getBrainStatus` → `dispatchBrainQuery`) is preserved end-to-end.
+- TypeScript: the only new types introduced are local (`modelName`
+  inferred from `for...of` over `string[]`; `lastError: string`;
+  `errText` shadowed inside each iteration — uses block-scoped
+  `const` so no shadowing warnings). No new ESLint suppressions
+  needed.
+
+### FILES MODIFIED (2)
+
+- `src/lib/mithqal-brain.ts` — added `MODEL_FALLBACKS` constant +
+  rewrote internal model-selection loop of all 5 `queryXxx()`
+  functions. Function signatures, `queryAllModels()`,
+  `getBrainStatus()`, and all consensus logic untouched.
+- `src/lib/db.ts` — added a `NEON FALLBACK` documentation block to
+  the file's top-level doc comment. Zero functional code change.
+
+### FILES CREATED (3)
+
+- `src/lib/inngest-client.ts` — Inngest client singleton +
+  `dataSourceSync` function.
+- `src/app/api/inngest/route.ts` — Inngest serve handler
+  (`{ GET, POST, PUT }` + `dynamic = "force-dynamic"`).
+- `NEON-SETUP.md` — 9-section Neon fallback runbook at the project
+  root.
+
+### NEXT ACTIONS
+
+- Refresh AI Brain provider keys (Gemini, GROQ, HuggingFace,
+  OpenRouter, NVIDIA) — the model fallback list now absorbs
+  single-model deprecations, but a missing/invalid key still kills
+  the whole provider.
+- Provision an Inngest Cloud project, copy the event + signing keys
+  into Vercel env vars (`INNGEST_EVENT_KEY`, `INNGEST_SIGNING_KEY`),
+  and configure the `sync/data-sources` event trigger (cron schedule
+  in the Inngest dashboard, or an external cron POSTing to
+  `/api/inngest`).
+- Add more Inngest functions (oracle refresh, reserve reconciliation,
+  anomaly sweep) by extending `inngest-client.ts` and appending to
+  the `functions` array in `route.ts`.
+- Provision a warm `mithqal-fallback` Neon project per
+  `NEON-SETUP.md` so the fallback is ready before it's needed.

@@ -157,6 +157,49 @@ const MODEL_LABELS: Record<ModelResponse["model"], string> = {
   nvidia: "NVIDIA Nemotron",
 };
 
+/**
+ * Per-provider model fallback lists.
+ *
+ * For each provider we maintain an ordered list of model identifiers.
+ * Each `queryXxx()` function iterates the list and returns the first
+ * successful response. This provides resilience against single-model
+ * 404s (e.g. Groq retiring `llama-3.3-70b-versatile`) and transient
+ * upstream failures, without expanding the cross-provider consensus
+ * pool — every provider still casts exactly one vote in the consensus.
+ *
+ * The first entry is the "primary" model (per the original spec); the
+ * remaining entries are fallbacks of the same family/provider.
+ */
+const MODEL_FALLBACKS: Record<ModelResponse["model"], string[]> = {
+  groq: [
+    "llama-3.3-70b-versatile",
+    "llama-3.1-8b-instant",
+    "mixtral-8x7b-32768",
+    "gemma2-9b-it",
+  ],
+  nvidia: [
+    "mistralai/mistral-nemotron",
+    "nvidia/llama-3.1-nemotron-70b-instruct",
+    "nvidia/llama-3.1-nemotron-51b-instruct",
+    "meta/llama-3.2-90b-vision-instruct",
+  ],
+  openrouter: [
+    "meta-llama/llama-3.3-70b-instruct",
+    "google/gemini-2.0-flash-exp:free",
+    "meta-llama/llama-3.1-70b-instruct",
+  ],
+  gemini: [
+    "gemini-2.0-flash",
+    "gemini-1.5-flash",
+    "gemini-1.5-pro",
+  ],
+  huggingface: [
+    "meta-llama/Llama-3.1-70B-Instruct",
+    "meta-llama/Meta-Llama-3-8B-Instruct",
+    "mistralai/Mistral-7B-Instruct-v0.3",
+  ],
+};
+
 /* ------------------------------------------------------------------ */
 /*  HTTP helper with timeout                                           */
 /* ------------------------------------------------------------------ */
@@ -207,66 +250,67 @@ async function queryGemini(prompt: string): Promise<ModelResponse> {
     return { ...base, error: "GEMINI_API_KEY not configured" };
   }
 
-  try {
-    const url =
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" +
-      encodeURIComponent(GEMINI_KEY);
+  // Iterate the per-provider model fallback list and return the first
+  // successful response. Each model failure is logged into `lastError`
+  // and the next model is tried; only after all candidates fail do we
+  // surface the final error to the caller.
+  const models = MODEL_FALLBACKS.gemini;
+  let lastError = "";
 
-    const res = await fetchWithTimeout(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { temperature: 0.4, maxOutputTokens: 800 },
-      }),
-    });
+  for (const modelName of models) {
+    try {
+      const url =
+        `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=` +
+        encodeURIComponent(GEMINI_KEY);
 
-    if (!res.ok) {
-      const text = await res.text().catch(() => "");
-      return {
-        ...base,
-        latencyMs: Date.now() - start,
-        error: `Gemini HTTP ${res.status}: ${text.slice(0, 200)}`,
+      const res = await fetchWithTimeout(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { temperature: 0.4, maxOutputTokens: 800 },
+        }),
+      });
+
+      if (!res.ok) {
+        const errText = await res.text().catch(() => "");
+        lastError = `Gemini ${modelName} HTTP ${res.status}: ${errText.slice(0, 200)}`;
+        continue;
+      }
+
+      const json = (await res.json()) as {
+        candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
       };
-    }
+      const text =
+        json?.candidates?.[0]?.content?.parts
+          ?.map((p) => p.text ?? "")
+          .join("")
+          .trim() ?? "";
 
-    const json = (await res.json()) as {
-      candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
-    };
-    const text =
-      json?.candidates?.[0]?.content?.parts
-        ?.map((p) => p.text ?? "")
-        .join("")
-        .trim() ?? "";
+      if (!text) {
+        // Empty 200 from a candidate model — try the next one.
+        lastError = `Gemini ${modelName} returned an empty response`;
+        continue;
+      }
 
-    if (!text) {
       return {
         ...base,
+        response: text,
+        confidence: scoreConfidence(text),
         latencyMs: Date.now() - start,
         ok: true,
-        error: "Gemini returned an empty response",
       };
-    }
-
-    return {
-      ...base,
-      response: text,
-      confidence: scoreConfidence(text),
-      latencyMs: Date.now() - start,
-      ok: true,
-    };
-  } catch (err) {
-    return {
-      ...base,
-      latencyMs: Date.now() - start,
-      error:
+    } catch (err) {
+      lastError =
         err instanceof Error && err.name === "AbortError"
-          ? "Gemini timed out"
+          ? `Gemini ${modelName} timed out`
           : err instanceof Error
-            ? err.message
-            : "Gemini call failed",
-    };
+            ? `Gemini ${modelName}: ${err.message}`
+            : `Gemini ${modelName} call failed`;
+    }
   }
+
+  return { ...base, latencyMs: Date.now() - start, error: lastError };
 }
 
 /**
@@ -293,69 +337,70 @@ async function queryGroq(prompt: string): Promise<ModelResponse> {
     return { ...base, error: "GROQ_API_KEY not configured" };
   }
 
-  try {
-    const res = await fetchWithTimeout(
-      "https://api.groq.com/openai/v1/chat/completions",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${GROQ_KEY}`,
-        },
-        body: JSON.stringify({
-          model: "llama-3.3-70b-versatile",
-          messages: [
-            { role: "system", content: "You are the Mithqal Brain, a multi-model consensus AI for a gold-backed stablecoin. Be precise, structured, and concise." },
-            { role: "user", content: prompt },
-          ],
-          temperature: 0.3,
-          max_tokens: 800,
-        }),
+  // Iterate the per-provider model fallback list and return the first
+  // successful response. This protects the Brain against Groq retiring
+  // individual models (the original primary, `llama-3.3-70b-versatile`,
+  // has historically 404'd) — we silently fall through to the next
+  // candidate model in the same provider family.
+  const models = MODEL_FALLBACKS.groq;
+  let lastError = "";
+
+  for (const modelName of models) {
+    try {
+      const res = await fetchWithTimeout(
+        "https://api.groq.com/openai/v1/chat/completions",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${GROQ_KEY}`,
+          },
+          body: JSON.stringify({
+            model: modelName,
+            messages: [
+              { role: "system", content: "You are the Mithqal Brain, a multi-model consensus AI for a gold-backed stablecoin. Be precise, structured, and concise." },
+              { role: "user", content: prompt },
+            ],
+            temperature: 0.3,
+            max_tokens: 800,
+          }),
+        }
+      );
+
+      if (!res.ok) {
+        const errText = await res.text().catch(() => "");
+        lastError = `Groq ${modelName} HTTP ${res.status}: ${errText.slice(0, 200)}`;
+        continue;
       }
-    );
 
-    if (!res.ok) {
-      const text = await res.text().catch(() => "");
-      return {
-        ...base,
-        latencyMs: Date.now() - start,
-        error: `Groq HTTP ${res.status}: ${text.slice(0, 200)}`,
+      const json = (await res.json()) as {
+        choices?: Array<{ message?: { content?: string } }>;
       };
-    }
+      const text = json?.choices?.[0]?.message?.content?.trim() ?? "";
 
-    const json = (await res.json()) as {
-      choices?: Array<{ message?: { content?: string } }>;
-    };
-    const text = json?.choices?.[0]?.message?.content?.trim() ?? "";
+      if (!text) {
+        lastError = `Groq ${modelName} returned an empty response`;
+        continue;
+      }
 
-    if (!text) {
       return {
         ...base,
+        response: text,
+        confidence: scoreConfidence(text),
         latencyMs: Date.now() - start,
         ok: true,
-        error: "Groq returned an empty response",
       };
-    }
-
-    return {
-      ...base,
-      response: text,
-      confidence: scoreConfidence(text),
-      latencyMs: Date.now() - start,
-      ok: true,
-    };
-  } catch (err) {
-    return {
-      ...base,
-      latencyMs: Date.now() - start,
-      error:
+    } catch (err) {
+      lastError =
         err instanceof Error && err.name === "AbortError"
-          ? "Groq timed out"
+          ? `Groq ${modelName} timed out`
           : err instanceof Error
-            ? err.message
-            : "Groq call failed",
-    };
+            ? `Groq ${modelName}: ${err.message}`
+            : `Groq ${modelName} call failed`;
+    }
   }
+
+  return { ...base, latencyMs: Date.now() - start, error: lastError };
 }
 
 /**
@@ -384,68 +429,68 @@ async function queryHuggingFace(prompt: string): Promise<ModelResponse> {
     return { ...base, error: "HUGGINGFACE_API_KEY not configured" };
   }
 
-  try {
-    const res = await fetchWithTimeout(
-      "https://api-inference.huggingface.co/models/meta-llama/Llama-3.1-70B-Instruct",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${HF_KEY}`,
-        },
-        body: JSON.stringify({
-          inputs: prompt,
-          parameters: { temperature: 0.3, max_new_tokens: 800, return_full_text: false },
-          options: { wait_for_model: true },
-        }),
+  // Iterate the per-provider model fallback list. HuggingFace's
+  // Inference API embeds the model identifier in the URL path, so we
+  // build the endpoint fresh on each attempt. The `wait_for_model`
+  // option is preserved across all candidates.
+  const models = MODEL_FALLBACKS.huggingface;
+  let lastError = "";
+
+  for (const modelName of models) {
+    try {
+      const res = await fetchWithTimeout(
+        `https://api-inference.huggingface.co/models/${modelName}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${HF_KEY}`,
+          },
+          body: JSON.stringify({
+            inputs: prompt,
+            parameters: { temperature: 0.3, max_new_tokens: 800, return_full_text: false },
+            options: { wait_for_model: true },
+          }),
+        }
+      );
+
+      if (!res.ok) {
+        const errText = await res.text().catch(() => "");
+        lastError = `HuggingFace ${modelName} HTTP ${res.status}: ${errText.slice(0, 200)}`;
+        continue;
       }
-    );
 
-    if (!res.ok) {
-      const text = await res.text().catch(() => "");
+      const json = (await res.json()) as
+        | Array<{ generated_text?: string }>
+        | { generated_text?: string };
+
+      const text = Array.isArray(json)
+        ? (json[0]?.generated_text ?? "").trim()
+        : (json?.generated_text ?? "").trim();
+
+      if (!text) {
+        lastError = `HuggingFace ${modelName} returned an empty response`;
+        continue;
+      }
+
       return {
         ...base,
-        latencyMs: Date.now() - start,
-        error: `HuggingFace HTTP ${res.status}: ${text.slice(0, 200)}`,
-      };
-    }
-
-    const json = (await res.json()) as
-      | Array<{ generated_text?: string }>
-      | { generated_text?: string };
-
-    const text = Array.isArray(json)
-      ? (json[0]?.generated_text ?? "").trim()
-      : (json?.generated_text ?? "").trim();
-
-    if (!text) {
-      return {
-        ...base,
+        response: text,
+        confidence: scoreConfidence(text),
         latencyMs: Date.now() - start,
         ok: true,
-        error: "HuggingFace returned an empty response",
       };
-    }
-
-    return {
-      ...base,
-      response: text,
-      confidence: scoreConfidence(text),
-      latencyMs: Date.now() - start,
-      ok: true,
-    };
-  } catch (err) {
-    return {
-      ...base,
-      latencyMs: Date.now() - start,
-      error:
+    } catch (err) {
+      lastError =
         err instanceof Error && err.name === "AbortError"
-          ? "HuggingFace timed out"
+          ? `HuggingFace ${modelName} timed out`
           : err instanceof Error
-            ? err.message
-            : "HuggingFace call failed",
-    };
+            ? `HuggingFace ${modelName}: ${err.message}`
+            : `HuggingFace ${modelName} call failed`;
+    }
   }
+
+  return { ...base, latencyMs: Date.now() - start, error: lastError };
 }
 
 /**
@@ -483,75 +528,76 @@ async function queryOpenRouter(prompt: string): Promise<ModelResponse> {
     return { ...base, error: "OPENROUTER_API_KEY not configured" };
   }
 
-  try {
-    const res = await fetchWithTimeout(
-      "https://openrouter.ai/api/v1/chat/completions",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${OPENROUTER_KEY}`,
-        },
-        body: JSON.stringify({
-          model: "meta-llama/llama-3.3-70b-instruct",
-          messages: [
-            {
-              role: "system",
-              content:
-                "You are the Mithqal Brain, a multi-model consensus AI for a " +
-                "constitutional settlement infrastructure. Be precise, " +
-                "structured, and concise.",
-            },
-            { role: "user", content: prompt },
-          ],
-          temperature: 0.3,
-          max_tokens: 800,
-        }),
+  // Iterate the per-provider model fallback list. OpenRouter is a
+  // multi-model gateway — we keep a small list of fallback identifiers
+  // (Llama 3.3 70B → Gemini 2.0 Flash free → Llama 3.1 70B) so a
+  // gateway-side deprecation of one identifier does not kill the
+  // OpenRouter vote in the consensus.
+  const models = MODEL_FALLBACKS.openrouter;
+  let lastError = "";
+
+  for (const modelName of models) {
+    try {
+      const res = await fetchWithTimeout(
+        "https://openrouter.ai/api/v1/chat/completions",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${OPENROUTER_KEY}`,
+          },
+          body: JSON.stringify({
+            model: modelName,
+            messages: [
+              {
+                role: "system",
+                content:
+                  "You are the Mithqal Brain, a multi-model consensus AI for a " +
+                  "constitutional settlement infrastructure. Be precise, " +
+                  "structured, and concise.",
+              },
+              { role: "user", content: prompt },
+            ],
+            temperature: 0.3,
+            max_tokens: 800,
+          }),
+        }
+      );
+
+      if (!res.ok) {
+        const errText = await res.text().catch(() => "");
+        lastError = `OpenRouter ${modelName} HTTP ${res.status}: ${errText.slice(0, 200)}`;
+        continue;
       }
-    );
 
-    if (!res.ok) {
-      const text = await res.text().catch(() => "");
-      return {
-        ...base,
-        latencyMs: Date.now() - start,
-        error: `OpenRouter HTTP ${res.status}: ${text.slice(0, 200)}`,
+      const json = (await res.json()) as {
+        choices?: Array<{ message?: { content?: string } }>;
       };
-    }
+      const text = json?.choices?.[0]?.message?.content?.trim() ?? "";
 
-    const json = (await res.json()) as {
-      choices?: Array<{ message?: { content?: string } }>;
-    };
-    const text = json?.choices?.[0]?.message?.content?.trim() ?? "";
+      if (!text) {
+        lastError = `OpenRouter ${modelName} returned an empty response`;
+        continue;
+      }
 
-    if (!text) {
       return {
         ...base,
+        response: text,
+        confidence: scoreConfidence(text),
         latencyMs: Date.now() - start,
         ok: true,
-        error: "OpenRouter returned an empty response",
       };
-    }
-
-    return {
-      ...base,
-      response: text,
-      confidence: scoreConfidence(text),
-      latencyMs: Date.now() - start,
-      ok: true,
-    };
-  } catch (err) {
-    return {
-      ...base,
-      latencyMs: Date.now() - start,
-      error:
+    } catch (err) {
+      lastError =
         err instanceof Error && err.name === "AbortError"
-          ? "OpenRouter timed out"
+          ? `OpenRouter ${modelName} timed out`
           : err instanceof Error
-            ? err.message
-            : "OpenRouter call failed",
-    };
+            ? `OpenRouter ${modelName}: ${err.message}`
+            : `OpenRouter ${modelName} call failed`;
+    }
   }
+
+  return { ...base, latencyMs: Date.now() - start, error: lastError };
 }
 
 /**
@@ -586,76 +632,77 @@ async function queryNVIDIA(prompt: string): Promise<ModelResponse> {
     return { ...base, error: "NVIDIA_API_KEY not configured" };
   }
 
-  try {
-    const res = await fetchWithTimeout(
-      "https://integrate.api.nvidia.com/v1/chat/completions",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${NVIDIA_KEY}`,
+  // Iterate the per-provider model fallback list. NVIDIA NIM may rotate
+  // models in/out of the catalog without warning; the fallback list lets
+  // the Brain pick up Nemotron 70B / 51B / Llama 3.2 90B Vision without
+  // a code change. The generous NVIDIA_TIMEOUT_MS is preserved across
+  // all candidates because NIM cold-starts are uniformly slow.
+  const models = MODEL_FALLBACKS.nvidia;
+  let lastError = "";
+
+  for (const modelName of models) {
+    try {
+      const res = await fetchWithTimeout(
+        "https://integrate.api.nvidia.com/v1/chat/completions",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${NVIDIA_KEY}`,
+          },
+          body: JSON.stringify({
+            model: modelName,
+            messages: [
+              {
+                role: "system",
+                content:
+                  "You are the Mithqal Brain, a multi-model consensus AI for a " +
+                  "constitutional settlement infrastructure. Be precise, " +
+                  "structured, and concise.",
+              },
+              { role: "user", content: prompt },
+            ],
+            temperature: 0.3,
+            max_tokens: 800,
+          }),
         },
-        body: JSON.stringify({
-          model: "mistralai/mistral-nemotron",
-          messages: [
-            {
-              role: "system",
-              content:
-                "You are the Mithqal Brain, a multi-model consensus AI for a " +
-                "constitutional settlement infrastructure. Be precise, " +
-                "structured, and concise.",
-            },
-            { role: "user", content: prompt },
-          ],
-          temperature: 0.3,
-          max_tokens: 800,
-        }),
-      },
-      NVIDIA_TIMEOUT_MS
-    );
+        NVIDIA_TIMEOUT_MS
+      );
 
-    if (!res.ok) {
-      const text = await res.text().catch(() => "");
-      return {
-        ...base,
-        latencyMs: Date.now() - start,
-        error: `NVIDIA HTTP ${res.status}: ${text.slice(0, 200)}`,
+      if (!res.ok) {
+        const errText = await res.text().catch(() => "");
+        lastError = `NVIDIA ${modelName} HTTP ${res.status}: ${errText.slice(0, 200)}`;
+        continue;
+      }
+
+      const json = (await res.json()) as {
+        choices?: Array<{ message?: { content?: string } }>;
       };
-    }
+      const text = json?.choices?.[0]?.message?.content?.trim() ?? "";
 
-    const json = (await res.json()) as {
-      choices?: Array<{ message?: { content?: string } }>;
-    };
-    const text = json?.choices?.[0]?.message?.content?.trim() ?? "";
+      if (!text) {
+        lastError = `NVIDIA ${modelName} returned an empty response`;
+        continue;
+      }
 
-    if (!text) {
       return {
         ...base,
+        response: text,
+        confidence: scoreConfidence(text),
         latencyMs: Date.now() - start,
         ok: true,
-        error: "NVIDIA returned an empty response",
       };
-    }
-
-    return {
-      ...base,
-      response: text,
-      confidence: scoreConfidence(text),
-      latencyMs: Date.now() - start,
-      ok: true,
-    };
-  } catch (err) {
-    return {
-      ...base,
-      latencyMs: Date.now() - start,
-      error:
+    } catch (err) {
+      lastError =
         err instanceof Error && err.name === "AbortError"
-          ? "NVIDIA timed out"
+          ? `NVIDIA ${modelName} timed out`
           : err instanceof Error
-            ? err.message
-            : "NVIDIA call failed",
-    };
+            ? `NVIDIA ${modelName}: ${err.message}`
+            : `NVIDIA ${modelName} call failed`;
+    }
   }
+
+  return { ...base, latencyMs: Date.now() - start, error: lastError };
 }
 
 /* ------------------------------------------------------------------ */
