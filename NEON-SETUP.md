@@ -2,9 +2,11 @@
 
 **Owner:** Mithqal Platform Engineering
 **Task origin:** `AI-FALLBACK-INNGEST-NEON`
-**Status:** Not wired in. Turso (libsql) is the primary database. This
-document is the runbook for promoting Neon to fallback if Turso becomes
-unreachable.
+**Status:** WIRED (Task E2-B, release v25.6). Turso (libsql) is the
+primary database. This document is the runbook for engaging the Neon
+fallback if Turso becomes unreachable. The `DATABASE_BACKEND=neon`
+branch is implemented in `src/lib/db.ts` — operators no longer need
+to hand-edit code to switch backends.
 
 ---
 
@@ -81,9 +83,10 @@ fallback is engaged.
 6. Trigger a redeploy so the new env var is picked up: **Deployments →
    ⋮ on the latest deployment → Redeploy**.
 
-The `NEON_DATABASE_URL` env var is intentionally **not** read by the
-current `src/lib/db.ts` — it is a dormant secret that becomes live
-only when the operator edits `db.ts` per section 6 below.
+The `NEON_DATABASE_URL` env var IS read by `src/lib/db.ts` (Task E2-B,
+release v25.6). It is a dormant secret that becomes live only when the
+operator also sets `DATABASE_BACKEND=neon` in the same env-var panel —
+see section 6 below.
 
 ---
 
@@ -170,63 +173,76 @@ If counts match, the Neon fallback is warm and ready.
 
 ---
 
-## 6. Step 4 — Modify `src/lib/db.ts` to fall back to Neon
+## 6. Step 4 — `src/lib/db.ts` DATABASE_BACKEND=neon triggers the wired Neon fallback
 
-When you need to actually switch (Turso is down), apply the following
-patch to `src/lib/db.ts`. The switch is governed by the
-`DATABASE_BACKEND` env var so you can flip back without a redeploy:
+The `DATABASE_BACKEND=neon` branch IS NOW WIRED in `src/lib/db.ts`
+(Task E2-B, release v25.6). Operators no longer need to hand-edit the
+file. The switch is governed by the `DATABASE_BACKEND` env var so you
+can flip back with a single env-var change + redeploy:
 
 ```typescript
-// At the top of src/lib/db.ts, replace the existing imports:
-
-import { createClient as createLibsqlClient, type Client, type Transaction as LibsqlTransaction } from '@libsql/client'
-import { mkdirSync } from 'node:fs'
-import { dirname } from 'node:path'
-
-// If DATABASE_BACKEND === 'neon', use the Neon serverless driver.
-// Otherwise stick with Turso (the default). This is a lazy import so
-// the Neon driver is only pulled in when actually needed — keeps the
-// cold-start path lean for the common (Turso) case.
-async function createNeonClient(): Promise<Client> {
-  const { neon, neonConfig } = await import('@neondatabase/serverless')
-  neonConfig.poolQueryViaFetch = true  // workaround for Vercel edge
-  const sql = neon(process.env.NEON_DATABASE_URL!)
-  // Wrap the Neon `sql` tagged-template function in a thin adapter
-  // that exposes the same `Client` interface as @libsql/client.
-  // ... adapter implementation ...
-}
+// src/lib/db.ts — current shape (post-E2-B):
 
 function createDbClient(): Client {
-  const backend = process.env.DATABASE_BACKEND ?? 'turso'
-  if (backend === 'neon' && process.env.NEON_DATABASE_URL) {
-    // Note: createNeonClient is async; either make createDbClient
-    // async (and propagate) or pre-resolve the client into a global.
-    // For simplicity in this runbook, see the adapter pattern below.
-    throw new Error('Use the async Neon adapter — see NEON-SETUP.md §6')
+  // ---- Neon fallback branch (Task E2-B / release v25.6) ----
+  // GATED on DATABASE_BACKEND === 'neon' AND NEON_DATABASE_URL.
+  if (process.env.DATABASE_BACKEND === 'neon') {
+    if (!process.env.NEON_DATABASE_URL) {
+      throw new Error(
+        'DATABASE_BACKEND=neon but NEON_DATABASE_URL is not set. See NEON-SETUP.md',
+      )
+    }
+    // Surface the active-failover switch in the operator's logs.
+    console.warn(
+      '[db] DATABASE_BACKEND=neon — using Neon fallback (manual switch). ' +
+      'Turso is the primary. See NEON-SETUP.md.',
+    )
+    return new NeonLibsqlAdapter(process.env.NEON_DATABASE_URL)
   }
-  // ... existing Turso path unchanged ...
+
+  // ---- Default (Turso / libsql) branch — unchanged ----
+  const url = process.env.DATABASE_URL || 'file:./db/custom.db'
+  // ... existing Turso path ...
 }
 ```
 
-**A simpler pattern** (recommended for the first fallback exercise):
-keep `createDbClient()` synchronous and just swap the connection
-string selection. libsql's HTTP gateway can talk to Neon too, via the
-`?sslmode=require` parameter — though this is unsupported by Neon.
+The `NeonLibsqlAdapter` class (defined in the same file) is a thin
+shim that implements the libsql `Client` interface but internally
+calls `@neondatabase/serverless`'s `sql` tagged-template function.
+Key properties:
 
-The cleanest path is the **adapter pattern** — write a small wrapper
-that exposes the libsql `Client` interface but internally calls the
-Neon serverless driver. ~80 lines of code; the application code in
-`db.ts` does not need to change because it only uses
-`client.execute()` and `client.transaction()`.
+- **Lazy load.** The Neon driver is `await import()`-ed on the
+  FIRST query, NOT at module load. The constructor kicks off the
+  dynamic import as a side effect, but the actual `sql` function is
+  constructed lazily on first use. The Turso path (default) never
+  loads `@neondatabase/serverless`.
+- **Placeholder translation.** libsql uses `?` positional placeholders;
+  Postgres uses `$1, $2, ...`. The adapter translates on the fly.
+- **Result shaping.** Neon (with `{ fullResults: true }`) returns
+  `{ fields, rows, rowCount }`. The adapter maps this to libsql's
+  `ResultSet` (`{ columns, columnTypes, rows, rowsAffected,
+  lastInsertRowid }`) so all 50+ `_rawClient.execute(...)` call sites
+  work unchanged.
+- **Interactive transactions.** Neon's HTTP serverless driver does
+  NOT support interactive (mid-flight-branching) transactions — only
+  callback-style `sql.transaction([...])`. The adapter runs queries
+  eagerly on the underlying connection (no atomicity) and `rollback()`
+  throws so the operator knows atomicity is unavailable. The app's
+  exported `transaction()` helper (the only caller) is unused in
+  production today — if you wire a caller that needs atomic
+  transactions on Neon, use `batch()` (which IS atomic).
 
 ### Flip the switch
 
-Once `db.ts` is patched and redeployed, flip the fallback in Vercel:
+To engage the fallback (assuming steps 1–3 above are done):
 
 1. **Settings → Environment Variables → `DATABASE_BACKEND`** → edit
    → change value from `turso` to `neon` → Save.
-2. Redeploy.
-3. Hit `/api/status` to confirm the new DB is alive.
+2. Redeploy. On boot, `createDbClient()` logs the active-failover
+   warning: `[db] DATABASE_BACKEND=neon — using Neon fallback (manual
+   switch). Turso is the primary. See NEON-SETUP.md.`
+3. Hit `/api/status` to confirm the new DB is alive (`database:
+   connected` in the JSON response).
 4. Roll back to Turso the same way (flip `DATABASE_BACKEND` back to
    `turso` and redeploy).
 
@@ -240,9 +256,14 @@ Once `db.ts` is patched and redeployed, flip the fallback in Vercel:
 - [ ] Added `DATABASE_BACKEND=turso` to Vercel (default).
 - [ ] Ran schema migration → confirmed tables exist on Neon.
 - [ ] Ran data dump from Turso → loaded into Neon → counts match.
-- [ ] Wrote the `@neondatabase/serverless` adapter for `db.ts`.
+- [x] Wired the `@neondatabase/serverless` adapter in `src/lib/db.ts`
+      (Task E2-B, release v25.6). The `DATABASE_BACKEND=neon` branch
+      is live; the adapter (`NeonLibsqlAdapter` class) lazy-imports
+      `@neondatabase/serverless` on first query so the default Turso
+      cold-start path stays lean.
 - [ ] Tested the adapter against a single read endpoint (e.g.
-      `/api/formation-interest`).
+      `/api/formation-interest`) — to be done the next time the
+      fallback is engaged for a real Turso outage.
 - [ ] Documented the rollback procedure in the on-call runbook.
 
 ---

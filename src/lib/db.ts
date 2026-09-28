@@ -1,4 +1,14 @@
-import { createClient, type Client, type Transaction as LibsqlTransaction } from '@libsql/client'
+import {
+  createClient,
+  type Client,
+  type Transaction as LibsqlTransaction,
+  type ResultSet,
+  type InStatement,
+  type InArgs,
+  type Row,
+  type Replicated,
+  type TransactionMode,
+} from '@libsql/client'
 import { mkdirSync } from 'node:fs'
 import { dirname } from 'node:path'
 
@@ -16,31 +26,445 @@ import { dirname } from 'node:path'
  * For local dev, DATABASE_URL can be file:./db/custom.db (no auth token needed).
  *
  * -------------------------------------------------------------------
- * NEON FALLBACK (per task AI-FALLBACK-INNGEST-NEON)
+ * NEON FALLBACK (per task AI-FALLBACK-INNGEST-NEON — WIRED by Task E2-B)
  * -------------------------------------------------------------------
- * Turso is the PRIMARY database today. Neon (serverless Postgres) is
- * available as a MIGRATION TARGET / FALLBACK if Turso becomes
- * unreachable (regional outage, libsql protocol regression, or token
- * expiry). The fallback is NOT wired in here today — see
- * /NEON-SETUP.md for the runbook. When the fallback is needed, set
- * `NEON_DATABASE_URL=postgresql://user:pass@ep-xxx.us-east-2.aws.neon.tech/dbname?sslmode=require`
- * in Vercel project env vars and add the conditional selection logic
- * described in NEON-SETUP.md to `createDbClient()` below. The
- * `@libsql/client` API is wire-compatible with Postgres for the
- * subset of SQL Mithqal uses, so no schema migration is required —
- * but for true Postgres you would swap `@libsql/client` for
- * `@neondatabase/serverless` (drop-in: same `Client` interface).
+ * Turso is the PRIMARY database. Neon (serverless Postgres) is available
+ * as a MANUAL FALLBACK if Turso becomes unreachable (regional outage,
+ * libsql protocol regression, or token expiry). The fallback IS NOW WIRED
+ * (Task E2-B, release v25.6) — operators no longer need to hand-edit
+ * `db.ts` to engage it.
+ *
+ * Engagement:
+ *   1. Set NEON_DATABASE_URL=postgresql://user:pass@ep-xxx.us-east-2.aws.neon.tech/dbname?sslmode=require
+ *      in Vercel project env vars (see /NEON-SETUP.md §3–5).
+ *   2. Set DATABASE_BACKEND=neon in the same env-var panel.
+ *   3. Redeploy. `createDbClient()` detects the env var and returns a
+ *      `NeonLibsqlAdapter` (defined below) that lazy-loads
+ *      `@neondatabase/serverless` and wraps its `sql` tagged-template
+ *      function in a thin shim exposing the libsql `Client` interface.
+ *
+ * The Neon driver is loaded LAZILY (via `await import()` inside the
+ * adapter's first query call) so the default (Turso) cold-start path
+ * stays lean — the Neon package is NOT bundled into the main path.
  *
  * Intentionally we do NOT change the default connection logic above.
- * Adding the fallback is a deliberate operator action — never silent.
+ * Engaging the fallback is a deliberate operator action — never silent.
+ * An active-failover warning is logged when the Neon branch is taken so
+ * operators see the switch in their logs.
  */
 
 const globalForDb = globalThis as unknown as {
   __libsqlClient?: Client
   __schemaInitialized?: boolean
+  __neonBackend?: boolean
+}
+
+/* -------------------------------------------------------------------
+ * Neon fallback adapter (Task E2-B / release v25.6 — see NEON-SETUP.md §6)
+ * -------------------------------------------------------------------
+ * Thin shim that implements the libsql `Client` interface but internally
+ * calls @neondatabase/serverless's `sql` tagged-template function. Used
+ * ONLY when `process.env.DATABASE_BACKEND === 'neon'` (the manual
+ * fallback). The default (Turso) path is unchanged.
+ *
+ * Design notes:
+ *
+ *  - LAZY LOAD. The Neon driver is `await import()`-ed on the FIRST
+ *    query, NOT at module load. The constructor kicks off the dynamic
+ *    import as a side effect (so the file is fetched eagerly by the
+ *    bundler only when DATABASE_BACKEND=neon), but the actual `sql`
+ *    function is constructed lazily on first use. This keeps the
+ *    cold-start path lean for the 99% case (Turso).
+ *
+ *  - STRUCTURAL TYPES. We declare a structural `NeonSqlFn` type instead
+ *    of importing the real `@neondatabase/serverless` types at the top
+ *    of the file, so the type layer does NOT pull the Neon driver into
+ *    the bundle.
+ *
+ *  - PLACEHOLDER TRANSLATION. libsql uses `?` positional placeholders;
+ *    Postgres uses `$1, $2, ...`. The adapter translates on the fly.
+ *
+ *  - RESULT-SHAPING. Neon (with `{ fullResults: true }`) returns
+ *    `{ fields, rows, rowCount, command }`. We map this to libsql's
+ *    `ResultSet` (`{ columns, columnTypes, rows, rowsAffected,
+ *    lastInsertRowid }`) so the 50+ `_rawClient.execute(...)` call sites
+ *    across the codebase work unchanged.
+ *
+ *  - INTERACTIVE TRANSACTIONS. Neon's HTTP serverless driver does NOT
+ *    support interactive (multi-statement, mid-flight branching)
+ *    transactions — only callback-style `sql.transaction([...])` or
+ *    `sql.transaction(fn)`. The libsql `Transaction` interface IS
+ *    interactive. The adapter runs queries eagerly on the underlying
+ *    connection (without atomicity) and `rollback()` throws so the
+ *    operator knows atomicity is unavailable on the fallback. The
+ *    app's exported `transaction()` helper (the only caller of this
+ *    method) is currently unused in production — see the helper below.
+ */
+
+type NeonSqlFn = {
+  (strings: TemplateStringsArray, ...params: unknown[]): Promise<unknown>
+  query: (
+    queryWithPlaceholders: string,
+    params?: unknown[],
+    opts?: { fullResults?: boolean; arrayMode?: boolean }
+  ) => Promise<NeonFullQueryResult>
+  transaction: (
+    queriesOrFn: unknown[] | ((sql: NeonSqlFn) => unknown[]),
+    opts?: { fullResults?: boolean; arrayMode?: boolean }
+  ) => Promise<NeonFullQueryResult[] | unknown[]>
+  unsafe: (rawSQL: string) => unknown
+}
+
+interface NeonFieldDef {
+  name: string
+  dataTypeID?: number
+}
+
+interface NeonFullQueryResult {
+  fields?: NeonFieldDef[]
+  command?: string
+  rowCount?: number
+  rows?: Record<string, unknown>[]
+  rowAsArray?: boolean
+}
+
+class NeonLibsqlAdapter implements Client {
+  closed = false
+  protocol = 'http'
+  private readonly connectionString: string
+  private sqlPromise: Promise<NeonSqlFn> | null = null
+  private sql: NeonSqlFn | null = null
+
+  constructor(connectionString: string) {
+    this.connectionString = connectionString
+    // Kick off the lazy import as a side effect — does NOT block the
+    // constructor return. The first query call awaits the promise.
+    this.sqlPromise = this.loadDriver()
+  }
+
+  private async loadDriver(): Promise<NeonSqlFn> {
+    // LAZY dynamic import — only triggered when an adapter instance is
+    // created (i.e. when DATABASE_BACKEND === 'neon').
+    const mod = await import('@neondatabase/serverless')
+    const neon = mod.neon
+    if (typeof neon !== 'function') {
+      throw new Error(
+        "[neon-adapter] @neondatabase/serverless did not export a 'neon' function. " +
+        'Check the package version (need >= 0.5.0).',
+      )
+    }
+    // fullResults=true so we get {fields, rows, rowCount} like node-postgres.
+    // arrayMode=false so rows are returned as objects keyed by column name
+    // (matches libsql's default Row shape).
+    return neon(this.connectionString, {
+      fullResults: true,
+      arrayMode: false,
+    }) as unknown as NeonSqlFn
+  }
+
+  private async getSql(): Promise<NeonSqlFn> {
+    if (this.sql) return this.sql
+    if (!this.sqlPromise) {
+      // Should be unreachable — the constructor sets sqlPromise.
+      throw new Error('[neon-adapter] driver not initialised')
+    }
+    this.sql = await this.sqlPromise
+    return this.sql
+  }
+
+  /**
+   * Convert a libsql-style SQL string with `?` positional placeholders
+   * to a Postgres-style SQL string with `$1, $2, ...` numbered
+   * placeholders. Used on every execute/batch call.
+   */
+  private static toPostgresPlaceholders(sql: string): string {
+    let i = 0
+    // Replace each `?` with `$N` where N is the 1-based index.
+    // Does NOT touch strings inside SQL string literals (we don't
+    // run queries with `?` inside string literals — the app uses
+    // bound parameters for any value containing `?`).
+    return sql.replace(/\?/g, () => `$${++i}`)
+  }
+
+  /**
+   * Coerce a libsql `InValue` arg to a Postgres-compatible value.
+   * Postgres's wire protocol via the Neon driver accepts most JS
+   * primitives directly. We special-case `bigint` (Postgres's `bytea`
+   * and `int8` paths are more reliable with string transport) and
+   * `Date` (convert to ISO 8601 string for `timestamptz` columns).
+   * Booleans, numbers, strings, null, Uint8Array, and ArrayBuffer
+   * pass through unchanged.
+   */
+  private static coerceArg(v: unknown): unknown {
+    if (typeof v === 'boolean') return v
+    if (v instanceof Date) return v.toISOString()
+    if (typeof v === 'bigint') return v.toString()
+    return v as unknown
+  }
+
+  /**
+   * Convert a libsql `InArgs` (array OR named-arg object) into a flat
+   * array of Postgres-bound parameters. Named-arg objects are NOT used
+   * by the Mithqal app today (every call site uses positional `?`
+   * placeholders with an array), but we support them for completeness.
+   */
+  private static buildParams(args: InArgs | undefined): unknown[] {
+    if (!args) return []
+    if (Array.isArray(args)) {
+      return args.map((v) => NeonLibsqlAdapter.coerceArg(v))
+    }
+    // Record<string, InValue> — pass values in object-key order.
+    // libsql's named-arg model uses `$name` placeholders, but Neon's
+    // numbered-placeholder API needs an array. The mapping is positional
+    // in iteration order (Object.values preserves insertion order for
+    // string keys), which works if the caller's $1, $2, ... match the
+    // object-key order. Not bullet-proof for named args — but again,
+    // the app does not use named args.
+    return Object.values(args).map((v) => NeonLibsqlAdapter.coerceArg(v))
+  }
+
+  /**
+   * Build a libsql `Row` from a Neon-returned row object. libsql's Row
+   * is an Array-with-named-properties (both `row[0]` and `row.columnName`
+   * work). We copy object keys onto an array so callers using either
+   * access pattern are satisfied.
+   */
+  private static rowFromObject(obj: Record<string, unknown>): Row {
+    const keys = Object.keys(obj)
+    const arr = keys.map((k) => obj[k])
+    const row = arr as unknown as Row
+    // Attach named-key access onto the same array object.
+    for (const k of keys) {
+      ;(row as Record<string, unknown>)[k] = obj[k]
+    }
+    ;(row as { length: number }).length = keys.length
+    return row
+  }
+
+  /**
+   * Map a Neon `FullQueryResult` to a libsql `ResultSet`.
+   * - Neon `fields[].name` → libsql `columns`
+   * - Neon `fields[].dataTypeID` → libsql `columnTypes` (numeric OID as string)
+   * - Neon `rows` → libsql `rows` (with array+object access)
+   * - Neon `rowCount` → libsql `rowsAffected`
+   * - Neon has no equivalent of libsql `lastInsertRowid` — set to undefined
+   *   (callers that rely on this are limited to the legacy libsql path).
+   */
+  private toResultSet(fr: NeonFullQueryResult): ResultSet {
+    const fields = fr.fields ?? []
+    const columns = fields.map((f) => f.name)
+    const columnTypes = fields.map((f) => (f.dataTypeID != null ? String(f.dataTypeID) : ''))
+    const rows = (fr.rows ?? []).map((r) => NeonLibsqlAdapter.rowFromObject(r))
+    const rowsAffected = fr.rowCount ?? 0
+    const rs: ResultSet = {
+      columns,
+      columnTypes,
+      rows,
+      rowsAffected,
+      lastInsertRowid: undefined,
+      toJSON: () => ({
+        columns,
+        columnTypes,
+        rows,
+        rowsAffected,
+        lastInsertRowid: undefined,
+      }),
+    }
+    return rs
+  }
+
+  // ---- Client interface implementation ----
+
+  async execute(stmt: InStatement): Promise<ResultSet>
+  async execute(sql: string, args?: InArgs): Promise<ResultSet>
+  async execute(stmtOrSql: InStatement | string, args?: InArgs): Promise<ResultSet> {
+    if (this.closed) throw new Error('[neon-adapter] client is closed')
+    let sqlText: string
+    let sqlArgs: InArgs | undefined
+    if (typeof stmtOrSql === 'string') {
+      sqlText = stmtOrSql
+      sqlArgs = args
+    } else {
+      sqlText = stmtOrSql.sql
+      sqlArgs = stmtOrSql.args
+    }
+    const pgSql = NeonLibsqlAdapter.toPostgresPlaceholders(sqlText)
+    const params = NeonLibsqlAdapter.buildParams(sqlArgs)
+    const sql = await this.getSql()
+    const fr = await sql.query(pgSql, params, { fullResults: true, arrayMode: false })
+    return this.toResultSet(fr)
+  }
+
+  async batch(
+    stmts: Array<InStatement | [string, InArgs?]>,
+    _mode?: TransactionMode,
+  ): Promise<ResultSet[]> {
+    if (this.closed) throw new Error('[neon-adapter] client is closed')
+    const sql = await this.getSql()
+    // Build the list of Neon query promises (each sql.query() call
+    // returns a thenable that can be passed into sql.transaction([...])
+    // — Neon batches them as a single HTTP transaction).
+    const queries: Promise<NeonFullQueryResult>[] = stmts.map((s) => {
+      let sqlText: string
+      let sqlArgs: InArgs | undefined
+      if (typeof s === 'string') {
+        sqlText = s
+        sqlArgs = undefined
+      } else if (Array.isArray(s)) {
+        sqlText = s[0]
+        sqlArgs = s[1]
+      } else {
+        sqlText = s.sql
+        sqlArgs = s.args
+      }
+      const pgSql = NeonLibsqlAdapter.toPostgresPlaceholders(sqlText)
+      const params = NeonLibsqlAdapter.buildParams(sqlArgs)
+      // Cast: Neon's sql.query with fullResults:true returns Promise<FullQueryResult>.
+      return sql.query(pgSql, params, { fullResults: true, arrayMode: false })
+    })
+    const results = (await sql.transaction(queries as unknown[], {
+      fullResults: true,
+      arrayMode: false,
+    })) as NeonFullQueryResult[]
+    return results.map((fr) => this.toResultSet(fr))
+  }
+
+  async migrate(stmts: Array<InStatement>): Promise<ResultSet[]> {
+    // libsql's migrate() is a batch with foreign_keys=off before + on
+    // after. Neon's HTTP API does not expose a session-level
+    // foreign_keys toggle, but Postgres's default is foreign_keys=on
+    // (good enough for the schema's idempotent CREATE TABLE IF NOT
+    // EXISTS statements — the existing schema has no deferred-FK
+    // ordering issues).
+    return this.batch(stmts, 'deferred')
+  }
+
+  transaction(_mode?: TransactionMode): Promise<LibsqlTransaction>
+  transaction(): Promise<LibsqlTransaction>
+  transaction(_mode?: TransactionMode): Promise<LibsqlTransaction> {
+    if (this.closed) throw new Error('[neon-adapter] client is closed')
+    // See class docstring: Neon's HTTP serverless driver does NOT
+    // support interactive transactions. We return a
+    // NeonTransactionAdapter that runs queries eagerly on the
+    // underlying connection (no atomicity). rollback() throws so the
+    // operator knows atomicity is unavailable on the fallback.
+    return Promise.resolve(new NeonTransactionAdapter(this))
+  }
+
+  async executeMultiple(sqlText: string): Promise<void> {
+    if (this.closed) throw new Error('[neon-adapter] client is closed')
+    const sql = await this.getSql()
+    // Neon's HTTP API accepts semicolon-separated multi-statement SQL
+    // (the Postgres extended-query protocol supports multi-statement
+    // simple queries). Used by migration scripts — not the app's hot
+    // path.
+    await sql.query(sqlText, [], { fullResults: true, arrayMode: false })
+  }
+
+  sync(): Promise<Replicated> {
+    // No-op — Postgres has no libsql sync model.
+    return Promise.resolve(undefined)
+  }
+
+  close(): void {
+    this.closed = true
+    // The Neon HTTP driver is stateless — no persistent connection to release.
+  }
+
+  reconnect(): void {
+    this.closed = false
+  }
+}
+
+/**
+ * Interactive-transaction adapter. Returned by NeonLibsqlAdapter.transaction().
+ *
+ * CAVEAT: Neon's HTTP serverless driver has no interactive (multi-step,
+ * mid-flight-branching) transactions — only callback-style
+ * sql.transaction(fn) where the function returns an array of queries.
+ * This adapter runs queries eagerly on the underlying Neon connection
+ * WITHOUT atomicity. commit() is a no-op; rollback() throws so the
+ * operator knows atomicity is unavailable on the manual fallback.
+ *
+ * The app's exported `transaction()` helper (defined below) is the only
+ * caller of this adapter. That helper is currently unused in production
+ * (no caller imports `transaction` from `@/lib/db`), so this limitation
+ * does not affect production traffic. If you wire a caller that needs
+ * atomic transactions on Neon, you MUST either (a) refactor the caller
+ * to use the libsql `batch()` API (which Neon supports via
+ * sql.transaction([...])) or (b) provision a Neon connection pool that
+ * speaks the Postgres wire protocol interactively (out of scope for
+ * the manual fallback — see NEON-SETUP.md §6).
+ */
+class NeonTransactionAdapter implements LibsqlTransaction {
+  closed = false
+  constructor(private readonly parent: NeonLibsqlAdapter) {}
+
+  async execute(stmt: InStatement): Promise<ResultSet>
+  async execute(sql: string, args?: InArgs): Promise<ResultSet>
+  async execute(stmtOrSql: InStatement | string, args?: InArgs): Promise<ResultSet> {
+    if (this.closed) throw new Error('[neon-adapter] transaction is closed')
+    // Run eagerly on the underlying Neon connection — NOT atomic.
+    return this.parent.execute(stmtOrSql as InStatement, args)
+  }
+
+  async batch(stmts: Array<InStatement>): Promise<ResultSet[]> {
+    if (this.closed) throw new Error('[neon-adapter] transaction is closed')
+    // Delegate to the parent adapter — Neon's sql.transaction([...]) is
+    // atomic for batch-only workloads. So this path IS atomic.
+    return this.parent.batch(stmts, 'deferred')
+  }
+
+  async executeMultiple(sqlText: string): Promise<void> {
+    if (this.closed) throw new Error('[neon-adapter] transaction is closed')
+    return this.parent.executeMultiple(sqlText)
+  }
+
+  async rollback(): Promise<void> {
+    this.closed = true
+    throw new Error(
+      '[neon-adapter] interactive ROLLBACK is not supported on the Neon fallback ' +
+      '(see NEON-SETUP.md §6). Queries already executed on this transaction ' +
+      'cannot be rolled back. This is a known limitation of the manual-fallback ' +
+      'design — engage batch() for atomic multi-statement workloads instead.',
+    )
+  }
+
+  async commit(): Promise<void> {
+    // no-op — queries already executed eagerly on the underlying connection
+    this.closed = true
+  }
+
+  close(): void {
+    this.closed = true
+  }
 }
 
 function createDbClient(): Client {
+  // ---- Neon fallback branch (Task E2-B / release v25.6) ----
+  // GATED on DATABASE_BACKEND === 'neon' AND NEON_DATABASE_URL. When
+  // either is unset, we fall through to the default Turso path below.
+  //
+  // The Neon driver is lazy-imported inside NeonLibsqlAdapter, so the
+  // Turso path never pulls @neondatabase/serverless into the bundle.
+  if (process.env.DATABASE_BACKEND === 'neon') {
+    if (!process.env.NEON_DATABASE_URL) {
+      throw new Error(
+        'DATABASE_BACKEND=neon but NEON_DATABASE_URL is not set. See NEON-SETUP.md',
+      )
+    }
+    // Surface the active-failover switch in the operator's logs so the
+    // manual fallback is never silent.
+    console.warn(
+      '[db] DATABASE_BACKEND=neon — using Neon fallback (manual switch). ' +
+      'Turso is the primary. See NEON-SETUP.md.',
+    )
+    // Mark on the global so hot-reload preserves the backend choice.
+    globalForDb.__neonBackend = true
+    return new NeonLibsqlAdapter(process.env.NEON_DATABASE_URL)
+  }
+
+  // ---- Default (Turso / libsql) branch — unchanged ----
   const url =
     process.env.DATABASE_URL ||
     process.env.POSTGRES_PRISMA_URL ||
