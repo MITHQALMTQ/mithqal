@@ -1,0 +1,23 @@
+{
+  "branch": "main",
+  "protection": {
+    "required_status_checks": { "strict": true, "contexts": ["lint", "build"] },
+    "enforce_admins": true,
+    "required_pull_request_reviews": { "required_approving_review_count": 1 },
+    "restrictions": null,
+    "allow_force_pushes": false,
+    "allow_deletions": false,
+    "block_creations": false,
+    "required_linear_history": true,
+    "required_signatures": false
+  },
+  "rollback_prevention": {
+    "tag_push_restricted": true,
+    "force_push_blocked": true,
+    "delete_branch_blocked": true,
+    "tag_pattern_immutable": "v\\d+\\.\\d+.*"
+  },
+  "applied_at": "2026-09-28T20:20:00Z",
+  "applied_by": "coo-cto-pm",
+  "release": "v25.5"
+}

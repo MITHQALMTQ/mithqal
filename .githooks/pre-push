@@ -1,0 +1,11 @@
+#!/bin/bash
+# Pre-push hook — informational only.
+# Branch protection is enforced on the GitHub side.
+# This hook logs the push to audit/push-log.jsonl
+set -e
+while read local_ref local_oid remote_ref remote_oid; do
+  mkdir -p "$(dirname "$PWD/audit/push-log.jsonl")"
+  echo "{\"ts\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"local_ref\":\"$local_ref\",\"local_oid\":\"$local_oid\",\"remote_ref\":\"$remote_ref\",\"remote_oid\":\"$remote_oid\",\"user\":\"$USER\"}" >> audit/push-log.jsonl
+  echo "[pre-push] $local_ref $local_oid → $remote_ref $remote_oid"
+done
+exit 0
