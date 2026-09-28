@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { CHAINS } from "@/lib/chains";
+import { Wallet, Interface } from "ethers";
 
 /**
  * POST /api/oracle/update — update on-chain Oracle with live prices.
@@ -17,6 +18,16 @@ import { CHAINS } from "@/lib/chains";
  *   - Only the ORACLE_PROVIDER_ROLE holder (deployer) can call setGoldPrice/setSilverPrice
  *   - The private key is ONLY used server-side in this endpoint
  *
+ * Signing path (v25.6 / Task E2-A):
+ *   - Pure-JS end-to-end — no Foundry `cast` binary required.
+ *   - JSON-RPC plumbing (nonce, chainId, gasPrice, estimateGas,
+ *     sendRawTransaction, receipt polling) uses the in-file wrappers below.
+ *   - The ONLY step that needs an external library is the secp256k1 ECDSA
+ *     signature itself, which is delegated to ethers v6 (`Wallet.signTransaction`).
+ *   - This closes the v25.5 deployment-provenance caveat #1 (Foundry `cast`
+ *     not on Vercel serverless PATH → /api/oracle/update returned 500 even
+ *     with CRON_SECRET + DEPLOYER_PRIVATE_KEY correctly provisioned).
+ *
  * Constitutional boundary (§30-33):
  *   - On-chain Oracle is the SECONDARY source (single-provider testnet mode)
  *   - Off-chain multi-oracle consensus remains the PRIMARY source
@@ -26,9 +37,20 @@ import { CHAINS } from "@/lib/chains";
 const RPC_URL = CHAINS.arc.rpcUrl;
 const ORACLE_ADDRESS = CHAINS.arc.contracts.ORACLE;
 
-// Function selectors
-const SET_GOLD_PRICE = "0x" + "7bd4cc64"; // setGoldPrice(uint256)
-const SET_SILVER_PRICE = "0x" + "9d15ef4d"; // setSilverPrice(uint256) — placeholder, computed below
+// READ selectors — public-variable auto-getters. Verified against
+// `src/lib/oracle-client.ts` and keccak256("goldPrice()")/("silverPrice()")
+// via ethers. Shared with the GET handler below so the read path is
+// consistent end-to-end.
+const GOLD_PRICE_SELECTOR = "0x44501404"; // goldPrice()
+const SILVER_PRICE_SELECTOR = "0xff391c06"; // silverPrice()
+
+// WRITE selectors — computed dynamically by ethers v6 so we never ship a
+// stale hardcoded 4-byte selector. Both setters are access-controlled by
+// `ORACLE_PROVIDER_ROLE` in `foundry/src/Oracle.sol`.
+const ORACLE_ABI = new Interface([
+  "function setGoldPrice(uint256 price)",
+  "function setSilverPrice(uint256 price)",
+]);
 
 async function ethCall(to: string, data: string): Promise<string> {
   const res = await fetch(RPC_URL, {
@@ -138,9 +160,27 @@ async function getTxReceipt(txHash: string): Promise<{ status: string } | null> 
   return json.result;
 }
 
-// ---- EIP-1559 transaction signing (no external deps) ----
-// We sign the transaction manually using the secp256k1 curve via Node's crypto.
-// This avoids needing ethers.js or viem in the API route.
+// ---- EIP-1559 / legacy transaction signing ----
+//
+// v25.6 refactor (Task E2-A): the previous implementation shelled out to
+// Foundry's `cast send` binary via `spawnSync('cast', [...])`. While that
+// was hardened in Task 4-A (no shell injection — args passed as argv, not
+// through `/bin/sh -c`), it still REQUIRED the `cast` binary to be present
+// at `${process.env.HOME}/.foundry/bin/cast`. Vercel's serverless Node
+// image does not include Foundry, so `/api/oracle/update` returned HTTP 500
+// in production even when CRON_SECRET + DEPLOYER_PRIVATE_KEY were correctly
+// provisioned (v25.5 deployment-provenance caveat #1).
+//
+// This implementation has zero external-binary dependencies:
+//   - JSON-RPC plumbing (nonce/chainId/gasPrice/estimateGas/sendRawTx/
+//     receipt polling) uses the in-file `fetch()` wrappers above.
+//   - The secp256k1 ECDSA signature over the keccak256 tx hash is delegated
+//     to ethers v6 (`Wallet.signTransaction`) — ethers is already a project
+//     dependency (`package.json` -> `"ethers": "6"`).
+//
+// The `stripHex` and `toHex` helpers below are retained as utilities —
+// they're useful for any future call site that needs to manually pack a
+// hex value or zero-pad a bigint (e.g., constructing calldata inline).
 
 function stripHex(hex: string): string {
   return hex.startsWith("0x") ? hex.slice(2) : hex;
@@ -152,58 +192,80 @@ function toHex(n: bigint, padToBytes?: number): string {
   return hex;
 }
 
-// Keccak-256 via Node.js (available in Node 18+ as crypto.createHash doesn't support keccak).
-// We use a pure-JS keccak implementation to avoid dependencies.
-// Actually, let's use the @noble/hashes package if available, or a simple approach.
-// For now, we'll use a different strategy: use cast/forge via child_process.
-
-import { spawnSync } from "child_process";
-import { existsSync } from "fs";
-
-const FOUNDRY_CAST = `${process.env.HOME}/.foundry/bin/cast`;
-
 /**
- * SECURITY FIX (Task 4-A / Defect 2): castSend() previously built a shell
- * command string with `--private-key ${privateKey}` template-literal
- * interpolation, which leaked the deployer private key into the process
- * listing (`ps aux`) of any user with shell access on the Vercel build/worker
- * node. Now uses `spawnSync('cast', [args...])` with NO shell — the args are
- * passed directly to execve(), so they never appear in `ps` output.
+ * Poll `eth_getTransactionReceipt` until the tx is mined (or timeout).
+ *
+ * The Arc Network Testnet typically mines blocks every ~2-3s; a 60s
+ * budget gives ~30 polls, sufficient even under mild congestion.
  */
-function castSend(rpcUrl: string, privateKey: string, to: string, sig: string, args: string[]): { hash: string; status: number } {
-  const result = spawnSync(
-    FOUNDRY_CAST,
-    ["send", "--rpc-url", rpcUrl, "--private-key", privateKey, to, sig, ...args, "--json"],
-    { timeout: 60000, encoding: "utf-8", shell: false },
-  );
-  if (result.error) throw result.error;
-  if (result.status !== 0) {
-    throw new Error(`cast send failed (status ${result.status}): ${result.stderr || result.stdout}`);
+async function waitForReceipt(txHash: string, timeoutMs = 60000): Promise<{ status: string } | null> {
+  const start = Date.now();
+  while (Date.now() - start < timeoutMs) {
+    const receipt = await getTxReceipt(txHash);
+    if (receipt) return receipt;
+    await new Promise((r) => setTimeout(r, 2000));
   }
-  const output = result.stdout.trim();
-  const parsed = JSON.parse(output);
-  return {
-    hash: parsed.transactionHash,
-    status: parseInt(parsed.status, 16) === 1 ? 1 : 0,
-  };
+  return null;
 }
 
 /**
- * SECURITY FIX (Task 4-A / Defect 2): castCall() previously used `execSync`
- * with a template-literal shell command. While castCall does not embed
- * secrets, the same hardening applies — use spawnSync with NO shell.
+ * Sign + submit an EVM transaction to the Arc Network Testnet Oracle.
+ *
+ * Pure-JS end-to-end — no Foundry `cast` binary required (Task E2-A).
+ *
+ * Flow:
+ *   1. Derive the signer address from the private key via ethers `Wallet`.
+ *   2. Gather tx params (nonce, chainId, gasPrice, gas estimate) via the
+ *      existing in-file JSON-RPC wrappers.
+ *   3. Build a legacy (type-0) tx. Arc Network Testnet accepts legacy txs;
+ *      the manual EIP-1559 base-fee + priority-fee helpers aren't fully
+ *      implemented in this file, so legacy is the safest default.
+ *   4. Sign with ethers v6 (secp256k1 ECDSA over the keccak256 tx hash).
+ *      The deployer private key NEVER appears in any shell argv or env
+ *      var passed to a child process — it stays inside this Node process.
+ *   5. Submit the signed raw tx via `eth_sendRawTransaction` (in-file wrapper).
+ *   6. Poll `eth_getTransactionReceipt` until mined (in-file wrapper).
+ *
+ * @returns `{ hash, status }` where `status` is `1` on success, `0` on
+ *          revert, or `0` if the tx wasn't mined within `timeoutMs`.
  */
-function castCall(rpcUrl: string, to: string, sig: string): string {
-  const result = spawnSync(
-    FOUNDRY_CAST,
-    ["call", "--rpc-url", rpcUrl, to, sig],
-    { timeout: 15000, encoding: "utf-8", shell: false },
-  );
-  if (result.error) throw result.error;
-  if (result.status !== 0) {
-    throw new Error(`cast call failed (status ${result.status}): ${result.stderr || result.stdout}`);
-  }
-  return result.stdout.trim();
+async function signAndSendTx(
+  privateKey: string,
+  to: string,
+  data: string,
+): Promise<{ hash: string; status: number }> {
+  const wallet = new Wallet(privateKey);
+  const from = wallet.address;
+
+  // 1. Gather tx params via existing JSON-RPC wrappers
+  const nonce = await getNonce(from);
+  const chainId = await getChainId();
+  const gasPrice = await getGasPrice();
+  const gasLimit = await estimateGas(from, to, data);
+
+  // 2. Build a legacy (type-0) transaction
+  const unsignedTx = {
+    to,
+    data,
+    nonce,
+    chainId,
+    gasPrice,
+    gasLimit,
+    type: 0,
+  };
+
+  // 3. Sign with ethers v6 — secp256k1 ECDSA over keccak256(rlp(tx))
+  const rawTx = await wallet.signTransaction(unsignedTx);
+
+  // 4. Submit via the existing JSON-RPC wrapper
+  const txHash = await sendRawTransaction(rawTx);
+
+  // 5. Poll for receipt via the existing JSON-RPC wrapper
+  const receipt = await waitForReceipt(txHash);
+  return {
+    hash: txHash,
+    status: receipt && parseInt(receipt.status, 16) === 1 ? 1 : 0,
+  };
 }
 
 async function fetchLiveGoldPrice(): Promise<number> {
@@ -247,12 +309,11 @@ export async function POST(request: Request) {
       );
     }
 
-    if (!existsSync(FOUNDRY_CAST)) {
-      return NextResponse.json(
-        { error: "Foundry cast not found", detail: `Expected at ${FOUNDRY_CAST}` },
-        { status: 500 },
-      );
-    }
+    // Task E2-A: removed the `existsSync(FOUNDRY_CAST)` gate. The signing
+    // path is now pure-JS (ethers v6 for secp256k1, in-file fetch() wrappers
+    // for JSON-RPC) and has zero external-binary dependency. This closes
+    // v25.5 deployment-provenance caveat #1 (Foundry `cast` not on Vercel
+    // serverless PATH → spurious 500 even with secrets provisioned).
 
     // 1. Verify Oracle contract exists
     const code = await ethGetCode(ORACLE_ADDRESS);
@@ -280,13 +341,27 @@ export async function POST(request: Request) {
     const goldWei = BigInt(Math.round(goldUsd * 1e8));
     const silverWei = BigInt(Math.round(silverUsd * 1e8));
 
-    // 4. Send setGoldPrice transaction
-    const goldTx = castSend(RPC_URL, privateKey, ORACLE_ADDRESS, "setGoldPrice(uint256)", [goldWei.toString()]);
-    const silverTx = castSend(RPC_URL, privateKey, ORACLE_ADDRESS, "setSilverPrice(uint256)", [silverWei.toString()]);
+    // 4. Encode calldata dynamically via ethers v6 (correct 4-byte selectors
+    //    computed from keccak256 of the canonical signatures — no stale
+    //    hardcoded constants). See `ORACLE_ABI` declaration above.
+    const goldData = ORACLE_ABI.encodeFunctionData("setGoldPrice", [goldWei]);
+    const silverData = ORACLE_ABI.encodeFunctionData("setSilverPrice", [silverWei]);
 
-    // 5. Verify updated prices
-    const onChainGold = castCall(RPC_URL, ORACLE_ADDRESS, "goldPrice()(uint256)");
-    const onChainSilver = castCall(RPC_URL, ORACLE_ADDRESS, "silverPrice()(uint256)");
+    // 5. Sign + send both transactions SEQUENTIALLY (not Promise.all).
+    //    Both txs originate from the same deployer account, so the nonce
+    //    must increment between submissions — the second `getNonce()` call
+    //    inside `signAndSendTx` will observe the now-mined first tx and
+    //    return nonce+1. Running them in parallel would race on the nonce
+    //    and one tx would fail with "nonce too low".
+    const goldTx = await signAndSendTx(privateKey, ORACLE_ADDRESS, goldData);
+    const silverTx = await signAndSendTx(privateKey, ORACLE_ADDRESS, silverData);
+
+    // 6. Verify updated prices — read via `ethCall` (same JSON-RPC wrapper
+    //    the GET handler uses, same selector constants). This replaces the
+    //    previous `castCall(...)` shell-out. The read path was already pure
+    //    JS; we just route through the existing wrapper consistently.
+    const onChainGold = await ethCall(ORACLE_ADDRESS, GOLD_PRICE_SELECTOR);
+    const onChainSilver = await ethCall(ORACLE_ADDRESS, SILVER_PRICE_SELECTOR);
 
     return NextResponse.json({
       success: goldTx.status === 1 && silverTx.status === 1,
@@ -302,7 +377,7 @@ export async function POST(request: Request) {
         setSilverPrice: { hash: silverTx.hash, status: silverTx.status === 1 ? "success" : "failed" },
       },
       updated: new Date().toISOString(),
-      note: "On-chain Oracle updated with live multi-oracle prices. Freshness: 1 hour (MAX_STALENESS).",
+      note: "On-chain Oracle updated with live multi-oracle prices. Freshness: 1 hour (MAX_STALENESS). Signed via ethers v6 (pure-JS, no Foundry cast binary required).",
     });
   } catch (err) {
     return NextResponse.json(
