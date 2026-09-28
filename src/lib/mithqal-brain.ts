@@ -545,6 +545,8 @@ async function queryOpenRouter(prompt: string): Promise<ModelResponse> {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${OPENROUTER_KEY}`,
+            "HTTP-Referer": "https://mithqal.vercel.app",
+            "X-Title": "MITHQAL Brain",
           },
           body: JSON.stringify({
             model: modelName,
