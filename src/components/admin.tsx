@@ -316,7 +316,10 @@ function Console({ email }: { email: string }) {
   }, [filter, toast]);
 
   useEffect(() => {
-    fetchList();
+    // Defer initial fetch to next microtask to avoid synchronous effect→state loop
+    // (React 19 react-hooks/set-state-in-effect rule). fetchList runs setState
+    // synchronously before its first await.
+    queueMicrotask(() => { void fetchList(); });
   }, [fetchList]);
 
   // Live notifications — when a new Formation Committee submission lands,

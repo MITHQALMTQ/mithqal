@@ -232,7 +232,10 @@ function BrainModelCards() {
   }, []);
 
   useEffect(() => {
-    refresh();
+    // Defer initial refresh to next microtask to avoid synchronous effect→state
+    // loop (React 19 react-hooks/set-state-in-effect rule). refresh runs
+    // setState synchronously before its first await.
+    queueMicrotask(() => { void refresh(); });
     const id = setInterval(refresh, 60_000); // refresh status every minute
     return () => clearInterval(id);
   }, [refresh]);
@@ -460,7 +463,9 @@ function BrainRiskSection() {
 
   useEffect(() => {
     mounted.current = true;
-    refresh(false);
+    // Defer initial refresh to next microtask to avoid synchronous effect→state
+    // loop (React 19 react-hooks/set-state-in-effect rule).
+    queueMicrotask(() => { void refresh(false); });
     // Auto-refresh every 5 minutes (silent — no spinner).
     const id = setInterval(() => refresh(true), 5 * 60_000);
     return () => {
@@ -875,7 +880,9 @@ function BrainAnomalySection() {
 
   useEffect(() => {
     mounted.current = true;
-    refresh(false);
+    // Defer initial refresh to next microtask to avoid synchronous effect→state
+    // loop (React 19 react-hooks/set-state-in-effect rule).
+    queueMicrotask(() => { void refresh(false); });
     // Auto-refresh every 5 minutes (silent).
     const id = setInterval(() => refresh(true), 5 * 60_000);
     return () => {

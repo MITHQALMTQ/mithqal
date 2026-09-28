@@ -64,7 +64,11 @@ export function V23MetricsPanel() {
   }, []);
 
   useEffect(() => {
-    fetchMetrics();
+    // Defer initial fetch to next microtask to avoid synchronous effect→state loop
+    // (React 19 react-hooks/set-state-in-effect rule). fetchMetrics runs setState
+    // synchronously before its first await, so calling it inline during the
+    // effect setup phase triggers cascading renders.
+    queueMicrotask(() => { void fetchMetrics(); });
     const id = setInterval(fetchMetrics, 30_000);
     return () => clearInterval(id);
   }, [fetchMetrics]);

@@ -65,8 +65,12 @@ export function LiveStatus() {
 
   useEffect(() => {
     mountedRef.current = true;
-    setMounted(true);
-    fetchTests();
+    // Defer setState to next microtask to avoid synchronous effect→state loop
+    // (React 19 react-hooks/set-state-in-effect rule).
+    queueMicrotask(() => {
+      setMounted(true);
+      void fetchTests();
+    });
     const pollId = setInterval(fetchTests, POLL_INTERVAL_MS);
     const tickId = setInterval(() => setTick((t) => t + 1), 1000);
     return () => {

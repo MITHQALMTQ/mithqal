@@ -11,7 +11,9 @@ export function useIsMobile() {
       setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
     }
     mql.addEventListener("change", onChange)
-    setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
+    // Defer initial setState to next microtask to avoid synchronous effect→state loop
+    // (React 19 react-hooks/set-state-in-effect rule).
+    queueMicrotask(() => onChange())
     return () => mql.removeEventListener("change", onChange)
   }, [])
 

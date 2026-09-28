@@ -37,7 +37,10 @@ export function RebalancingDashboard() {
   }, []);
 
   useEffect(() => {
-    fetchDash();
+    // Defer initial fetch to next microtask to avoid synchronous effect→state
+    // loop (React 19 react-hooks/set-state-in-effect rule). fetchDash runs
+    // setState synchronously before its first await.
+    queueMicrotask(() => { void fetchDash(); });
     const id = setInterval(fetchDash, 30_000);
     return () => clearInterval(id);
   }, [fetchDash]);

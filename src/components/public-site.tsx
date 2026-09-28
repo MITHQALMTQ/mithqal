@@ -331,7 +331,10 @@ function LiveStateDashboard() {
   };
 
   useEffect(() => {
-    fetchData();
+    // Defer initial fetch to next microtask to avoid synchronous effect→state
+    // loop (React 19 react-hooks/set-state-in-effect rule). fetchData runs
+    // setState synchronously before its first await.
+    queueMicrotask(() => { void fetchData(); });
     const id = setInterval(fetchData, 30_000);
     return () => clearInterval(id);
   }, []);

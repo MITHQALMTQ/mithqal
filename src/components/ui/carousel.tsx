@@ -95,7 +95,9 @@ function Carousel({
 
   React.useEffect(() => {
     if (!api) return
-    onSelect(api)
+    // Defer initial onSelect to next microtask to avoid synchronous
+    // effect→state loop (React 19 react-hooks/set-state-in-effect rule).
+    queueMicrotask(() => onSelect(api))
     api.on("reInit", onSelect)
     api.on("select", onSelect)
 

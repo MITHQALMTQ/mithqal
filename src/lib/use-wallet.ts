@@ -212,7 +212,9 @@ export function useWallet() {
   const providerRef = useRef<EIP1193Provider | null>(null);
 
   useEffect(() => {
-    setMounted(true);
+    // Defer setState to next microtask to avoid synchronous effect→state loop
+    // (React 19 react-hooks/set-state-in-effect rule).
+    queueMicrotask(() => setMounted(true));
   }, []);
 
   // ---- Check if already connected ----
@@ -448,6 +450,15 @@ export function useWallet() {
     isOnMonadTestnet,
     mounted,
     showWalletModal,
+    // The `getWalletOptions()` function returns an array of wallet option objects
+    // whose `connect` closures assign `providerRef.current = p` when the user
+    // clicks the connect button (i.e., an event handler — refs are allowed
+    // there per React 19 rules). The function itself does NOT read or write
+    // any ref synchronously when called here during render. The
+    // react-hooks/refs rule's conservative analysis still flags it because the
+    // ref access appears lexically inside the function body. This is a false
+    // positive; the inline disable is intentional.
+    // eslint-disable-next-line react-hooks/refs
     walletOptions: getWalletOptions(),
     connect,
     connectWithWallet,

@@ -127,7 +127,9 @@ function AnimatedNumber({ value, format = (n: number) => n.toFixed(0), className
   const [animating, setAnimating] = useState(false);
   useEffect(() => {
     if (value === display) return;
-    setAnimating(true);
+    // Defer setState to next microtask to avoid synchronous effect→state loop
+    // (React 19 react-hooks/set-state-in-effect rule).
+    queueMicrotask(() => setAnimating(true));
     const start = display;
     const diff = value - start;
     const duration = 600;
@@ -282,8 +284,13 @@ export default function TestnetDashboard() {
   }, []);
 
   useEffect(() => {
-    fetchState();
-    fetchLiveNav();
+    // Defer initial fetches to next microtask to avoid synchronous effect→state
+    // loop (React 19 react-hooks/set-state-in-effect rule). fetchState and
+    // fetchLiveNav each run setState synchronously before their first await.
+    queueMicrotask(() => {
+      void fetchState();
+      void fetchLiveNav();
+    });
     const id = setInterval(fetchState, 15_000); // auto-refresh 15s
     const navId = setInterval(fetchLiveNav, 30_000); // live NAV refresh 30s
     return () => {

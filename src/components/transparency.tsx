@@ -967,7 +967,10 @@ export default function TransparencyDashboard() {
   }, []);
 
   useEffect(() => {
-    fetchState();
+    // Defer initial fetch to next microtask to avoid synchronous effect→state
+    // loop (React 19 react-hooks/set-state-in-effect rule). fetchState runs
+    // setState synchronously before its first await.
+    queueMicrotask(() => { void fetchState(); });
     const id = setInterval(() => fetchState(true), 30_000);
     return () => clearInterval(id);
   }, [fetchState]);

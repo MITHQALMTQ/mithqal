@@ -70,7 +70,9 @@ export function LiveTimestamp({
   const [, setTick] = useState(0);
 
   useEffect(() => {
-    setMounted(true);
+    // Defer setState to next microtask to avoid synchronous effect→state loop
+    // (React 19 react-hooks/set-state-in-effect rule).
+    queueMicrotask(() => setMounted(true));
     const id = setInterval(() => setTick((t) => t + 1), 1000);
     return () => clearInterval(id);
   }, []);

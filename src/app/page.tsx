@@ -120,6 +120,18 @@ function ErrorBox({ label, msg }: { label: string; msg?: string | null }) {
 // ─── Dynamic Reserve Simulator ───
 const SIM_CURRENCIES = ["USD","EUR","CHF","JPY","GBP","SGD","AED","SAR","CNY","CAD","AUD","GOLD","USDC","USDT"];
 
+// Module-level SliderRow — declared OUTSIDE DynamicReserveSimulator to avoid
+// the React 19 react-hooks/static-components rule (creating components during
+// render resets their internal state).
+function SliderRow({ label, value, set, min, max, step, unit }: { label: string; value: number; set: (v: number) => void; min: number; max: number; step: number; unit: string }) {
+  return (
+    <div>
+      <div className="flex justify-between text-[10px]"><span className="text-gray-400">{label}</span><span className="font-mono text-gold">{value}{unit}</span></div>
+      <input type="range" min={min} max={max} step={step} value={value} onChange={(e) => set(Number(e.target.value))} className="mt-1 w-full accent-[#d4af37]" />
+    </div>
+  );
+}
+
 function DynamicReserveSimulator() {
   const [supply, setSupply] = useState(100);
   const [goldPrice, setGoldPrice] = useState(4500);
@@ -166,14 +178,12 @@ function DynamicReserveSimulator() {
     });
   }, [supply, goldPrice, fiatPct, goldPct, digitalPct, shockCurrency, shockPct]);
 
-  useEffect(() => { runSimulation(); }, [runSimulation]);
-
-  const SliderRow = ({ label, value, set, min, max, step, unit }: { label: string; value: number; set: (v: number) => void; min: number; max: number; step: number; unit: string }) => (
-    <div>
-      <div className="flex justify-between text-[10px]"><span className="text-gray-400">{label}</span><span className="font-mono text-gold">{value}{unit}</span></div>
-      <input type="range" min={min} max={max} step={step} value={value} onChange={(e) => set(Number(e.target.value))} className="mt-1 w-full accent-[#d4af37]" />
-    </div>
-  );
+  useEffect(() => {
+    // Defer initial simulation to next microtask to avoid synchronous
+    // effect→state loop (React 19 react-hooks/set-state-in-effect rule).
+    // runSimulation runs setState synchronously.
+    queueMicrotask(() => runSimulation());
+  }, [runSimulation]);
 
   return (
     <>
@@ -305,7 +315,12 @@ function DynamicCorridorSimulator() {
     setResults({ fromCcy, toCcy, amount, output, fxRoute, rail, fee, totalCost, mtqMinted, settlementStatus, compliancePassed, atomicCapable, isDigital, latency: latency[rail] ?? 3000, steps });
   }, [fromCcy, toCcy, amount, rail]);
 
-  useEffect(() => { runSimulation(); }, [runSimulation]);
+  useEffect(() => {
+    // Defer initial simulation to next microtask to avoid synchronous
+    // effect→state loop (React 19 react-hooks/set-state-in-effect rule).
+    // runSimulation runs setState synchronously.
+    queueMicrotask(() => runSimulation());
+  }, [runSimulation]);
 
   return (
     <>

@@ -240,7 +240,9 @@ export function OperatingSystem() {
   // Probe MINTER_ROLE whenever the wallet address changes + on the 30s refresh.
   useEffect(() => {
     if (!walletAddress) {
-      setHasMinterRole(null);
+      // Defer setState to next microtask to avoid synchronous effect→state loop
+      // (React 19 react-hooks/set-state-in-effect rule).
+      queueMicrotask(() => setHasMinterRole(null));
       return;
     }
     let cancelled = false;

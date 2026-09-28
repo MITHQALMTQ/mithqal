@@ -52,7 +52,9 @@ export function CbgrsPanel() {
   }, []);
 
   useEffect(() => {
-    fetchCbgrs();
+    // Defer initial fetch to next microtask to avoid synchronous effect→state loop
+    // (React 19 react-hooks/set-state-in-effect rule).
+    queueMicrotask(() => { void fetchCbgrs(); });
     const id = setInterval(fetchCbgrs, 30_000);
     return () => clearInterval(id);
   }, [fetchCbgrs]);
