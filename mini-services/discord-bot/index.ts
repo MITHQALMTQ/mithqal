@@ -148,22 +148,37 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
 const httpServer = createServer((req: IncomingMessage, res: ServerResponse) => {
   if (req.method === "POST" && req.url?.startsWith("/emit")) {
+    // SECURITY (Task 4-A / Defect 4): shared-secret gate. Every /emit POST
+    // must include x-internal-secret matching process.env.INTERNAL_SECRET.
+    // If the env var is unset, refuse operation (503) rather than allow
+    // public event injection into operator Discord channels.
+    const secret = process.env.INTERNAL_SECRET;
+    if (!secret) {
+      res.writeHead(503, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: "INTERNAL_SECRET not configured — /emit disabled" }));
+      return;
+    }
+    if (req.headers["x-internal-secret"] !== secret) {
+      res.writeHead(401, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: "unauthorized — missing or invalid x-internal-secret header" }));
+      return;
+    }
     let body = "";
     req.on("data", (c) => (body += c));
     req.on("end", () => {
-      let p: any; try { p = JSON.parse(body); } catch { res.writeHead(400); return res.end(JSON.stringify({ error: "invalid JSON" })); }
-      const { event, payload } = p;
+      let p: unknown; try { p = JSON.parse(body); } catch { res.writeHead(400); return res.end(JSON.stringify({ error: "invalid JSON" })); }
+      const { event, payload } = (p || {}) as { event?: string; payload?: Record<string, unknown> };
       if (typeof event !== "string") { res.writeHead(400); return res.end(JSON.stringify({ error: "event must be string" })); }
       if (!notifyChannel) { res.writeHead(503); return res.end(JSON.stringify({ error: "no notify channel" })); }
       const embed = event === "submission:new"
         ? new EmbedBuilder().setTitle("📝 New Formation Committee Interest").setColor(0x3b82f6).addFields(
-            { name: "Name", value: payload?.fullName ?? "—", inline: true },
-            { name: "Role", value: payload?.role ?? "—", inline: true },
-            { name: "Organization", value: payload?.org ?? "—", inline: true },
-            { name: "Submission ID", value: `\`${payload?.id ?? "—"}\``, inline: false },
+            { name: "Name", value: String(payload?.fullName ?? "—"), inline: true },
+            { name: "Role", value: String(payload?.role ?? "—"), inline: true },
+            { name: "Organization", value: String(payload?.org ?? "—"), inline: true },
+            { name: "Submission ID", value: `\`${String(payload?.id ?? "—")}\``, inline: false },
           ).setTimestamp()
         : new EmbedBuilder().setTitle(`🔔 ${event}`).setColor(0xcaa86b).setDescription("```\n" + JSON.stringify(payload, null, 2).slice(0, 1800) + "\n```").setTimestamp();
-      notifyChannel.send({ embeds: [embed] }).then((msg) => { console.log(`[discord-bot] forwarded "${event}" to #${notifyChannel.name}`); res.writeHead(200); res.end(JSON.stringify({ ok: true, event, messageId: msg.id })); }).catch((e) => { res.writeHead(500); res.end(JSON.stringify({ error: "send failed", detail: String(e) })); });
+      notifyChannel.send({ embeds: [embed] }).then((msg) => { console.log(`[discord-bot] forwarded "${event}" to #${notifyChannel!.name}`); res.writeHead(200); res.end(JSON.stringify({ ok: true, event, messageId: msg.id })); }).catch((e) => { res.writeHead(500); res.end(JSON.stringify({ error: "send failed", detail: String(e) })); });
     });
     return;
   }

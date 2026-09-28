@@ -26,7 +26,19 @@ import { CHAINS, type ChainConfig } from "@/lib/chains";
  *   - monad : 15/15 PASS — all 10 contracts verified on Monad Testnet
  *   - arc   : contracts deployed on Arc Network Testnet (live-tested here)
  *   - local : requires `scripts/start-anvil.sh` to be running on :8545
+ *
+ * Security note (audit 2-B DEFECT-ONCHAINTEST-XSS): the `network` query
+ * param is whitelisted against the canonical EVM chain keys defined in
+ * src/lib/chains.ts. Any other value (including HTML/JS payloads) is
+ * rejected with HTTP 400 — it is NEVER echoed verbatim in the response.
  */
+
+// Whitelist of allowed `network` query-param values. These keys match the
+// canonical EVM chain keys exported by src/lib/chains.ts (CHAINS.monad.key,
+// CHAINS.arc.key, CHAINS.local.key). Solana is non-EVM and intentionally
+// NOT supported here (this route uses eth_getCode / eth_call, which only
+// work on EVM nodes). Any other value → 400, never echoed.
+const ALLOWED_NETWORKS = new Set(["monad", "arc", "local"]);
 
 // ERC-20 function selectors (first 4 bytes of keccak256(signature)).
 const SELECTORS = {
@@ -86,24 +98,41 @@ function decodeUint(hex: string): bigint {
   return BigInt(hex);
 }
 
-/** Resolve the `network` query param to a ChainConfig; defaults to Monad. */
+/** Resolve the `network` query param to a ChainConfig; defaults to Monad.
+ *
+ * Returns `null` when the requested value is not in the canonical EVM chain
+ * key whitelist (audit 2-B DEFECT-ONCHAINTEST-XSS) — callers MUST surface
+ * this as HTTP 400 and MUST NOT echo the raw requested value back.
+ */
 function resolveNetwork(networkParam: string | null): {
   chain: ChainConfig;
   requested: string;
-} {
+} | null {
+  // Empty / missing param defaults to Monad (backwards-compat).
   const requested = (networkParam || "monad").toLowerCase();
+  if (!ALLOWED_NETWORKS.has(requested)) {
+    return null;
+  }
   if (requested === "monad") return { chain: CHAINS.monad, requested };
   if (requested === "arc") return { chain: CHAINS.arc, requested };
   if (requested === "local") return { chain: CHAINS.local, requested };
-  // Unknown network → fall back to Monad but flag the requested value so the
-  // response can include a warning rather than 400-ing. This preserves the
-  // backwards-compatible default behaviour for any caller passing weird input.
-  return { chain: CHAINS.monad, requested };
+  // Defensive — ALLOWED_NETWORKS.has() already gates this, but the TS
+  // compiler needs the unconditional return.
+  return null;
 }
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
-  const { chain, requested } = resolveNetwork(url.searchParams.get("network"));
+  const resolved = resolveNetwork(url.searchParams.get("network"));
+  if (!resolved) {
+    return NextResponse.json(
+      {
+        error: `Invalid network. Allowed: ${[...ALLOWED_NETWORKS].join(", ")}`,
+      },
+      { status: 400 },
+    );
+  }
+  const { chain, requested } = resolved;
   const c = chain.contracts;
 
   const tests: { name: string; passed: boolean; value?: string; detail?: string }[] = [];

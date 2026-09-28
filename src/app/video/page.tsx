@@ -118,6 +118,10 @@ export default function VideoPage() {
       </header>
 
       <main className="flex flex-1 items-center justify-center px-6 py-8">
+        {/* Defect 6 fix (audit 2-A): page-level <h1> at the top of <main> so the
+            DOM heading order is h1 (page title) → h2 (scene 1 problem statement)
+            instead of the previous h2-then-h1 violation (WCAG 1.3.1). */}
+        <h1 className="sr-only">MITHQAL — Constitutional Settlement Institution Motion Graphics</h1>
         <div className="w-full max-w-4xl">
           <div className="relative w-full overflow-hidden rounded-2xl border border-[#C9A961]/15 bg-black shadow-2xl" style={{ aspectRatio: "16 / 9" }}>
             <div className="absolute top-0 left-0 z-30 h-0.5 w-full bg-white/5">
@@ -156,7 +160,10 @@ export default function VideoPage() {
           </div>
 
           <div className="mt-8 text-center">
-            <h1 className="text-xl font-light tracking-wide text-white/90 sm:text-2xl">MITHQAL</h1>
+            {/* Demoted from <h1> to <h2> (defect 6 fix, audit 2-A): the page-level
+                h1 is now the sr-only heading at the top of <main>; this visible
+                wordmark is a sub-heading. */}
+            <h2 className="text-xl font-light tracking-wide text-white/90 sm:text-2xl">MITHQAL</h2>
             <p className="mt-1 text-sm text-white/40">Constitutional Settlement Institution</p>
             <div className="mt-4 flex items-center justify-center gap-6 text-xs text-white/30">
               <Link href="/" className="transition hover:text-[#C9A961]">Dashboard</Link>
@@ -165,6 +172,28 @@ export default function VideoPage() {
           </div>
         </div>
       </main>
+
+      {/* Defect 4 fix (audit 2-A): add a real <footer> element so the route is
+          consistent with the other 11 routes (which all have main + footer) and
+          the 61px gap on tall viewports is filled with the copyright line. */}
+      <footer className="mt-auto border-t border-[#C9A961]/15 bg-[#0A0E1A] px-6 py-6 text-center text-xs text-white/40">
+        <div className="mx-auto w-full max-w-5xl">
+          <p>
+            MITHQAL — Constitutional Settlement Institution ·{" "}
+            <a
+              href="https://mithqal.vercel.app"
+              className="text-[#C9A961] transition hover:text-[#E8C97A]"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              mithqal.vercel.app
+            </a>
+          </p>
+          <p className="mt-1 text-white/25">
+            Motion Graphics · 12-scene institutional overview · © {new Date().getFullYear()} MITHQAL
+          </p>
+        </div>
+      </footer>
     </div>
   );
 }

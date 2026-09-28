@@ -366,13 +366,18 @@ function DynamicCorridorSimulator() {
           <GlassCard className="mt-3 p-4">
             <div className="mb-3 text-[10px] font-semibold uppercase tracking-wider text-gray-500">Settlement Timeline ({S(Arr(results.steps).length)} steps)</div>
             <div className="space-y-1">
+              {/* Defect 1 fix (audit 2-A): step rows can have long text
+                  ("Atomic MTQ mint (1,000,000)") that would otherwise push the
+                  page scrollWidth past 375px on mobile. Wrap each row in an
+                  overflow-x-auto container so it scrolls inside the card
+                  instead of forcing the whole page wider. */}
               {Arr(results.steps).map((s: any, i: number) => (
-                <div key={i} className="flex items-center gap-2 rounded border border-white/[0.03] px-2 py-1.5 text-[10px]">
+                <div key={i} className="flex items-center gap-2 overflow-x-auto rounded border border-white/[0.03] px-2 py-1.5 text-[10px]">
                   <span className="font-mono text-gray-500 w-16 shrink-0">{S(s.id)}</span>
                   <ArrowRight className="h-2.5 w-2.5 shrink-0 text-gray-600" />
-                  <span className="flex-1 text-gray-300">{S(s.name)}</span>
-                  <span className="text-[8px] text-gray-600">{S(s.stage)}</span>
-                  <span className="text-[8px] text-gray-600">{N(s.durationMs)}ms</span>
+                  <span className="flex-1 min-w-0 truncate text-gray-300">{S(s.name)}</span>
+                  <span className="shrink-0 text-[8px] text-gray-600">{S(s.stage)}</span>
+                  <span className="shrink-0 text-[8px] text-gray-600">{N(s.durationMs)}ms</span>
                   <Badge variant={S(s.status).includes("SUCCESS") ? "emerald" : "amber"}>{S(s.status)}</Badge>
                 </div>
               ))}
@@ -674,7 +679,11 @@ export default function Page() {
           </div>
         </div>
       </header>
-      <div className="mx-auto flex w-full max-w-7xl flex-1">
+      {/* Defect 1 fix (audit 2-A): flex-col on mobile so the mobile-nav bar
+          stacks ABOVE main instead of side-by-side (which caused the 17
+          shrink-0 nav buttons to push the page scrollWidth to 2091px).
+          lg:flex-row restores the desktop sidebar+main side-by-side layout. */}
+      <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col lg:flex-row">
         {/* ─── SIDEBAR NAV (upgraded: mobile-responsive horizontal scroll) ─── */}
         <nav role="navigation" aria-label="Section navigation" className="sticky top-[61px] hidden h-[calc(100vh-61px)] w-56 shrink-0 flex-col gap-1 overflow-y-auto p-4 lg:flex">
           {NAV_ITEMS.map((item) => (
@@ -714,7 +723,7 @@ export default function Page() {
         </nav>
 
         {/* ─── MOBILE NAV BAR (horizontal scroll for tablet/mobile) ─── */}
-        <nav role="navigation" aria-label="Section navigation" className="sticky top-[61px] z-40 border-b border-white/5 bg-[#0a0a0b]/95 backdrop-blur-xl lg:hidden">
+        <nav role="navigation" aria-label="Section navigation" className="sticky top-[61px] z-40 w-full border-b border-white/5 bg-[#0a0a0b]/95 backdrop-blur-xl lg:hidden">
           <div className="flex gap-1 overflow-x-auto px-4 py-2">
             {NAV_ITEMS.map((item) => (
               <button key={item.id} onClick={() => scrollTo(item.id)} aria-label={`Navigate to ${item.label} section`} className="flex shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[10px] font-medium text-gray-500 transition hover:bg-gold/5 hover:text-gold">
@@ -733,6 +742,12 @@ export default function Page() {
 
         {/* ─── MAIN CONTENT ─── */}
         <main role="main" className="min-w-0 flex-1 px-4 py-6 sm:px-6 lg:px-8">
+          {/* Defect 2 fix (audit 2-A): every route needs exactly one top-level
+              <h1> for screen-reader landmark navigation. The hero section
+              visually opens with an <h2> ("MTQ Value — Gold-Anchored, Not
+              Pegged"); this sr-only <h1> provides the page-level heading without
+              duplicating visible text. */}
+          <h1 className="sr-only">Mithqal — §V25.3 Institutional Command Center</h1>
           <div className="space-y-16">
             {/* ═══ MTQ VALUE — GOLD-ANCHORED, NOT PEGGED ═══ */}
             <Section id="mtq-value" icon={Coins} title="MTQ Value — Gold-Anchored, Not Pegged" subtitle="MTQ is NOT pegged to USD or any currency · Value = NAV (reserve-backed, gold-anchored) · PAR = 1.00 is accounting unit only · 11-currency basket + 18% gold anchor">
@@ -1010,38 +1025,43 @@ export default function Page() {
                   </div>
                   <GlassCard className="mt-3 overflow-hidden p-0">
                     <span className="sr-only">Currency weight table showing the 11-currency reserve basket with columns: Currency code, structural weight C (0.50 COFER + 0.40 SWIFT + 0.10 BIS), momentum M, mean-reversion R, volatility sigma, attenuation A, combined K, liquidity L, Final Weight W, and 20% concentration cap indicator. Final weights sum to 100%.</span>
-                    <table className="w-full text-[11px]">
-                      <thead className="border-b border-white/5 bg-white/[0.02]">
-                        <tr className="text-gray-500">
-                          <th className="px-3 py-2 text-left font-medium">CCY</th>
-                          <th className="px-3 py-2 text-right font-medium">C</th>
-                          <th className="px-3 py-2 text-right font-medium">M</th>
-                          <th className="px-3 py-2 text-right font-medium">R</th>
-                          <th className="px-3 py-2 text-right font-medium">σ</th>
-                          <th className="px-3 py-2 text-right font-medium">A</th>
-                          <th className="px-3 py-2 text-right font-medium">K</th>
-                          <th className="px-3 py-2 text-right font-medium">L</th>
-                          <th className="px-3 py-2 text-right font-medium">Final W</th>
-                          <th className="px-3 py-2 text-center font-medium">20% Cap</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {Arr(reserve.data.currencyWeights?.results).map((c: any, i: number) => (
-                          <tr key={i} className="border-b border-white/[0.03] hover:bg-gold/[0.03]">
-                            <td className="px-3 py-1.5 font-semibold text-white">{S(c.currency)}</td>
-                            <td className="px-3 py-1.5 text-right font-mono text-gray-400">{N(c.C).toFixed(4)}</td>
-                            <td className="px-3 py-1.5 text-right font-mono text-gray-400">{N(c.M).toFixed(4)}</td>
-                            <td className="px-3 py-1.5 text-right font-mono text-gray-400">{N(c.R).toFixed(4)}</td>
-                            <td className="px-3 py-1.5 text-right font-mono text-gray-500">{N(c.sigma).toFixed(4)}</td>
-                            <td className="px-3 py-1.5 text-right font-mono text-gray-500">{N(c.A).toFixed(3)}</td>
-                            <td className="px-3 py-1.5 text-right font-mono text-gray-400">{N(c.K).toFixed(4)}</td>
-                            <td className="px-3 py-1.5 text-right font-mono text-gray-500">{N(c.L).toFixed(4)}</td>
-                            <td className="px-3 py-1.5 text-right font-mono font-bold text-gold">{fmtPct(c.finalWeight)}</td>
-                            <td className="px-3 py-1.5 text-center">{c.concentrationCapped ? <span className="text-red-400">●</span> : <span className="text-emerald-400">○</span>}</td>
+                    {/* Defect 1 fix (audit 2-A): wrap the wide currency-weight table in a
+                        horizontally scrollable container so it no longer overflows the
+                        375px mobile viewport. The min-w on the table preserves legibility. */}
+                    <div className="overflow-x-auto">
+                      <table className="w-full min-w-[640px] text-[11px]">
+                        <thead className="border-b border-white/5 bg-white/[0.02]">
+                          <tr className="text-gray-500">
+                            <th className="px-3 py-2 text-left font-medium">CCY</th>
+                            <th className="px-3 py-2 text-right font-medium">C</th>
+                            <th className="px-3 py-2 text-right font-medium">M</th>
+                            <th className="px-3 py-2 text-right font-medium">R</th>
+                            <th className="px-3 py-2 text-right font-medium">σ</th>
+                            <th className="px-3 py-2 text-right font-medium">A</th>
+                            <th className="px-3 py-2 text-right font-medium">K</th>
+                            <th className="px-3 py-2 text-right font-medium">L</th>
+                            <th className="px-3 py-2 text-right font-medium">Final W</th>
+                            <th className="px-3 py-2 text-center font-medium">20% Cap</th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                        </thead>
+                        <tbody>
+                          {Arr(reserve.data.currencyWeights?.results).map((c: any, i: number) => (
+                            <tr key={i} className="border-b border-white/[0.03] hover:bg-gold/[0.03]">
+                              <td className="px-3 py-1.5 font-semibold text-white">{S(c.currency)}</td>
+                              <td className="px-3 py-1.5 text-right font-mono text-gray-400">{N(c.C).toFixed(4)}</td>
+                              <td className="px-3 py-1.5 text-right font-mono text-gray-400">{N(c.M).toFixed(4)}</td>
+                              <td className="px-3 py-1.5 text-right font-mono text-gray-400">{N(c.R).toFixed(4)}</td>
+                              <td className="px-3 py-1.5 text-right font-mono text-gray-500">{N(c.sigma).toFixed(4)}</td>
+                              <td className="px-3 py-1.5 text-right font-mono text-gray-500">{N(c.A).toFixed(3)}</td>
+                              <td className="px-3 py-1.5 text-right font-mono text-gray-400">{N(c.K).toFixed(4)}</td>
+                              <td className="px-3 py-1.5 text-right font-mono text-gray-500">{N(c.L).toFixed(4)}</td>
+                              <td className="px-3 py-1.5 text-right font-mono font-bold text-gold">{fmtPct(c.finalWeight)}</td>
+                              <td className="px-3 py-1.5 text-center">{c.concentrationCapped ? <span className="text-red-400">●</span> : <span className="text-emerald-400">○</span>}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
                   </GlassCard>
                   <div className="mt-2 flex flex-wrap gap-2 text-[9px] text-gray-500">
                     <span>C = structural weight (0.50 COFER + 0.40 SWIFT + 0.10 BIS)</span>

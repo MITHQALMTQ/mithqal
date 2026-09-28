@@ -18,7 +18,7 @@
 // activates with real data. This is the institutionally-correct approach:
 // a monetary institution should own its historical data.
 
-import { db, ensureSchema } from "./db";
+import { ensureSchema, rawQuery } from "./db";
 
 export interface LiveOracleData {
   goldUsd: number;
@@ -61,8 +61,16 @@ async function storeDailySnapshot(goldUsd: number, fxRates: Record<string, numbe
 
     // Upsert: if a row exists for today, update it; otherwise insert.
     // This handles the case where the oracle runs multiple times per day.
-    await db.$executeRawUnsafe(
-      `INSERT INTO "GoldPriceSnapshot" ("date", "goldUsd", "fxRates", "updatedAt") VALUES ('${today}', ${goldUsd}, '${fxJson}', CURRENT_TIMESTAMP) ON CONFLICT("date") DO UPDATE SET "goldUsd" = ${goldUsd}, "fxRates" = '${fxJson}', "updatedAt" = CURRENT_TIMESTAMP`
+    //
+    // SECURITY FIX (Task 4-A / Defect 1): parameterized SQL — never interpolate
+    // untrusted values into a SQL string. fxJson is a JSON.stringify() output
+    // of upstream FX rates; if any upstream value were a malicious string, the
+    // old template-literal interpolation ('${fxJson}') was a direct SQL
+    // injection vector. Use `?` placeholders + rawQuery() (which routes through
+    // libsql's parameterized execute()).
+    await rawQuery(
+      `INSERT INTO "GoldPriceSnapshot" ("date", "goldUsd", "fxRates", "updatedAt") VALUES (?, ?, ?, CURRENT_TIMESTAMP) ON CONFLICT("date") DO UPDATE SET "goldUsd" = ?, "fxRates" = ?, "updatedAt" = CURRENT_TIMESTAMP`,
+      [today, goldUsd, fxJson, goldUsd, fxJson],
     );
   } catch (err) {
     // Non-fatal — the snapshot is best-effort. If the table doesn't exist
@@ -73,7 +81,12 @@ async function storeDailySnapshot(goldUsd: number, fxRates: Record<string, numbe
 
 /**
  * Read the gold price from N days ago from the Turso snapshot table.
- * Returns null if no snapshot exists for that date (or within a 3-day window).
+ * Returns null if no snapshot exists for that date (or within a 5-day window).
+ *
+ * SECURITY FIX (Task 4-A / Defect 1): the old `db.$executeRawUnsafe` template-
+ * literal call interpolated startStr/endStr directly into the SQL string. Use
+ * `rawQuery()` with `?` placeholders + an args array — libsql's parameterized
+ * execute() path. Also fully implemented (previously returned null placeholder).
  */
 async function readGoldSnapshotNDaysAgo(days: number): Promise<number | null> {
   try {
@@ -86,14 +99,13 @@ async function readGoldSnapshotNDaysAgo(days: number): Promise<number | null> {
     const startStr = start.toISOString().slice(0, 10);
     const endStr = target.toISOString().slice(0, 10);
 
-    const result = await db.$executeRawUnsafe(
-      `SELECT "goldUsd" FROM "GoldPriceSnapshot" WHERE "date" >= '${startStr}' AND "date" <= '${endStr}' ORDER BY "date" DESC LIMIT 1`
+    const result = await rawQuery<{ goldUsd: number }>(
+      `SELECT "goldUsd" FROM "GoldPriceSnapshot" WHERE "date" >= ? AND "date" <= ? ORDER BY "date" DESC LIMIT 1`,
+      [startStr, endStr],
     );
-    // db.$executeRawUnsafe returns the libsql result; we need to parse it.
-    // Actually, $executeRawUnsafe returns the number of rows affected for
-    // INSERT/UPDATE/DELETE. For SELECT, we need to use the raw client.
-    // Let's use the raw client directly instead.
-    return null; // placeholder — see readGoldSeries below for the correct approach
+    if (!result.rows || result.rows.length === 0) return null;
+    const val = Number(result.rows[0].goldUsd);
+    return Number.isFinite(val) && val > 0 ? val : null;
   } catch {
     return null;
   }

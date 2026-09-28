@@ -870,6 +870,12 @@ export default function DemoPage() {
       <Header />
 
       <main className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        {/* Defect 5 fix (audit 2-A): page-level <h1> at the top of <main> so the
+            DOM heading order is h1 (page title) → h2 (Overview) → h2 (MITHQAL
+            wordmark) → h3 (Explore) instead of the previous h2 → h1 → h3
+            violation (WCAG 1.3.1). The visible MITHQAL wordmark below is
+            demoted to <h2> so it sub-heads this page-level <h1>. */}
+        <h1 className="sr-only">Mithqal Demo Center</h1>
         <Tabs value={tab} onValueChange={setTab} className="flex flex-col gap-6">
           {/* Tab bar */}
           <div className="sticky top-0 z-20 -mx-4 bg-[#0A0E1A]/95 px-4 py-3 backdrop-blur sm:mx-0 sm:rounded-xl sm:border sm:border-white/10 sm:px-3">
@@ -1050,11 +1056,14 @@ function Overview({
           </div>
 
           <div>
-            <h1 className="text-3xl font-semibold leading-tight tracking-tight text-white sm:text-4xl lg:text-5xl">
-              MITHQAL —{" "}
-              <span className="text-[#C9A961]">Constitutional Settlement</span>{" "}
-              Institution
-            </h1>
+            {/* Defect 7 fix (audit 2-A): use explicit non-breaking spaces
+                (\u00A0) instead of JSX {" "} expressions so the rendered text
+                is unambiguously "MITHQAL — Constitutional Settlement
+                Institution" regardless of how the JSX whitespace serializer
+                collapses newlines. Demoted from <h1> to <h2> (defect 5 fix). */}
+            <h2 className="text-3xl font-semibold leading-tight tracking-tight text-white sm:text-4xl lg:text-5xl">
+              {"MITHQAL —\u00A0"}<span className="text-[#C9A961]">Constitutional Settlement</span>{"\u00A0Institution"}
+            </h2>
             <p className="mt-4 max-w-3xl text-base leading-relaxed text-white/60 sm:text-lg">
               MITHQAL is a constitutional, fully-reserved monetary settlement
               institution that explores how Circle&rsquo;s USDC can serve as the

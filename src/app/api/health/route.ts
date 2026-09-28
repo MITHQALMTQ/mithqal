@@ -19,12 +19,14 @@ import { ALL_CHAINS } from "@/lib/chains";
  * Returns 200 + { status: "healthy", checks } when every gating probe passes.
  * Returns 503 + { status: "degraded", checks } when any gating probe fails.
  *
- * Gating: only `db`, `rpc` (Monad), `oracle`, and `smtp` gate the overall
- * status. `rpcArc`, `rpcLocal`, `imf`, and `bis` are informational — they
+ * Gating: only `db`, `rpc` (Monad), and `oracle` gate the overall status.
+ * `rpcArc`, `rpcLocal`, `smtp`, `imf`, and `bis` are informational — they
  * don't cause a 503 on their own. The IMF/BIS checks are reported for
- * observability (used by the data-source catalog), but a single upstream
- * macro-data API being unreachable does not degrade the platform's
- * settlement / oracle / RPC stack.
+ * observability (used by the data-source catalog); `smtp` is reported for
+ * observability of the outbound-email channel (notification pipeline) —
+ * neither is part of the settlement / oracle / RPC stack, so an unreachable
+ * macro-data API or unconfigured SMTP server does not degrade the platform's
+ * core settlement / oracle / RPC stack.
  *
  * This endpoint is unauthenticated and not rate-limited so external
  * monitors (UptimeRobot, Vercel cron, etc.) can poll it freely.
@@ -32,11 +34,15 @@ import { ALL_CHAINS } from "@/lib/chains";
 export async function GET() {
   const checks = await runChecks();
 
-  // rpcArc + rpcLocal + imf + bis are informational only — they do NOT gate.
+  // rpcArc + rpcLocal + smtp + imf + bis are informational only — they do NOT gate.
   const gatingChecks = Object.entries(checks)
     .filter(
       ([key]) =>
-        key !== "rpcArc" && key !== "rpcLocal" && key !== "imf" && key !== "bis",
+        key !== "rpcArc" &&
+        key !== "rpcLocal" &&
+        key !== "smtp" &&
+        key !== "imf" &&
+        key !== "bis",
     )
     .map(([, c]) => c);
   const allOk = gatingChecks.every((c) => c.ok);
@@ -223,7 +229,12 @@ async function checkOracle(): Promise<CheckResult> {
   }
 }
 
-/* ---- SMTP: check that SMTP_HOST is configured (does NOT send email) ---- */
+/* ---- SMTP: check that SMTP_HOST is configured (does NOT send email) ----
+ * Informational only — does NOT cause a 503 if SMTP is unconfigured.
+ * Reports upstream outbound-email channel liveness for the notification
+ * pipeline observability catalog; SMTP is not part of the settlement /
+ * oracle / RPC stack so an unconfigured SMTP server does not degrade the
+ * platform's core operational status. */
 function checkSmtp(): CheckResult {
   const host = process.env.SMTP_HOST;
   if (!host) {

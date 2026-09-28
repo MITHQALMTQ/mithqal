@@ -64,9 +64,30 @@ export async function POST(req: Request) {
   const blocked = enforceRateLimit("mint", req, 10, 60_000);
   if (blocked) return blocked;
 
+  // ---- Body size limit (DoS hardening, audit 2-B DEFECT-MINT-BODYSIZE) ----
+  // Reject payloads > 64 KB up front (cheap header check) AND after reading
+  // the body (catches clients that lie about content-length). The mint body
+  // is tiny (~200 bytes) so 64 KB is generous; anything larger is either
+  // abuse or a client bug.
+  const MAX_BODY_BYTES = 64 * 1024;
+  const contentLength = parseInt(req.headers.get("content-length") ?? "0", 10);
+  if (Number.isFinite(contentLength) && contentLength > MAX_BODY_BYTES) {
+    return NextResponse.json(
+      { error: "Payload too large — max 64 KB" },
+      { status: 413 },
+    );
+  }
+  const raw = await req.text();
+  if (raw.length > MAX_BODY_BYTES) {
+    return NextResponse.json(
+      { error: "Payload too large — max 64 KB" },
+      { status: 413 },
+    );
+  }
+
   let body: unknown;
   try {
-    body = await req.json();
+    body = JSON.parse(raw);
   } catch {
     return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
   }

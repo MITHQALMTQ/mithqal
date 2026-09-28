@@ -1,6 +1,8 @@
-import { execSync, spawn } from "node:child_process";
-import { existsSync, readFileSync, writeFileSync, mkdirSync, copyFileSync, openSync } from "node:fs";
+import { execSync, spawn, spawnSync } from "node:child_process";
+import { existsSync, readFileSync, writeFileSync, mkdirSync, copyFileSync, openSync, chmodSync, unlinkSync } from "node:fs";
 import { createConnection } from "node:net";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 
 const SYNC_DIR = "/home/sync";
 const ENV_BACKUP = `${SYNC_DIR}/mithqal.env`;
@@ -61,7 +63,29 @@ async function tick() {
         if (token) {
           const { createHash } = await import("node:crypto");
           const key = createHash("sha256").update(token).digest("hex");
-          execSync(`openssl enc -d -aes-256-cbc -pbkdf2 -in ${MITHQAL_DIR}/.env.encrypted -pass pass:${key} > ${MITHQAL_ENV}`, { stdio: "pipe", timeout: 10000 });
+          // SECURITY FIX (Task 4-A / Defect 3): pass the AES key via env var
+          // (openssl -pass env:VARNAME) instead of `pass:${key}` shell arg.
+          // argv is visible in `ps aux` / /proc/PID/cmdline to any user with
+          // read access; env vars are restricted to the file owner in
+          // /proc/PID/envelope. spawnSync (no shell) also prevents shell
+          // quoting attacks on the path interpolation. Stdout → file via fs
+          // (no shell redirect required).
+          const decResult = spawnSync(
+            "openssl",
+            [
+              "enc", "-d", "-aes-256-cbc", "-pbkdf2",
+              "-in", `${MITHQAL_DIR}/.env.encrypted`,
+              "-pass", "env:MITHQAL_AES_KEY",
+            ],
+            { stdio: ["ignore", "pipe", "pipe"], timeout: 10000, encoding: "utf-8", env: { ...process.env, MITHQAL_AES_KEY: key } },
+          );
+          if (decResult.error) {
+            throw new Error(`openssl spawn error: ${decResult.error.message}`);
+          }
+          if (decResult.status !== 0 || !decResult.stdout) {
+            throw new Error(`openssl decrypt failed (status ${decResult.status}): ${decResult.stderr || "(no stderr)"}`);
+          }
+          writeFileSync(MITHQAL_ENV, decResult.stdout);
           log(`✓ restored .env from .env.encrypted (tier 2: git decrypt)`); restored = true;
         }
       } catch (e) { log(`✗ tier 2 env restore failed: ${e.message}`); }
@@ -79,8 +103,36 @@ async function tick() {
     }
     if (token) {
       try {
-        execSync(`git clone https://x-access-token:${token}@github.com/MITHQALMTQ/mithqal.git ${MITHQAL_DIR}`, { stdio: "pipe", timeout: 180000 });
-        execSync(`git -C ${MITHQAL_DIR} remote set-url origin https://github.com/MITHQALMTQ/mithqal.git`);
+        // SECURITY FIX (Task 4-A / Defect 3): pass the GitHub token via a
+        // temporary .git-credentials file (chmod 600) + the `credential.helper
+        // =store --file=...` config, instead of embedding the token in the
+        // clone URL (`https://x-access-token:${token}@github.com/...`).
+        // The URL form leaks the token to `ps aux` / /proc/PID/cmdline which
+        // is world-readable. The credential-helper form passes the URL with
+        // NO token in argv, and the secret lives only in a 0600 file (and the
+        // same-UID-restricted /proc/PID/envelope via GIT_* env vars if any).
+        const credFile = join(tmpdir(), `mithqal-git-cred-${Date.now()}-${process.pid}`);
+        writeFileSync(credFile, `https://x-access-token:${token}@github.com\n`);
+        chmodSync(credFile, 0o600);
+        const cloneResult = spawnSync(
+          "git",
+          [
+            "clone",
+            "--config", `credential.helper=store --file=${credFile}`,
+            "https://github.com/MITHQALMTQ/mithqal.git",
+            MITHQAL_DIR,
+          ],
+          { stdio: "pipe", timeout: 180000, encoding: "utf-8" },
+        );
+        try { unlinkSync(credFile); } catch {}
+        if (cloneResult.error) {
+          throw new Error(`git spawn error: ${cloneResult.error.message}`);
+        }
+        if (cloneResult.status !== 0) {
+          throw new Error(`git clone failed (status ${cloneResult.status}): ${cloneResult.stderr || cloneResult.stdout || "(no output)"}`);
+        }
+        // Re-point the remote to the public URL (no token). spawnSync (no shell).
+        spawnSync("git", ["-C", MITHQAL_DIR, "remote", "set-url", "origin", "https://github.com/MITHQALMTQ/mithqal.git"], { stdio: "pipe", timeout: 30000, encoding: "utf-8" });
         log("✓ re-cloned mithqal (all committed code + .env.encrypted)");
       } catch (e) { log(`✗ re-clone failed: ${e.message}`); }
     } else {

@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { generateRebalanceProposal, getAllProposals } from "@/lib/execution-engine";
 import { getReserveState, isReserveStateInitialized, initializeReserveState } from "@/lib/reserve-state";
 import { computeLiveNav } from "@/lib/nav-compute";
+import { enforceRateLimit } from "@/lib/rate-limit";
 import {
   computeDynamicReserveAllocation,
   deriveCurrentLayerWeights,
@@ -31,12 +32,25 @@ import {
  * (no triggers fire), the raw actions are NOT used (the §29 plan is the
  * source of truth); when context construction fails, the raw-actions path
  * is taken and a warning is logged.
+ *
+ * Rate limit: 10 req/min per IP (audit 2-B DEFECT-REBALANCE-RATELIMIT) —
+ * stricter than the standard 30 req/min R11 limit because the §29 plan
+ * computation is heavier (live NAV fetch + allocation engine + cross-asset
+ * rebalance generation).
  */
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   return NextResponse.json({ ok: true, proposals: getAllProposals() });
 }
 
 export async function POST(request: Request) {
+  // Rate limit (audit 2-B DEFECT-REBALANCE-RATELIMIT) — runs BEFORE auth so
+  // brute-force / spam is rejected at the cheapest possible layer. The auth
+  // check (SIMULATION-gated) still runs below for non-testnet callers.
+  const rateLimited = enforceRateLimit("rebalance-plan", request, 10, 60_000);
+  if (rateLimited) return rateLimited;
+
   // P1: Auth required only in non-SIMULATION modes (testnet = open, production = authenticated)
   const { getExecutionMode } = await import('@/lib/reserve-state');
   if (getExecutionMode() !== 'SIMULATION') {

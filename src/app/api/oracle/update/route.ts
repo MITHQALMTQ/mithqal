@@ -157,24 +157,53 @@ function toHex(n: bigint, padToBytes?: number): string {
 // Actually, let's use the @noble/hashes package if available, or a simple approach.
 // For now, we'll use a different strategy: use cast/forge via child_process.
 
-import { execSync } from "child_process";
+import { spawnSync } from "child_process";
 import { existsSync } from "fs";
 
 const FOUNDRY_CAST = `${process.env.HOME}/.foundry/bin/cast`;
 
+/**
+ * SECURITY FIX (Task 4-A / Defect 2): castSend() previously built a shell
+ * command string with `--private-key ${privateKey}` template-literal
+ * interpolation, which leaked the deployer private key into the process
+ * listing (`ps aux`) of any user with shell access on the Vercel build/worker
+ * node. Now uses `spawnSync('cast', [args...])` with NO shell — the args are
+ * passed directly to execve(), so they never appear in `ps` output.
+ */
 function castSend(rpcUrl: string, privateKey: string, to: string, sig: string, args: string[]): { hash: string; status: number } {
-  const cmd = `${FOUNDRY_CAST} send --rpc-url "${rpcUrl}" --private-key ${privateKey} ${to} "${sig}" ${args.join(" ")} --json 2>/dev/null`;
-  const output = execSync(cmd, { timeout: 60000, encoding: "utf-8" });
-  const result = JSON.parse(output);
+  const result = spawnSync(
+    FOUNDRY_CAST,
+    ["send", "--rpc-url", rpcUrl, "--private-key", privateKey, to, sig, ...args, "--json"],
+    { timeout: 60000, encoding: "utf-8", shell: false },
+  );
+  if (result.error) throw result.error;
+  if (result.status !== 0) {
+    throw new Error(`cast send failed (status ${result.status}): ${result.stderr || result.stdout}`);
+  }
+  const output = result.stdout.trim();
+  const parsed = JSON.parse(output);
   return {
-    hash: result.transactionHash,
-    status: parseInt(result.status, 16) === 1 ? 1 : 0,
+    hash: parsed.transactionHash,
+    status: parseInt(parsed.status, 16) === 1 ? 1 : 0,
   };
 }
 
+/**
+ * SECURITY FIX (Task 4-A / Defect 2): castCall() previously used `execSync`
+ * with a template-literal shell command. While castCall does not embed
+ * secrets, the same hardening applies — use spawnSync with NO shell.
+ */
 function castCall(rpcUrl: string, to: string, sig: string): string {
-  const cmd = `${FOUNDRY_CAST} call --rpc-url "${rpcUrl}" ${to} "${sig}" 2>/dev/null`;
-  return execSync(cmd, { timeout: 15000, encoding: "utf-8" }).trim();
+  const result = spawnSync(
+    FOUNDRY_CAST,
+    ["call", "--rpc-url", rpcUrl, to, sig],
+    { timeout: 15000, encoding: "utf-8", shell: false },
+  );
+  if (result.error) throw result.error;
+  if (result.status !== 0) {
+    throw new Error(`cast call failed (status ${result.status}): ${result.stderr || result.stdout}`);
+  }
+  return result.stdout.trim();
 }
 
 async function fetchLiveGoldPrice(): Promise<number> {
@@ -191,6 +220,25 @@ async function fetchLiveSilverPrice(): Promise<number> {
 
 export async function POST(request: Request) {
   try {
+    // SECURITY FIX (Task 4-A / Defect 2): require a CRON_SECRET header on
+    // every POST. This route signs on-chain transactions with the deployer
+    // private key — it must NEVER accept unauthenticated public requests.
+    // If CRON_SECRET is unset in the environment, return 503 (refuse to
+    // operate unauthenticated) rather than allow public on-chain writes.
+    const cronSecret = process.env.CRON_SECRET;
+    if (!cronSecret) {
+      return NextResponse.json(
+        { error: "Service unavailable", detail: "CRON_SECRET not configured — oracle update endpoint is disabled until the operator provisions a cron secret" },
+        { status: 503 },
+      );
+    }
+    if (request.headers.get("x-cron-secret") !== cronSecret) {
+      return NextResponse.json(
+        { error: "unauthorized", detail: "missing or invalid x-cron-secret header" },
+        { status: 401 },
+      );
+    }
+
     const privateKey = process.env.DEPLOYER_PRIVATE_KEY;
     if (!privateKey) {
       return NextResponse.json(

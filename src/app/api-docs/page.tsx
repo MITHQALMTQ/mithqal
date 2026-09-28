@@ -149,8 +149,12 @@ export default function ApiDocsPage() {
   ].filter((t) => grouped[t] && grouped[t].length > 0);
 
   return (
-    <div className="grain-bg min-h-screen">
-      <div className="mx-auto w-full max-w-5xl px-5 py-10 sm:px-8">
+    <div className="grain-bg flex min-h-screen flex-col">
+      {/* Defect 3 fix (audit 2-A): wrap page content in <main> landmark +
+          add a real <footer> element so the route is consistent with the
+          other 11 routes (which all have main + footer). */}
+      <main className="flex-1">
+        <div className="mx-auto w-full max-w-5xl px-5 py-10 sm:px-8">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
@@ -309,8 +313,8 @@ export default function ApiDocsPage() {
           </div>
         )}
 
-        {/* Footer */}
-        <div className="mt-12 border-t border-line pt-6 text-center text-xs text-fg-muted">
+        {/* Footer — converted to a real <footer> element (defect 3 fix, audit 2-A) */}
+        <footer className="mt-12 border-t border-line pt-6 text-center text-xs text-fg-muted">
           <p>
             © 2026 Mithqal Constitutional Settlement Institution · v19.0.3 specification.
           </p>
@@ -321,8 +325,9 @@ export default function ApiDocsPage() {
             </a>
             .
           </p>
+        </footer>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

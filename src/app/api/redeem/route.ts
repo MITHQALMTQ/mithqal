@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { db, ensureSchema } from "@/lib/db";
+import { db, ensureSchema, rawQuery } from "@/lib/db";
 import { redemptionFee } from "@/lib/monetary-engine-v19";
 import { enforceRateLimit } from "@/lib/rate-limit";
 import {
@@ -152,12 +152,30 @@ export async function POST(req: Request) {
       throttleReason = `elevated throttle (RR ${rr.toFixed(2)}% ∈ [100%, 102%]) — max 5% of supply per 24h`;
     }
     const maxRedeemPer24h = supply * throttleLimitPct;
-    // Check cumulative redemptions in the last 24h (from DB)
-    const recentRedemptions = await db.testnetOperation.findMany({
-      where: { type: "redeem", createdAt: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) } },
-      select: { mtq: true },
-    }).catch(() => []);
-    const cumulativeRedeemed = recentRedemptions.reduce((sum, r) => sum + (r.mtq || 0), 0);
+    // SECURITY + CORRECTNESS FIX (Task 4-A / Defect 5): the previous call to
+    // `db.testnetOperation.findMany({ where, select })` was broken — the
+    // db.ts findMany API does NOT accept `where`/`select`, so the call
+    // threw, was swallowed by `.catch(() => [])`, and the throttle ALWAYS
+    // counted 0 (never engaged). Replace with a direct parameterized SQL
+    // SUM via rawQuery() — counts cumulative redeemed MTQ in the last 24h
+    // (matching the 24h stress-throttle window the comment block describes).
+    // `datetime('now', '-24 hours')` is computed by SQLite at query time
+    // (UTC, matching the CURRENT_TIMESTAMP format the table uses for
+    // createdAt), so the lexicographic comparison is correct.
+    // Note: TestnetOperation.mtq is REAL; CAST to REAL is belt-and-braces.
+    const throttleResult = await rawQuery<{ total: number | string }>(
+      `SELECT COALESCE(SUM(CAST("mtq" AS REAL)), 0) AS total FROM "TestnetOperation" WHERE "type" = ? AND "createdAt" >= datetime('now', '-24 hours')`,
+      ["redeem"],
+    );
+    const cumulativeRedeemed = Number(throttleResult.rows[0]?.total ?? 0);
+    if (!Number.isFinite(cumulativeRedeemed)) {
+      // Defensive — should never happen, but if the SUM returned a non-
+      // numeric value, fail-closed (deny the redeem) rather than allow.
+      return NextResponse.json(
+        { error: "Throttle check failed — please retry." },
+        { status: 500 }
+      );
+    }
     if (cumulativeRedeemed + mtqAmount > maxRedeemPer24h) {
       return NextResponse.json({
         error: `Redemption throttle active: ${throttleReason}. Cumulative 24h: ${cumulativeRedeemed.toFixed(2)} MTQ, requested: ${mtqAmount} MTQ, limit: ${maxRedeemPer24h.toFixed(0)} MTQ. Please retry later — redemption is never paused, only rate-limited during stress.`,

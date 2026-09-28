@@ -33,9 +33,14 @@ import {
   AlertTriangle,
   ShieldCheck,
   Activity,
+  Copy,
+  Check,
+  ExternalLink as ExternalLinkIcon,
 } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { CHAINS, SOLANA_NETWORKS, type ChainConfig, type SolanaNetwork } from "@/lib/chains";
 
 /* ---- Types matching the /api/health and /api/onchain-test responses ---- */
 
@@ -413,6 +418,14 @@ export default function StatusPage() {
           )}
         </section>
 
+        {/* Contract addresses (Defect 8 fix, audit 2-A): display the raw 0x
+            contract addresses for every deployed network on the status page
+            itself, with copy-to-clipboard buttons. Sourced from
+            src/lib/chains.ts (the same module /api/contract/info and
+            /api/status consume) so the displayed addresses cannot drift from
+            the canonical registry. */}
+        <ContractAddressesSection />
+
         {/* Footer link back to main site */}
         <footer className="mt-12 border-t border-line pt-6 text-xs text-fg-muted">
           <div className="flex flex-wrap items-center justify-between gap-3">
@@ -436,5 +449,202 @@ export default function StatusPage() {
         </footer>
       </div>
     </main>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Contract Addresses section (Defect 8 — audit 2-A)                 */
+/* ------------------------------------------------------------------ */
+/*
+ * Renders the canonical EVM (Monad / Arc / Local) + Solana contract
+ * addresses directly on the public status page, each with a
+ * copy-to-clipboard button. Sourced from src/lib/chains.ts so there is a
+ * single source of truth (the same module /api/contract/info and
+ * /api/status consume).
+ */
+
+type ContractEntry = {
+  /** Short label, e.g. "MTQ Token", "Governance". */
+  name: string;
+  /** 0x… EVM address OR base58 Solana mint/wallet. */
+  address: string;
+  /** Optional explorer URL for this address on its chain. */
+  explorerUrl?: string;
+};
+
+function buildEvmEntries(chain: ChainConfig): ContractEntry[] {
+  const c = chain.contracts;
+  const base = chain.explorer;
+  const link = (addr: string) => (base ? `${base}/address/${addr}` : undefined);
+  return [
+    { name: "MTQ Token", address: c.MTQ_TOKEN, explorerUrl: link(c.MTQ_TOKEN) },
+    { name: "Governance", address: c.GOVERNANCE, explorerUrl: link(c.GOVERNANCE) },
+    { name: "Safe Multi-Sig", address: c.SAFE_MULTI_SIG, explorerUrl: link(c.SAFE_MULTI_SIG) },
+    { name: "Algorithm", address: c.ALGORITHM, explorerUrl: link(c.ALGORITHM) },
+    { name: "Reserve", address: c.RESERVE, explorerUrl: link(c.RESERVE) },
+    { name: "Mint", address: c.MINT, explorerUrl: link(c.MINT) },
+    { name: "Redeem", address: c.REDEEM, explorerUrl: link(c.REDEEM) },
+    { name: "Oracle", address: c.ORACLE, explorerUrl: link(c.ORACLE) },
+    { name: "Takaful", address: c.TAKAFUL, explorerUrl: link(c.TAKAFUL) },
+    { name: "Deployer", address: c.DEPLOYER, explorerUrl: link(c.DEPLOYER) },
+  ];
+}
+
+function buildSolanaEntries(net: SolanaNetwork): ContractEntry[] {
+  const base = net.explorer;
+  return [
+    {
+      name: "SPL Mint Address",
+      address: net.mintAddress,
+      explorerUrl: `${base}/address/${net.mintAddress}`,
+    },
+    {
+      name: "Treasury Wallet",
+      address: net.walletAddress,
+      explorerUrl: `${base}/address/${net.walletAddress}`,
+    },
+  ];
+}
+
+function ContractAddressesSection() {
+  // Hide the local Anvil chain on the public status page — it only exists
+  // in developer sandboxes, never in production. Monad + Arc + Solana are
+  // the publicly verifiable deployments.
+  const evmChains = [CHAINS.monad, CHAINS.arc];
+  const solanaNets = SOLANA_NETWORKS;
+
+  return (
+    <section className="mt-10">
+      <h2 className="font-display text-lg text-foreground">Contract Addresses</h2>
+      <p className="mb-3 text-xs text-fg-muted">
+        Canonical deployment addresses for every public network Mithqal is
+        deployed on. Sourced from{" "}
+        <code className="rounded bg-ink-card px-1 py-0.5 text-[11px] text-foreground">
+          src/lib/chains.ts
+        </code>{" "}
+        — the same module{" "}
+        <code className="rounded bg-ink-card px-1 py-0.5 text-[11px] text-foreground">
+          /api/contract/info
+        </code>{" "}
+        consumes. Tap an address to copy it.
+      </p>
+
+      <div className="space-y-6">
+        {evmChains.map((chain) => (
+          <ContractCard
+            key={chain.key}
+            heading={chain.name}
+            subheading={`Chain ID ${chain.chainId} · ${chain.rpcUrl}`}
+            entries={buildEvmEntries(chain)}
+          />
+        ))}
+
+        {solanaNets.map((net) => (
+          <ContractCard
+            key={net.key}
+            heading={net.name}
+            subheading={`Non-EVM SPL · ${net.rpcUrl}`}
+            entries={buildSolanaEntries(net)}
+          />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function ContractCard({
+  heading,
+  subheading,
+  entries,
+}: {
+  heading: string;
+  subheading: string;
+  entries: ContractEntry[];
+}) {
+  return (
+    <div className="overflow-hidden rounded-lg border border-line bg-ink-card/60">
+      <div className="border-b border-line bg-ink-soft/40 px-4 py-2.5">
+        <div className="text-sm font-semibold text-foreground">{heading}</div>
+        <div className="mt-0.5 break-all text-[11px] text-fg-muted">{subheading}</div>
+      </div>
+      <div className="divide-y divide-line/60">
+        {entries.map((entry) => (
+          <ContractRow key={entry.name + entry.address} entry={entry} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ContractRow({ entry }: { entry: ContractEntry }) {
+  const [copied, setCopied] = useState(false);
+
+  const copy = useCallback(async () => {
+    try {
+      if (typeof navigator !== "undefined" && navigator.clipboard) {
+        await navigator.clipboard.writeText(entry.address);
+      } else {
+        // Legacy fallback for headless / older browsers.
+        const ta = document.createElement("textarea");
+        ta.value = entry.address;
+        ta.setAttribute("readonly", "");
+        ta.style.position = "absolute";
+        ta.style.left = "-9999px";
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        document.body.removeChild(ta);
+      }
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      /* no-op — clipboard may be blocked in some sandbox contexts */
+    }
+  }, [entry.address]);
+
+  return (
+    <div className="flex flex-col gap-1.5 px-4 py-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+      <div className="flex-1 min-w-0">
+        <div className="text-xs font-medium text-foreground">{entry.name}</div>
+        <code className="block break-all font-mono text-[11px] text-fg-muted">
+          {entry.address}
+        </code>
+      </div>
+      <div className="flex shrink-0 items-center gap-1.5">
+        {entry.explorerUrl && (
+          <a
+            href={entry.explorerUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-line text-fg-muted transition hover:text-gold"
+            aria-label={`Open ${entry.name} on block explorer`}
+            title="Open on block explorer"
+          >
+            <ExternalLinkIcon className="h-3.5 w-3.5" />
+          </a>
+        )}
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => void copy()}
+          aria-label={`Copy ${entry.name} address to clipboard`}
+          title="Copy to clipboard"
+          className="h-8 gap-1.5 px-2.5"
+        >
+          {copied ? (
+            <>
+              <Check className="h-3.5 w-3.5 text-reserve" />
+              <span className="text-[11px] text-reserve">Copied</span>
+            </>
+          ) : (
+            <>
+              <Copy className="h-3.5 w-3.5" />
+              <span className="text-[11px]">Copy</span>
+            </>
+          )}
+        </Button>
+      </div>
+    </div>
   );
 }
