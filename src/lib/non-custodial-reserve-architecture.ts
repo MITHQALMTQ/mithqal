@@ -827,7 +827,18 @@ export const RECONCILIATION_FIVE_SOURCES = [
   "proofOfLiabilities        — independent proof of liabilities (Source D, where available)",
 ] as const;
 
-export const RECONCILIATION_TOLERANCE = 0.0001; // 1 bps tolerance
+// v25.3.9 — SUPERSEDED. Universal 1 bps tolerance replaced by 6 separate
+// tolerance policies per src/lib/reconciliation-tolerance-policies.ts (per
+// O-directive trace 1a0ee793ba929555 — "Do NOT use one universal tolerance
+// for every reconciliation type"). Each reconciliation type now has its OWN
+// policy: LEDGER_TO_LEDGER (1 bps), BANK_ATTESTATION (5 bps), CUSTODY_QUANTITY
+// (10 bps), MARKET_VALUATION (50 bps), FX_VALUATION (20 bps), STRESSED_VALUATION
+// (200 bps). Kept here for backward compat — `runReserveBackingReconciliation`
+// below still references it (the function is PRESERVED per CRITICAL CONSTRAINTS).
+// New reconciliation callers SHOULD use the 6-policy `reconcile()` from
+// src/lib/reconciliation-tolerance-policies.ts instead.
+// See LEGACY_UNIVERSAL_TOLERANCE_STATUS in src/lib/reconciliation-tolerance-policies.ts.
+export const RECONCILIATION_TOLERANCE = 0.0001; // 1 bps tolerance (SUPERSEDED — see comment above)
 
 /**
  * runReserveBackingReconciliation — 5-way reconciliation.

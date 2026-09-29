@@ -11,11 +11,41 @@
  *
  * Phase 6 of the institutional execution architecture implementation.
  * Status: SIMULATED — reconciles against simulated custodian adapters.
+ *
+ * v25.3.9 — O-directive refactor: universal tolerance REMOVED. Now uses 6 separate
+ * tolerance policies per src/lib/reconciliation-tolerance-policies.ts (LEDGER_TO_LEDGER,
+ * BANK_ATTESTATION, CUSTODY_QUANTITY, MARKET_VALUATION, FX_VALUATION, STRESSED_VALUATION).
+ * The legacy `performReconciliation` + `getReconciliationStatus` functions are PRESERVED
+ * for backward compat. New reconciliation callers SHOULD import `reconcile` (with the
+ * 6-field record) from `./reconciliation-tolerance-policies` (re-exported below).
+ * Owner: Agent O2 — Reconciliation Tolerance Policies Architect.
  */
 
 import type { ReserveState, ReserveAssetState } from "./reserve-state";
 import { getReserveState, commitCustodianConfirmation } from "./reserve-state";
 import { getCustodianAdapter } from "./custodian-adapter";
+
+// v25.3.9 — Re-export the canonical 6-policy reconciliation engine for convenience.
+// New callers should use `reconcile()` from `./reconciliation-tolerance-policies`
+// (the 6-field record with tolerancePolicyId + valuationTimestamp + dataSource +
+// assetClass + currency + exceptionPolicy) instead of the legacy `performReconciliation`.
+export {
+  reconcile,
+  getTolerancePolicy,
+  getToleranceForAsset,
+  TOLERANCE_POLICIES,
+  REQUIRED_RECONCILIATION_RECORD_FIELDS,
+  TOLERANCE_POLICIES_STATUS,
+  TOLERANCE_POLICIES_VERSION,
+  TOLERANCE_POLICIES_SOURCE,
+  LEGACY_UNIVERSAL_TOLERANCE_STATUS,
+} from "./reconciliation-tolerance-policies";
+export type {
+  TolerancePolicyId,
+  ExceptionPolicy,
+  TolerancePolicy,
+  ReconciliationRecord,
+} from "./reconciliation-tolerance-policies";
 
 // ============================================================
 // Types
