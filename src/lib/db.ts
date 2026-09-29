@@ -633,6 +633,110 @@ export interface AssumptionsRegisterEntry {
   createdAt: number                // unixepoch
 }
 
+/* ---- v25.8 Architectural Models (per F1 gap analysis) ----
+ *
+ * Four new institutional-grade entities backed by Prisma schema models in
+ * prisma/schema.prisma AND libsql CREATE TABLE statements in
+ * ensureV258Schema() below. The TS interfaces expose monetary fields
+ * (quantity, marketValueUsd) as `string` for BigDecimal-safe transport —
+ * the same convention used by `transactions.amount` and `fees.amount`
+ * above. The libsql columns are TEXT; the Prisma schema uses Decimal
+ * (mapped to REAL in prisma.db, only used by Prisma Studio for
+ * introspection).
+ *
+ * These tables sit ALONGSIDE the existing User / Post / FormationInterest /
+ * TestnetOperation / Operating System tables — they do NOT add FK
+ * relationships to those existing models, so the deterministic v19 monetary
+ * engine's DB contract (src/lib/monetary-engine-v19.ts, src/lib/nav-compute.ts,
+ * src/lib/fixed-point.ts) is preserved.
+ */
+
+export interface BankParticipant {
+  id: string
+  legalName: string
+  swiftCode: string | null
+  jurisdiction: string
+  participantType: string  // bank | custodian | clearing-house | central-bank
+  regulatoryId: string | null
+  onboardedAt: Date
+  onboardedBy: string | null
+  status: string  // pending | approved | suspended | revoked
+  contactName: string | null
+  contactEmail: string | null
+  contactPhone: string | null
+  kycStatus: string  // not-started | in-progress | verified | rejected
+  amlStatus: string
+  sanctionsStatus: string
+  notes: string | null
+  createdAt: Date
+  updatedAt: Date
+}
+
+export interface ReserveHolding {
+  id: string
+  bankParticipantId: string | null
+  assetClass: string  // gold | silver | sovereign | stablecoin | cash
+  assetSymbol: string  // XAU | XAG | US-TREASURY-10Y | USDC | USD
+  custodyLocation: string | null
+  quantity: string  // TEXT-stored BigDecimal string (8 decimals)
+  unit: string  // oz | usd | token | gram
+  marketValueUsd: string  // TEXT-stored BigDecimal string (8 decimals)
+  haircutBps: number
+  verifiedAt: Date | null
+  verifiedBy: string | null
+  verificationHash: string | null
+  status: string  // pending | verified | rejected | frozen
+  notes: string | null
+  createdAt: Date
+  updatedAt: Date
+}
+
+export interface ComplianceScreening {
+  id: string
+  bankParticipantId: string | null
+  screeningType: string  // aml | kyc | sanctions | pep | adverse-media
+  screeningProvider: string | null
+  inputValue: string
+  inputType: string  // individual | entity | transaction
+  result: string  // clear | hit | review | escalated
+  riskScore: number | null  // 0-100
+  matchCount: number
+  matchedEntities: string | null  // JSON array of matched entities
+  screenedAt: Date
+  screenedBy: string | null
+  expiresAt: Date | null
+  notes: string | null
+  createdAt: Date
+  updatedAt: Date
+}
+
+export interface GovernanceProposal {
+  id: string
+  proposalType: string  // parameter-change | emergency-action | council-nomination | constitutional-amendment
+  title: string
+  description: string
+  proposerAddress: string
+  proposerRole: string  // council-member | operator | external
+  proposalHash: string
+  actionsJson: string  // JSON array of proposed actions
+  status: string  // draft | proposed | active | passed | rejected | executed | expired
+  quorumRequired: number
+  approvalRequired: number
+  maxSeverity: string  // low | medium | high | critical
+  validUntil: Date
+  proposedAt: Date
+  votingOpensAt: Date | null
+  votingClosesAt: Date | null
+  executedAt: Date | null
+  executedBy: string | null
+  executionTxHash: string | null
+  approvalsJson: string  // JSON array of {address, signedAt, role}
+  rejectionsJson: string  // JSON array of {address, signedAt, role}
+  notes: string | null
+  createdAt: Date
+  updatedAt: Date
+}
+
 /* ---- Schema initialization ---- */
 
 export async function ensureSchema(): Promise<void> {
@@ -725,6 +829,53 @@ export async function ensureSchema(): Promise<void> {
     `CREATE TABLE IF NOT EXISTS "ReserveOwnership" ("id" INTEGER PRIMARY KEY AUTOINCREMENT, "assetClass" TEXT NOT NULL, "ownerEntity" TEXT NOT NULL, "custodian" TEXT NOT NULL, "amount" REAL NOT NULL, "valueUsd" REAL NOT NULL, "verified" INTEGER NOT NULL DEFAULT 1, "lastVerifiedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP)`,
     `CREATE INDEX IF NOT EXISTS "ReserveOwnership_assetClass_idx" ON "ReserveOwnership"("assetClass")`,
     `CREATE INDEX IF NOT EXISTS "ReserveOwnership_ownerEntity_idx" ON "ReserveOwnership"("ownerEntity")`,
+
+    // ─── v25.8 Architectural Models (per F1 gap analysis — closes gap #1) ───
+    // These are duplicated in `ensureV258Schema()` below so they get created
+    // even when the global `__schemaInitialized` flag was already true
+    // (which would short-circuit ensureSchema() and skip these statements).
+    // BankParticipant: institutional banks/custodians/clearing-houses/central-banks
+    // that interact with MITHQAL (for the bank-onboarding flow at /api/bank-onboarding).
+    `CREATE TABLE IF NOT EXISTS "BankParticipant" ("id" TEXT PRIMARY KEY NOT NULL, "legalName" TEXT NOT NULL UNIQUE, "swiftCode" TEXT UNIQUE, "jurisdiction" TEXT NOT NULL, "participantType" TEXT NOT NULL, "regulatoryId" TEXT, "onboardedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, "onboardedBy" TEXT, "status" TEXT NOT NULL DEFAULT 'pending', "contactName" TEXT, "contactEmail" TEXT, "contactPhone" TEXT, "kycStatus" TEXT NOT NULL DEFAULT 'not-started', "amlStatus" TEXT NOT NULL DEFAULT 'not-started', "sanctionsStatus" TEXT NOT NULL DEFAULT 'not-started', "notes" TEXT, "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, "updatedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP)`,
+    `CREATE INDEX IF NOT EXISTS "BankParticipant_status_idx" ON "BankParticipant"("status")`,
+    `CREATE INDEX IF NOT EXISTS "BankParticipant_participantType_idx" ON "BankParticipant"("participantType")`,
+    `CREATE INDEX IF NOT EXISTS "BankParticipant_jurisdiction_idx" ON "BankParticipant"("jurisdiction")`,
+    `CREATE INDEX IF NOT EXISTS "BankParticipant_createdAt_idx" ON "BankParticipant"("createdAt")`,
+
+    // ReserveHolding: individual reserve holdings (gold/silver/sovereign bonds/
+    // stablecoins/cash) backing MTQ issuance per Constitution v19.0 §22
+    // multi-currency backing. quantity + marketValueUsd are TEXT to avoid
+    // SQLite REAL precision loss (BigDecimal-safe string transport, same
+    // convention as `transactions.amount` above).
+    `CREATE TABLE IF NOT EXISTS "ReserveHolding" ("id" TEXT PRIMARY KEY NOT NULL, "bankParticipantId" TEXT, "assetClass" TEXT NOT NULL, "assetSymbol" TEXT NOT NULL, "custodyLocation" TEXT, "quantity" TEXT NOT NULL, "unit" TEXT NOT NULL, "marketValueUsd" TEXT NOT NULL, "haircutBps" INTEGER NOT NULL DEFAULT 0, "verifiedAt" DATETIME, "verifiedBy" TEXT, "verificationHash" TEXT, "status" TEXT NOT NULL DEFAULT 'pending', "notes" TEXT, "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, "updatedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY ("bankParticipantId") REFERENCES "BankParticipant"("id") ON DELETE SET NULL ON UPDATE CASCADE)`,
+    `CREATE INDEX IF NOT EXISTS "ReserveHolding_assetClass_idx" ON "ReserveHolding"("assetClass")`,
+    `CREATE INDEX IF NOT EXISTS "ReserveHolding_assetSymbol_idx" ON "ReserveHolding"("assetSymbol")`,
+    `CREATE INDEX IF NOT EXISTS "ReserveHolding_status_idx" ON "ReserveHolding"("status")`,
+    `CREATE INDEX IF NOT EXISTS "ReserveHolding_createdAt_idx" ON "ReserveHolding"("createdAt")`,
+    `CREATE INDEX IF NOT EXISTS "ReserveHolding_verifiedAt_idx" ON "ReserveHolding"("verifiedAt")`,
+    `CREATE INDEX IF NOT EXISTS "ReserveHolding_bankParticipantId_idx" ON "ReserveHolding"("bankParticipantId")`,
+
+    // ComplianceScreening: AML/KYC/sanctions/PEP/adverse-media screening
+    // records per /api/sanctions-screening + /api/compliance. One row per
+    // screening event — re-screenings create new rows so the audit trail
+    // is append-only.
+    `CREATE TABLE IF NOT EXISTS "ComplianceScreening" ("id" TEXT PRIMARY KEY NOT NULL, "bankParticipantId" TEXT, "screeningType" TEXT NOT NULL, "screeningProvider" TEXT, "inputValue" TEXT NOT NULL, "inputType" TEXT NOT NULL, "result" TEXT NOT NULL, "riskScore" INTEGER, "matchCount" INTEGER NOT NULL DEFAULT 0, "matchedEntities" TEXT, "screenedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, "screenedBy" TEXT, "expiresAt" DATETIME, "notes" TEXT, "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, "updatedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY ("bankParticipantId") REFERENCES "BankParticipant"("id") ON DELETE SET NULL ON UPDATE CASCADE)`,
+    `CREATE INDEX IF NOT EXISTS "ComplianceScreening_screeningType_idx" ON "ComplianceScreening"("screeningType")`,
+    `CREATE INDEX IF NOT EXISTS "ComplianceScreening_result_idx" ON "ComplianceScreening"("result")`,
+    `CREATE INDEX IF NOT EXISTS "ComplianceScreening_screenedAt_idx" ON "ComplianceScreening"("screenedAt")`,
+    `CREATE INDEX IF NOT EXISTS "ComplianceScreening_expiresAt_idx" ON "ComplianceScreening"("expiresAt")`,
+    `CREATE INDEX IF NOT EXISTS "ComplianceScreening_bankParticipantId_idx" ON "ComplianceScreening"("bankParticipantId")`,
+
+    // GovernanceProposal: Council governance proposals per Constitution v19.0
+    // §41-§44 (parameter-change / emergency-action / council-nomination /
+    // constitutional-amendment). Approvals/rejections are JSON arrays of
+    // {address, signedAt, role} for council-member multi-sig.
+    `CREATE TABLE IF NOT EXISTS "GovernanceProposal" ("id" TEXT PRIMARY KEY NOT NULL, "proposalType" TEXT NOT NULL, "title" TEXT NOT NULL, "description" TEXT NOT NULL, "proposerAddress" TEXT NOT NULL, "proposerRole" TEXT NOT NULL, "proposalHash" TEXT NOT NULL UNIQUE, "actionsJson" TEXT NOT NULL, "status" TEXT NOT NULL DEFAULT 'draft', "quorumRequired" INTEGER NOT NULL DEFAULT 5, "approvalRequired" INTEGER NOT NULL DEFAULT 4, "maxSeverity" TEXT NOT NULL DEFAULT 'low', "validUntil" DATETIME NOT NULL, "proposedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, "votingOpensAt" DATETIME, "votingClosesAt" DATETIME, "executedAt" DATETIME, "executedBy" TEXT, "executionTxHash" TEXT, "approvalsJson" TEXT NOT NULL DEFAULT '[]', "rejectionsJson" TEXT NOT NULL DEFAULT '[]', "notes" TEXT, "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, "updatedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP)`,
+    `CREATE INDEX IF NOT EXISTS "GovernanceProposal_status_idx" ON "GovernanceProposal"("status")`,
+    `CREATE INDEX IF NOT EXISTS "GovernanceProposal_proposalType_idx" ON "GovernanceProposal"("proposalType")`,
+    `CREATE INDEX IF NOT EXISTS "GovernanceProposal_proposedAt_idx" ON "GovernanceProposal"("proposedAt")`,
+    `CREATE INDEX IF NOT EXISTS "GovernanceProposal_validUntil_idx" ON "GovernanceProposal"("validUntil")`,
+    `CREATE INDEX IF NOT EXISTS "GovernanceProposal_proposerAddress_idx" ON "GovernanceProposal"("proposerAddress")`,
   ]
 
   try {
@@ -1553,6 +1704,511 @@ export async function rawQuery<T extends Record<string, unknown> = Record<string
   }
 }
 
+/* ---- v25.8 Architectural Model entity wrappers (per F1 gap analysis) ----
+ *
+ * Each entity mirrors the libsql CREATE TABLE in ensureSchema() above. The
+ * TS interfaces (BankParticipant / ReserveHolding / ComplianceScreening /
+ * GovernanceProposal) are declared earlier in this file. Row mappers are
+ * declared at the bottom of this section.
+ *
+ * API routes consume these via `db.bankParticipant.findMany(...)` etc.,
+ * mirroring the formationInterest / transactions / proposals pattern.
+ *
+ * Monetary fields (ReserveHolding.quantity, ReserveHolding.marketValueUsd)
+ * are exposed as `string` so callers stay BigDecimal-safe (same as
+ * `transactions.amount`). The DB column is TEXT.
+ *
+ * Each method calls `await ensureV258Schema()` first to make sure the
+ * table exists — this is critical because the global
+ * `__schemaInitialized` flag in `ensureSchema()` may have been set true
+ * before these v25.8 statements were added (e.g. dev-server hot reload
+ * preserves globalThis), in which case ensureSchema() short-circuits and
+ * the new tables are never created. ensureV258Schema() runs idempotently
+ * on first call with its own per-process flag.
+ */
+
+const V25_8_SCHEMA_STATEMENTS: string[] = [
+  `CREATE TABLE IF NOT EXISTS "BankParticipant" ("id" TEXT PRIMARY KEY NOT NULL, "legalName" TEXT NOT NULL UNIQUE, "swiftCode" TEXT UNIQUE, "jurisdiction" TEXT NOT NULL, "participantType" TEXT NOT NULL, "regulatoryId" TEXT, "onboardedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, "onboardedBy" TEXT, "status" TEXT NOT NULL DEFAULT 'pending', "contactName" TEXT, "contactEmail" TEXT, "contactPhone" TEXT, "kycStatus" TEXT NOT NULL DEFAULT 'not-started', "amlStatus" TEXT NOT NULL DEFAULT 'not-started', "sanctionsStatus" TEXT NOT NULL DEFAULT 'not-started', "notes" TEXT, "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, "updatedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP)`,
+  `CREATE INDEX IF NOT EXISTS "BankParticipant_status_idx" ON "BankParticipant"("status")`,
+  `CREATE INDEX IF NOT EXISTS "BankParticipant_participantType_idx" ON "BankParticipant"("participantType")`,
+  `CREATE INDEX IF NOT EXISTS "BankParticipant_jurisdiction_idx" ON "BankParticipant"("jurisdiction")`,
+  `CREATE INDEX IF NOT EXISTS "BankParticipant_createdAt_idx" ON "BankParticipant"("createdAt")`,
+  `CREATE TABLE IF NOT EXISTS "ReserveHolding" ("id" TEXT PRIMARY KEY NOT NULL, "bankParticipantId" TEXT, "assetClass" TEXT NOT NULL, "assetSymbol" TEXT NOT NULL, "custodyLocation" TEXT, "quantity" TEXT NOT NULL, "unit" TEXT NOT NULL, "marketValueUsd" TEXT NOT NULL, "haircutBps" INTEGER NOT NULL DEFAULT 0, "verifiedAt" DATETIME, "verifiedBy" TEXT, "verificationHash" TEXT, "status" TEXT NOT NULL DEFAULT 'pending', "notes" TEXT, "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, "updatedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY ("bankParticipantId") REFERENCES "BankParticipant"("id") ON DELETE SET NULL ON UPDATE CASCADE)`,
+  `CREATE INDEX IF NOT EXISTS "ReserveHolding_assetClass_idx" ON "ReserveHolding"("assetClass")`,
+  `CREATE INDEX IF NOT EXISTS "ReserveHolding_assetSymbol_idx" ON "ReserveHolding"("assetSymbol")`,
+  `CREATE INDEX IF NOT EXISTS "ReserveHolding_status_idx" ON "ReserveHolding"("status")`,
+  `CREATE INDEX IF NOT EXISTS "ReserveHolding_createdAt_idx" ON "ReserveHolding"("createdAt")`,
+  `CREATE INDEX IF NOT EXISTS "ReserveHolding_verifiedAt_idx" ON "ReserveHolding"("verifiedAt")`,
+  `CREATE INDEX IF NOT EXISTS "ReserveHolding_bankParticipantId_idx" ON "ReserveHolding"("bankParticipantId")`,
+  `CREATE TABLE IF NOT EXISTS "ComplianceScreening" ("id" TEXT PRIMARY KEY NOT NULL, "bankParticipantId" TEXT, "screeningType" TEXT NOT NULL, "screeningProvider" TEXT, "inputValue" TEXT NOT NULL, "inputType" TEXT NOT NULL, "result" TEXT NOT NULL, "riskScore" INTEGER, "matchCount" INTEGER NOT NULL DEFAULT 0, "matchedEntities" TEXT, "screenedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, "screenedBy" TEXT, "expiresAt" DATETIME, "notes" TEXT, "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, "updatedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY ("bankParticipantId") REFERENCES "BankParticipant"("id") ON DELETE SET NULL ON UPDATE CASCADE)`,
+  `CREATE INDEX IF NOT EXISTS "ComplianceScreening_screeningType_idx" ON "ComplianceScreening"("screeningType")`,
+  `CREATE INDEX IF NOT EXISTS "ComplianceScreening_result_idx" ON "ComplianceScreening"("result")`,
+  `CREATE INDEX IF NOT EXISTS "ComplianceScreening_screenedAt_idx" ON "ComplianceScreening"("screenedAt")`,
+  `CREATE INDEX IF NOT EXISTS "ComplianceScreening_expiresAt_idx" ON "ComplianceScreening"("expiresAt")`,
+  `CREATE INDEX IF NOT EXISTS "ComplianceScreening_bankParticipantId_idx" ON "ComplianceScreening"("bankParticipantId")`,
+  `CREATE TABLE IF NOT EXISTS "GovernanceProposal" ("id" TEXT PRIMARY KEY NOT NULL, "proposalType" TEXT NOT NULL, "title" TEXT NOT NULL, "description" TEXT NOT NULL, "proposerAddress" TEXT NOT NULL, "proposerRole" TEXT NOT NULL, "proposalHash" TEXT NOT NULL UNIQUE, "actionsJson" TEXT NOT NULL, "status" TEXT NOT NULL DEFAULT 'draft', "quorumRequired" INTEGER NOT NULL DEFAULT 5, "approvalRequired" INTEGER NOT NULL DEFAULT 4, "maxSeverity" TEXT NOT NULL DEFAULT 'low', "validUntil" DATETIME NOT NULL, "proposedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, "votingOpensAt" DATETIME, "votingClosesAt" DATETIME, "executedAt" DATETIME, "executedBy" TEXT, "executionTxHash" TEXT, "approvalsJson" TEXT NOT NULL DEFAULT '[]', "rejectionsJson" TEXT NOT NULL DEFAULT '[]', "notes" TEXT, "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, "updatedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP)`,
+  `CREATE INDEX IF NOT EXISTS "GovernanceProposal_status_idx" ON "GovernanceProposal"("status")`,
+  `CREATE INDEX IF NOT EXISTS "GovernanceProposal_proposalType_idx" ON "GovernanceProposal"("proposalType")`,
+  `CREATE INDEX IF NOT EXISTS "GovernanceProposal_proposedAt_idx" ON "GovernanceProposal"("proposedAt")`,
+  `CREATE INDEX IF NOT EXISTS "GovernanceProposal_validUntil_idx" ON "GovernanceProposal"("validUntil")`,
+  `CREATE INDEX IF NOT EXISTS "GovernanceProposal_proposerAddress_idx" ON "GovernanceProposal"("proposerAddress")`,
+]
+
+let __v258SchemaEnsured = false
+async function ensureV258Schema(): Promise<void> {
+  if (__v258SchemaEnsured) return
+  for (const sql of V25_8_SCHEMA_STATEMENTS) {
+    await _rawClient.execute(sql)
+  }
+  __v258SchemaEnsured = true
+}
+
+export const bankParticipant = {
+  async create(args: {
+    data: {
+      legalName: string
+      swiftCode?: string | null
+      jurisdiction: string
+      participantType: string
+      regulatoryId?: string | null
+      onboardedBy?: string | null
+      status?: string
+      contactName?: string | null
+      contactEmail?: string | null
+      contactPhone?: string | null
+      kycStatus?: string
+      amlStatus?: string
+      sanctionsStatus?: string
+      notes?: string | null
+    }
+    select?: { id?: boolean; createdAt?: boolean; updatedAt?: boolean }
+  }): Promise<BankParticipant> {
+    await ensureSchema()
+    await ensureV258Schema()
+    const id = generateId()
+    const result = await _rawClient.execute({
+      sql: `INSERT INTO "BankParticipant"
+            ("id","legalName","swiftCode","jurisdiction","participantType","regulatoryId","onboardedBy","status","contactName","contactEmail","contactPhone","kycStatus","amlStatus","sanctionsStatus","notes")
+            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) RETURNING *`,
+      args: [
+        id,
+        args.data.legalName,
+        args.data.swiftCode ?? null,
+        args.data.jurisdiction,
+        args.data.participantType,
+        args.data.regulatoryId ?? null,
+        args.data.onboardedBy ?? null,
+        args.data.status ?? 'pending',
+        args.data.contactName ?? null,
+        args.data.contactEmail ?? null,
+        args.data.contactPhone ?? null,
+        args.data.kycStatus ?? 'not-started',
+        args.data.amlStatus ?? 'not-started',
+        args.data.sanctionsStatus ?? 'not-started',
+        args.data.notes ?? null,
+      ],
+    })
+    return rowToBankParticipant(result.rows[0])
+  },
+
+  async findMany(args: {
+    where?: { status?: string; participantType?: string; jurisdiction?: string }
+    orderBy?: { createdAt?: "asc" | "desc" }
+    take?: number
+    skip?: number
+  }): Promise<BankParticipant[]> {
+    await ensureSchema()
+    await ensureV258Schema()
+    const order = args.orderBy?.createdAt === "asc" ? "ASC" : "DESC"
+    const limit = args.take ?? 100
+    const offset = args.skip ?? 0
+
+    const conditions: string[] = []
+    const sqlArgs: (string | number)[] = []
+    if (args.where?.status) { conditions.push(`"status" = ?`); sqlArgs.push(args.where.status) }
+    if (args.where?.participantType) { conditions.push(`"participantType" = ?`); sqlArgs.push(args.where.participantType) }
+    if (args.where?.jurisdiction) { conditions.push(`"jurisdiction" = ?`); sqlArgs.push(args.where.jurisdiction) }
+    const where = conditions.length ? `WHERE ${conditions.join(" AND ")}` : ""
+
+    const result = await _rawClient.execute({
+      sql: `SELECT * FROM "BankParticipant" ${where} ORDER BY "createdAt" ${order} LIMIT ? OFFSET ?`,
+      args: [...sqlArgs, limit, offset],
+    })
+    return result.rows.map(rowToBankParticipant)
+  },
+
+  async count(args?: { where?: { status?: string; participantType?: string } }): Promise<number> {
+    await ensureSchema()
+    await ensureV258Schema()
+    let sql = `SELECT COUNT(*) as c FROM "BankParticipant"`
+    const sqlArgs: (string | number)[] = []
+    const conditions: string[] = []
+    if (args?.where?.status) { conditions.push(`"status" = ?`); sqlArgs.push(args.where.status) }
+    if (args?.where?.participantType) { conditions.push(`"participantType" = ?`); sqlArgs.push(args.where.participantType) }
+    if (conditions.length) sql += ` WHERE ${conditions.join(" AND ")}`
+    const result = await _rawClient.execute({ sql, args: sqlArgs })
+    return Number(result.rows[0]?.c ?? 0)
+  },
+}
+
+export const reserveHolding = {
+  async create(args: {
+    data: {
+      bankParticipantId?: string | null
+      assetClass: string
+      assetSymbol: string
+      custodyLocation?: string | null
+      quantity: string  // BigDecimal-safe string transport
+      unit: string
+      marketValueUsd: string  // BigDecimal-safe string transport
+      haircutBps?: number
+      verifiedAt?: Date | null
+      verifiedBy?: string | null
+      verificationHash?: string | null
+      status?: string
+      notes?: string | null
+    }
+  }): Promise<ReserveHolding> {
+    await ensureSchema()
+    await ensureV258Schema()
+    const id = generateId()
+    const result = await _rawClient.execute({
+      sql: `INSERT INTO "ReserveHolding"
+            ("id","bankParticipantId","assetClass","assetSymbol","custodyLocation","quantity","unit","marketValueUsd","haircutBps","verifiedAt","verifiedBy","verificationHash","status","notes")
+            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?) RETURNING *`,
+      args: [
+        id,
+        args.data.bankParticipantId ?? null,
+        args.data.assetClass,
+        args.data.assetSymbol,
+        args.data.custodyLocation ?? null,
+        args.data.quantity,
+        args.data.unit,
+        args.data.marketValueUsd,
+        args.data.haircutBps ?? 0,
+        args.data.verifiedAt ? args.data.verifiedAt.toISOString() : null,
+        args.data.verifiedBy ?? null,
+        args.data.verificationHash ?? null,
+        args.data.status ?? 'pending',
+        args.data.notes ?? null,
+      ],
+    })
+    return rowToReserveHolding(result.rows[0])
+  },
+
+  async findMany(args: {
+    where?: { assetClass?: string; status?: string; assetSymbol?: string; bankParticipantId?: string }
+    orderBy?: { createdAt?: "asc" | "desc" }
+    take?: number
+    skip?: number
+  }): Promise<ReserveHolding[]> {
+    await ensureSchema()
+    await ensureV258Schema()
+    const order = args.orderBy?.createdAt === "asc" ? "ASC" : "DESC"
+    const limit = args.take ?? 100
+    const offset = args.skip ?? 0
+
+    const conditions: string[] = []
+    const sqlArgs: (string | number)[] = []
+    if (args.where?.assetClass) { conditions.push(`"assetClass" = ?`); sqlArgs.push(args.where.assetClass) }
+    if (args.where?.status) { conditions.push(`"status" = ?`); sqlArgs.push(args.where.status) }
+    if (args.where?.assetSymbol) { conditions.push(`"assetSymbol" = ?`); sqlArgs.push(args.where.assetSymbol) }
+    if (args.where?.bankParticipantId) { conditions.push(`"bankParticipantId" = ?`); sqlArgs.push(args.where.bankParticipantId) }
+    const where = conditions.length ? `WHERE ${conditions.join(" AND ")}` : ""
+
+    const result = await _rawClient.execute({
+      sql: `SELECT * FROM "ReserveHolding" ${where} ORDER BY "createdAt" ${order} LIMIT ? OFFSET ?`,
+      args: [...sqlArgs, limit, offset],
+    })
+    return result.rows.map(rowToReserveHolding)
+  },
+
+  async count(args?: { where?: { assetClass?: string; status?: string } }): Promise<number> {
+    await ensureSchema()
+    await ensureV258Schema()
+    let sql = `SELECT COUNT(*) as c FROM "ReserveHolding"`
+    const sqlArgs: (string | number)[] = []
+    const conditions: string[] = []
+    if (args?.where?.assetClass) { conditions.push(`"assetClass" = ?`); sqlArgs.push(args.where.assetClass) }
+    if (args?.where?.status) { conditions.push(`"status" = ?`); sqlArgs.push(args.where.status) }
+    if (conditions.length) sql += ` WHERE ${conditions.join(" AND ")}`
+    const result = await _rawClient.execute({ sql, args: sqlArgs })
+    return Number(result.rows[0]?.c ?? 0)
+  },
+}
+
+export const complianceScreening = {
+  async create(args: {
+    data: {
+      bankParticipantId?: string | null
+      screeningType: string
+      screeningProvider?: string | null
+      inputValue: string
+      inputType: string
+      result: string
+      riskScore?: number | null
+      matchCount?: number
+      matchedEntities?: string | null
+      screenedBy?: string | null
+      expiresAt?: Date | null
+      notes?: string | null
+    }
+  }): Promise<ComplianceScreening> {
+    await ensureSchema()
+    await ensureV258Schema()
+    const id = generateId()
+    const result = await _rawClient.execute({
+      sql: `INSERT INTO "ComplianceScreening"
+            ("id","bankParticipantId","screeningType","screeningProvider","inputValue","inputType","result","riskScore","matchCount","matchedEntities","screenedBy","expiresAt","notes")
+            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?) RETURNING *`,
+      args: [
+        id,
+        args.data.bankParticipantId ?? null,
+        args.data.screeningType,
+        args.data.screeningProvider ?? null,
+        args.data.inputValue,
+        args.data.inputType,
+        args.data.result,
+        args.data.riskScore ?? null,
+        args.data.matchCount ?? 0,
+        args.data.matchedEntities ?? null,
+        args.data.screenedBy ?? null,
+        args.data.expiresAt ? args.data.expiresAt.toISOString() : null,
+        args.data.notes ?? null,
+      ],
+    })
+    return rowToComplianceScreening(result.rows[0])
+  },
+
+  async findMany(args: {
+    where?: { screeningType?: string; result?: string; bankParticipantId?: string }
+    orderBy?: { screenedAt?: "asc" | "desc" }
+    take?: number
+    skip?: number
+  }): Promise<ComplianceScreening[]> {
+    await ensureSchema()
+    await ensureV258Schema()
+    const order = args.orderBy?.screenedAt === "asc" ? "ASC" : "DESC"
+    const limit = args.take ?? 100
+    const offset = args.skip ?? 0
+
+    const conditions: string[] = []
+    const sqlArgs: (string | number)[] = []
+    if (args.where?.screeningType) { conditions.push(`"screeningType" = ?`); sqlArgs.push(args.where.screeningType) }
+    if (args.where?.result) { conditions.push(`"result" = ?`); sqlArgs.push(args.where.result) }
+    if (args.where?.bankParticipantId) { conditions.push(`"bankParticipantId" = ?`); sqlArgs.push(args.where.bankParticipantId) }
+    const where = conditions.length ? `WHERE ${conditions.join(" AND ")}` : ""
+
+    const result = await _rawClient.execute({
+      sql: `SELECT * FROM "ComplianceScreening" ${where} ORDER BY "screenedAt" ${order} LIMIT ? OFFSET ?`,
+      args: [...sqlArgs, limit, offset],
+    })
+    return result.rows.map(rowToComplianceScreening)
+  },
+
+  async count(args?: { where?: { screeningType?: string; result?: string } }): Promise<number> {
+    await ensureSchema()
+    await ensureV258Schema()
+    let sql = `SELECT COUNT(*) as c FROM "ComplianceScreening"`
+    const sqlArgs: (string | number)[] = []
+    const conditions: string[] = []
+    if (args?.where?.screeningType) { conditions.push(`"screeningType" = ?`); sqlArgs.push(args.where.screeningType) }
+    if (args?.where?.result) { conditions.push(`"result" = ?`); sqlArgs.push(args.where.result) }
+    if (conditions.length) sql += ` WHERE ${conditions.join(" AND ")}`
+    const result = await _rawClient.execute({ sql, args: sqlArgs })
+    return Number(result.rows[0]?.c ?? 0)
+  },
+}
+
+export const governanceProposal = {
+  async create(args: {
+    data: {
+      proposalType: string
+      title: string
+      description: string
+      proposerAddress: string
+      proposerRole: string
+      proposalHash: string
+      actionsJson: string  // JSON array of proposed actions
+      status?: string
+      quorumRequired?: number
+      approvalRequired?: number
+      maxSeverity?: string
+      validUntil: Date
+      votingOpensAt?: Date | null
+      votingClosesAt?: Date | null
+      approvalsJson?: string  // default "[]"
+      rejectionsJson?: string  // default "[]"
+      notes?: string | null
+    }
+  }): Promise<GovernanceProposal> {
+    await ensureSchema()
+    await ensureV258Schema()
+    const id = generateId()
+    const result = await _rawClient.execute({
+      sql: `INSERT INTO "GovernanceProposal"
+            ("id","proposalType","title","description","proposerAddress","proposerRole","proposalHash","actionsJson","status","quorumRequired","approvalRequired","maxSeverity","validUntil","votingOpensAt","votingClosesAt","approvalsJson","rejectionsJson","notes")
+            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) RETURNING *`,
+      args: [
+        id,
+        args.data.proposalType,
+        args.data.title,
+        args.data.description,
+        args.data.proposerAddress,
+        args.data.proposerRole,
+        args.data.proposalHash,
+        args.data.actionsJson,
+        args.data.status ?? 'draft',
+        args.data.quorumRequired ?? 5,
+        args.data.approvalRequired ?? 4,
+        args.data.maxSeverity ?? 'low',
+        args.data.validUntil.toISOString(),
+        args.data.votingOpensAt ? args.data.votingOpensAt.toISOString() : null,
+        args.data.votingClosesAt ? args.data.votingClosesAt.toISOString() : null,
+        args.data.approvalsJson ?? '[]',
+        args.data.rejectionsJson ?? '[]',
+        args.data.notes ?? null,
+      ],
+    })
+    return rowToGovernanceProposal(result.rows[0])
+  },
+
+  async findMany(args: {
+    where?: { status?: string; proposalType?: string; proposerAddress?: string }
+    orderBy?: { proposedAt?: "asc" | "desc" }
+    take?: number
+    skip?: number
+  }): Promise<GovernanceProposal[]> {
+    await ensureSchema()
+    await ensureV258Schema()
+    const order = args.orderBy?.proposedAt === "asc" ? "ASC" : "DESC"
+    const limit = args.take ?? 50
+    const offset = args.skip ?? 0
+
+    const conditions: string[] = []
+    const sqlArgs: (string | number)[] = []
+    if (args.where?.status) { conditions.push(`"status" = ?`); sqlArgs.push(args.where.status) }
+    if (args.where?.proposalType) { conditions.push(`"proposalType" = ?`); sqlArgs.push(args.where.proposalType) }
+    if (args.where?.proposerAddress) { conditions.push(`"proposerAddress" = ?`); sqlArgs.push(args.where.proposerAddress) }
+    const where = conditions.length ? `WHERE ${conditions.join(" AND ")}` : ""
+
+    const result = await _rawClient.execute({
+      sql: `SELECT * FROM "GovernanceProposal" ${where} ORDER BY "proposedAt" ${order} LIMIT ? OFFSET ?`,
+      args: [...sqlArgs, limit, offset],
+    })
+    return result.rows.map(rowToGovernanceProposal)
+  },
+
+  async count(args?: { where?: { status?: string; proposalType?: string } }): Promise<number> {
+    await ensureSchema()
+    await ensureV258Schema()
+    let sql = `SELECT COUNT(*) as c FROM "GovernanceProposal"`
+    const sqlArgs: (string | number)[] = []
+    const conditions: string[] = []
+    if (args?.where?.status) { conditions.push(`"status" = ?`); sqlArgs.push(args.where.status) }
+    if (args?.where?.proposalType) { conditions.push(`"proposalType" = ?`); sqlArgs.push(args.where.proposalType) }
+    if (conditions.length) sql += ` WHERE ${conditions.join(" AND ")}`
+    const result = await _rawClient.execute({ sql, args: sqlArgs })
+    return Number(result.rows[0]?.c ?? 0)
+  },
+}
+
+/* ---- Row mappers for v25.8 architectural models ---- */
+
+function rowToBankParticipant(row: Record<string, unknown>): BankParticipant {
+  return {
+    id: row.id as string,
+    legalName: row.legalName as string,
+    swiftCode: (row.swiftCode ?? null) as string | null,
+    jurisdiction: row.jurisdiction as string,
+    participantType: row.participantType as string,
+    regulatoryId: (row.regulatoryId ?? null) as string | null,
+    onboardedAt: new Date(row.onboardedAt as string),
+    onboardedBy: (row.onboardedBy ?? null) as string | null,
+    status: row.status as string,
+    contactName: (row.contactName ?? null) as string | null,
+    contactEmail: (row.contactEmail ?? null) as string | null,
+    contactPhone: (row.contactPhone ?? null) as string | null,
+    kycStatus: row.kycStatus as string,
+    amlStatus: row.amlStatus as string,
+    sanctionsStatus: row.sanctionsStatus as string,
+    notes: (row.notes ?? null) as string | null,
+    createdAt: new Date(row.createdAt as string),
+    updatedAt: new Date(row.updatedAt as string),
+  }
+}
+
+function rowToReserveHolding(row: Record<string, unknown>): ReserveHolding {
+  return {
+    id: row.id as string,
+    bankParticipantId: (row.bankParticipantId ?? null) as string | null,
+    assetClass: row.assetClass as string,
+    assetSymbol: row.assetSymbol as string,
+    custodyLocation: (row.custodyLocation ?? null) as string | null,
+    quantity: row.quantity as string,  // TEXT-stored BigDecimal string
+    unit: row.unit as string,
+    marketValueUsd: row.marketValueUsd as string,  // TEXT-stored BigDecimal string
+    haircutBps: Number(row.haircutBps ?? 0),
+    verifiedAt: row.verifiedAt != null ? new Date(row.verifiedAt as string) : null,
+    verifiedBy: (row.verifiedBy ?? null) as string | null,
+    verificationHash: (row.verificationHash ?? null) as string | null,
+    status: row.status as string,
+    notes: (row.notes ?? null) as string | null,
+    createdAt: new Date(row.createdAt as string),
+    updatedAt: new Date(row.updatedAt as string),
+  }
+}
+
+function rowToComplianceScreening(row: Record<string, unknown>): ComplianceScreening {
+  return {
+    id: row.id as string,
+    bankParticipantId: (row.bankParticipantId ?? null) as string | null,
+    screeningType: row.screeningType as string,
+    screeningProvider: (row.screeningProvider ?? null) as string | null,
+    inputValue: row.inputValue as string,
+    inputType: row.inputType as string,
+    result: row.result as string,
+    riskScore: row.riskScore != null ? Number(row.riskScore) : null,
+    matchCount: Number(row.matchCount ?? 0),
+    matchedEntities: (row.matchedEntities ?? null) as string | null,
+    screenedAt: new Date(row.screenedAt as string),
+    screenedBy: (row.screenedBy ?? null) as string | null,
+    expiresAt: row.expiresAt != null ? new Date(row.expiresAt as string) : null,
+    notes: (row.notes ?? null) as string | null,
+    createdAt: new Date(row.createdAt as string),
+    updatedAt: new Date(row.updatedAt as string),
+  }
+}
+
+function rowToGovernanceProposal(row: Record<string, unknown>): GovernanceProposal {
+  return {
+    id: row.id as string,
+    proposalType: row.proposalType as string,
+    title: row.title as string,
+    description: row.description as string,
+    proposerAddress: row.proposerAddress as string,
+    proposerRole: row.proposerRole as string,
+    proposalHash: row.proposalHash as string,
+    actionsJson: row.actionsJson as string,
+    status: row.status as string,
+    quorumRequired: Number(row.quorumRequired ?? 5),
+    approvalRequired: Number(row.approvalRequired ?? 4),
+    maxSeverity: row.maxSeverity as string,
+    validUntil: new Date(row.validUntil as string),
+    proposedAt: new Date(row.proposedAt as string),
+    votingOpensAt: row.votingOpensAt != null ? new Date(row.votingOpensAt as string) : null,
+    votingClosesAt: row.votingClosesAt != null ? new Date(row.votingClosesAt as string) : null,
+    executedAt: row.executedAt != null ? new Date(row.executedAt as string) : null,
+    executedBy: (row.executedBy ?? null) as string | null,
+    executionTxHash: (row.executionTxHash ?? null) as string | null,
+    approvalsJson: (row.approvalsJson ?? '[]') as string,
+    rejectionsJson: (row.rejectionsJson ?? '[]') as string,
+    notes: (row.notes ?? null) as string | null,
+    createdAt: new Date(row.createdAt as string),
+    updatedAt: new Date(row.updatedAt as string),
+  }
+}
+
 /* ---- Compatibility wrapper ----
  * Existing code uses `db.formationInterest.create()` / `db.testnetOperation.findMany()`.
  * This wrapper provides that interface so no route files need to change.
@@ -1568,6 +2224,11 @@ export const db = {
   proposals,
   proofAttestation,
   assumptionsRegister,
+  // v25.8 architectural models (per F1 gap analysis)
+  bankParticipant,
+  reserveHolding,
+  complianceScreening,
+  governanceProposal,
   $executeRawUnsafe: async (sql: string) => {
     await ensureSchema()
     return _rawClient.execute(sql)
