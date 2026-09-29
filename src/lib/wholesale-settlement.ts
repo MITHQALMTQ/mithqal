@@ -2,6 +2,19 @@
 // =================================================================
 // Implements the neutral cross-border settlement flow and CBDC
 // interoperability layer.
+//
+// v25.3.2 (J3 — CONTROL_PLANE_CORE vs MTQ_SETTLEMENT_MODULE boundary):
+// The SettlementRequest + SettlementRecord are now asset-agnostic.
+// The legacy `mtqAmount` field on SettlementRecord is preserved as a
+// DEPRECATED ALIAS of the new `settlementAmount` field (both are
+// populated for backward compatibility). The new `settlementAssetType`
+// field identifies which settlement asset was used.
+//
+// See:
+//   - src/lib/mtq-settlement-config.ts (SettlementAssetType enum +
+//     MTQ_SETTLEMENT_ENABLED flag)
+//   - src/lib/settlement-workflow-canonical.ts (BM-* workflow)
+//   - docs/architecture/CONTROL-PLANE-VS-MTQ-BOUNDARY.md
 // =================================================================
 
 import {
@@ -16,8 +29,67 @@ import {
   CBDC_INTEROP,
   type SettlementRecord,
 } from "./v25-0-identity";
+import {
+  DEFAULT_SETTLEMENT_ASSET,
+  isMTQSettlementEnabled,
+  type SettlementAssetType,
+} from "./mtq-settlement-config";
+
+// ---- v25.3.2 (J3) — Asset-agnostic settlement amount helper ----------
+
+/**
+ * Asset-agnostic settlement amount helper (v25.3.2 J3 boundary).
+ *
+ * Returns the settlement amount for a given settlement asset type.
+ * For MTQ, this is the MTQ amount (legacy behavior). For other asset
+ * types, this is the amount in the settlement asset's native units
+ * (e.g. bank-money USD, RTGS amount, CBDC tokens, tokenized-deposit
+ * units, etc.).
+ *
+ * The asset type is OPTIONAL — if not specified, it defaults to
+ * DEFAULT_SETTLEMENT_ASSET (which is "MTQ" when MTQ_SETTLEMENT_ENABLED
+ * = true, or "BANK_MONEY" when MTQ is disabled — so the control plane
+ * can still operate without MTQ).
+ *
+ * This helper does NOT perform any MTQ-specific computation. It is a
+ * pure asset-type-aware getter.
+ */
+export function getSettlementAmount(
+  request: SettlementRequest,
+  assetType: SettlementAssetType = DEFAULT_SETTLEMENT_ASSET,
+): number {
+  // For MTQ, the settlement amount equals the request amount (legacy
+  // behavior — 1 MTQ = 1 USD-equivalent at PAR, with NAV adjusting the
+  // minted quantity elsewhere in the pipeline).
+  // For other asset types, the settlement amount is the request amount
+  // expressed in the asset's native units. The conversion to USD-equivalent
+  // (if needed for reporting) is done elsewhere — this helper is purely
+  // about identifying the amount in the asset's native denomination.
+  //
+  // Note: if the caller passes assetType = "MTQ" while
+  // MTQ_SETTLEMENT_ENABLED = false, this function still returns the
+  // amount (it does not gate on the MTQ flag — that's the route layer's
+  // job via mtqDisabledResponse()). The control plane may still want
+  // to compute the settlement amount for reporting purposes even when
+  // MTQ execution is disabled — the asset-type identification is
+  // separate from the MTQ module enable/disable state.
+  return request.amount;
+}
+
+/**
+ * Default settlement asset type for the wholesale settlement pipeline.
+ * Mirrors DEFAULT_SETTLEMENT_ASSET from mtq-settlement-config.ts so
+ * callers in this module don't have to import from two places.
+ */
+export const WHOLESALE_DEFAULT_SETTLEMENT_ASSET = DEFAULT_SETTLEMENT_ASSET;
 
 // ---- §5 Wholesale Settlement Transaction ----
+//
+// v25.3.2 (J3): SettlementRequest is now asset-agnostic. The optional
+// `settlementAssetType` field identifies which settlement asset the
+// institution wants to settle in. If unspecified, defaults to
+// DEFAULT_SETTLEMENT_ASSET (MTQ when MTQ_SETTLEMENT_ENABLED = true,
+// BANK_MONEY when MTQ is disabled) for backward compatibility.
 export interface SettlementRequest {
   institutionId: string;
   counterpartyInstitutionId: string;
@@ -26,6 +98,12 @@ export interface SettlementRequest {
   corridor: string;
   customerReference?: string;  // institutional reference, NOT customer PII
   settlementChannel: string;
+  /**
+   * Settlement asset type (v25.3.2 J3 boundary). If unspecified, the
+   * pipeline defaults to DEFAULT_SETTLEMENT_ASSET (MTQ when enabled,
+   * BANK_MONEY when MTQ disabled) for backward compatibility.
+   */
+  settlementAssetType?: SettlementAssetType;
 }
 
 export interface SettlementResult {
@@ -136,12 +214,24 @@ export async function processWholesaleSettlement(
   const timestamp = new Date().toISOString();
   const cryptoHash = `0x${Math.random().toString(16).slice(2).padStart(64, "0").slice(0, 64)}`;
 
+  // v25.3.2 (J3): determine the settlement asset type for this record.
+  // Falls back to DEFAULT_SETTLEMENT_ASSET (MTQ when MTQ_SETTLEMENT_ENABLED
+  // = true, BANK_MONEY when MTQ disabled) for backward compatibility.
+  const settlementAssetType: SettlementAssetType =
+    request.settlementAssetType ?? DEFAULT_SETTLEMENT_ASSET;
+  const settlementAmount = getSettlementAmount(request, settlementAssetType);
+
   const settlementRecord: SettlementRecord = {
     institutionalSender: request.institutionId,
     institutionalReceiver: request.counterpartyInstitutionId,
     transactionId,
     timestamp,
-    mtqAmount: request.amount,
+    // Legacy field — DEPRECATED alias of settlementAmount (v25.3.2 J3).
+    // Populated with the same value for backward compatibility.
+    mtqAmount: settlementAmount,
+    // Asset-agnostic field (v25.3.2 J3 boundary).
+    settlementAmount,
+    settlementAssetType,
     settlementState: "SETTLED",
     authorizationState: "AUTHORIZED",
     complianceState: "CLEARED",
@@ -294,11 +384,17 @@ export async function processRedemption(
 }
 
 // ---- §9 Institutional Traceability ----
+//
+// v25.3.2 (J3): createSettlementRecord now accepts an optional
+// settlementAssetType parameter. When unspecified, it defaults to
+// DEFAULT_SETTLEMENT_ASSET (MTQ when MTQ_SETTLEMENT_ENABLED = true,
+// BANK_MONEY when MTQ disabled) for backward compatibility.
 export function createSettlementRecord(
   sender: string,
   receiver: string,
   amount: number,
   jurisdiction: string,
+  settlementAssetType: SettlementAssetType = DEFAULT_SETTLEMENT_ASSET,
 ): SettlementRecord {
   const transactionId = `MTQ-${Date.now()}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
   return {
@@ -306,7 +402,11 @@ export function createSettlementRecord(
     institutionalReceiver: receiver,
     transactionId,
     timestamp: new Date().toISOString(),
+    // Legacy field — DEPRECATED alias of settlementAmount (v25.3.2 J3).
     mtqAmount: amount,
+    // Asset-agnostic field (v25.3.2 J3 boundary).
+    settlementAmount: amount,
+    settlementAssetType,
     settlementState: "SETTLED",
     authorizationState: "AUTHORIZED",
     complianceState: "CLEARED",
@@ -319,3 +419,11 @@ export function createSettlementRecord(
     finalityStatus: "TECHNICAL_FINAL",
   };
 }
+
+/**
+ * Convenience re-export of the MTQ_SETTLEMENT_ENABLED check from
+ * mtq-settlement-config.ts. Wholesale settlement callers that want
+ * to branch on whether MTQ execution is available can import this
+ * from this module instead of reaching across to mtq-settlement-config.
+ */
+export const isMTQSettlementAvailable = isMTQSettlementEnabled;

@@ -303,12 +303,48 @@ export const CB_PARTICIPATION_MODES: Record<CBParticipationMode, {
 };
 
 // ---- §9 Institutional Traceability Model ----
+//
+// v25.3.2 (J3 — CONTROL_PLANE_CORE vs MTQ_SETTLEMENT_MODULE boundary):
+// The SettlementRecord interface is now asset-agnostic. The legacy
+// `mtqAmount` field is preserved as a DEPRECATED ALIAS of the new
+// `settlementAmount` field (both are populated by wholesale-settlement.ts
+// for backward compatibility). The new `settlementAssetType` field
+// records which settlement asset was used (MTQ, BANK_MONEY, RTGS,
+// WHOLESALE_CBDC, TOKENIZED_DEPOSITS, CENTRAL_BANK_MONEY, or
+// OTHER_LEGALLY_RECOGNIZED) — see src/lib/mtq-settlement-config.ts for
+// the SettlementAssetType enum.
+//
+// Existing callers that read `mtqAmount` continue to work — the field
+// is still populated. New callers SHOULD prefer `settlementAmount`
+// (asset-agnostic) + `settlementAssetType` (asset identification).
 export interface SettlementRecord {
   institutionalSender: string;
   institutionalReceiver: string;
   transactionId: string;
   timestamp: string;
+  /** @deprecated Use settlementAmount + settlementAssetType (v25.3.2 J3 boundary) */
   mtqAmount: number;
+  /**
+   * Asset-agnostic settlement amount (v25.3.2 J3 boundary). For backward
+   * compatibility, this is populated with the same value as `mtqAmount`
+   * when settlementAssetType = "MTQ". For other asset types, this is the
+   * amount in the settlement asset's native units (e.g. bank-money USD,
+   * RTGS amount, CBDC tokens, tokenized-deposit units).
+   */
+  settlementAmount?: number;
+  /**
+   * Settlement asset type (v25.3.2 J3 boundary). Identifies which
+   * settlement asset was used for this record. Defaults to "MTQ" for
+   * backward compatibility with all pre-v25.3.2 records.
+   */
+  settlementAssetType?:
+    | "BANK_MONEY"
+    | "CENTRAL_BANK_MONEY"
+    | "RTGS"
+    | "TOKENIZED_DEPOSITS"
+    | "WHOLESALE_CBDC"
+    | "MTQ"
+    | "OTHER_LEGALLY_RECOGNIZED";
   settlementState: string;
   authorizationState: string;
   complianceState: string;

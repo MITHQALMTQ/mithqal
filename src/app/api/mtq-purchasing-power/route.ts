@@ -1,6 +1,13 @@
 import { NextResponse } from "next/server";
 import { enforceRateLimit } from "@/lib/rate-limit";
 import { computePurchasingPower } from "@/lib/purchasing-power";
+import { mtqDisabledResponse } from "@/lib/mtq-settlement-config";
+
+// ---- v25.3.2 CONTROL_PLANE_CORE vs MTQ_SETTLEMENT_MODULE boundary ----
+// This route is MTQ-specific (computes MTQ purchasing power in 8 currencies).
+// When MTQ_SETTLEMENT_ENABLED = false, it returns 503 immediately.
+// The control plane (/api/control-plane/*) remains operational.
+// See docs/architecture/CONTROL-PLANE-VS-MTQ-BOUNDARY.md.
 
 /**
  * GET /api/mtq-purchasing-power — MTQ priced in 8 currencies with 24h change.
@@ -39,6 +46,13 @@ export const runtime = "nodejs";
 export const revalidate = 0;
 
 export async function GET(req: Request) {
+  // v25.3.2: MTQ_SETTLEMENT_MODULE gate. When MTQ_SETTLEMENT_ENABLED = false,
+  // return 503 immediately (the control plane remains usable — see
+  // /api/control-plane/settlement-status). Checked BEFORE the rate limiter
+  // so disabled-mode responses are not rate-limited.
+  const mtqDisabled = mtqDisabledResponse();
+  if (mtqDisabled) return mtqDisabled;
+
   // Rate limit: 30 requests per minute per IP.
   const limited = enforceRateLimit("mtq-purchasing-power-get", req, 30, 60_000);
   if (limited) return limited;

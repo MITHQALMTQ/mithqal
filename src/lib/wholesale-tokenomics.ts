@@ -229,15 +229,53 @@ export const FEE_SEPARATION = {
 } as const;
 
 // ---- Task 6: Velocity Model ----
+//
+// v25.3.2 (J3 — CONTROL_PLANE_CORE vs MTQ_SETTLEMENT_MODULE boundary):
+// VelocityMetrics is now asset-agnostic. The legacy `mtqTurnover` field
+// is preserved as a DEPRECATED ALIAS of the new `settlementAssetTurnover`
+// field (both are populated by computeVelocity() for backward compat).
+// The MTQ-specific speculativeBehavior calc remains (it's actually a
+// generic velocity indicator), but is now gated by the optional
+// `settlementAssetType` parameter on computeVelocity() — when the
+// settlement asset is NOT MTQ, the speculative flag still computes
+// (it's a generic abnormal-velocity flag), but the caller can
+// interpret it in the context of the chosen asset.
 
 export interface VelocityMetrics {
-  mtqTurnover: number;           // Settled Trade Value / Average Outstanding MTQ
+  /**
+   * @deprecated Use settlementAssetTurnover (v25.3.2 J3 boundary).
+   * Legacy alias — populated with the same value as settlementAssetTurnover
+   * for backward compatibility.
+   */
+  mtqTurnover: number;
+  /**
+   * Asset-agnostic settlement-asset turnover (v25.3.2 J3 boundary).
+   * = settledTradeValue / averageOutstandingSettlementAsset.
+   * Populated with the same value as the legacy mtqTurnover field for
+   * backward compatibility.
+   */
+  settlementAssetTurnover: number;
   averageHoldingTime: number;     // days
   legitimateSettlementInventory: number;
   inactiveBalancePct: number;     // % of supply inactive >30 days
   speculativeBehavior: boolean;   // flagged if abnormal
   abnormalMovement: boolean;
   velocityState: "NORMAL" | "WATCH" | "ELEVATED" | "LOW_ACTIVITY";
+  /**
+   * Settlement asset type this velocity metric was computed for
+   * (v25.3.2 J3 boundary). Defaults to "MTQ" when MTQ_SETTLEMENT_ENABLED
+   * = true, or "BANK_MONEY" when MTQ is disabled. This is purely
+   * informational — the velocity formulas are the same regardless of
+   * asset type.
+   */
+  settlementAssetType?:
+    | "BANK_MONEY"
+    | "CENTRAL_BANK_MONEY"
+    | "RTGS"
+    | "TOKENIZED_DEPOSITS"
+    | "WHOLESALE_CBDC"
+    | "MTQ"
+    | "OTHER_LEGALLY_RECOGNIZED";
   note: string;
 }
 
@@ -247,8 +285,22 @@ export function computeVelocity(input: {
   periodDays: number;
   inactiveBalancePct: number;
   abnormalMovementDetected: boolean;
+  /**
+   * Settlement asset type (v25.3.2 J3 boundary). If unspecified, defaults
+   * to DEFAULT_SETTLEMENT_ASSET (MTQ when MTQ_SETTLEMENT_ENABLED = true,
+   * BANK_MONEY when MTQ is disabled) for backward compatibility.
+   */
+  settlementAssetType?:
+    | "BANK_MONEY"
+    | "CENTRAL_BANK_MONEY"
+    | "RTGS"
+    | "TOKENIZED_DEPOSITS"
+    | "WHOLESALE_CBDC"
+    | "MTQ"
+    | "OTHER_LEGALLY_RECOGNIZED";
 }): VelocityMetrics {
-  const mtqTurnover = input.settledTradeValue / Math.max(1, input.averageOutstandingMtq);
+  const settlementAssetTurnover =
+    input.settledTradeValue / Math.max(1, input.averageOutstandingMtq);
   const averageHoldingTime = input.averageOutstandingMtq > 0
     ? (input.averageOutstandingMtq * input.periodDays) / Math.max(1, input.settledTradeValue)
     : 0;
@@ -257,10 +309,17 @@ export function computeVelocity(input: {
   // Only flag for monitoring
   let velocityState: VelocityMetrics["velocityState"] = "NORMAL";
   if (input.inactiveBalancePct > 0.40) velocityState = "LOW_ACTIVITY";
-  else if (mtqTurnover < 0.5) velocityState = "WATCH";
-  else if (mtqTurnover > 10) velocityState = "ELEVATED";
+  else if (settlementAssetTurnover < 0.5) velocityState = "WATCH";
+  else if (settlementAssetTurnover > 10) velocityState = "ELEVATED";
 
-  const speculativeBehavior = input.abnormalMovementDetected && mtqTurnover > 20;
+  // v25.3.2 (J3): The speculativeBehavior flag is a generic abnormal-
+  // velocity indicator (turnover > 20 AND abnormal movement detected).
+  // It is computed for ALL settlement asset types — the same threshold
+  // applies regardless of asset. The naming is historical (it was
+  // originally MTQ-specific) but the underlying calculation is
+  // asset-agnostic.
+  const speculativeBehavior =
+    input.abnormalMovementDetected && settlementAssetTurnover > 20;
   const note = speculativeBehavior
     ? "Abnormal movement detected — flagged for investigation (NOT penalty)"
     : velocityState === "LOW_ACTIVITY"
@@ -268,13 +327,25 @@ export function computeVelocity(input: {
     : "Normal velocity. No action.";
 
   return {
-    mtqTurnover: Math.round(mtqTurnover * 100) / 100,
+    // Legacy field — DEPRECATED alias of settlementAssetTurnover
+    // (v25.3.2 J3). Populated with the same value for backward compat.
+    mtqTurnover: Math.round(settlementAssetTurnover * 100) / 100,
+    // Asset-agnostic field (v25.3.2 J3 boundary).
+    settlementAssetTurnover: Math.round(settlementAssetTurnover * 100) / 100,
     averageHoldingTime: Math.round(averageHoldingTime * 10) / 10,
     legitimateSettlementInventory: input.averageOutstandingMtq * 0.3, // ~30% held for settlement
     inactiveBalancePct: input.inactiveBalancePct,
     speculativeBehavior,
     abnormalMovement: input.abnormalMovementDetected,
     velocityState,
+    // v25.3.2 (J3): record the settlement asset type this metric was
+    // computed for. If unspecified by the caller, defaults to MTQ (when
+    // MTQ_SETTLEMENT_ENABLED = true) or BANK_MONEY (when MTQ disabled).
+    settlementAssetType: input.settlementAssetType ?? (
+      process.env.MTQ_SETTLEMENT_ENABLED === "false"
+        ? "BANK_MONEY"
+        : "MTQ"
+    ),
     note,
   };
 }

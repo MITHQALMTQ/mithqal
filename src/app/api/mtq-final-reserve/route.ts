@@ -3,6 +3,13 @@
 import { NextResponse } from "next/server";
 import { generateFinalReserveSpecReport, MODULE_ID } from "@/lib/mtq-final-reserve-spec";
 import { enforceRateLimit } from "@/lib/rate-limit";
+import { mtqDisabledResponse } from "@/lib/mtq-settlement-config";
+
+// ---- v25.3.2 CONTROL_PLANE_CORE vs MTQ_SETTLEMENT_MODULE boundary ----
+// This route is MTQ-specific (final MTQ institutional backing spec).
+// When MTQ_SETTLEMENT_ENABLED = false, it returns 503 immediately.
+// The control plane (/api/control-plane/*) remains operational.
+// See docs/architecture/CONTROL-PLANE-VS-MTQ-BOUNDARY.md.
 
 // R11: Switched from force-static → force-dynamic so the per-IP rate limit
 // gate actually executes per request (force-static would prerender the
@@ -12,6 +19,13 @@ import { enforceRateLimit } from "@/lib/rate-limit";
 export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
+  // v25.3.2: MTQ_SETTLEMENT_MODULE gate. When MTQ_SETTLEMENT_ENABLED = false,
+  // return 503 immediately (the control plane remains usable — see
+  // /api/control-plane/settlement-status). Checked BEFORE the rate limiter
+  // so disabled-mode responses are not rate-limited.
+  const mtqDisabled = mtqDisabledResponse();
+  if (mtqDisabled) return mtqDisabled;
+
   // R11: 30 req/min per IP — generous for institutional use, prevents abuse.
   const rateLimited = enforceRateLimit("mtq-final-reserve", request, 30, 60_000);
   if (rateLimited) return rateLimited;

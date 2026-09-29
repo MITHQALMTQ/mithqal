@@ -3,6 +3,13 @@ import { db, ensureSchema } from "@/lib/db";
 import { enforceRateLimit } from "@/lib/rate-limit";
 import { TRANSFER_FEE_CAP } from "@/lib/monetary-engine-v19";
 import { computeLiveNav } from "@/lib/nav-compute";
+import { mtqDisabledResponse } from "@/lib/mtq-settlement-config";
+
+// ---- v25.3.2 CONTROL_PLANE_CORE vs MTQ_SETTLEMENT_MODULE boundary ----
+// This route is MTQ-specific (records an MTQ peer-to-peer transfer).
+// When MTQ_SETTLEMENT_ENABLED = false, it returns 503 immediately. The
+// control plane (/api/control-plane/*) remains operational.
+// See docs/architecture/CONTROL-PLANE-VS-MTQ-BOUNDARY.md.
 
 /**
  * POST /api/transfer — Record a transfer (peer-to-peer MTQ movement).
@@ -41,6 +48,13 @@ import { computeLiveNav } from "@/lib/nav-compute";
  *   { ok: true, txHash, type: "transfer", amount, mtqAmount, nav, fee, feeUsd8Dec, feeWei, recorded: true }
  */
 export async function POST(req: Request) {
+  // v25.3.2: MTQ_SETTLEMENT_MODULE gate. When MTQ_SETTLEMENT_ENABLED = false,
+  // return 503 immediately (the control plane remains usable — see
+  // /api/control-plane/settlement-status). This is checked BEFORE the
+  // rate limiter so disabled-mode responses are not rate-limited.
+  const mtqDisabled = mtqDisabledResponse();
+  if (mtqDisabled) return mtqDisabled;
+
   // Public endpoint, but rate-limited (20 transfers/min/IP).
   const blocked = enforceRateLimit("transfer", req, 20, 60_000);
   if (blocked) return blocked;

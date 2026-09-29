@@ -7,6 +7,13 @@ import {
   isSupportedCurrency,
   type SupportedCurrency,
 } from "@/lib/nav-compute";
+import { mtqDisabledResponse } from "@/lib/mtq-settlement-config";
+
+// ---- v25.3.2 CONTROL_PLANE_CORE vs MTQ_SETTLEMENT_MODULE boundary ----
+// This route is MTQ-specific (records an MTQ mint transaction). When
+// MTQ_SETTLEMENT_ENABLED = false, it returns 503 immediately. The
+// control plane (/api/control-plane/*) remains operational.
+// See docs/architecture/CONTROL-PLANE-VS-MTQ-BOUNDARY.md.
 
 /**
  * POST /api/mint — Record a mint transaction (testnet-public, rate-limited).
@@ -59,6 +66,13 @@ import {
  *   }
  */
 export async function POST(req: Request) {
+  // v25.3.2: MTQ_SETTLEMENT_MODULE gate. When MTQ_SETTLEMENT_ENABLED = false,
+  // return 503 immediately (the control plane remains usable — see
+  // /api/control-plane/settlement-status). This is checked BEFORE the
+  // rate limiter so disabled-mode responses are not rate-limited.
+  const mtqDisabled = mtqDisabledResponse();
+  if (mtqDisabled) return mtqDisabled;
+
   // Public endpoint (testnet simulation), but rate-limited (10 mints/min/IP).
   // On mainnet this MUST be re-gated to operator auth + custody confirmation.
   const blocked = enforceRateLimit("mint", req, 10, 60_000);

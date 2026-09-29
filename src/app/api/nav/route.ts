@@ -1,5 +1,12 @@
 import { NextResponse } from "next/server";
 import { computeLiveNav } from "@/lib/nav-compute";
+import { mtqDisabledResponse } from "@/lib/mtq-settlement-config";
+
+// ---- v25.3.2 CONTROL_PLANE_CORE vs MTQ_SETTLEMENT_MODULE boundary ----
+// This route is MTQ-specific (computes the MTQ NAV via the v19 monetary
+// engine). When MTQ_SETTLEMENT_ENABLED = false, it returns 503 immediately.
+// The control plane (/api/control-plane/*) remains operational.
+// See docs/architecture/CONTROL-PLANE-VS-MTQ-BOUNDARY.md.
 
 /**
  * GET /api/nav — The SINGLE source of truth for MTQ's live NAV.
@@ -47,6 +54,12 @@ import { computeLiveNav } from "@/lib/nav-compute";
  *   }
  */
 export async function GET() {
+  // v25.3.2: MTQ_SETTLEMENT_MODULE gate. When MTQ_SETTLEMENT_ENABLED = false,
+  // return 503 immediately (the control plane remains usable — see
+  // /api/control-plane/settlement-status).
+  const mtqDisabled = mtqDisabledResponse();
+  if (mtqDisabled) return mtqDisabled;
+
   try {
     const nav = await computeLiveNav();
     return NextResponse.json({
