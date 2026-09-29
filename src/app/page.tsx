@@ -20,6 +20,13 @@ import {
   Tooltip, Legend, PieChart, Pie, Cell, ReferenceLine,
 } from "recharts";
 import { MtqPurchasingPowerTicker } from "@/components/mtq-purchasing-power-ticker";
+// N1 (trace 1a0ee5f25d2fbe79): canonical finality model — single source of truth.
+// Used here to derive the correct settlement MODE ("finality-coordinated" vs
+// "atomic") for the Cross-Border Corridor Simulator. The page is a client
+// component, but the helper is pure TypeScript with no server-only deps,
+// so importing it into the client bundle is safe and avoids an extra
+// fetch on every simulation run.
+import { determineSettlementMode } from "@/lib/canonical-finality-model";
 
 // ─── Defensive helpers ───
 const S = (v: unknown): string => {
@@ -315,12 +322,39 @@ function DynamicReserveSimulator() {
 }
 
 // ─── Dynamic Cross-Border Corridor Simulator ───
+// N1 (trace 1a0ee5f25d2fbe79): per the directive, the term "atomic settlement"
+// is reserved for the case where a transaction executes within a single
+// shared legal finality domain. Cross-border corridors (different legal
+// jurisdictions) are "finality-coordinated settlement" — not atomic. The
+// simulator now derives the settlement MODE from the currency jurisdictions
+// and surfaces the correct label in the UI / step timeline.
 const CORRIDOR_CURRENCIES = [
   "AED","SAR","SGD","USD","EUR","JPY","GBP","CHF","CNY","CAD","AUD",
   "EGP","INR","KRW","TRY","BRL","MXN","ZAR","IDR","MYR","THB",
   "USDC","USDT","DAI","EURC","BUIDL","USDP",
 ];
 const CORRIDOR_RAILS = ["SWIFT","ISO 20022","REST API","Host-to-Host","SFTP","RTGS","Tokenized Deposit","CBDC"];
+
+// Currency → ISO-3166-1 alpha-2 jurisdiction code. Used by the
+// determineSettlementMode() helper (per N-directive) to decide whether
+// the corridor is ATOMIC (single shared legal finality domain) or
+// FINALITY_COORDINATED (spans multiple legal finality domains).
+// Stablecoins are mapped to "INTL" because public-chain token transfers
+// do not execute within any single legally supported shared finality
+// domain — they span every jurisdiction in which the holders reside.
+const CURRENCY_JURISDICTIONS: Record<string, string> = {
+  AED: "AE", SAR: "SA", SGD: "SG", USD: "US", EUR: "EU", JPY: "JP", GBP: "GB",
+  CHF: "CH", CNY: "CN", CAD: "CA", AUD: "AU", EGP: "EG", INR: "IN", KRW: "KR",
+  TRY: "TR", BRL: "BR", MXN: "MX", ZAR: "ZA", IDR: "ID", MYR: "MY", THB: "TH",
+  USDC: "INTL", USDT: "INTL", DAI: "INTL", EURC: "INTL", BUIDL: "INTL", USDP: "INTL",
+};
+
+// Rails that settle in (near-)real-time at the technical layer. NOTE: per
+// N-directive, technical speed is independent of the settlement MODE — a
+// Tokenized Deposit on a cross-border AED↔SGD corridor is still finality-
+// coordinated (legally), even though the on-chain technical settlement is
+// fast. The two concepts are surfaced separately in the UI.
+const INSTANT_RAILS = new Set(["Tokenized Deposit", "CBDC", "REST API"]);
 
 function DynamicCorridorSimulator() {
   const [fromCcy, setFromCcy] = useState("AED");
@@ -347,14 +381,31 @@ function DynamicCorridorSimulator() {
     const output = useBridge ? bridgeOutput : directOutput;
     const fxRoute = useBridge ? "USD-bridge" : "direct";
     const isDigital = ["USDC","USDT","DAI","EURC","BUIDL","USDP"].includes(fromCcy) || ["USDC","USDT","DAI","EURC","BUIDL","USDP"].includes(toCcy);
-    const atomicCapable = ["Tokenized Deposit","CBDC","REST API"].includes(rail);
+    // Per N-directive: "atomic settlement" ONLY when shared legal finality
+    // domain exists. The MITHQAL canonical jurisdiction is US-NJ. If the
+    // sender + receiver + MITHQAL are all in the same jurisdiction, it's
+    // ATOMIC. Otherwise it's FINALITY_COORDINATED.
+    const settlementMode = determineSettlementMode({
+      senderJurisdiction: CURRENCY_JURISDICTIONS[fromCcy] ?? "INTL",
+      receiverJurisdiction: CURRENCY_JURISDICTIONS[toCcy] ?? "INTL",
+      mithqalJurisdiction: "US",
+    });
+    const atomicCapable = INSTANT_RAILS.has(rail);
     const feeBps: Record<string, number> = { "SWIFT": 8, "ISO 20022": 6, "REST API": 3, "Host-to-Host": 5, "SFTP": 4, "RTGS": 7, "Tokenized Deposit": 2, "CBDC": 1 };
     const fee = (feeBps[rail] ?? 5);
     const totalCost = output * (fee / 10000);
     const mtqMinted = amount * fromRate;
-    const settlementStatus = atomicCapable ? "ATOMICALLY_SETTLED" : "PENDING_SETTLEMENT";
+    const modeLabel = settlementMode === "ATOMIC" ? "ATOMIC" : "FINALITY-COORDINATED";
+    const settlementStatus = atomicCapable
+      ? (settlementMode === "ATOMIC" ? "ATOMIC_SETTLED" : "FINALITY_COORDINATED_SETTLED")
+      : "PENDING_SETTLEMENT";
     const compliancePassed = true;
     const latency: Record<string, number> = { "SWIFT": 5000, "ISO 20022": 3000, "REST API": 500, "Host-to-Host": 2000, "SFTP": 4000, "RTGS": 1000, "Tokenized Deposit": 300, "CBDC": 200 };
+    // Per N-directive: step names that say "Atomic MTQ mint" are only
+    // accurate when the settlement MODE is ATOMIC. For finality-coordinated
+    // corridors, the step label is "Finality-coordinated MTQ mint".
+    const mintLabel = settlementMode === "ATOMIC" ? `Atomic MTQ mint (${mtqMinted.toLocaleString()})` : `Finality-coordinated MTQ mint (${mtqMinted.toLocaleString()})`;
+    const redeemLabel = settlementMode === "ATOMIC" ? "Atomic MTQ redeem" : "Finality-coordinated MTQ redeem";
     const steps = [
       { id: "fx-1", stage: "FX_DISCOVERY", name: `Quote ${fromCcy}/${toCcy} direct`, status: "SUCCESS", durationMs: 220 },
       { id: "fx-2", stage: "FX_DISCOVERY", name: `Quote ${fromCcy}/USD/${toCcy} bridge`, status: "SUCCESS", durationMs: 180 },
@@ -363,12 +414,12 @@ function DynamicCorridorSimulator() {
       { id: "comp-1", stage: "COMPLIANCE_CHECK", name: "KYC/KYB verification", status: "SUCCESS", durationMs: 300 },
       { id: "comp-2", stage: "COMPLIANCE_CHECK", name: "AML/sanctions screening", status: "SUCCESS", durationMs: 450 },
       { id: "set-1", stage: "SETTLEMENT_EXECUTION", name: "MBG receives request", status: "SUCCESS", durationMs: 80 },
-      { id: "set-2", stage: "SETTLEMENT_EXECUTION", name: atomicCapable ? `Atomic MTQ mint (${mtqMinted.toLocaleString()})` : "MTQ mint (pending)", status: atomicCapable ? "SUCCESS" : "PENDING", durationMs: atomicCapable ? 150 : 5000 },
+      { id: "set-2", stage: "SETTLEMENT_EXECUTION", name: atomicCapable ? mintLabel : "MTQ mint (pending)", status: atomicCapable ? "SUCCESS" : "PENDING", durationMs: atomicCapable ? 150 : 5000 },
       { id: "set-3", stage: "SETTLEMENT_EXECUTION", name: "MTQ transfer", status: atomicCapable ? "SUCCESS" : "PENDING", durationMs: 90 },
-      { id: "set-4", stage: "SETTLEMENT_EXECUTION", name: atomicCapable ? "Atomic MTQ redeem" : "MTQ redeem (pending)", status: atomicCapable ? "SUCCESS" : "PENDING", durationMs: 140 },
+      { id: "set-4", stage: "SETTLEMENT_EXECUTION", name: atomicCapable ? redeemLabel : "MTQ redeem (pending)", status: atomicCapable ? "SUCCESS" : "PENDING", durationMs: 140 },
       { id: "conf-1", stage: "CONFIRMATION", name: "Settlement confirmation", status: atomicCapable ? "SUCCESS" : "PENDING", durationMs: 60 },
     ];
-    setResults({ fromCcy, toCcy, amount, output, fxRoute, rail, fee, totalCost, mtqMinted, settlementStatus, compliancePassed, atomicCapable, isDigital, latency: latency[rail] ?? 3000, steps });
+    setResults({ fromCcy, toCcy, amount, output, fxRoute, rail, fee, totalCost, mtqMinted, settlementStatus, settlementMode, modeLabel, compliancePassed, atomicCapable, isDigital, latency: latency[rail] ?? 3000, steps });
   }, [fromCcy, toCcy, amount, rail]);
 
   useEffect(() => {
@@ -425,7 +476,7 @@ function DynamicCorridorSimulator() {
             </div>
             <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
               <div><div className="text-[9px] text-gray-500">Rail</div><div className="font-mono text-[11px] text-gray-300">{S(results.rail)}</div></div>
-              <div><div className="text-[9px] text-gray-500">Atomic</div><Badge variant={results.atomicCapable ? "emerald" : "gray"}>{results.atomicCapable ? "YES" : "NO"}</Badge></div>
+              <div><div className="text-[9px] text-gray-500">Settlement Mode</div><Badge variant={results.settlementMode === "ATOMIC" ? "emerald" : "amber"}>{S(results.modeLabel)}</Badge></div>
               <div><div className="text-[9px] text-gray-500">Compliance</div><Badge variant={results.compliancePassed ? "emerald" : "red"}>{results.compliancePassed ? "PASSED" : "FAILED"}</Badge></div>
               <div><div className="text-[9px] text-gray-500">Settlement</div><Badge variant={results.settlementStatus.includes("SETTLED") ? "emerald" : "amber"}>{S(results.settlementStatus)}</Badge></div>
             </div>
@@ -685,6 +736,7 @@ const NAV_ITEMS = [
   { id: "gold", label: "Gold & Bullion", icon: Scale },
   { id: "digital", label: "Digital Liquidity", icon: Cpu },
   { id: "finality", label: "Finality Gate", icon: Lock },
+  { id: "finality-model", label: "F0-F7 Model (N1)", icon: Lock },
   { id: "p1", label: "P1 Frameworks", icon: Building2 },
   { id: "status", label: "Implementation Status", icon: CheckCircle2 },
   { id: "simulator", label: "Reserve Simulator", icon: Zap },
@@ -719,6 +771,10 @@ export default function Page() {
   const dataSourceObs = useFetch("/api/data-source-observations?limit=10");
   // v25.3.6 — Pilot 1 reserve config (gold=0%, digital=0%, AVAILABLE_FOR_FUTURE_VALIDATED_CONFIGURATION)
   const pilot1 = useFetch<any>("/api/pilot-1-config");
+  // N1 (trace 1a0ee5f25d2fbe79): canonical finality model — single source
+  // of truth for the F0-F7 8-stage progression + 3 finality types
+  // (technical, banking, legal) + finality-coordinated vs atomic settlement.
+  const canonicalFinality = useFetch("/api/canonical-finality-model");
 
   const scrollTo = useCallback((id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -1326,6 +1382,108 @@ export default function Page() {
                       {Arr(finality.data.bypassTestSummary?.attempts).map((a: any, i: number) => (
                         <span key={i} className={`rounded border px-1.5 py-0.5 text-[8px] ${a.blocked ? "border-emerald-500/30 bg-emerald-500/5 text-emerald-400" : "border-red-500/40 bg-red-500/10 text-red-400"}`}>{S(a.route)} · {a.blocked ? "BLOCKED" : "BYPASSED!"}</span>
                       ))}
+                    </div>
+                  </GlassCard>
+                </>
+              )}
+            </Section>
+
+            {/* ═══ CANONICAL FINALITY MODEL (N1) ═══ */}
+            <Section id="finality-model" icon={Lock} title="Canonical Finality Model — F0–F7 (N1)" subtitle="One canonical source · 8 stages · 3 finality types (technical, banking, legal) · finality-coordinated vs atomic settlement">
+              {!canonicalFinality.data ? (canonicalFinality.err ? <ErrorBox label="canonical finality model" msg={canonicalFinality.err} /> : <LoadingBox label="canonical finality model" />) : (
+                <>
+                  {/* Rule banner */}
+                  <GlassCard glow className="mb-4 p-4">
+                    <div className="text-[10px] font-semibold uppercase tracking-wider text-gold">Single Canonical Source</div>
+                    <div className="mt-1 text-xs text-gray-300">{S(canonicalFinality.data.rule)}</div>
+                    <div className="mt-2 text-[10px] text-gray-500">Source: <span className="font-mono text-gold">{S(canonicalFinality.data._meta?.modelSource)}</span> · Version: <span className="font-mono text-gold">{S(canonicalFinality.data._meta?.modelVersion)}</span> · Status: <span className="font-mono text-emerald-400">{S(canonicalFinality.data._meta?.status)}</span></div>
+                    <div className="mt-1 text-[10px] text-gray-500">{S(canonicalFinality.data.overlayRule)}</div>
+                  </GlassCard>
+
+                  {/* 3 finality types */}
+                  <div className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-gray-500">Three Finality Types (per N-directive: "explicitly distinguish")</div>
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                    {Arr(canonicalFinality.data.finalityTypes).map((t: any, i: number) => {
+                      const tone = t.type === "LEGAL" ? "border-gold/30 bg-gold/5" : t.type === "BANKING" ? "border-emerald-500/30 bg-emerald-500/5" : "border-amber-500/30 bg-amber-500/5";
+                      const accent = t.type === "LEGAL" ? "text-gold" : t.type === "BANKING" ? "text-emerald-400" : "text-amber-400";
+                      return (
+                        <GlassCard key={i} className={`p-4 ${tone}`}>
+                          <div className={`text-[10px] font-bold uppercase tracking-wider ${accent}`}>{S(t.type)}</div>
+                          <div className="mt-1 text-xs font-semibold text-white">{S(t.name)}</div>
+                          <div className="mt-1 text-[10px] text-gray-400">{S(t.description)}</div>
+                          <div className="mt-2 rounded border border-white/5 bg-black/20 p-2 text-[9px] text-gray-500">
+                            <div className="text-[9px] font-semibold text-gray-400">Meaning</div>
+                            {S(t.meaning)}
+                          </div>
+                          <div className="mt-2 rounded border border-white/5 bg-black/20 p-2 text-[9px] text-gray-500">
+                            <div className="text-[9px] font-semibold text-gray-400">Example</div>
+                            {S(t.example)}
+                          </div>
+                        </GlassCard>
+                      );
+                    })}
+                  </div>
+
+                  {/* 8 F0-F7 stages timeline */}
+                  <div className="mb-2 mt-4 text-[10px] font-semibold uppercase tracking-wider text-gray-500">8 Finality Stages (F0 → F7)</div>
+                  <GlassCard className="p-4">
+                    <div className="space-y-1.5">
+                      {Arr(canonicalFinality.data.stages).map((s: any, i: number) => {
+                        const tone = s.finalityType === "LEGAL" ? "border-gold/30" : s.finalityType === "BANKING" ? "border-emerald-500/30" : "border-amber-500/30";
+                        const accent = s.finalityType === "LEGAL" ? "text-gold" : s.finalityType === "BANKING" ? "text-emerald-400" : "text-amber-400";
+                        return (
+                          <div key={i} className={`flex items-start gap-2 overflow-x-auto rounded border ${tone} bg-black/20 px-2 py-1.5 text-[10px]`}>
+                            <span className="font-mono font-bold text-gold w-10 shrink-0">{S(s.id)}</span>
+                            <ArrowRight className="h-2.5 w-2.5 shrink-0 text-gray-600 mt-0.5" />
+                            <div className="flex-1 min-w-0">
+                              <div className="text-[11px] font-semibold text-white">{S(s.name)}</div>
+                              <div className="text-[9px] text-gray-500">{S(s.description)}</div>
+                              <div className="mt-1 flex flex-wrap gap-1 text-[8px]">
+                                <span className={`rounded border px-1 py-0.5 ${accent} border-current/30 bg-current/5`}>FINALITY: {S(s.finalityType)}</span>
+                                <span className="rounded border border-gold/20 bg-gold/5 px-1 py-0.5 text-gold">BM: {S(s.mapsToBMStep)}</span>
+                                <span className="rounded border border-white/10 bg-white/5 px-1 py-0.5 text-gray-300">{S(s.trustDomain).replace("DOMAIN_", "D").replace("_", " ")}</span>
+                                <span className="rounded border border-white/10 bg-white/5 px-1 py-0.5 text-gray-300">{s.achievedByMithqal ? "MITHQAL" : "EXTERNAL"}</span>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </GlassCard>
+
+                  {/* 2 settlement modes */}
+                  <div className="mb-2 mt-4 text-[10px] font-semibold uppercase tracking-wider text-gray-500">Settlement Modes (per N-directive)</div>
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    {Arr(canonicalFinality.data.settlementModes).map((m: any, i: number) => {
+                      const tone = m.mode === "ATOMIC" ? "border-emerald-500/30 bg-emerald-500/5" : "border-amber-500/30 bg-amber-500/5";
+                      const accent = m.mode === "ATOMIC" ? "text-emerald-400" : "text-amber-400";
+                      return (
+                        <GlassCard key={i} className={`p-4 ${tone}`}>
+                          <div className={`text-[10px] font-bold uppercase tracking-wider ${accent}`}>{S(m.mode)}</div>
+                          <div className="mt-1 text-xs font-semibold text-white">{S(m.name)}</div>
+                          <div className="mt-1 text-[10px] text-gray-400">{S(m.description)}</div>
+                          <div className="mt-2 rounded border border-white/5 bg-black/20 p-2 text-[9px] text-gray-500">
+                            <div className="text-[9px] font-semibold text-gray-400">When to use</div>
+                            {S(m.whenToUse)}
+                          </div>
+                          <div className="mt-2 rounded border border-white/5 bg-black/20 p-2 text-[9px] text-gray-500">
+                            <div className="text-[9px] font-semibold text-gray-400">Example</div>
+                            {S(m.example)}
+                          </div>
+                          <div className="mt-2 text-[9px] text-gray-500">Shared legal finality domain: <span className={m.sharedLegalFinalityDomain ? "text-emerald-400 font-semibold" : "text-amber-400 font-semibold"}>{m.sharedLegalFinalityDomain ? "YES" : "NO"}</span></div>
+                        </GlassCard>
+                      );
+                    })}
+                  </div>
+
+                  {/* Honest state banner */}
+                  <GlassCard className="mt-4 border-gold/20 p-4">
+                    <div className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-gold">Preserved Invariants (per N-directive constraints)</div>
+                    <div className="grid grid-cols-2 gap-2 text-[10px] sm:grid-cols-4">
+                      <div><span className="text-gray-500">v19 engine:</span> <span className="text-emerald-400">{S(canonicalFinality.data.honestState?.v19MonetaryEnginePreserved)}</span></div>
+                      <div><span className="text-gray-500">BM-* workflow:</span> <span className="text-emerald-400">{S(canonicalFinality.data.honestState?.bmWorkflowPreserved)}</span></div>
+                      <div><span className="text-gray-500">Trust domains:</span> <span className="text-emerald-400">{S(canonicalFinality.data.honestState?.trustDomainsPreserved)}</span></div>
+                      <div><span className="text-gray-500">production:</span> <span className="text-red-400">{S(canonicalFinality.data.honestState?.productionAuthorized)}</span></div>
                     </div>
                   </GlassCard>
                 </>

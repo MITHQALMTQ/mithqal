@@ -105,7 +105,7 @@ export async function GET() {
       redemption: 9.0,         // Reliable redemption (1 oz minimum, 0.02% fee)
       issuerReliability: 9.0,  // Paxos Trust Company — NYDFS-regulated, OCC-chartered
       oracleReliability: 8.5,  // Chainlink + Paxos API + independent attestation
-      settlement: 8.5,         // ERC-20, 24/7 atomic settlement
+      settlement: 8.5,         // ERC-20, 24/7 on-chain settlement (finality-coordinated across legal domains per N1)
       liquidity: 7.5,          // Deep secondary market (Coinbase, Kraken, Uniswap)
       operationalResilience: 8.5, // CertiK 98%, 5+ years operational
       jurisdiction: 9.5,       // US-regulated (NYDFS + OCC dual charter)

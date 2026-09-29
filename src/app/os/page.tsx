@@ -148,7 +148,7 @@ export default function OSPage() {
 
           {/* CORRIDOR */}
           <section>
-            <div className="mb-4 flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-xl border border-gold/20 bg-gold/5"><Globe className="h-5 w-5 text-gold" /></div><div><h2 className="font-display text-xl font-bold text-white">Cross-Border Corridor — AED ↔ SGD</h2><p className="text-[11px] text-gray-500">FX discovery · compliance · atomic settlement</p></div></div>
+            <div className="mb-4 flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-xl border border-gold/20 bg-gold/5"><Globe className="h-5 w-5 text-gold" /></div><div><h2 className="font-display text-xl font-bold text-white">Cross-Border Corridor — AED ↔ SGD</h2><p className="text-[11px] text-gray-500">FX discovery · compliance · finality-coordinated settlement (UAE ↔ Singapore span separate legal finality domains)</p></div></div>
             {!corridor.data ? <GlassCard className="p-4"><span className="text-xs text-gray-400">Loading…</span></GlassCard> : (
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                 <GlassCard glow className="p-4"><div className="flex items-center justify-between"><Cpu className="h-4 w-4 text-gold" /><Badge variant="gold">FX</Badge></div><div className="mt-2 font-mono text-lg text-gold">{S(corridor.data.sampleRunSummary?.fxRoute)}</div></GlassCard>
