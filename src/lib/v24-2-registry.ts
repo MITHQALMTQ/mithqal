@@ -19,6 +19,82 @@
 // This entire module is HISTORICAL — see HISTORICAL/SUPERSEDED banner above.
 export const MODULE_STATUS: "ACTIVE" | "SUPERSEDED" | "HISTORICAL" | "PENDING_VALIDATION" = "HISTORICAL";
 export const SUPERSEDED_BY = "v25.3.2 policy-registry (see src/lib/policy-registry.ts)";
+
+// ============================================================================
+// v25.3.2-J2 — CANONICAL SETTLEMENT WORKFLOW TERMINOLOGY REGISTRY
+// ============================================================================
+// The 17 canonical settlement workflow step IDs (per J-directive) are
+// registered here for terminology-discovery purposes. The canonical
+// source-of-truth definitions live in:
+//
+//     src/lib/settlement-workflow-canonical.ts
+//
+// Each entry below carries: id, name, capability, status — mirroring the
+// canonical source. The `source` field points every consumer to the
+// canonical file so the contradiction scanner can verify no inline BM-*
+// definition drifts from this registry.
+//
+// Override-prevention rule (per MITHQAL-V25.3.2-REMEDIATION-LAYER.md §3):
+//   - Only ACTIVE terms are exposed via runtime diagnostics by default.
+//   - SUPERSEDED / HISTORICAL / PENDING_VALIDATION are queryable via
+//     ?include= for operator audit only — they are NEVER exposed as
+//     "current".
+//
+// SUPERSEDED DEFINITIONS (removed in v25.3.2-J2):
+//   Old BM-15 = "Mint Permission Engine" — SUPERSEDED. New = "Monetary Authorization".
+//   Old BM-16 = "Technical Mint Execution" — SUPERSEDED. New = BM-16A
+//              "Finality Verification" + BM-16B "Mint Execution".
+//
+// Any inline BM-* definition in the codebase that does NOT match this
+// registry is a contradiction per the contradiction scanner.
+// ============================================================================
+
+import {
+  CANONICAL_SETTLEMENT_WORKFLOW,
+  CANONICAL_WORKFLOW_SOURCE,
+  CANONICAL_WORKFLOW_VERSION,
+  type CanonicalBMStep,
+} from "./settlement-workflow-canonical";
+
+export interface SettlementWorkflowTerm {
+  /** Canonical BM-* id, e.g. "BM-01" ... "BM-16B". */
+  id: string;
+  /** Canonical name (per J-directive). */
+  name: string;
+  /** Owning capability module. */
+  capability: "CONTROL_PLANE_CORE" | "MTQ_SETTLEMENT_MODULE";
+  /** Lifecycle status. */
+  status: "ACTIVE" | "SUPERSEDED" | "HISTORICAL" | "PENDING_VALIDATION";
+  /** Single source-of-truth file path. */
+  source: string;
+  /** Canonical workflow version tag. */
+  version: string;
+}
+
+export const SETTLEMENT_WORKFLOW_REGISTRY: SettlementWorkflowTerm[] =
+  CANONICAL_SETTLEMENT_WORKFLOW.map((step: CanonicalBMStep) => ({
+    id: step.id,
+    name: step.name,
+    capability: step.capability,
+    status: step.status,
+    source: CANONICAL_WORKFLOW_SOURCE,
+    version: CANONICAL_WORKFLOW_VERSION,
+  }));
+
+export const SETTLEMENT_WORKFLOW_REGISTRY_META = {
+  activeModel: "v25.3.2",
+  source: CANONICAL_WORKFLOW_SOURCE,
+  version: CANONICAL_WORKFLOW_VERSION,
+  stepCount: SETTLEMENT_WORKFLOW_REGISTRY.length,
+  overridePreventionRule:
+    "BM-* definitions are SINGLE-SOURCE. Any inline BM-* definition in the " +
+    "codebase that does not match this registry is a contradiction per the " +
+    "contradiction scanner. See MITHQAL-V25.3.2-REMEDIATION-LAYER.md §3 Rule 3.",
+} as const;
+
+// ============================================================================
+// End of v25.3.2-J2 canonical settlement workflow terminology registry.
+// ============================================================================
 // v24.2 §1 — Parameter Classification System + §0 Amendment Registry
 // =================================================================
 // Every monetary/risk parameter MUST be classified as exactly one of:

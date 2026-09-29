@@ -1,0 +1,89 @@
+%% MITHQAL v25.3.2-J2 — CANONICAL SETTLEMENT WORKFLOW STATE DIAGRAM
+%%
+%% Per J-directive (2026-09-29): "Canonicalize the settlement workflow.
+%% Use exactly: BM-01–BM-08 = Bank/customer/MBG; BM-09 = Eligibility;
+%% BM-10 = Jurisdiction; BM-11 = Backing Verification; BM-12 = Bank Risk;
+%% BM-13 = System Risk; BM-14 = DMCE; BM-15 = Monetary Authorization;
+%% BM-16A = Finality Verification; BM-16B = Mint Execution.
+%% Remove every conflicting definition of BM-15 or BM-16."
+%%
+%% Single canonical source-of-truth definitions:
+%%   src/lib/settlement-workflow-canonical.ts
+%%
+%% Capability boundary:
+%%   - CONTROL_PLANE_CORE       owns BM-01..BM-16A (16 steps, asset-agnostic)
+%%   - MTQ_SETTLEMENT_MODULE    owns BM-16B only (1 step, OPTIONAL —
+%%                              skipped if settlement asset ≠ MTQ)
+%%
+%% Failure mode for every step: BLOCK (ANY FAILURE = BLOCK).
+%% Audit record required at every step.
+%%
+%% Release: v25.3.2-J2-1.0
+%% Owner: BM-* Workflow Canonicalization Architect (Agent J2)
+%% Override-prevention rule: see MITHQAL-V25.3.2-REMEDIATION-LAYER.md §3
+
+stateDiagram-v2
+    [*] --> BM-01
+
+    BM-01: BM-01 Customer Initiates Settlement Request
+    BM-02: BM-02 Bank Receives + KYC/KYB Verification
+    BM-03: BM-03 AML / Sanctions / Beneficial Ownership
+    BM-04: BM-04 Bank Establishes / Verifies Eligible Funding
+    BM-05: BM-05 Bank Issues AvailableBackingCertificate
+    BM-06: BM-06 Bank Requests Settlement via MBG
+    BM-07: BM-07 MBG Authenticates Bank Institution
+    BM-08: BM-08 MBG Translates (Not Transforms) Request
+    BM-09: BM-09 Eligibility Check
+    BM-10: BM-10 Jurisdiction Check
+    BM-11: BM-11 Backing Verification
+    BM-12: BM-12 Bank-Specific Risk Assessment
+    BM-13: BM-13 System-Wide Risk / Concentration
+    BM-14: BM-14 DMCE — Dynamic Minting Capacity
+    BM-15: BM-15 Monetary Authorization
+    BM-16A: BM-16A Finality Verification
+    BM-16B: BM-16B Mint Execution (OPTIONAL — MTQ only)
+
+    BM-01 --> BM-02: CONTROL_PLANE_CORE
+    BM-02 --> BM-03: CONTROL_PLANE_CORE
+    BM-03 --> BM-04: CONTROL_PLANE_CORE
+    BM-04 --> BM-05: CONTROL_PLANE_CORE
+    BM-05 --> BM-06: CONTROL_PLANE_CORE
+    BM-06 --> BM-07: CONTROL_PLANE_CORE
+    BM-07 --> BM-08: CONTROL_PLANE_CORE
+    BM-08 --> BM-09: CONTROL_PLANE_CORE
+    BM-09 --> BM-10: CONTROL_PLANE_CORE
+    BM-10 --> BM-11: CONTROL_PLANE_CORE
+    BM-11 --> BM-12: CONTROL_PLANE_CORE
+    BM-12 --> BM-13: CONTROL_PLANE_CORE
+    BM-13 --> BM-14: CONTROL_PLANE_CORE
+    BM-14 --> BM-15: CONTROL_PLANE_CORE
+    BM-15 --> BM-16A: CONTROL_PLANE_CORE
+    BM-16A --> BM-16B: if settlement asset = MTQ (MTQ_SETTLEMENT_MODULE)
+    BM-16A --> [*]: if settlement asset ≠ MTQ (COMPLETED-NOT-REQUIRED)
+    BM-16B --> [*]: mint complete
+
+    note right of BM-15
+        v25.3.2-J2 SUPERSEDED the old
+        "BM-15 = Mint Permission Engine" definition
+        (was in final-integrated-architecture.ts:1188)
+    end note
+
+    note right of BM-16A
+        v25.3.2-J2 SPLIT the old BM-16
+        (was "Technical Mint Execution"
+        in final-integrated-architecture.ts:1189
+        and "Finality Verification + Mint"
+        in mtq-os/index.ts:25).
+        Finality is now its own asset-agnostic
+        control-plane step.
+    end note
+
+    note right of BM-16B
+        v25.3.2-J2 — OPTIONAL.
+        Capability: MTQ_SETTLEMENT_MODULE
+        (NOT CONTROL_PLANE_CORE).
+        SKIPPED when settlement asset is
+        bank money, CBDC, RTGS, tokenized
+        deposits, or wholesale CBDC.
+        Marked COMPLETED-NOT-REQUIRED.
+    end note

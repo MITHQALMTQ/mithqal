@@ -84,7 +84,7 @@ export default function OSPage() {
 
           {/* ISSUANCE PIPELINE */}
           <section>
-            <div className="mb-4 flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-xl border border-gold/20 bg-gold/5"><Layers className="h-5 w-5 text-gold" /></div><div><h2 className="font-display text-xl font-bold text-white">§10 Issuance Pipeline</h2><p className="text-[11px] text-gray-500">16-step BM-01 → BM-16 · Bank requests, MITHQAL authorizes, Technical system executes</p></div></div>
+            <div className="mb-4 flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-xl border border-gold/20 bg-gold/5"><Layers className="h-5 w-5 text-gold" /></div><div><h2 className="font-display text-xl font-bold text-white">§10 Settlement Pipeline</h2><p className="text-[11px] text-gray-500">17-step BM-01 → BM-16B · Bank requests, MITHQAL authorizes, MTQ module executes (if settlement asset = MTQ)</p></div></div>
             {!mtqos.data ? <GlassCard className="flex items-center gap-2 p-4"><RefreshCw className="h-4 w-4 animate-spin text-gold" /><span className="text-xs text-gray-400">Loading…</span></GlassCard> : (
               <GlassCard className="p-5"><div className="flex flex-wrap gap-1.5">
                 {Arr(mtqos.data.issuanceSteps).map((s: any, i: number) => (

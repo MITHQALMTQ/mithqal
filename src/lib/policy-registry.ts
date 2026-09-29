@@ -613,3 +613,129 @@ export function getPolicies(options?: {
   }
   return result;
 }
+
+// ============================================================================
+// v25.3.2-J2 — CANONICAL SETTLEMENT WORKFLOW REGISTRY (BM-01..BM-16B)
+// ============================================================================
+//
+// Per J-directive (2026-09-29): "Canonicalize the settlement workflow.
+// Use exactly: BM-01–BM-08 = Bank/customer/MBG; BM-09 = Eligibility;
+// BM-10 = Jurisdiction; BM-11 = Backing Verification; BM-12 = Bank Risk;
+// BM-13 = System Risk; BM-14 = DMCE; BM-15 = Monetary Authorization;
+// BM-16A = Finality Verification; BM-16B = Mint Execution.
+// Remove every conflicting definition of BM-15 or BM-16."
+//
+// The 17 canonical BM-* step definitions are registered below. The
+// SINGLE CANONICAL SOURCE for these definitions is:
+//
+//     src/lib/settlement-workflow-canonical.ts
+//
+// This registry entry mirrors the canonical source so the policy registry
+// can serve BM-* definitions through the same /api/policy-registry
+// endpoint that serves constitutional policies. Any inline BM-* definition
+// in the codebase that does NOT match the canonical source is a
+// contradiction per the contradiction scanner and must be removed or
+// re-pointed to settlement-workflow-canonical.ts.
+//
+// Override-prevention rules (per MITHQAL-V25.3.2-REMEDIATION-LAYER.md §3):
+//   - Rule 1: Single active model (v25.3.2).
+//   - Rule 2: 4 explicit statuses (ACTIVE/SUPERSEDED/HISTORICAL/PENDING_VALIDATION).
+//   - Rule 3: No silent override (this registry THROWS if no ACTIVE BM-* exists).
+//   - Rule 4: Runtime diagnostics expose only ACTIVE by default.
+//
+// SUPERSEDED DEFINITIONS (removed in v25.3.2-J2):
+//   Old BM-15 = "MITHQAL executes Mint Permission Engine (15-step issuance
+//               authorization gate — ANY FAILURE = BLOCK)."
+//              (was in src/lib/final-integrated-architecture.ts:1188)
+//   Old BM-16 = "Technical Mint Execution: canonical ledger mints MTQ;
+//                bank MTQ subledger updated; corporate MTQ settlement
+//                position updated."
+//              (was in src/lib/final-integrated-architecture.ts:1189)
+//   Old BM-16 = "Finality Verification + Mint — Finality verified →
+//                deterministic mint"
+//              (was in src/lib/mtq-os/index.ts:25)
+//
+// New canonical mapping (all ACTIVE per v25.3.2-J2):
+//   BM-15  = "Monetary Authorization"   (CONTROL_PLANE_CORE — asset-agnostic)
+//   BM-16A = "Finality Verification"    (CONTROL_PLANE_CORE — asset-agnostic)
+//   BM-16B = "Mint Execution"           (MTQ_SETTLEMENT_MODULE — OPTIONAL,
+//                                         skipped if settlement asset ≠ MTQ)
+
+import {
+  CANONICAL_SETTLEMENT_WORKFLOW,
+  CANONICAL_WORKFLOW_SOURCE,
+  CANONICAL_WORKFLOW_VERSION,
+  type CanonicalBMStep,
+} from "./settlement-workflow-canonical";
+
+/** Mirror of CanonicalBMStep exposed through the policy registry. */
+export interface SettlementWorkflowPolicy {
+  id: string;
+  name: string;
+  description: string;
+  phase: string;
+  capability: "CONTROL_PLANE_CORE" | "MTQ_SETTLEMENT_MODULE";
+  status: PolicyStatus;
+  sourceSection: string;
+  sourceLayer: SourceLayer; // 3 (active machine-readable registry layer)
+  source: string;
+  version: string;
+}
+
+export const SETTLEMENT_WORKFLOW_POLICIES: readonly SettlementWorkflowPolicy[] =
+  CANONICAL_SETTLEMENT_WORKFLOW.map((step: CanonicalBMStep) => ({
+    id: step.id,
+    name: step.name,
+    description: step.description,
+    phase: step.phase,
+    capability: step.capability,
+    status: step.status as PolicyStatus,
+    sourceSection: `J-directive 2026-09-29 (canonical settlement workflow)`,
+    sourceLayer: 3 as SourceLayer,
+    source: CANONICAL_WORKFLOW_SOURCE,
+    version: CANONICAL_WORKFLOW_VERSION,
+  }));
+
+export const SETTLEMENT_WORKFLOW_POLICIES_META = {
+  activeModel: "v25.3.2",
+  source: CANONICAL_WORKFLOW_SOURCE,
+  version: CANONICAL_WORKFLOW_VERSION,
+  stepCount: SETTLEMENT_WORKFLOW_POLICIES.length, // 17
+  overridePreventionRule:
+    "BM-* definitions are SINGLE-SOURCE. Any inline BM-* definition in the " +
+    "codebase that does not match this registry is a contradiction per the " +
+    "contradiction scanner. See MITHQAL-V25.3.2-REMEDIATION-LAYER.md §3 Rule 3.",
+} as const;
+
+/**
+ * Returns the ACTIVE canonical BM-* step for a given id, or throws if no
+ * ACTIVE step with that id exists (per §3 Rule 3 — no silent override).
+ * Use getSettlementWorkflowHistory(id) for operator audit of non-ACTIVE
+ * entries (currently zero — all 17 steps are ACTIVE in v25.3.2-J2).
+ */
+export function getActiveSettlementWorkflowStep(
+  id: string,
+): SettlementWorkflowPolicy {
+  const step = SETTLEMENT_WORKFLOW_POLICIES.find(
+    (s) => s.id === id && s.status === "ACTIVE",
+  );
+  if (!step) {
+    throw new Error(
+      `Per v25.3.2 §3 Rule 3 (No Silent Override), no ACTIVE settlement ` +
+        `workflow step with id "${id}" exists. Canonical ids: BM-01..BM-14, ` +
+        `BM-15, BM-16A, BM-16B (17 total). See ${CANONICAL_WORKFLOW_SOURCE}.`,
+    );
+  }
+  return step;
+}
+
+/**
+ * Returns the full history of a BM-* id (currently always 1 entry — all
+ * 17 steps are ACTIVE in v25.3.2-J2). FOR OPERATOR AUDIT ONLY — callers
+ * MUST NOT surface SUPERSEDED / HISTORICAL values as "current".
+ */
+export function getSettlementWorkflowHistory(
+  id: string,
+): SettlementWorkflowPolicy[] {
+  return SETTLEMENT_WORKFLOW_POLICIES.filter((s) => s.id === id);
+}

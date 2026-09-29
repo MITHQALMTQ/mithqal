@@ -1167,32 +1167,58 @@ export const RCAF_ABC_REFERENCE = {
 } as const;
 
 // ============================================================================
-// Section X: Bank Minting Workflow (16-step flow)
+// Section X: Bank Settlement Workflow (17-step canonical flow — BM-01..BM-16B)
 // ============================================================================
+//
+// v25.3.2 — CANONICAL SOURCE MOVED. The single canonical definition of
+// the BM-01..BM-16B settlement workflow now lives in:
+//
+//     src/lib/settlement-workflow-canonical.ts
+//
+// (per the J-directive 2026-09-29 "Canonicalize the settlement workflow").
+// The inline string array below is preserved for legacy callers that
+// still consume `BANK_MINTING_WORKFLOW` as a `readonly string[]`. It is
+// kept IN SYNC with the canonical source — any change to a step's name
+// or description MUST be made in settlement-workflow-canonical.ts first
+// and mirrored here.
+//
+// SUPERSEDED DEFINITIONS (removed in v25.3.2-J2):
+//   OLD BM-15 = "MITHQAL executes Mint Permission Engine (15-step
+//                issuance authorization gate — ANY FAILURE = BLOCK)."
+//   NEW BM-15 = "Monetary Authorization" (per settlement-workflow-canonical.ts)
+//
+//   OLD BM-16 = "Technical Mint Execution: canonical ledger mints MTQ;
+//                bank MTQ subledger updated; corporate MTQ settlement
+//                position updated."
+//   NEW BM-16A = "Finality Verification"   (control-plane, asset-agnostic)
+//   NEW BM-16B = "Mint Execution"          (MTQ settlement module, OPTIONAL)
+//
+// Any other BM-* definition in the codebase that contradicts the
+// canonical source is a contradiction per the contradiction scanner and
+// must be removed or re-pointed to settlement-workflow-canonical.ts.
 
-export const BANK_MINTING_WORKFLOW: readonly string[] = [
-  "BM-01 — Corporate / customer initiates settlement request with the bank.",
-  "BM-02 — Bank verifies customer KYC / AML / sanctions / beneficial-ownership.",
-  "BM-03 — Bank verifies funding availability (customer has verified eligible value).",
-  "BM-04 — Bank issues AvailableBackingCertificate to MITHQAL (Evidence Source A — bank-signed).",
-  "BM-05 — Bank requests MTQ issuance through the MBG (MITHQAL Bank Gateway sidecar).",
-  "BM-06 — MBG authenticates the bank institution (mTLS + signed nonce + replay protection).",
-  "BM-07 — MITHQAL verifies backing evidence (AvailableBackingCertificate + custodian evidence where applicable).",
-  "BM-08 — MITHQAL issues / verifies AvailableBackingCertificate validity (16 fields, dual revocation).",
-  "BM-09 — MITHQAL verifies reserve evidence (RCAF — 18 required fields, ELIGIBLE status).",
-  "BM-10 — MITHQAL computes Joint Settlement Guarantee (JSG) per institution.",
-  "BM-11 — MITHQAL evaluates RR ≥ 1.00 AND StressRR ≥ 0.95 (canonical thresholds).",
-  "BM-12 — MITHQAL evaluates LCR ≥ 1.00 AND MLCR ≥ 1.00 AND ILPS sufficient (5-layer $48.1M).",
-  "BM-13 — MITHQAL evaluates institutional exposure ≤ hard cap (default 25%) + concentration ≤ hard cap (25%).",
-  "BM-14 — MITHQAL computes Dynamic Minting Capacity (DMCE) — MIN of 8 limits per §V.",
-  "BM-15 — MITHQAL executes Mint Permission Engine (15-step issuance authorization gate — ANY FAILURE = BLOCK).",
-  "BM-16 — Technical Mint Execution: canonical ledger mints MTQ; bank MTQ subledger updated; corporate MTQ settlement position updated.",
-];
+import {
+  CANONICAL_SETTLEMENT_WORKFLOW,
+  CANONICAL_WORKFLOW_VERSION,
+  CANONICAL_WORKFLOW_SOURCE,
+} from "./settlement-workflow-canonical";
+
+export const BANK_MINTING_WORKFLOW: readonly string[] =
+  CANONICAL_SETTLEMENT_WORKFLOW.map(
+    (step) => `${step.id} — ${step.name}. ${step.description}`,
+  );
+
+export const BANK_MINTING_WORKFLOW_CANONICAL_SOURCE = CANONICAL_WORKFLOW_SOURCE;
+export const BANK_MINTING_WORKFLOW_VERSION = CANONICAL_WORKFLOW_VERSION;
 
 export const BANK_MINTING_WORKFLOW_RULE =
-  "The 16-step bank minting workflow ensures that NO bank can create MTQ merely by asserting that funds exist. " +
-  "Each step is a gate; ANY FAILURE = BLOCK. The final step (technical mint execution) is deterministic — only " +
-  "the canonical ledger creates MTQ, never a discretionary governance action.";
+  `The ${CANONICAL_SETTLEMENT_WORKFLOW.length}-step canonical settlement workflow ensures that NO bank can create MTQ ` +
+  "merely by asserting that funds exist. Each step is a gate; ANY FAILURE = BLOCK. " +
+  "BM-15 (Monetary Authorization) is asset-agnostic and works for bank money, CBDC, RTGS, " +
+  "tokenized deposits, wholesale CBDC, or MTQ. BM-16A (Finality Verification) is asset-agnostic. " +
+  "BM-16B (Mint Execution) is OPTIONAL — it only runs if the settlement asset is MTQ; otherwise " +
+  "the bank executes settlement directly via its own rails and BM-16B is marked COMPLETED-NOT-REQUIRED. " +
+  "Canonical source: src/lib/settlement-workflow-canonical.ts (v25.3.2-J2).";
 
 // ============================================================================
 // Section Y: Bank Backing Failure (REFERENCES existing)
@@ -2816,7 +2842,7 @@ export const FINAL_ACCEPTANCE_CRITERIA: AcceptanceCriterion[] = [
   { id: "AC-27", criterion: "Rebalancing example uses PAR-equivalent units (NOT USD)", met: true, evidence: "REBALANCING_EXAMPLE (denomination-neutral)" },
   { id: "AC-28", criterion: "DMCE formula documented (MIN of 8 limits)", met: true, evidence: "DMCE_FORMULA + computeDMCE() function" },
   { id: "AC-29", criterion: "RCAF + AvailableBackingCertificate referenced (not duplicated)", met: true, evidence: "RCAF_ABC_REFERENCE.modulePath" },
-  { id: "AC-30", criterion: "16-step bank minting workflow documented", met: true, evidence: "BANK_MINTING_WORKFLOW.length=16" },
+  { id: "AC-30", criterion: "17-step canonical settlement workflow documented (BM-01..BM-16B)", met: true, evidence: "BANK_MINTING_WORKFLOW.length=17 (per settlement-workflow-canonical.ts v25.3.2-J2)" },
   { id: "AC-31", criterion: "5-way reconciliation referenced (7-state, existing)", met: true, evidence: "FIVE_WAY_RECONCILIATION_REFERENCE" },
   { id: "AC-32", criterion: "8 failure scenarios documented", met: true, evidence: "FAILURE_SCENARIOS.length=8" },
   { id: "AC-33", criterion: "13 technology services documented", met: true, evidence: "TECHNOLOGY_SERVICES.length=13" },

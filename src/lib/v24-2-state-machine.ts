@@ -19,6 +19,37 @@
 // This entire module is HISTORICAL — see HISTORICAL/SUPERSEDED banner above.
 export const MODULE_STATUS: "ACTIVE" | "SUPERSEDED" | "HISTORICAL" | "PENDING_VALIDATION" = "HISTORICAL";
 export const SUPERSEDED_BY = "v25.3.2 policy-registry (see src/lib/policy-registry.ts)";
+
+// ============================================================================
+// v25.3.2-J2 — CANONICAL SETTLEMENT WORKFLOW POINTER
+// ============================================================================
+// The canonical BM-01..BM-16B settlement workflow (17 steps) is defined in:
+//
+//     src/lib/settlement-workflow-canonical.ts
+//
+// This historical v24.2 state machine models RESERVE STATES (NORMAL → CAUTION
+// → DEFENSIVE → STRESS → EMERGENCY → RECOVERY), NOT settlement workflow
+// steps. The two are different concerns:
+//
+//   - v24-2-state-machine.ts      → reserve-state machine (HISTORICAL)
+//   - settlement-workflow-canonical.ts → settlement-workflow state machine (ACTIVE)
+//
+// If a future module needs a state machine for the settlement workflow
+// itself, it MUST import from settlement-workflow-canonical.ts — NOT from
+// this historical v24.2 file.
+//
+// SUPERSEDED DEFINITIONS (removed in v25.3.2-J2):
+//   Old BM-15 = "MITHQAL executes Mint Permission Engine" — SUPERSEDED.
+//   Old BM-16 = "Technical Mint Execution" — SUPERSEDED.
+//   New BM-15 = "Monetary Authorization" (CONTROL_PLANE_CORE)
+//   New BM-16A = "Finality Verification" (CONTROL_PLANE_CORE)
+//   New BM-16B = "Mint Execution" (MTQ_SETTLEMENT_MODULE, OPTIONAL)
+//
+// See settlement-workflow-canonical.ts for the full traceability record.
+// ============================================================================
+
+export const SETTLEMENT_WORKFLOW_CANONICAL_SOURCE = "src/lib/settlement-workflow-canonical.ts";
+export const SETTLEMENT_WORKFLOW_CANONICAL_VERSION = "v25.3.2-J2-1.0";
 // v24.2 §10-11 — 6-State Reserve State Machine
 // =================================================================
 // NORMAL → CAUTION → DEFENSIVE → STRESS → EMERGENCY → RECOVERY
