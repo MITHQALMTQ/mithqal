@@ -37,6 +37,10 @@
 
 export const MODULE_ID = "v25.3-systemic-exposure-engine-1.0";
 export const SPEC_VERSION = "v25.3 §52 System-Wide Exposure & Concentration";
+
+// v25.3.2 Remediation Layer marker — controls over v25.3 parent spec where it explicitly supersedes.
+// Per MITHQAL-V25.3.2-REMEDIATION-LAYER.md (2026-09-29).
+export const REMEDIATION_LAYER = "v25.3.2";
 export const DIRECTIVE_SECTION = "§52";
 export const CONCENTRATION_DIMENSION_COUNT = 13;
 

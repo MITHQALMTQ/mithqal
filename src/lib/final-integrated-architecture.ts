@@ -131,6 +131,10 @@ export const VERSION_CONTROL = {
     "an operator, and does NOT make reserve appreciation a commercial profit source.",
 } as const;
 
+// v25.3.2 Remediation Layer marker — controls over v25.3 parent spec where it explicitly supersedes.
+// Per MITHQAL-V25.3.2-REMEDIATION-LAYER.md (2026-09-29).
+export const REMEDIATION_LAYER = "v25.3.2";
+
 // ============================================================================
 // Section B: 50-Point Reconciliation Principles
 // ============================================================================
@@ -329,7 +333,7 @@ export const FINAL_CORPORATE_STRUCTURE: CorporateStructureEntity[] = [
   },
   {
     entityId: "MITHQAL_FOUNDATION",
-    name: "MITHQAL Foundation (independent nonprofit)",
+    name: "MITHQAL Foundation (to be formed per JOZOUR Amendment §1.6; independent nonprofit target structure)",
     type: "NON_PROFIT",
     parent: undefined,
     children: [],
@@ -364,7 +368,7 @@ export const FINAL_CORPORATE_STRUCTURE: CorporateStructureEntity[] = [
 
 export const CORPORATE_STRUCTURE_RULE =
   "Five-entity structure: Founder Shareholders → MITHQAL Holding → Operating + Technology subsidiaries; " +
-  "MITHQAL Foundation is an INDEPENDENT nonprofit with read-only aggregate oversight. No entity combines " +
+  "MITHQAL Foundation (to be formed per JOZOUR Amendment §1.6) is intended as an INDEPENDENT nonprofit with read-only aggregate oversight. No entity combines " +
   "custody + monetary control + commercial operations + constitutional oversight. Separation of duties is " +
   "structural, not optional.";
 

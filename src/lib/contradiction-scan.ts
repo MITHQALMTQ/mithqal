@@ -1,4 +1,5 @@
-// ============================================================================
+// ============================================================================ //
+// Mithqal Constitution v19.0 — §77 contradiction scan (v25.3.2 remediation layer applied)
 // §V25.3 — CONTRADICTION SCAN (§77)
 // ============================================================================
 // Implements §77 of the master directive: search the entire project for the

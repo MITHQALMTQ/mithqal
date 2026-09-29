@@ -1,3 +1,20 @@
+// ============================================================================
+// ⚠ HISTORICAL/SUPERSEDED — v25.3.2 remediation layer (2026-09-29)
+// ============================================================================
+// This file is part of the v23/v24 historical implementation. Per the v25.3
+// master blueprint authority hierarchy:
+//   v25.3.2 (current normative) > v25.3 (parent) > Constitution v19.0 (canonical) > historical
+//
+// HISTORICAL VERSIONS RETAIN TRACEABILITY ONLY. They cannot override the
+// current normative layer.
+//
+// This file is PRESERVED (not deleted) because it is still imported by other
+// modules. It is marked HISTORICAL for honest-state discipline per §74.
+//
+// Importers should migrate to the v25.x equivalents where available. See
+// CHANGE-LOG-v25.3.2.md for the migration map.
+// ============================================================================
+
 // v24.2 §26 — StressDRQS + §39-41 Trade Cost Model + §44 Hierarchical Optimizer
 // =================================================================
 

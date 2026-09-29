@@ -1,3 +1,19 @@
+// ============================================================================
+// ⚠ VERSIONED API ROUTE — v25.3.2 remediation layer (2026-09-29)
+// ============================================================================
+// This is a versioned API route (/api/v24.2). Per the v25.3.2 authority hierarchy:
+//   - Versioned routes are HISTORICAL — they implement API versioning for
+//     backward compatibility
+//   - The current normative API is the unversioned /api/* endpoints
+//   - This route is PRESERVED (not deleted) because it is referenced by
+//     other modules and external integrations
+//
+// All versioned API routes respond with header:
+//   X-Mithqal-API-Version: v24.2 (historical; current normative layer = v25.3.2)
+//
+// HISTORICAL VERSIONS RETAIN TRACEABILITY ONLY.
+// ============================================================================
+
 import { NextResponse } from "next/server";
 import { computeLiveNav } from "@/lib/nav-compute";
 import { computeCbgrs } from "@/lib/cbgrs";

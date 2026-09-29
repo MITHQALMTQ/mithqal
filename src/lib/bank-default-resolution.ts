@@ -57,6 +57,10 @@
 
 export const MODULE_ID = "v25.3-bank-default-resolution-1.0";
 export const SPEC_VERSION = "v25.3 §48 — Bank Default & Resolution Framework";
+
+// v25.3.2 Remediation Layer marker — controls over v25.3 parent spec where it explicitly supersedes.
+// Per MITHQAL-V25.3.2-REMEDIATION-LAYER.md (2026-09-29).
+export const REMEDIATION_LAYER = "v25.3.2";
 export const DIRECTIVE_SECTION = 48;
 
 /**
