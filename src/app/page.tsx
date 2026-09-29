@@ -201,7 +201,11 @@ function DynamicReserveSimulator() {
       return;
     }
     const L = supply * 1e6;
-    const target = 1.30;
+    // K-directive v25.3.5: 130% is a strategic policy target/example — NOT a universal requirement.
+    // The constitutional floor is 100% (per JOZOUR Amendment §1.3 principle #1).
+    // Required Coverage = Direct Settlement Backing + Risk Buffer (see src/lib/reserve-coverage-logic.ts).
+    const strategicTarget = 1.30;  // strategic policy target/example per K-directive (NOT a universal requirement)
+    const target = strategicTarget;
     const R_target = L * target;
     const fiatVal = R_target * (fiatPct / 100);
     const goldVal = R_target * (goldPct / 100);
@@ -221,11 +225,11 @@ function DynamicReserveSimulator() {
     const mcP95 = mcMean * 1.026;
     const mcMin = mcMean * 0.955;
     const probBelow100 = RR_after < 1.0 ? 0.15 : 0.002;
-    const probBelow130 = RR_after < 1.30 ? 0.82 : 0.45;
+    const probBelow130StrategicTarget = RR_after < 1.30 ? 0.82 : 0.45;
     setResults({
       totalPct, L, R_target, fiatVal, goldVal, digitalVal, goldOz,
       RR_before, RR_after, FSCR_before, FSCR_after, reserveLoss,
-      mcMean, mcP5, mcP50, mcP95, mcMin, probBelow100, probBelow130,
+      mcMean, mcP5, mcP50, mcP95, mcMin, probBelow100, probBelow130: probBelow130StrategicTarget,
       shockCurrency, shockPct,
     });
   }, [supply, goldPrice, fiatPct, goldPct, digitalPct, shockCurrency, shockPct]);
@@ -301,7 +305,7 @@ function DynamicReserveSimulator() {
             </div>
             <div className="mt-2 flex gap-3 text-[10px]">
               <span className="text-gray-500">P(RR&lt;100%):</span> <span className="font-mono text-red-400">{(N(results.probBelow100) * 100).toFixed(2)}%</span>
-              <span className="text-gray-500">P(RR&lt;130%):</span> <span className="font-mono text-amber">{(N(results.probBelow130) * 100).toFixed(2)}%</span>
+              <span className="text-gray-500">P(RR&lt;130% strategic target):</span> <span className="font-mono text-amber">{(N(results.probBelow130) * 100).toFixed(2)}%</span>
             </div>
           </GlassCard>
         </>
@@ -927,9 +931,9 @@ export default function Page() {
                         <div className={`font-display text-2xl font-bold ${N(nav.data.reserveRatio) >= 130 ? "text-emerald-400" : N(nav.data.reserveRatio) >= 105 ? "text-amber-400" : "text-red-400"}`}>{N(nav.data.reserveRatio).toFixed(2)}%</div>
                       </div>
                       <div className="text-right">
-                        <div className="text-[10px] uppercase tracking-wider text-gray-500">Strategic Target</div>
-                        <div className="font-display text-xl font-bold text-gold">130%</div>
-                        <div className="text-[9px] text-gray-600">Floor: 105% · Absolute: 100%</div>
+                        <div className="text-[10px] uppercase tracking-wider text-gray-500">Strategic Target (example)</div>
+                        <div className="font-display text-xl font-bold text-gold">130% (strategic example)</div>
+                        <div className="text-[9px] text-gray-600">Floor: 105% · Constitutional: 100% · 130% is a strategic target, NOT a universal requirement (per K-directive v25.3.5)</div>
                       </div>
                     </div>
                     <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-white/5">
@@ -966,7 +970,7 @@ export default function Page() {
                               <div className="text-[10px] text-gray-500">{c.name}</div>
                             </div>
                           </div>
-                          {c.type === "nav" ? <Badge variant="gold">NAV</Badge> : c.type === "live" ? <Badge variant="emerald">LIVE FX</Badge> : c.type === "fx-peg" ? <Badge variant="amber">USD-PEG</Badge> : <Badge variant="gray">REF</Badge>}
+                          {c.type === "nav" ? <Badge variant="gold">NAV</Badge> : c.type === "live" ? <Badge variant="emerald">LIVE FX</Badge> : c.type === "fx-peg" ? <Badge variant="amber">REF RATE</Badge> : <Badge variant="gray">REF</Badge>}
                         </div>
                         <div className="mt-3 border-t border-white/5 pt-2">
                           <div className="text-[10px] uppercase tracking-wider text-gray-500">1 MTQ ≈</div>
@@ -974,7 +978,7 @@ export default function Page() {
                             {mtqValue.toLocaleString("en-US", { minimumFractionDigits: c.ccy === "JPY" ? 0 : 4, maximumFractionDigits: c.ccy === "JPY" ? 0 : 4 })} {c.ccy}
                           </div>
                           <div className="text-[9px] text-gray-600 mt-0.5">
-                            {c.type === "nav" ? "NAV × USD rate" : c.type === "live" ? "NAV × live FX rate" : c.type === "fx-peg" ? "NAV × USD-pegged rate" : "NAV × reference rate"}
+                            {c.type === "nav" ? "NAV × USD rate" : c.type === "live" ? "NAV × live FX rate" : c.type === "fx-peg" ? "NAV × reference rate (per src/lib/mtq-economic-definition.ts — not MTQ peg)" : "NAV × reference rate"}
                           </div>
                         </div>
                       </GlassCard>
@@ -1080,7 +1084,7 @@ export default function Page() {
             </Section>
 
             {/* ═══ RESERVE ARCHITECTURE ═══ */}
-            <Section id="reserve" icon={Shield} title="Reserve Architecture — §V25.3" subtitle="130% institutional backing target · 80% fiat / 18% gold / 2% digital" lazy>
+            <Section id="reserve" icon={Shield} title="Reserve Architecture — §V25.3" subtitle="130% strategic policy target (example only — NOT a universal requirement per K-directive) · 80% fiat / 18% gold / 2% digital" lazy>
               {!reserve.data ? (reserve.err ? <ErrorBox label="reserve architecture" msg={reserve.err} /> : <LoadingBox label="reserve architecture" />) : (
                 <>
                   <div className="grid gap-3 md:grid-cols-3">
@@ -1089,7 +1093,7 @@ export default function Page() {
                     <GlassCard glow className="p-5"><div className="flex items-center justify-between"><Cpu className="h-5 w-5 text-amber" /><Badge variant="amber">2%</Badge></div><div className="mt-2 font-display text-2xl font-bold text-amber">{fmtUSDm(reserve.data.exampleBacking?.digital)}</div><div className="mt-1 text-[10px] text-gray-500">Normal ≤2% · Operational ≤3% · Max 5%</div></GlassCard>
                   </div>
                   <div className="mt-3 grid gap-3 md:grid-cols-2">
-                    <GlassCard className="flex items-center justify-between p-5"><div><div className="text-[10px] uppercase tracking-wider text-gray-500">Total Strategic Backing</div><div className="font-display text-3xl font-bold text-white">{fmtUSDm(reserve.data.exampleBacking?.totalStrategicBacking)}</div></div><div className="text-right"><div className="text-[10px] uppercase tracking-wider text-gray-500">Target</div><div className="font-display text-2xl font-bold text-gold">130%</div></div></GlassCard>
+                    <GlassCard className="flex items-center justify-between p-5"><div><div className="text-[10px] uppercase tracking-wider text-gray-500">Total Strategic Backing</div><div className="font-display text-3xl font-bold text-white">{fmtUSDm(reserve.data.exampleBacking?.totalStrategicBacking)}</div></div><div className="text-right"><div className="text-[10px] uppercase tracking-wider text-gray-500">Strategic Target (example)</div><div className="font-display text-2xl font-bold text-gold">130%</div></div></GlassCard>
                     <GlassCard className="flex items-center justify-between p-5 border-amber-500/20"><div><div className="text-[10px] uppercase tracking-wider text-gray-500">Emergency Resilience Capacity</div><div className="font-display text-2xl font-bold text-amber">≤ 20%</div></div><div className="text-right text-[10px] text-gray-500">SEPARATE from core · not double-counted</div></GlassCard>
                   </div>
                   <GlassCard className="mt-3 p-4">
@@ -1601,7 +1605,7 @@ export default function Page() {
                 </div>
                 <span className="font-display text-sm font-bold text-white">MITHQAL</span>
               </div>
-              <p className="mt-2 text-[10px] leading-relaxed text-gray-600">Constitutional Settlement Institution. §V25.3 Final Reserve Mathematical Specification. 130% institutional backing. 80% fiat / 18% gold / 2% digital. 11-currency basket. 20% hard cap. 7/7 finality enforcement.</p>
+              <p className="mt-2 text-[10px] leading-relaxed text-gray-600">Constitutional Settlement Institution. §V25.3 Final Reserve Mathematical Specification. 130% strategic policy target (example — NOT a universal requirement per K-directive). 80% fiat / 18% gold / 2% digital. 11-currency basket. 20% hard cap. 7/7 finality enforcement. Required Coverage = Direct Settlement Backing + Risk Buffer (9 configurable factors — see src/lib/reserve-coverage-logic.ts).</p>
             </div>
             {/* Links */}
             <div>

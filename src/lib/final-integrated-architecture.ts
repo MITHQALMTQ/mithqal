@@ -1045,9 +1045,20 @@ export interface DynamicMintingCapacity {
   warning: "Do NOT interpret this as a fixed legal formula until independently validated. It is the canonical policy/control concept.";
 }
 
+// v25.3.5 — K-directive refactor: DMCE now uses the new Required Coverage formula
+// (Required Coverage = Direct Settlement Backing + Risk Buffer) as one of its 8 limits.
+// The legacy DMCE formula is preserved as historical reference; the new formula is in
+// src/lib/reserve-coverage-logic.ts.
 export const DMCE_FORMULA =
   "DMCE = MIN(VerifiedEligibleBacking, LegallyReservedBacking, InstitutionalRiskLimit, LiquidityLimit, " +
   "JurisdictionLimit, ExposureLimit, ConcentrationLimit, OperationalLimit)";
+export const DMCE_FORMULA_V25_3_5 =
+  "DMCE (v25.3.5) = MIN(VerifiedEligibleBacking, LegallyReservedBacking, InstitutionalRiskLimit, " +
+  "RequiredCoverage(DirectSettlementBacking, RiskBuffer), ExposureLimit, ConcentrationLimit, " +
+  "OperationalLimit). — where RequiredCoverage = Direct Settlement Backing + Risk Buffer " +
+  "(9 configurable factors: liquidity, legal accessibility, asset haircut, valuation volatility, " +
+  "counterparty risk, concentration, settlement timing, redemption behavior, jurisdiction). " +
+  "See src/lib/reserve-coverage-logic.ts.";
 
 export const DMCE_COMPONENT_DEFINITIONS = {
   verifiedEligibleBacking:

@@ -584,7 +584,7 @@ insolvency treatment, redemption claim, jurisdictional legality.
 // =================================================================
 
 export const RESERVE_TARGET_V25_1 = {
-  strategicTarget: 1.30,  // 130%
+  strategicTarget: 1.30,  // 130% strategic policy target/example (NOT a universal requirement per K-directive)
   target: { fiat: 0.80, gold: 0.18, digital: 0.02 },
   bands: {
     fiat: { min: 0.70, max: 0.85, stressTarget: 0.75, emergencyTarget: 0.70 },
@@ -1152,7 +1152,7 @@ export const SAFE_STATES: SafeStateDefinition[] = [
     requiredApprovals: ["BOARD_APPROVAL_FOR_ANY_NEW_OPERATION"],
     automaticActions: ["ACTIVATE_ILPS", "FREEZE_NON_ESSENTIAL_OPERATIONS"],
     escalation: "Full institutional emergency response",
-    recoveryConditions: "RR ≥ 130% for 72h + board approval + regulator notification",
+    recoveryConditions: "RR ≥ 130% strategic target (configurable, not universal per K-directive v25.3.5) for 72h + board approval + regulator notification",
   },
   {
     state: "MINT_FROZEN",
@@ -1161,7 +1161,7 @@ export const SAFE_STATES: SafeStateDefinition[] = [
     requiredApprovals: ["BOARD_APPROVAL_TO_UNFREEZE"],
     automaticActions: ["STOP_ALL_NEW_ISSUANCE"],
     escalation: "Full board + regulator notification",
-    recoveryConditions: "Root cause resolved + RR ≥ 130% + board vote",
+    recoveryConditions: "Root cause resolved + RR ≥ 130% strategic target (configurable, not universal per K-directive v25.3.5) + board vote",
   },
   {
     state: "SETTLEMENT_RESTRICTED",

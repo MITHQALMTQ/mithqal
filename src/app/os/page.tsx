@@ -79,7 +79,7 @@ export default function OSPage() {
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
             <h1 className="font-display text-3xl font-bold text-white">MTQ Operating System</h1>
             <p className="mt-2 text-sm text-gray-500">Complete institutional operating layer — bank integration, issuance pipeline, reserve simulation, cross-border corridor, and tokenization</p>
-            <div className="mt-3 flex flex-wrap gap-2"><Badge variant="gold">§V25.3</Badge><Badge variant="emerald">7/7 Finality</Badge><Badge variant="amber">130% Target</Badge><Badge variant="red">0/13 Gates</Badge></div>
+            <div className="mt-3 flex flex-wrap gap-2"><Badge variant="gold">§V25.3</Badge><Badge variant="emerald">7/7 Finality</Badge><Badge variant="amber">130% Strategic Target (example)</Badge><Badge variant="red">0/13 Gates</Badge></div>
           </motion.div>
 
           {/* ISSUANCE PIPELINE */}
@@ -139,7 +139,7 @@ export default function OSPage() {
                 <GlassCard className="p-4"><div className="text-[10px] text-gray-500">Base RR</div><div className="mt-1 font-display text-xl font-bold text-gold">{(N(sim.data.baseSimulation?.RR) * 100).toFixed(2)}%</div></GlassCard>
                 <GlassCard className="p-4"><div className="text-[10px] text-gray-500">Base FSCR</div><div className="mt-1 font-display text-xl font-bold text-emerald-400">{(N(sim.data.baseSimulation?.FSCR) * 100).toFixed(2)}%</div></GlassCard>
                 <GlassCard className="p-4"><div className="text-[10px] text-gray-500">MC P(RR&lt;100%)</div><div className="mt-1 font-display text-xl font-bold text-red-400">{(N(sim.data.monteCarlo?.probRRBelow100) * 100).toFixed(2)}%</div></GlassCard>
-                <GlassCard className="p-4"><div className="text-[10px] text-gray-500">MC P(RR&lt;130%)</div><div className="mt-1 font-display text-xl font-bold text-amber">{(N(sim.data.monteCarlo?.probRRBelow130) * 100).toFixed(2)}%</div></GlassCard>
+                <GlassCard className="p-4"><div className="text-[10px] text-gray-500">MC P(RR&lt;130% strategic target)</div><div className="mt-1 font-display text-xl font-bold text-amber">{(N(sim.data.monteCarlo?.probRRBelow130) * 100).toFixed(2)}%</div></GlassCard>
               </div>
             )}
           </section>
