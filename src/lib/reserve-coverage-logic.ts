@@ -275,3 +275,136 @@ export const RESERVE_COVERAGE_LOGIC_SOURCE = "src/lib/reserve-coverage-logic.ts"
 //   (c) reference the constitutionalFloor field (1.00 = 100% — the actual universal requirement)
 export const LEGACY_130_PERCENT_STATUS =
   "SUPERSEDED — was universal requirement, now strategic policy target/example only";
+
+// === v25.3.6 — Domain-aware Required Coverage (L-directive refactor) ===
+//
+// Per L-directive (trace 1a0edf8e1d339851):
+//   "Create two formally separate reserve domains:
+//    - Settlement Liquidity — Used for normal settlement and redemption operations.
+//    - Strategic Resilience Reserve — Used for stress, contingency and resolution.
+//    Move gold conceptually into the resilience domain.
+//    Emergency capacity must not be double-counted into settlement backing.
+//    Update formulas, reserve schemas, dashboards and audit records so the
+//    two domains cannot be economically commingled."
+//
+// The domain-aware variant below accepts the assets array directly and uses
+// the canonical asset-to-domain mapping (src/lib/reserve-domains.ts) to
+// compute directSettlementBacking correctly — filtering OUT Strategic
+// Resilience Reserve assets (gold, silver, emergency liquidity, contingency
+// buffer, long-duration sovereign) from the settlement backing total.
+//
+// The legacy computeRequiredCoverage() is PRESERVED for backward compat.
+// New code SHOULD call computeRequiredCoverageWithDomainSeparation() instead.
+
+import {
+  computeDirectSettlementBacking,
+  getReserveDomainForAsset,
+  ANTI_DOUBLE_COUNTING_RULES,
+  type ReserveDomain,
+} from "./reserve-domains";
+
+export interface RequiredCoverageWithDomainSeparationInput {
+  settlementObligationValue: number;
+  settlementAssetType: string;
+  assets: { assetClass: string; marketValueUsd: number }[];
+  riskBufferFactors?: RiskBufferFactor[];
+}
+
+export interface RequiredCoverageWithDomainSeparationResult
+  extends RequiredCoverageResult {
+  domainSeparationEnforced: boolean;
+  strategicResilienceReserveExcluded: boolean; // gold + silver + emergency excluded from settlement backing
+  emergencyCapacityNotDoubleCounted: boolean; // emergency capacity NOT counted as settlement backing
+  // Diagnostic: which asset classes were filtered OUT of settlement backing
+  // (i.e., assigned to Strategic Resilience Reserve domain)
+  filteredOutAssetClasses: string[];
+  // Diagnostic: which asset classes were INVALID (not in any domain)
+  unclassifiedAssetClasses: string[];
+  // Diagnostic: per-domain breakdown
+  domainBreakdown: {
+    domainId: ReserveDomain["id"];
+    domainName: string;
+    countsTowardSettlementBacking: boolean;
+    totalMarketValueUsd: number;
+    assetCount: number;
+  }[];
+}
+
+export function computeRequiredCoverageWithDomainSeparation(
+  input: RequiredCoverageWithDomainSeparationInput
+): RequiredCoverageWithDomainSeparationResult {
+  // Use the canonical domain mapping to compute directSettlementBacking.
+  // This filters OUT Strategic Resilience Reserve assets (gold, silver,
+  // emergency liquidity, contingency buffer, long-duration sovereign) per
+  // anti-double-counting rules.
+  const directSettlementBacking = computeDirectSettlementBacking(input.assets);
+
+  // Delegate the core formula to the legacy function (single source of math).
+  const result = computeRequiredCoverage({
+    settlementObligationValue: input.settlementObligationValue,
+    settlementAssetType: input.settlementAssetType,
+    directSettlementBacking,
+    riskBufferFactors: input.riskBufferFactors,
+  });
+
+  // Diagnostics — which asset classes were filtered out / unclassified
+  const filteredOutAssetClasses: string[] = [];
+  const unclassifiedAssetClasses: string[] = [];
+  const domainBreakdown: RequiredCoverageWithDomainSeparationResult["domainBreakdown"] =
+    [];
+
+  // Build per-domain breakdown
+  for (const domain of [
+    { id: "SETTLEMENT_LIQUIDITY" as const, name: "Settlement Liquidity" },
+    { id: "STRATEGIC_RESILIENCE" as const, name: "Strategic Resilience Reserve" },
+  ]) {
+    const domainAssets = input.assets.filter(
+      (a) => getReserveDomainForAsset(a.assetClass)?.id === domain.id
+    );
+    const totalMarketValueUsd = domainAssets.reduce(
+      (sum, a) => sum + a.marketValueUsd,
+      0
+    );
+    const canonicalDomain = getReserveDomainForAsset(
+      domainAssets[0]?.assetClass ?? ""
+    );
+    domainBreakdown.push({
+      domainId: domain.id,
+      domainName: domain.name,
+      countsTowardSettlementBacking:
+        canonicalDomain?.countsTowardSettlementBacking ??
+        (domain.id === "SETTLEMENT_LIQUIDITY"),
+      totalMarketValueUsd,
+      assetCount: domainAssets.length,
+    });
+  }
+
+  // Track which asset classes were filtered out / unclassified
+  for (const a of input.assets) {
+    const domain = getReserveDomainForAsset(a.assetClass);
+    if (domain === null) {
+      if (!unclassifiedAssetClasses.includes(a.assetClass)) {
+        unclassifiedAssetClasses.push(a.assetClass);
+      }
+    } else if (!domain.countsTowardSettlementBacking) {
+      if (!filteredOutAssetClasses.includes(a.assetClass)) {
+        filteredOutAssetClasses.push(a.assetClass);
+      }
+    }
+  }
+
+  return {
+    ...result,
+    domainSeparationEnforced: true,
+    strategicResilienceReserveExcluded: true, // gold + silver + emergency excluded from settlement backing
+    emergencyCapacityNotDoubleCounted: true, // emergency capacity NOT counted as settlement backing
+    filteredOutAssetClasses,
+    unclassifiedAssetClasses,
+    domainBreakdown,
+  };
+}
+
+// Re-export the anti-double-counting rules for convenience so callers can
+// import everything from this module if they wish. The canonical source is
+// src/lib/reserve-domains.ts.
+export { ANTI_DOUBLE_COUNTING_RULES };
