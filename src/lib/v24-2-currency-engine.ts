@@ -255,8 +255,16 @@ export function computeEffectiveUsdExposure(
   const directUsd = usdCashPct + usdSovereignPct;
   const usdStablecoins = usdcPct + usdpPct;
   const usdTokenized = buidlPct;
-  const peggedAed = aedPct * 1.0;  // 100% USD-equivalent (pegged at 3.6725)
-  const peggedSar = sarPct * 1.0;  // 100% USD-equivalent (pegged at 3.75)
+  // NOTE: AED and SAR are fiat currencies officially pegged to USD by their
+  // respective central banks (AED = 3.6725 USD, SAR = 3.75 USD). This refers
+  // to the AED and SAR CURRENCIES being USD-pegged — NOT to MTQ being
+  // USD-pegged. MTQ itself is NOT USD-pegged; it is a permissioned,
+  // institutional, closed-loop settlement unit (per
+  // src/lib/mtq-economic-definition.ts). The "USD-equivalent" treatment
+  // here is a USD-exposure accounting convention for the reserve portfolio
+  // (counting AED/SAR exposure as USD-adjacent for the EffectiveUSD ceiling).
+  const peggedAed = aedPct * 1.0;  // AED currency pegged to USD at 3.6725 (currency fact, not MTQ peg)
+  const peggedSar = sarPct * 1.0;  // SAR currency pegged to USD at 3.75    (currency fact, not MTQ peg)
 
   const totalExposure = directUsd + usdStablecoins + usdTokenized + peggedAed + peggedSar;
 

@@ -151,6 +151,107 @@ export const CONTRADICTION_PATTERNS: ContradictionPattern[] = [
     expectedResolution: "MUST_APPEAR_ONLY_AS_PROHIBITION_OR_FALSE",
     regex: /RR[_\s]*strategic[_\s]*[:=][_\s]*1\.20|reserveTarget\s*=\s*0\.15.*tokenizedGold\s*=\s*0\.05|digitalTarget\s*=\s*0\.035|perCurrencyCap\s*=\s*0\.60/gi,
   },
+
+  // ========================================================================
+  // §V25.3.5 K-DIRECTIVE PATTERNS (C18-C25) — trace 1a0ede068b9def31
+  // ========================================================================
+  // Per the K-directive ("Create one canonical MTQ economic definition"):
+  //
+  //   "MTQ must be described consistently as: permissioned, institutional,
+  //    closed-loop settlement unit. Do not describe it as: retail money,
+  //    public cryptocurrency, investment asset, yield token, governance
+  //    token, speculative asset, public stablecoin. Remove all contradictory
+  //    USD-peg language. PAR must be defined consistently as an accounting/
+  //    denomination reference unless a future jurisdiction-specific legal
+  //    opinion establishes otherwise. Do not claim legal classification,
+  //    redemption guarantee, security status, deposit status, or e-money
+  //    status without external legal evidence."
+  //
+  // The canonical source is src/lib/mtq-economic-definition.ts. The
+  // patterns below scan for FORBIDDEN ASSERTIONS — any active assertion of
+  // these descriptions in src/lib/*.ts is a TRUE CONTRADICTION.
+  // ========================================================================
+
+  {
+    id: "C18",
+    pattern: "MTQ USD peg (forbidden — K-directive)",
+    description:
+      "MTQ must NOT be described as a USD peg (K-directive: 'Remove all contradictory USD-peg language'). " +
+      "MTQ is gold-anchored (Constitution v19.0 §22), NOT USD-pegged. See src/lib/mtq-economic-definition.ts.",
+    expectedResolution: "MUST_NOT_APPEAR_AS_ASSERTION",
+    regex: /MTQ[_\s]+(?:is[_\s]+)?(?:a[_\s]+)?USD[_\s]+peg|MTQ[_\s]+pegged[_\s]+to[_\s]+USD|MTQ[_\s]+USD[_\s]+peg\s*=\s*true/gi,
+  },
+  {
+    id: "C19",
+    pattern: "MTQ retail money (forbidden — K-directive)",
+    description:
+      "MTQ must NOT be described as retail money (K-directive: 'Do not describe it as: retail money'). " +
+      "MTQ is institutional-only, available via MBG to authorized banks/custodians/qualified institutions. " +
+      "See src/lib/mtq-economic-definition.ts.",
+    expectedResolution: "MUST_NOT_APPEAR_AS_ASSERTION",
+    regex: /MTQ[_\s]+(?:is[_\s]+)?(?:a[_\s]+)?retail[_\s]+money|MTQ[_\s]+retail[_\s]+money/gi,
+  },
+  {
+    id: "C20",
+    pattern: "MTQ public cryptocurrency (forbidden — K-directive)",
+    description:
+      "MTQ must NOT be described as a public cryptocurrency (K-directive: 'Do not describe it as: public cryptocurrency'). " +
+      "MTQ is a permissioned, institutional, closed-loop settlement unit — NOT a public crypto. " +
+      "See src/lib/mtq-economic-definition.ts.",
+    expectedResolution: "MUST_NOT_APPEAR_AS_ASSERTION",
+    regex: /MTQ[_\s]+(?:is[_\s]+)?(?:a[_\s]+)?public[_\s]+cryptocurrency|MTQ[_\s]+public[_\s]+cryptocurrency/gi,
+  },
+  {
+    id: "C21",
+    pattern: "MTQ investment asset (forbidden — K-directive)",
+    description:
+      "MTQ must NOT be described as an investment asset (K-directive: 'Do not describe it as: investment asset'). " +
+      "MTQ is a settlement unit — NOT an investment vehicle. No speculative-return promise. " +
+      "See src/lib/mtq-economic-definition.ts.",
+    expectedResolution: "MUST_NOT_APPEAR_AS_ASSERTION",
+    regex: /MTQ[_\s]+(?:is[_\s]+)?(?:an?[_\s]+)?investment[_\s]+asset|MTQ[_\s]+investment[_\s]+asset/gi,
+  },
+  {
+    id: "C22",
+    pattern: "MTQ yield token (forbidden — K-directive)",
+    description:
+      "MTQ must NOT be described as a yield token (K-directive: 'Do not describe it as: yield token'). " +
+      "MTQ has no staking, no farming, no yield — just settlement utility (per §wholesale-tokenomics.ts:461). " +
+      "See src/lib/mtq-economic-definition.ts.",
+    expectedResolution: "MUST_NOT_APPEAR_AS_ASSERTION",
+    regex: /MTQ[_\s]+(?:is[_\s]+)?(?:a[_\s]+)?yield[_\s]+token|MTQ[_\s]+yield[_\s]+token|MTQ[_\s]+yields[_\s]+\d/gi,
+  },
+  {
+    id: "C23",
+    pattern: "MTQ governance token (forbidden — K-directive)",
+    description:
+      "MTQ must NOT be described as a governance token (K-directive: 'Do not describe it as: governance token'). " +
+      "Governance of MITHQAL is constitutional (§22 JOZOUR Amendment, §94 Foundation has no mint authority) — " +
+      "MTQ itself is NOT a governance token. See src/lib/mtq-economic-definition.ts.",
+    expectedResolution: "MUST_NOT_APPEAR_AS_ASSERTION",
+    regex: /MTQ[_\s]+(?:is[_\s]+)?(?:a[_\s]+)?governance[_\s]+token|MTQ[_\s]+governance[_\s]+token/gi,
+  },
+  {
+    id: "C24",
+    pattern: "MTQ speculative asset (forbidden — K-directive)",
+    description:
+      "MTQ must NOT be described as a speculative asset (K-directive: 'Do not describe it as: speculative asset'). " +
+      "MTQ is a settlement unit with no speculative-return promise. The wholesale-B2B-settlement-driven model " +
+      "explicitly rejects retail speculation (§wholesale-tokenomics.ts:461). " +
+      "See src/lib/mtq-economic-definition.ts.",
+    expectedResolution: "MUST_NOT_APPEAR_AS_ASSERTION",
+    regex: /MTQ[_\s]+(?:is[_\s]+)?(?:a[_\s]+)?speculative[_\s]+asset|MTQ[_\s]+speculative[_\s]+asset/gi,
+  },
+  {
+    id: "C25",
+    pattern: "MTQ public stablecoin (forbidden — K-directive)",
+    description:
+      "MTQ must NOT be described as a public stablecoin (K-directive: 'Do not describe it as: public stablecoin'). " +
+      "MTQ is NOT a stablecoin — it is a permissioned, institutional, closed-loop settlement unit. " +
+      "PAR = 1.00 is an accounting reference, NOT a peg. See src/lib/mtq-economic-definition.ts.",
+    expectedResolution: "MUST_NOT_APPEAR_AS_ASSERTION",
+    regex: /MTQ[_\s]+(?:is[_\s]+)?(?:a[_\s]+)?public[_\s]+stablecoin|MTQ[_\s]+public[_\s]+stablecoin/gi,
+  },
 ];
 
 // Scan result for a single pattern in a single file

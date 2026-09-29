@@ -365,6 +365,23 @@ export async function GET() {
         cbgrs: cbgrs.cbgrs,
         lcr: Math.round(lcr * 100) / 100,
       },
+
+      // K2 (trace 1a0ede068b9def31) — canonical PAR definition pointer.
+      // PAR = 1.00 is described here as an accounting/denomination reference
+      // ONLY (NOT a USD peg, NOT a market price, NOT a redemption guarantee).
+      // The single canonical source for MTQ's economic identity — including
+      // the full PAR definition — lives at:
+      //   GET /api/mtq-economic-definition
+      // Any divergence between this route's PAR wording and the canonical
+      // source is a CONTRADICTION and must be resolved in favor of the
+      // canonical source.
+      _meta: {
+        parDefinition:
+          "PAR = 1.00 is an accounting/denomination reference only. See /api/mtq-economic-definition for the canonical definition.",
+        mtqEconomicDefinitionSource: "src/lib/mtq-economic-definition.ts",
+        canonicalEndpoint: "/api/mtq-economic-definition",
+        kDirectiveTrace: "1a0ede068b9def31",
+      },
     });
   } catch (err) {
     return NextResponse.json(
