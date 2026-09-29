@@ -51,7 +51,9 @@ export async function GET() {
     const nav = await computeLiveNav();
     return NextResponse.json({
       navM: nav.navM,
+      navM_label: "MTQ M-NAV (purchasing power, USD baseline)",
       navL: nav.navL,
+      navL_label: "MTQ L-NAV (liquidation-adjusted, USD baseline)",
       navStress: nav.navStress,
       reserveRatio: nav.reserveRatio,
       goldUsd: nav.goldUsd,
@@ -74,6 +76,15 @@ export async function GET() {
       usdConcentration: nav.usdConcentration,
       currencyConcentration: nav.currencyConcentration,
       pillarBreakdown: nav.pillarBreakdown,
+      // v25.9 — explicit "purchasing power" framing per user directive
+      // (2026-09-29): "MTQ is purchasing power, not fixed to any currency."
+      // navM is the gold-anchored USD baseline (Constitution v19.0 §22). For
+      // MTQ's purchasing power in EUR/JPY/GBP/CNY/CHF/AUD/CAD with live 24h
+      // FX changes, see /api/mtq-purchasing-power.
+      explanation:
+        "MTQ is purchasing power, not USD-fixed. navM is the gold-anchored " +
+        "USD baseline (Constitution v19.0 §22 — gold-anchored basket). For " +
+        "purchasing power in EUR/JPY/GBP/etc., see /api/mtq-purchasing-power.",
     });
   } catch (err) {
     return NextResponse.json(

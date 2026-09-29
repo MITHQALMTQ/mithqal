@@ -19,6 +19,7 @@ import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid,
   Tooltip, Legend, PieChart, Pie, Cell, ReferenceLine,
 } from "recharts";
+import { MtqPurchasingPowerTicker } from "@/components/mtq-purchasing-power-ticker";
 
 // ─── Defensive helpers ───
 const S = (v: unknown): string => {
@@ -819,11 +820,33 @@ export default function Page() {
             <Section id="mtq-value" icon={Coins} title="MTQ Value — Gold-Anchored, Not Pegged" subtitle="MTQ is NOT pegged to USD or any currency · Value = NAV (reserve-backed, gold-anchored) · PAR = 1.00 is accounting unit only · 11-currency basket + 18% gold anchor">
               {!nav.data ? <LoadingBox label="live NAV + FX rates" /> : (
                 <>
-                  {/* Hero NAV card — actual market value */}
+                  {/* Hero NAV card — actual market value (gold-anchored USD
+                      baseline for MTQ purchasing power per user directive
+                      2026-09-29: "MTQ is purchasing power, not fixed to any
+                      currency.") */}
                   <GlassCard glow className="p-8 text-center">
-                    <div className="text-xs font-semibold uppercase tracking-[0.3em] text-gold">1 MTQ Market Value (NAV_m) — Gold-Anchored</div>
-                    <div className="mt-4 font-display text-6xl font-bold text-gold">≈ ${N(nav.data.navM).toFixed(4)}</div>
-                    <div className="mt-2 text-sm text-gray-500">Market NAV = R_m / S (total market reserve ÷ MTQ supply)</div>
+                    <div className="text-xs font-semibold uppercase tracking-[0.3em] text-gold">1 MTQ — Gold-Anchored USD Baseline (Purchasing Power)</div>
+                    <div className="mt-4 font-display text-6xl font-bold text-gold">
+                      ≈ ${N(nav.data.navM).toFixed(4)}
+                      <span className="ml-2 align-middle text-2xl font-medium text-gold/70">USD</span>
+                    </div>
+                    <div className="mt-2 text-sm text-gray-500">
+                      Market NAV = R_m / S (total market reserve ÷ MTQ supply) — the USD baseline for MTQ purchasing power
+                    </div>
+                    {/* v25.9 — explicit "purchasing power" framing per user directive */}
+                    <div className="mt-3 text-xs text-gold/80">
+                      1 MTQ ≈ ${N(nav.data.navM).toFixed(4)} USD purchasing power
+                      {" · "}
+                      €{(N(nav.data.navM) * N(nav.data.fxRates?.EUR)).toFixed(4)}
+                      {" · "}
+                      ¥{(N(nav.data.navM) * N(nav.data.fxRates?.JPY)).toFixed(2)}
+                      {" · "}
+                      £{(N(nav.data.navM) * N(nav.data.fxRates?.GBP)).toFixed(4)}
+                    </div>
+                    <div className="mt-1 text-[10px] text-gray-500">
+                      MTQ is <span className="text-gold font-semibold">purchasing power</span>, not USD-fixed.
+                      See live rates below.
+                    </div>
                     <div className="mt-4 grid grid-cols-3 gap-3">
                       <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-3">
                         <div className="text-[10px] uppercase tracking-wider text-gray-500">Prudential NAV</div>
@@ -975,6 +998,14 @@ export default function Page() {
                 </>
               )}
             </Section>
+
+            {/* ═══ MTQ PURCHASING POWER — LIVE TICKER (v25.9) ═══ */}
+            {/* Per user directive (2026-09-29): "MTQ is purchasing power, not
+                fixed to any currency." Placed near the top — below the hero,
+                above the visual analytics section — so the live multi-currency
+                purchasing-power view is the first thing the user sees after the
+                hero NAV card. Polls /api/mtq-purchasing-power every 60s. */}
+            <MtqPurchasingPowerTicker />
 
             {/* ═══ IDENTITY: WHAT MITHQAL IS / IS NOT ═══ */}
             <Section id="identity" icon={Landmark} title="What MITHQAL Is — & Is Not" subtitle="§3-§4 Constitutional Identity · 10 functions MITHQAL performs · 26 things MITHQAL is NOT" lazy>
