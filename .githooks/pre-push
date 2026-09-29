@@ -1,11 +1,181 @@
 #!/bin/bash
-# Pre-push hook — informational only.
+# Pre-push hook v25.8 — audit logging + missing-dependency check.
 # Branch protection is enforced on the GitHub side.
-# This hook logs the push to audit/push-log.jsonl
-set -e
+#
+# This hook does TWO things:
+#   1. (v25.5 behavior, preserved) Logs the push to audit/push-log.jsonl
+#   2. (NEW v25.8) Verifies that every external import in src/ + mini-services/
+#      is declared in package.json dependencies/devDependencies.
+#
+# Purpose: prevent the v25.7.1 bug class — "decimal.js was never in
+# package.json despite src/lib/fixed-point.ts importing it since v25.0.
+# The Turso dev environment had it cached; Vercel's clean-room build
+# correctly failed." This hook catches the missing declaration BEFORE
+# the push reaches Vercel.
+#
+# Implementation notes:
+#   - The dependency check uses Python (already used in the v25.5 hook
+#     for reading package.json) because regex parsing of TS import
+#     statements is far more robust in Python than bash+grep.
+#   - Node.js built-in modules (fs, path, crypto, etc.) and Next.js
+#     path aliases (@/...) and node: prefixed imports are skipped.
+#   - Relative imports (./,  ../) are skipped.
+#   - Scoped packages (@org/pkg) are matched as @org/pkg (first 2 segments).
+#   - Non-scoped packages (pkg/sub) are matched as pkg (first segment).
+#   - Side-effect imports (import "pkg"), dynamic imports (await import("pkg")),
+#     and re-exports (export ... from "pkg") are all scanned.
+
+LOG_FILE="$PWD/audit/push-log.jsonl"
+mkdir -p "$(dirname "$LOG_FILE")"
+
+# --- Part 2: Missing-dependency check (NEW v25.8) ---
+# Uses an inline Python script for reliable parsing of TS import statements.
+# Captures all output to a temp file so we can present it cleanly on failure.
+TMP_OUT="$(mktemp)"
+python3 - > "$TMP_OUT" 2>&1 <<'PYEOF'
+import json
+import os
+import re
+import sys
+
+# --- 1. Read package.json declared dependencies ---
+try:
+    with open('package.json') as f:
+        pkg = json.load(f)
+except Exception as e:
+    print(f"ERROR reading package.json: {e}", file=sys.stderr)
+    sys.exit(2)
+
+declared = set()
+declared.update(pkg.get('dependencies', {}).keys())
+declared.update(pkg.get('devDependencies', {}).keys())
+
+# --- 2. Node.js built-in modules (always available, never declared) ---
+# Full list per Node 20+ docs. Includes both bare ("fs") and the node:
+# prefix variants are skipped separately below.
+NODE_BUILTINS = {
+    'assert', 'async_hooks', 'buffer', 'child_process', 'cluster',
+    'console', 'constants', 'crypto', 'dgram', 'diagnostics_channel',
+    'dns', 'domain', 'events', 'fs', 'http', 'http2', 'https',
+    'inspector', 'module', 'net', 'os', 'path', 'perf_hooks', 'process',
+    'punycode', 'querystring', 'readline', 'repl', 'stream',
+    'string_decoder', 'sys', 'test', 'timers', 'tls', 'trace_events',
+    'tty', 'url', 'util', 'v8', 'vm', 'wasi', 'worker_threads', 'zlib',
+}
+declared.update(NODE_BUILTINS)
+
+# --- 3. Build import regex patterns ---
+# Match: import X from "pkg", import { X } from "pkg", import * as X from "pkg",
+#        import type { X } from "pkg", export { X } from "pkg",
+#        export * from "pkg", export type { X } from "pkg"
+# [^;]*? is non-greedy and includes newlines (since [^;] matches any non-;)
+IMPORT_FROM_RE = re.compile(
+    r'\b(?:import|export)\b[^;]*?\bfrom\s+["\']([^"\']+)["\']'
+)
+# Side-effect: import "pkg"
+SIDE_EFFECT_RE = re.compile(
+    r'\bimport\s+["\']([^"\']+)["\']'
+)
+# Dynamic: await import("pkg") or const x = import("pkg")
+DYNAMIC_IMPORT_RE = re.compile(
+    r'\bimport\s*\(\s*["\']([^"\']+)["\']\s*\)'
+)
+
+def extract_pkg_name(pkg_path):
+    """Extract the npm package name from an import path.
+    Returns None if the import should be skipped (relative, alias, builtin)."""
+    # Skip relative imports (forward + backslash variants)
+    if (pkg_path.startswith('./') or
+        pkg_path.startswith('../') or
+        pkg_path.startswith('.\\') or
+        pkg_path.startswith('..\\')):
+        return None
+    # Skip Next.js path aliases
+    if pkg_path.startswith('@/'):
+        return None
+    # Skip node: prefix builtins (e.g., node:fs, node:path)
+    if pkg_path.startswith('node:'):
+        return None
+    # Skip virtual modules (bun:, virtual:)
+    if pkg_path.startswith('bun:') or pkg_path.startswith('virtual:'):
+        return None
+    # Skip data: URLs
+    if pkg_path.startswith('data:'):
+        return None
+    # Extract package name
+    #   scoped: @org/pkg[/sub...] -> @org/pkg
+    #   non-scoped: pkg[/sub...]    -> pkg
+    if pkg_path.startswith('@'):
+        parts = pkg_path.split('/')
+        if len(parts) >= 2:
+            return parts[0] + '/' + parts[1]
+        return pkg_path  # malformed, but return as-is
+    return pkg_path.split('/')[0]
+
+# --- 4. Scan src/ + mini-services/ for .ts/.tsx files ---
+scan_dirs = [d for d in ('src', 'mini-services') if os.path.isdir(d)]
+if not scan_dirs:
+    sys.exit(0)
+
+missing = []
+for scan_dir in scan_dirs:
+    for root, _, files in os.walk(scan_dir):
+        for fname in files:
+            if not (fname.endswith('.ts') or fname.endswith('.tsx')):
+                continue
+            fpath = os.path.join(root, fname)
+            try:
+                with open(fpath, encoding='utf-8') as f:
+                    content = f.read()
+            except Exception:
+                # Skip unreadable files (e.g., binary, encoding issues)
+                continue
+            for regex in (IMPORT_FROM_RE, SIDE_EFFECT_RE, DYNAMIC_IMPORT_RE):
+                for m in regex.finditer(content):
+                    pkg_path = m.group(1)
+                    pkg_name = extract_pkg_name(pkg_path)
+                    if pkg_name is None:
+                        continue
+                    if pkg_name not in declared:
+                        missing.append((fpath, pkg_name, pkg_path))
+
+# --- 5. Output results ---
+if missing:
+    # Deduplicate (same file + same package only listed once)
+    seen = set()
+    for fpath, pkg_name, pkg_path in missing:
+        key = (fpath, pkg_name)
+        if key in seen:
+            continue
+        seen.add(key)
+        print(f"{fpath}: missing dependency '{pkg_name}' (imported as '{pkg_path}')")
+    sys.exit(1)
+
+sys.exit(0)
+PYEOF
+PY_EXIT=$?
+
+if [ $PY_EXIT -ne 0 ]; then
+    echo "❌ PRE-PUSH CHECK FAILED: missing dependencies detected"
+    echo ""
+    cat "$TMP_OUT"
+    echo ""
+    echo "Fix: add the missing packages to package.json with 'bun add <pkg>'"
+    echo "Or: remove the import if it's not actually used"
+    echo ""
+    echo "Push ABORTED. This prevents the v25.7.1 bug class"
+    echo "(missing dep breaks Vercel clean-room build)."
+    rm -f "$TMP_OUT"
+    exit 1
+fi
+
+rm -f "$TMP_OUT"
+
+# --- Part 3: Log successful push (only after deps check passes) ---
+# (Preserves v25.5 audit-log behavior; adds deps_check=passed field)
 while read local_ref local_oid remote_ref remote_oid; do
-  mkdir -p "$(dirname "$PWD/audit/push-log.jsonl")"
-  echo "{\"ts\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"local_ref\":\"$local_ref\",\"local_oid\":\"$local_oid\",\"remote_ref\":\"$remote_ref\",\"remote_oid\":\"$remote_oid\",\"user\":\"$USER\"}" >> audit/push-log.jsonl
-  echo "[pre-push] $local_ref $local_oid → $remote_ref $remote_oid"
+    echo "{\"ts\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"local_ref\":\"$local_ref\",\"local_oid\":\"$local_oid\",\"remote_ref\":\"$remote_ref\",\"remote_oid\":\"$remote_oid\",\"user\":\"$USER\",\"deps_check\":\"passed\"}" >> "$LOG_FILE"
+    echo "[pre-push] ✓ deps check passed — $local_ref $local_oid → $remote_ref $remote_oid"
 done
+
 exit 0
