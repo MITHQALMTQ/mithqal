@@ -1060,6 +1060,19 @@ export const DMCE_FORMULA_V25_3_5 =
   "counterparty risk, concentration, settlement timing, redemption behavior, jurisdiction). " +
   "See src/lib/reserve-coverage-logic.ts.";
 
+// v25.3.6 — L-directive refactor: DMCE now uses domain-aware Required Coverage
+// The RequiredCoverage function now enforces domain separation:
+//   - Settlement Liquidity domain assets count as Direct Settlement Backing
+//   - Strategic Resilience Reserve domain assets (gold, silver, emergency) do NOT count
+//   - Emergency capacity is NOT double-counted
+export const DMCE_FORMULA_V25_3_6 =
+  "DMCE (v25.3.6) = MIN(VerifiedEligibleBacking, LegallyReservedBacking, InstitutionalRiskLimit, " +
+  "RequiredCoverageWithDomainSeparation(DirectSettlementBacking, RiskBuffer), ExposureLimit, " +
+  "ConcentrationLimit, OperationalLimit). — where Direct Settlement Backing includes ONLY " +
+  "Settlement Liquidity domain assets (gold moved to Strategic Resilience Reserve per L-directive). " +
+  "Emergency capacity is NOT double-counted. See src/lib/reserve-domains.ts + " +
+  "src/lib/reserve-coverage-logic.ts (computeRequiredCoverageWithDomainSeparation).";
+
 export const DMCE_COMPONENT_DEFINITIONS = {
   verifiedEligibleBacking:
     "Verified eligible value backing at the institution (per AvailableBackingCertificate + custodian evidence).",
@@ -1145,6 +1158,25 @@ export const DMCE_RULE =
   "JurisdictionLimit, ExposureLimit, ConcentrationLimit, OperationalLimit. FV18 enforces that a bank CANNOT mint " +
   "outside its DMCE capacity. The DMCE is the canonical policy/control concept — NOT a fixed legal formula until " +
   "independently validated.";
+
+// v25.3.6 — Pilot 1 DMCE rule: only ACTIVE settlement assets count toward DMCE
+// Per L-directive (trace 1a0edf8e1d339851): "Pilot 1 must use only legally and
+// operationally supportable institutional settlement assets." Gold + digital
+// reserve backing are 0% in Pilot 1 — they are NOT counted as
+// VerifiedEligibleBacking or LegallyReservedBacking in the DMCE formula for
+// Pilot 1. They are AVAILABLE_FOR_FUTURE_VALIDATED_CONFIGURATION — preserved
+// for future validated configurations, not deleted. The canonical Pilot 1
+// asset list + weights live in src/lib/pilot-1-config.ts.
+export const DMCE_PILOT_1_RULE =
+  "DMCE Pilot 1 Rule: Only ACTIVE settlement assets (per src/lib/pilot-1-config.ts) " +
+  "count toward VerifiedEligibleBacking in the DMCE formula. Gold (0%) and " +
+  "digital reserve backing (0%) are NOT counted — they are marked " +
+  "AVAILABLE_FOR_FUTURE_VALIDATED_CONFIGURATION (capabilities preserved, not deleted). " +
+  "Pilot 1 uses only legally + operationally supportable institutional settlement assets " +
+  "(bank money 50% + CB money 20% + sovereign bonds 15% + RTGS 10% + tokenized " +
+  "deposits 5% = 100%). Gold is moved to the Strategic Resilience Reserve domain " +
+  "(per src/lib/reserve-domains.ts — Agent K4) — it is NOT counted as settlement " +
+  "backing in Pilot 1.";
 
 // ============================================================================
 // Section W: RCAF + AvailableBackingCertificate (REFERENCES — not duplicated)

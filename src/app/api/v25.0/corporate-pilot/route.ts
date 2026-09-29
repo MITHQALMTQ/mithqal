@@ -12,6 +12,15 @@ import {
   JP_US_TEST_FIXTURES,
   type CorporateMTQSettlementAccount,
 } from "@/lib/corporate-pilot-model";
+// v25.3.6 — Pilot 1 reserve configuration is sourced from the canonical module
+// (per L-directive trace 1a0edf8e1d339851). See:
+//   - src/lib/pilot-1-config.ts (single canonical source)
+//   - /api/pilot-1-config (public endpoint)
+import {
+  PILOT_1_CONFIG_SUMMARY,
+  PILOT_1_CONFIG_VERSION,
+  PILOT_1_CONFIG_SOURCE,
+} from "@/lib/pilot-1-config";
 
 export async function GET() {
   const mode = getCurrentMode();
@@ -83,6 +92,29 @@ export async function GET() {
   return NextResponse.json({
     generatedAt: new Date().toISOString(),
     version: "v25.0-corporate-pilot",
+
+    // v25.3.6 — Pilot 1 config reference (single canonical source)
+    _meta: {
+      activeModel: "v25.3.2",
+      pilot1Config: {
+        source: PILOT_1_CONFIG_SOURCE,
+        version: PILOT_1_CONFIG_VERSION,
+        endpoint: "/api/pilot-1-config",
+        status: PILOT_1_CONFIG_SUMMARY.status,
+        rule: PILOT_1_CONFIG_SUMMARY.rule,
+        activeAssetsTotalWeight: PILOT_1_CONFIG_SUMMARY.activeSettlementAssetsTotalWeight,
+        futureValidatedCapabilitiesTotalWeight:
+          PILOT_1_CONFIG_SUMMARY.futureValidatedCapabilitiesTotalWeight,
+        crossReferences: {
+          reserveDomains:
+            "src/lib/reserve-domains.ts (Agent K4 — two-domain architecture; gold moved to Strategic Resilience Reserve)",
+          mtqEconomicDefinition:
+            "src/lib/mtq-economic-definition.ts (Agent K2 — MTQ economic identity)",
+          reserveCoverageLogic:
+            "src/lib/reserve-coverage-logic.ts (Agent K3 — Required Coverage = Direct Settlement Backing + Risk Buffer)",
+        },
+      },
+    },
 
     // Task 7: Pilot mode
     systemMode: {

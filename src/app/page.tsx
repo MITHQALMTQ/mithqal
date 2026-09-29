@@ -717,6 +717,8 @@ export default function Page() {
   const legalRegister = useFetch("/api/legal-obligation-register");
   const sanctions = useFetch("/api/sanctions-screening");
   const dataSourceObs = useFetch("/api/data-source-observations?limit=10");
+  // v25.3.6 — Pilot 1 reserve config (gold=0%, digital=0%, AVAILABLE_FOR_FUTURE_VALIDATED_CONFIGURATION)
+  const pilot1 = useFetch<any>("/api/pilot-1-config");
 
   const scrollTo = useCallback((id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -1109,6 +1111,69 @@ export default function Page() {
                       <div><div className="text-[9px] text-gray-500">NAV_l (prud.)</div><div className="font-mono text-sm text-emerald-400">{N(reserve.data.exampleReserve?.navs?.NAV_l).toFixed(4)}</div></div>
                       <div><div className="text-[9px] text-gray-500">NAV_s (stress)</div><div className="font-mono text-sm text-red-400">{N(reserve.data.exampleReserve?.navs?.NAV_s).toFixed(4)}</div></div>
                       <div><div className="text-[9px] text-gray-500">RR Status</div><div className="text-sm font-semibold text-amber">{S(reserve.data.exampleReserve?.reserveRatio?.status)}</div></div>
+                    </div>
+                  </GlassCard>
+                </>
+              )}
+            </Section>
+
+            {/* ═══ PILOT 1 RESERVE CONFIGURATION (v25.3.6) ═══ */}
+            <Section id="pilot-1-config" icon={Shield} title="Pilot 1 Reserve Configuration — v25.3.6" subtitle="Per L-directive (trace 1a0edf8e1d339851) · gold = 0% · digital = 0% · capabilities marked AVAILABLE_FOR_FUTURE_VALIDATED_CONFIGURATION (NOT deleted) · 100% legally + operationally supportable institutional settlement assets" lazy>
+              {!pilot1.data ? (pilot1.err ? <ErrorBox label="pilot 1 config" msg={pilot1.err} /> : <LoadingBox label="pilot 1 config" />) : (
+                <>
+                  <GlassCard className="mb-3 p-4">
+                    <div className="text-[10px] font-semibold uppercase tracking-wider text-gray-500">Pilot 1 Reserve Backing Rule</div>
+                    <div className="mt-1 text-sm text-gray-200">{S(pilot1.data.rule)}</div>
+                    <div className="mt-2 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                      <div><div className="text-[9px] text-gray-500">Source</div><div className="font-mono text-[11px] text-white">{S(pilot1.data._meta?.configSource)}</div></div>
+                      <div><div className="text-[9px] text-gray-500">Version</div><div className="font-mono text-[11px] text-gold">{S(pilot1.data._meta?.configVersion)}</div></div>
+                      <div><div className="text-[9px] text-gray-500">Active Total Weight</div><div className="font-mono text-[11px] text-emerald-400">{(N(pilot1.data.summary?.activeSettlementAssetsTotalWeight) * 100).toFixed(0)}%</div></div>
+                      <div><div className="text-[9px] text-gray-500">Future-Validated Weight</div><div className="font-mono text-[11px] text-gray-400">{(N(pilot1.data.summary?.futureValidatedCapabilitiesTotalWeight) * 100).toFixed(0)}%</div></div>
+                    </div>
+                  </GlassCard>
+
+                  <div className="grid gap-3 md:grid-cols-2">
+                    <div>
+                      <div className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-emerald-400">ACTIVE Settlement Assets ({Arr(pilot1.data.activeAssets).length} · 100%)</div>
+                      <div className="space-y-1.5">
+                        {Arr(pilot1.data.activeAssets).map((a: any, i: number) => (
+                          <GlassCard key={i} className="flex items-center justify-between p-3">
+                            <div>
+                              <div className="text-xs font-semibold text-white">{S(a.assetClass)}</div>
+                              <div className="text-[10px] text-gray-500">{S(a.reason).slice(0, 90)}</div>
+                            </div>
+                            <Badge variant="emerald">{(N(a.weight) * 100).toFixed(0)}%</Badge>
+                          </GlassCard>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-amber-400">AVAILABLE_FOR_FUTURE_VALIDATED_CONFIGURATION ({Arr(pilot1.data.futureValidatedCapabilities).length} · 0%)</div>
+                      <div className="space-y-1.5">
+                        {Arr(pilot1.data.futureValidatedCapabilities).map((a: any, i: number) => (
+                          <GlassCard key={i} className="flex items-center justify-between p-3 border-amber-500/20">
+                            <div>
+                              <div className="text-xs font-semibold text-white">{S(a.assetClass)}</div>
+                              <div className="text-[10px] text-gray-500">{S(a.reason).slice(0, 110)}</div>
+                            </div>
+                            <Badge variant="amber">{(N(a.weight) * 100).toFixed(0)}%</Badge>
+                          </GlassCard>
+                        ))}
+                      </div>
+                      <div className="mt-2 rounded-lg border border-amber-500/20 bg-amber-500/5 p-2 text-[10px] text-amber-300">
+                        Capabilities PRESERVED per L-directive — NOT deleted. A future validated configuration
+                        (with external legal evidence + custodian verification) may re-enable these as settlement backing.
+                      </div>
+                    </div>
+                  </div>
+
+                  <GlassCard className="mt-3 p-4">
+                    <div className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-gray-500">Cross-References</div>
+                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 text-[10px] text-gray-400">
+                      <div><span className="text-gold">Agent K4:</span> src/lib/reserve-domains.ts — two-domain architecture (Settlement Liquidity vs Strategic Resilience Reserve). Gold moved to Strategic Resilience Reserve.</div>
+                      <div><span className="text-gold">Agent K2:</span> src/lib/mtq-economic-definition.ts — MTQ economic identity (permissioned wholesale settlement unit).</div>
+                      <div><span className="text-gold">Agent K3:</span> src/lib/reserve-coverage-logic.ts — Required Coverage = Direct Settlement Backing + Risk Buffer (9 configurable factors).</div>
                     </div>
                   </GlassCard>
                 </>

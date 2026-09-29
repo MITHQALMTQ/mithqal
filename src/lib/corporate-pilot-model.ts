@@ -12,6 +12,21 @@
 //   Task 6: Security model (bank vs MITHQAL controls)
 //   Task 7: Pilot mode (PILOT/LIVE_PILOT/PRODUCTION)
 // =================================================================
+//
+// v25.3.6 — Pilot 1 reserve config now sourced from src/lib/pilot-1-config.ts
+// per L-directive (trace 1a0edf8e1d339851). Gold=0%, digital=0%, capabilities
+// marked AVAILABLE_FOR_FUTURE_VALIDATED_CONFIGURATION (NOT deleted).
+// Pilot 1 uses only legally + operationally supportable institutional
+// settlement assets (bank money 50% + CB money 20% + sovereign bonds 15%
+// + RTGS 10% + tokenized deposits 5% = 100%). See:
+//   - src/lib/pilot-1-config.ts (canonical Pilot 1 config — single source)
+//   - /api/pilot-1-config (public endpoint)
+//   - src/lib/reserve-domains.ts (Agent K4 — two-domain architecture)
+//
+// Any inline Pilot 1 reserve weight (gold, digital, fiat, bank money, CB
+// money, etc.) defined in this file is a CONTRADICTION per the contradiction
+// scanner — all weights MUST come from src/lib/pilot-1-config.ts.
+// =================================================================
 
 // ---- Task 7: Pilot Mode ----
 
@@ -546,3 +561,35 @@ export const JP_US_TEST_FIXTURES = {
   },
   mithqalLedgerBalance: 54_000_000,
 } as const;
+
+// ---- v25.3.6 — Pilot 1 Reserve Configuration (canonical reference) ----
+//
+// Per L-directive (trace 1a0edf8e1d339851), Pilot 1's reserve backing
+// configuration is sourced from src/lib/pilot-1-config.ts (single canonical
+// source). The Pilot 1 reserve composition is:
+//
+//   ACTIVE (total 100%):
+//     - BANK_MONEY          50%
+//     - CENTRAL_BANK_MONEY  20%
+//     - SOVEREIGN_BONDS     15%
+//     - RTGS                10%
+//     - TOKENIZED_DEPOSITS   5%
+//
+//   AVAILABLE_FOR_FUTURE_VALIDATED_CONFIGURATION (total 0%, NOT deleted):
+//     - GOLD         0% (gold moved to Strategic Resilience Reserve per Agent K4)
+//     - STABLECOIN   0% (digital reserve backing — capability preserved)
+//
+// This re-export makes the Pilot 1 config available to consumers of the
+// corporate-pilot-model without requiring them to add a new import. The
+// canonical source remains src/lib/pilot-1-config.ts.
+export {
+  PILOT_1_RESERVE_CONFIG,
+  PILOT_1_CONFIG_SUMMARY,
+  PILOT_1_CONFIG_STATUS,
+  PILOT_1_CONFIG_VERSION,
+  PILOT_1_CONFIG_SOURCE,
+  getPilot1ActiveAssets,
+  getPilot1FutureValidatedCapabilities,
+  getPilot1AssetWeight,
+  isPilot1AssetActive,
+} from "@/lib/pilot-1-config";

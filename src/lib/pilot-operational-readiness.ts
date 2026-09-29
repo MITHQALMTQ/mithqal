@@ -679,3 +679,144 @@ export function evaluatePilotExit(actual: PilotExitEvaluation["actual"]): PilotE
       : `Pilot exit criteria NOT MET. ${failedCriteria.length} criterion/criteria failed: ${failedCriteria.join("; ")}. Continue pilot until all criteria pass.`,
   };
 }
+
+// ---- v25.3.6 — Pilot 1 Reserve Backing Gate (Task 9) ----
+//
+// Per L-directive (trace 1a0edf8e1d339851): "Pilot 1 must use only legally
+// and operationally supportable institutional settlement assets."
+//
+// This gate verifies Pilot 1's reserve backing configuration meets the
+// L-directive requirements:
+//   1. GOLD weight MUST be 0% in Pilot 1 settlement backing (gold moved to
+//      Strategic Resilience Reserve per Agent K4).
+//   2. STABLECOIN (digital reserve backing) weight MUST be 0% in Pilot 1.
+//   3. GOLD + STABLECOIN capabilities MUST be marked
+//      AVAILABLE_FOR_FUTURE_VALIDATED_CONFIGURATION (NOT deleted).
+//   4. The sum of ACTIVE settlement asset weights MUST equal 1.00 (100%).
+//   5. Every ACTIVE asset class MUST be a legally + operationally
+//      supportable institutional settlement asset (bank money, CB money,
+//      RTGS, tokenized deposits, wholesale CBDC, sovereign bonds).
+//
+// The canonical Pilot 1 config is in src/lib/pilot-1-config.ts. This gate
+// reads from that source (single source of truth).
+
+import {
+  PILOT_1_RESERVE_CONFIG,
+  getPilot1ActiveAssets,
+  getPilot1FutureValidatedCapabilities,
+  getPilot1AssetWeight,
+  isPilot1AssetActive,
+} from "@/lib/pilot-1-config";
+
+// Asset classes that are legally + operationally supportable institutional
+// settlement assets (per L-directive). Any ACTIVE Pilot 1 asset MUST be in
+// this allowlist.
+const LEGALLY_SUPPORTABLE_SETTLEMENT_ASSETS = new Set([
+  "BANK_MONEY",
+  "CENTRAL_BANK_MONEY",
+  "RTGS",
+  "TOKENIZED_DEPOSITS",
+  "WHOLESALE_CBDC",
+  "SOVEREIGN_BONDS",
+]);
+
+export interface Pilot1ReserveBackingGateResult {
+  gate: "Pilot1ReserveBackingGate";
+  passed: boolean;
+  checks: {
+    goldWeightIsZero: boolean;
+    digitalReserveWeightIsZero: boolean;
+    goldAndDigitalMarkedAvailableForFuture: boolean;
+    activeAssetsSumToOne: boolean;
+    allActiveAssetsAreLegallySupportable: boolean;
+  };
+  details: {
+    goldWeight: number;
+    stablecoinWeight: number;
+    activeAssetsTotalWeight: number;
+    activeAssets: { assetClass: string; weight: number }[];
+    futureValidatedCapabilities: { assetClass: string; weight: number }[];
+  };
+  reason: string;
+}
+
+export function evaluatePilot1ReserveBackingGate(): Pilot1ReserveBackingGateResult {
+  const goldWeight = getPilot1AssetWeight("GOLD");
+  const stablecoinWeight = getPilot1AssetWeight("STABLECOIN");
+  const activeAssets = getPilot1ActiveAssets();
+  const futureValidated = getPilot1FutureValidatedCapabilities();
+  const activeTotal = activeAssets.reduce((sum, a) => sum + a.weight, 0);
+
+  const goldWeightIsZero = goldWeight === 0;
+  const digitalReserveWeightIsZero = stablecoinWeight === 0;
+
+  // Both GOLD + STABLECOIN MUST be present in the config AND marked
+  // AVAILABLE_FOR_FUTURE_VALIDATED_CONFIGURATION (NOT deleted, NOT ACTIVE).
+  const goldConfig = PILOT_1_RESERVE_CONFIG.find((a) => a.assetClass === "GOLD");
+  const stablecoinConfig = PILOT_1_RESERVE_CONFIG.find(
+    (a) => a.assetClass === "STABLECOIN",
+  );
+  const goldAndDigitalMarkedAvailableForFuture =
+    goldConfig?.status === "AVAILABLE_FOR_FUTURE_VALIDATED_CONFIGURATION" &&
+    stablecoinConfig?.status === "AVAILABLE_FOR_FUTURE_VALIDATED_CONFIGURATION";
+
+  const activeAssetsSumToOne = Math.abs(activeTotal - 1.0) < 1e-9;
+
+  const allActiveAssetsAreLegallySupportable = activeAssets.every((a) =>
+    LEGALLY_SUPPORTABLE_SETTLEMENT_ASSETS.has(a.assetClass),
+  );
+
+  const checks = {
+    goldWeightIsZero,
+    digitalReserveWeightIsZero,
+    goldAndDigitalMarkedAvailableForFuture,
+    activeAssetsSumToOne,
+    allActiveAssetsAreLegallySupportable,
+  };
+
+  const passed = Object.values(checks).every((v) => v === true);
+
+  const failedReasons: string[] = [];
+  if (!goldWeightIsZero) failedReasons.push(`gold weight = ${goldWeight} (must be 0)`);
+  if (!digitalReserveWeightIsZero)
+    failedReasons.push(`digital reserve weight = ${stablecoinWeight} (must be 0)`);
+  if (!goldAndDigitalMarkedAvailableForFuture)
+    failedReasons.push(
+      "GOLD + STABLECOIN must be marked AVAILABLE_FOR_FUTURE_VALIDATED_CONFIGURATION (capability preserved, not deleted)",
+    );
+  if (!activeAssetsSumToOne)
+    failedReasons.push(
+      `ACTIVE asset weights sum to ${activeTotal} (must equal 1.00 / 100%)`,
+    );
+  if (!allActiveAssetsAreLegallySupportable)
+    failedReasons.push(
+      "an ACTIVE asset class is not in the legally-supportable settlement-asset allowlist",
+    );
+
+  return {
+    gate: "Pilot1ReserveBackingGate",
+    passed,
+    checks,
+    details: {
+      goldWeight,
+      stablecoinWeight,
+      activeAssetsTotalWeight: activeTotal,
+      activeAssets: activeAssets.map((a) => ({
+        assetClass: a.assetClass,
+        weight: a.weight,
+      })),
+      futureValidatedCapabilities: futureValidated.map((a) => ({
+        assetClass: a.assetClass,
+        weight: a.weight,
+      })),
+    },
+    reason: passed
+      ? "Pilot 1 reserve backing configuration PASSES the L-directive gate: gold=0%, digital=0%, capabilities preserved (AVAILABLE_FOR_FUTURE_VALIDATED_CONFIGURATION), ACTIVE assets sum to 100%, all ACTIVE assets are legally + operationally supportable institutional settlement assets."
+      : `Pilot 1 reserve backing gate FAILED: ${failedReasons.join("; ")}.`,
+  };
+}
+
+// Touch unused import to keep isPilot1AssetActive available for downstream
+// consumers that import from this module. (No functional effect.)
+void isPilot1AssetActive;
+
