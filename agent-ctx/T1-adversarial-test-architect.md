@@ -4,6 +4,7 @@
 **Agent**: Sub-agent (full-stack-developer) — Adversarial Test Architect
 **Task directive trace**: `1a0ef4c811f1a89d`
 **Release**: `v25.3.15` (bumped from `v25.3.14` because parallel agent T2 — Controlled Architecture Freeze — used `v25.3.14` first; both halves of the T-directive share the same trace `1a0ef4c811f1a89d`)
+**Commit SHA**: `816040d2085fd47c18f1a9aaaefc3c07c00618ac` (pushed to `origin/main` on top of T2's `d629478` v25.3.14)
 **Date**: 2026-09-29
 
 ## Verbatim directive
