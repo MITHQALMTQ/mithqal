@@ -365,3 +365,119 @@ export const PREAMBLE = {
     "Not a platform of any kind",
   ],
 };
+
+/* ================================================================== */
+/* THE 8 CONSTITUTIONAL PRINCIPLES (JOZOUR Amendment + MITHQAL v19.0) */
+/* ================================================================== */
+/*
+ * These are the eight non-negotiable invariants the Monetary Engine
+ * enforces on every cycle. They are drawn verbatim from the JOZOUR, LLC
+ * Operating Agreement Amendment dated July 31, 2026 and the MITHQAL
+ * Constitution v19.0. They are distinct from the ten *interpretive*
+ * principles enumerated in Article II above — those guide interpretation
+ * when ambiguity exists; the eight below are non-amendable invariants
+ * the engine cannot cross.
+ *
+ * Surfaces:
+ *   - src/components/monetary-engine-explained.tsx (GuardrailsSection)
+ *   - /legal/institutional-trust (cross-linked in §1.4 commentary)
+ *   - /legal/indemnification (Manager indemnification scope)
+ */
+
+export interface ConstitutionalPrinciple {
+  /** stable slug, e.g. "p1-reserve-requirement" */
+  id: string;
+  /** constitutional number, e.g. "Principle 1" */
+  number: string;
+  /** short heading */
+  title: string;
+  /** one-line invariant statement (verbatim from JOZOUR Amendment) */
+  invariant: string;
+  /** operational elaboration */
+  detail: string;
+  /** whether the principle is non-amendable (all 8 are) */
+  frozen: true;
+}
+
+export const CONSTITUTIONAL_PRINCIPLES: ConstitutionalPrinciple[] = [
+  {
+    id: "p1-reserve-requirement",
+    number: "Principle 1",
+    title: "100%+ Reserve Requirement",
+    invariant:
+      "Reserve Value ≥ Supply Value at all times. Every MTQ is fully backed by reserves, on-chain verifiable, on every cycle.",
+    detail:
+      "The reserve ratio never falls below 100%. Minting is permitted only upon verified deposit of equivalent value; the engine refuses any minting instruction that would push the reserve ratio below 100%. The Multi-Sig Safe blocks any action that would violate this invariant.",
+    frozen: true,
+  },
+  {
+    id: "p2-no-discretionary-minting",
+    number: "Principle 2",
+    title: "No Discretionary Minting",
+    invariant:
+      "Minting is permitted only upon verified deposit of equivalent value. No algorithmic expansion, no council-issued units, no emergency-liquidity printing.",
+    detail:
+      "MTQ supply is determined entirely by market demand — never by a council vote, never by an algorithmic expansion policy, never by an emergency-liquidity decision. The Monetary Engine will not mint a single unit without a verified deposit of equivalent value backing it.",
+    frozen: true,
+  },
+  {
+    id: "p3-no-lending-of-reserves",
+    number: "Principle 3",
+    title: "No Lending of Reserves",
+    invariant:
+      "Reserves are never lent, staked, or rehypothecated. No leverage, no fractional-reserve lending, no rehypothecation. Reserves sit idle, by constitutional design.",
+    detail:
+      "Settlement reserves are not available for yield generation, repo, securities lending, staking, or any other use that would encumber them. They are held for one purpose: redemption of MTQ units on demand. Any use that would subordinate the redemption claim is prohibited.",
+    frozen: true,
+  },
+  {
+    id: "p4-no-commingling",
+    number: "Principle 4",
+    title: "No Commingling",
+    invariant:
+      "Yield assets never mix with settlement reserves. Each layer is segregated: settlement reserves, operational funds, and any yield-bearing assets are kept in separate custody.",
+    detail:
+      "Settlement reserves, operational funds, and yield-bearing assets are held in separate custody accounts. There is no operational mechanism — no council vote, no administrative action, no emergency provision — that can move value between these layers in a way that would subordinate the redemption claim.",
+    frozen: true,
+  },
+  {
+    id: "p5-deterministic-monetary-engine",
+    number: "Principle 5",
+    title: "Deterministic Monetary Engine",
+    invariant:
+      "Identical inputs produce identical outputs. The Monetary Engine is an algorithm — not a council, not an ML model, not a market-making desk. Every NAV computation is reproducible.",
+    detail:
+      "The Monetary Engine is a deterministic function: given the same reserve composition, the same oracle prices, and the same supply, it produces the same NAV — every time, everywhere, by every calculator. There is no discretion, no parameter tuning by the council, no model selection by an operator.",
+    frozen: true,
+  },
+  {
+    id: "p6-institutional-neutrality",
+    number: "Principle 6",
+    title: "Institutional Neutrality",
+    invariant:
+      "No political, economic, or jurisdictional alignment. A settlement between any two participants settles with the same finality, cost, and speed regardless of geography or politics.",
+    detail:
+      "The Institution does not take sides, set monetary policy, speculate, intervene, or favour any jurisdiction or participant. Sanctions compliance is mandatory and neutral — a legal obligation, not a political endorsement. All eligible participants are treated equally: same fees, same redemption rights, same settlement rules.",
+    frozen: true,
+  },
+  {
+    id: "p7-full-redeemability",
+    number: "Principle 7",
+    title: "Full Redeemability",
+    invariant:
+      "Every unit is redeemable on demand. Redemption is not subject to discretionary approval and is never suspended except in constitutional emergency (and even then, only by a defined, time-limited process).",
+    detail:
+      "Every MTQ holder is entitled to redeem their units for proportional reserves at any time. Redemption is not subject to discretionary approval, gating, or suspension. In a constitutional emergency, redemption may be paused only by the Emergency Custodian and only for a defined, time-limited period during which the Custodian must convene a new Council within 60 days.",
+    frozen: true,
+  },
+  {
+    id: "p8-gold-as-constitutional-anchor",
+    number: "Principle 8",
+    title: "Gold as Constitutional Anchor",
+    invariant:
+      "Gold remains the permanent constitutional monetary anchor. Bullion preservation: gold is liquidated only after all superior reserve tiers are exhausted. Silver is the secondary bullion asset.",
+    detail:
+      "Gold is the permanent constitutional anchor of the MITHQAL reserve composition. The bullion layer (15–25% of total reserves) is allocated dynamically between gold (60–95% of bullion) and silver (5–40% of bullion), but gold cannot be removed from the bullion layer. In any liquidation cascade, gold is liquidated only after all superior reserve tiers (fiat, stablecoins, silver) are exhausted.",
+    frozen: true,
+  },
+];

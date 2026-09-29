@@ -336,7 +336,7 @@ export default function ConstitutionDocs() {
                 </span>
               </div>
               <p className="mt-2">
-                Mithqal Constitution v24.2.1 — {activeLayer?.name ?? "Institutional Constitution"}
+                Mithqal Constitution v19.0 — {activeLayer?.name ?? "Institutional Constitution"}
                 {activeArticle ? `, ${activeArticle.number}: ${activeArticle.title}` : ", Preamble"}.
                 The full specification is version-controlled at{" "}
                 <a

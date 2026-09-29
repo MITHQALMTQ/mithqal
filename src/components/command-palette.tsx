@@ -18,7 +18,7 @@
  *   - Views        — the 11 top-level views of the working surface
  *   - Quick actions — Mint MTQ, Redeem MTQ, Test SMTP, View on MonadScan
  *   - Contracts    — MTQ Token, Governance, Safe Multi-Sig (open in MonadScan)
- *   - Documentation — Constitution v24.2.1, Audit Report, Backup & Recovery
+ *   - Documentation — Constitution v19.0, Audit Report, Backup & Recovery
  */
 
 import { Fragment, type ComponentType, useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -217,7 +217,7 @@ const DOCS: PaletteItem[] = [
   {
     id: "d-constitution",
     type: "doc",
-    label: "Constitution v24.2.1",
+    label: "Constitution v19.0",
     hint: "The full citable specification",
     icon: ScrollText,
     keywords: "constitution docs spec v19 citable",

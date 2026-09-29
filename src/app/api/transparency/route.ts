@@ -790,7 +790,7 @@ async function buildExpandedTransparency(
 }
 
 const FORMATION_MILESTONES = [
-  { id: "blueprint", label: "Constitution v19.0.3 published", done: true },
+  { id: "blueprint", label: "Constitution v19.0 published", done: true },
   { id: "github", label: "GitHub repository live", done: true },
   { id: "x", label: "X / Twitter presence", done: true },
   { id: "docs", label: "Public Constitution reference", done: true },

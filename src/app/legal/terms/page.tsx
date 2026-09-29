@@ -34,7 +34,7 @@ export default function TermsPage() {
             This website is operated by <strong>JOZOUR LLC</strong>, a New
             Jersey Limited Liability Company (NJ filing 0600463904). The
             &quot;Mithqal Institution&quot; is a constitutional concept
-            described in the Mithqal Constitution v19.0.3; it is not itself a
+            described in the Mithqal Constitution v19.0; it is not itself a
             separately incorporated legal entity at this time.
           </p>
         </section>
@@ -130,6 +130,83 @@ export default function TermsPage() {
           <p>
             We may update these terms as the project matures. Material
             changes will be announced at the top of this page.
+          </p>
+        </section>
+
+        {/* Jozour §1.7 — No Liability for Existing Debts (appended per F1 Gap 3) */}
+        <section
+          id="jozour-1-7"
+          aria-labelledby="jozour-1-7-heading"
+          className="mt-10 rounded-lg border border-gold/30 bg-gold/[0.03] p-5"
+        >
+          <div className="mb-3 flex items-center gap-3">
+            <span className="gold-rule h-px w-10" />
+            <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-gold">
+              JOZOUR Amendment · §1.7
+            </span>
+          </div>
+          <h2
+            id="jozour-1-7-heading"
+            className="font-display text-lg text-foreground"
+          >
+            No Liability for Existing Debts (Jozour Amendment §1.7)
+          </h2>
+          <p className="mt-3 text-sm leading-relaxed text-fg-muted">
+            Jozour, LLC acknowledges the existence of certain debts and
+            liabilities, including but not limited to a judgment entered
+            against the Company. The MITHQAL project shall be operated in good
+            faith and shall not be used to evade, discharge, or avoid any
+            existing Company debts or liabilities. The Company&apos;s
+            obligations with respect to existing debts shall be addressed
+            separately and shall not affect the operation of the MITHQAL
+            project.
+          </p>
+          <p className="mt-3 text-xs leading-relaxed text-fg-muted">
+            Source: JOZOUR, LLC Operating Agreement Amendment §1.7, dated
+            July 31, 2026. Adopted under the authority of the MITHQAL
+            Constitution v19.0.
+          </p>
+        </section>
+
+        {/* Jozour §1.8 — Non-Profit Character (appended per F1 Gap 5) */}
+        <section
+          id="jozour-1-8"
+          aria-labelledby="jozour-1-8-heading"
+          className="mt-6 rounded-lg border border-gold/30 bg-gold/[0.03] p-5"
+        >
+          <div className="mb-3 flex items-center gap-3">
+            <span className="gold-rule h-px w-10" />
+            <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-gold">
+              JOZOUR Amendment · §1.8
+            </span>
+          </div>
+          <h2
+            id="jozour-1-8-heading"
+            className="font-display text-lg text-foreground"
+          >
+            Non-Profit Character (Jozour Amendment §1.8)
+          </h2>
+          <p className="mt-3 text-sm leading-relaxed text-fg-muted">
+            The Company acknowledges that the MITHQAL project is a
+            constitutional monetary infrastructure designed for non-profit
+            purposes. The Company shall operate the MITHQAL project in a manner
+            consistent with its constitutional non-profit character. No profits
+            from the MITHQAL project shall be distributed to the Manager or
+            Members, except as reasonable compensation for services rendered,
+            consistent with the constitutional framework.
+          </p>
+          <p className="mt-3 text-xs leading-relaxed text-fg-muted">
+            Source: JOZOUR, LLC Operating Agreement Amendment §1.8, dated
+            July 31, 2026. Adopted under the authority of the MITHQAL
+            Constitution v19.0. This provision operates in tandem with §1.4
+            (Asset Segregation and Successor Transfer) — see{" "}
+            <Link
+              href="/legal/institutional-trust"
+              className="text-gold hover:underline"
+            >
+              Institutional Trust Framework
+            </Link>
+            .
           </p>
         </section>
       </div>

@@ -1675,11 +1675,24 @@ function MintingFlowSection({ reducedMotion }: { reducedMotion: boolean }) {
  * ============================================================ */
 
 function GuardrailsSection() {
+  // The first eight entries below are the 8 constitutional principles
+  // drawn verbatim from the JOZOUR Operating Agreement Amendment
+  // (July 31, 2026) and the MITHQAL Constitution v19.0. They are the
+  // non-negotiable invariants the Monetary Engine enforces on every
+  // cycle. The remaining entries are the operating-range guardrails
+  // (concentration cap, floor, bullion ranges) that operationalize
+  // the constitutional principles inside the monetary engine.
   const guardrails = [
-    { title: "100% Reserve Ratio", desc: "Reserves ≥ supply always. Every MTQ is fully backed, on-chain verifiable.", icon: ShieldCheck, value: "≥ 100%" },
-    { title: "No Discretionary Minting", desc: "MTQ is only ever minted on verified deposit. No algorithmic expansion.", icon: Lock, value: "Deposit-only" },
-    { title: "No Lending of Reserves", desc: "Reserves are never lent, staked, or rehypothecated. They sit idle, by design.", icon: Lock, value: "Never" },
-    { title: "No Commingling", desc: "Stablecoins never mix with settlement reserves. Each layer is segregated.", icon: Boxes, value: "Segregated" },
+    // --- 8 constitutional principles (verbatim from JOZOUR Amendment) ---
+    { title: "100%+ Reserve Requirement", desc: "Reserve Value ≥ Supply Value at all times. Every MTQ is fully backed by reserves, on-chain verifiable, on every cycle.", icon: ShieldCheck, value: "≥ 100%" },
+    { title: "No Discretionary Minting", desc: "Minting is permitted only upon verified deposit of equivalent value. No algorithmic expansion, no council-issued units, no emergency-liquidity printing.", icon: Lock, value: "Deposit-only" },
+    { title: "No Lending of Reserves", desc: "Reserves are never lent, staked, or rehypothecated. No leverage, no fractional-reserve lending, no rehypothecation. Reserves sit idle, by constitutional design.", icon: Lock, value: "Never" },
+    { title: "No Commingling", desc: "Yield assets never mix with settlement reserves. Each layer is segregated: settlement reserves, operational funds, and any yield-bearing assets are kept in separate custody.", icon: Boxes, value: "Segregated" },
+    { title: "Deterministic Monetary Engine", desc: "Identical inputs produce identical outputs. The Monetary Engine is an algorithm — not a council, not an ML model, not a market-making desk. Every NAV computation is reproducible.", icon: Cog, value: "Deterministic" },
+    { title: "Institutional Neutrality", desc: "No political, economic, or jurisdictional alignment. A settlement between any two participants settles with the same finality, cost, and speed regardless of geography or politics.", icon: Landmark, value: "Neutral" },
+    { title: "Full Redeemability", desc: "Every unit is redeemable on demand. Redemption is not subject to discretionary approval and is never suspended except in constitutional emergency (and even then, only by a defined, time-limited process).", icon: RefreshCw, value: "On-demand" },
+    { title: "Gold as Constitutional Anchor", desc: "Gold remains the permanent constitutional monetary anchor. Bullion preservation: gold is liquidated only after all superior reserve tiers are exhausted. Silver is the secondary bullion asset.", icon: Crown, value: "Anchor" },
+    // --- Operating-range guardrails (operationalize the principles above) ---
     { title: "Concentration Cap", desc: "No currency may exceed 60% of the basket. Hard ceiling, enforced on every rebalance.", icon: Gauge, value: "≤ 60%" },
     { title: "Minimum Floor", desc: "No currency may fall below 0.5% without entering a formal removal review.", icon: TrendingDown, value: "≥ 0.5%" },
     { title: "Bullion Range", desc: "Physical bullion must stay within 15–25% of total reserves.", icon: Crown, value: "15–25%" },
@@ -1692,8 +1705,8 @@ function GuardrailsSection() {
     <section className="border-t border-line py-16 sm:py-20">
       <SectionHeader
         eyebrow="07 — Constitutional Guardrails"
-        title="Ten invariants the engine cannot cross"
-        lede="These aren't policy preferences — they're encoded in the Constitution itself. The Monetary Engine enforces them on every cycle, and the Multi-Sig Safe blocks any action that would violate them."
+        title="Eight constitutional principles, fourteen operating-range guardrails"
+        lede="The first eight invariants below are the constitutional principles drawn verbatim from the JOZOUR Operating Agreement Amendment and the MITHQAL Constitution v19.0 — they are non-negotiable, encoded in the Constitution itself, and the Multi-Sig Safe blocks any action that would violate them. The remaining six are the operating-range guardrails that operationalize the principles inside the Monetary Engine."
       />
 
       <div className="mt-10 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -1702,7 +1715,11 @@ function GuardrailsSection() {
             <motion.div
               whileHover={{ y: -2 }}
               transition={{ type: "spring", stiffness: 300, damping: 20 }}
-              className="group relative h-full overflow-hidden rounded-xl border border-line bg-ink-soft p-5"
+              className={
+                i < 8
+                  ? "group relative h-full overflow-hidden rounded-xl border border-gold/40 bg-gold/[0.06] p-5"
+                  : "group relative h-full overflow-hidden rounded-xl border border-line bg-ink-soft p-5"
+              }
             >
               <div className="absolute right-0 top-0 h-px w-12 bg-gradient-to-r from-transparent to-gold/40" />
               <div className="flex items-start gap-3">
@@ -1712,6 +1729,11 @@ function GuardrailsSection() {
                 <div className="min-w-0 flex-1">
                   <div className="flex items-baseline justify-between gap-2">
                     <h4 className="font-display text-sm text-foreground">{g.title}</h4>
+                    {i < 8 && (
+                      <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-gold">
+                        §{(i + 1).toString().padStart(2, "0")}
+                      </span>
+                    )}
                   </div>
                   <p className="mt-1 text-xs leading-relaxed text-fg-muted">{g.desc}</p>
                   <div className="mt-3 inline-flex items-center rounded-md border border-gold/30 bg-gold/[0.08] px-2 py-0.5 font-mono text-xs font-semibold text-gold-soft">
@@ -1732,7 +1754,7 @@ function GuardrailsSection() {
             the Constitution is the source code of trust. Every invariant above is a
             self-executing rule — no council vote can waive it, no market condition can
             suspend it. If any rule would be violated, the Multi-Sig Safe refuses to sign.
-            That's what "constitutional" means in MITHQAL.
+            That&apos;s what &quot;constitutional&quot; means in MITHQAL.
           </p>
         </div>
       </Reveal>

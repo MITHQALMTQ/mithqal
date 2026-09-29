@@ -1530,6 +1530,35 @@ export default function Page() {
                 <Link href="/os" className="block text-[11px] text-gray-500 transition hover:text-gold">→ Operating System</Link>
                 <a href="mailto:meltonsy@icloud.com" className="block text-[11px] text-gray-500 transition hover:text-gold">→ Email MITHQAL</a>
               </div>
+              <div className="mt-3 border-t border-white/5 pt-3">
+                <div className="text-[10px] font-semibold uppercase tracking-wider text-gold">Digital Presence</div>
+                <div className="mt-2 space-y-1.5">
+                  <a
+                    href="https://github.com/MITHQALMTQ/mithqal"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block text-[11px] text-gray-500 transition hover:text-gold"
+                  >
+                    → GitHub (MITHQALMTQ)
+                  </a>
+                  <a
+                    href="https://x.com/MithqalMTQ"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block text-[11px] text-gray-500 transition hover:text-gold"
+                  >
+                    → X / Twitter (@MithqalMTQ)
+                  </a>
+                  <a
+                    href="https://mithqal.vercel.app"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block text-[11px] text-gray-500 transition hover:text-gold"
+                  >
+                    → Production site (mithqal.vercel.app)
+                  </a>
+                </div>
+              </div>
             </div>
             {/* Status */}
             <div>
