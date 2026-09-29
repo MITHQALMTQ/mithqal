@@ -14,6 +14,11 @@
 // HISTORICAL VERSIONS RETAIN TRACEABILITY ONLY.
 // ============================================================================
 
+// === v25.3.2 STATUS MARKER ===
+// This versioned API route is HISTORICAL — see VERSIONED API ROUTE banner above.
+export const ROUTE_STATUS: "ACTIVE" | "SUPERSEDED" | "HISTORICAL" | "PENDING_VALIDATION" = "HISTORICAL";
+export const CURRENT_NORMATIVE_API = "/api/mtq-final-reserve";
+
 import { NextResponse } from "next/server";
 import { computeLiveNav } from "@/lib/nav-compute";
 import { computeCbgrs } from "@/lib/cbgrs";

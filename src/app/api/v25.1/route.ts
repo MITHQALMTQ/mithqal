@@ -14,6 +14,11 @@
 // HISTORICAL VERSIONS RETAIN TRACEABILITY ONLY.
 // ============================================================================
 
+// === v25.3.2 STATUS MARKER ===
+// This versioned API route is HISTORICAL — see VERSIONED API ROUTE banner above.
+export const ROUTE_STATUS: "ACTIVE" | "SUPERSEDED" | "HISTORICAL" | "PENDING_VALIDATION" = "HISTORICAL";
+export const CURRENT_NORMATIVE_API = "(see /api/mtq-* family)";
+
 import { NextResponse } from "next/server";
 import { generateV25_1Report } from "@/lib/v25-1-institutional-interop";
 

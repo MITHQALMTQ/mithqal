@@ -4,6 +4,12 @@
 // This module structures the full table of contents plus detailed
 // provisions for the core Layer 1 articles (the constitutional identity).
 
+export type SectionStatus =
+  | "ACTIVE"
+  | "SUPERSEDED"
+  | "HISTORICAL"
+  | "PENDING_VALIDATION";
+
 export interface Section {
   /** short heading within an article (display string; includes sectionNumber + title for L3+ articles) */
   h: string;
@@ -19,6 +25,18 @@ export interface Section {
   keyProvisions?: string[];
   /** cross-references to other sections / articles / constitution version */
   references?: string[];
+  /**
+   * v25.3.2 status marker (I-directive / Agent I4).
+   * ACTIVE — current normative value; SUPERSEDED — replaced by a higher-layer
+   * ACTIVE policy; HISTORICAL — original material from a prior version;
+   * PENDING_VALIDATION — proposed but not yet validated by external
+   * legal/regulatory evidence (e.g., AAOIFI Sharia attestation, audit report).
+   * Runtime diagnostics MUST filter to ACTIVE only by default; non-ACTIVE
+   * values are queryable for traceability.
+   */
+  status?: SectionStatus;
+  /** 1-sentence explanation for non-ACTIVE status (or note confirming ACTIVE). */
+  statusNote?: string;
 }
 
 export interface Article {
@@ -320,6 +338,8 @@ const LAYER_3: Layer = {
             "Transparency — committee decisions, minutes, and reports are published and auditable.",
           ],
           references: ["Constitution v19.0", "L3-Article-I", "L1-Article-III", "L1-Article-XIV"],
+          status: "ACTIVE",
+          statusNote: "Active per v25.3.2 — controls over historical material",
         },
         {
           sectionNumber: "§2.2",
@@ -336,6 +356,8 @@ const LAYER_3: Layer = {
             "Reporting: Council decisions (quarterly, public), Budget report (annual, public), Governance report (annual, public), Emergency actions (as needed, public).",
           ],
           references: ["Constitution v19.0", "L3-Article-II §2.1", "L1-Article-X"],
+          status: "ACTIVE",
+          statusNote: "Active per v25.3.2 — controls over historical material",
         },
         {
           sectionNumber: "§2.3",
@@ -352,6 +374,8 @@ const LAYER_3: Layer = {
             "Reporting: Risk dashboard (monthly, Council), Risk assessment (quarterly, Council), Stress test results (quarterly, Council), Annual risk report (annual, public).",
           ],
           references: ["Constitution v19.0", "L3-Article-II §2.2", "L3-Article-V"],
+          status: "ACTIVE",
+          statusNote: "Active per v25.3.2 — controls over historical material",
         },
         {
           sectionNumber: "§2.4",
@@ -368,6 +392,8 @@ const LAYER_3: Layer = {
             "Reporting: Technical status (monthly, Council), Security report (monthly, Council), Upgrade proposals (as needed, Council), Annual technical report (annual, public).",
           ],
           references: ["Constitution v19.0", "L3-Article-II §2.2", "L4-Article-I", "L4-Article-V"],
+          status: "ACTIVE",
+          statusNote: "Active per v25.3.2 — controls over historical material",
         },
         {
           sectionNumber: "§2.5",
@@ -384,6 +410,8 @@ const LAYER_3: Layer = {
             "Reporting: Audit findings (quarterly, Council), Auditor appointment (annual, Council), Annual audit report (annual, public).",
           ],
           references: ["Constitution v19.0", "L3-Article-II §2.2", "L1-Article-XVII"],
+          status: "ACTIVE",
+          statusNote: "Active per v25.3.2 — controls over historical material (audit findings themselves are PENDING_VALIDATION in policy-registry)",
         },
         {
           sectionNumber: "§2.6",
@@ -400,6 +428,8 @@ const LAYER_3: Layer = {
             "Reporting: Compliance rulings (as needed, Council), Quarterly compliance report (quarterly, Council), Annual compliance certificate (annual, public).",
           ],
           references: ["Constitution v19.0", "L3-Article-II §2.2", "L1-Article-VIII"],
+          status: "PENDING_VALIDATION",
+          statusNote: "Pending external validation (AAOIFI Sharia attestation + certified scholars not yet appointed)",
         },
         {
           sectionNumber: "§2.7",
@@ -416,6 +446,8 @@ const LAYER_3: Layer = {
             "Coordination maintains institutional integrity and prevents fragmentation.",
           ],
           references: ["Constitution v19.0", "L3-Article-II §2.2"],
+          status: "ACTIVE",
+          statusNote: "Active per v25.3.2 — controls over historical material",
         },
         {
           sectionNumber: "§2.8",
@@ -432,6 +464,8 @@ const LAYER_3: Layer = {
             "Sharia Committee — 3+ members, 5-year term, responsibilities: Sharia compliance/rulings/certification, reporting: Annual.",
           ],
           references: ["Constitution v19.0", "L3-Article-II §2.2", "L3-Article-II §2.3", "L3-Article-II §2.4", "L3-Article-II §2.5", "L3-Article-II §2.6"],
+          status: "ACTIVE",
+          statusNote: "Active per v25.3.2 — controls over historical material",
         },
       ],
     },
@@ -459,6 +493,8 @@ const LAYER_3: Layer = {
             "Even in the Emergency stage, the Institution maintains 100% reserves, honors redemptions, and preserves constitutional principles.",
           ],
           references: ["Constitution v19.0", "L3-Article-VI §6.5", "L1-Article-VI", "L1-Article-VII", "L1-Article-XIV"],
+          status: "ACTIVE",
+          statusNote: "Active per v25.3.2 — controls over historical material",
         },
         {
           sectionNumber: "§6.2",
@@ -475,6 +511,8 @@ const LAYER_3: Layer = {
             "Transition criteria: all governance bodies appointed and active, reserves at constitutional minimum, infrastructure operational, legal compliance achieved, initial participants onboarded, Council approval obtained, Independent Review Panel confirmation, transition published.",
           ],
           references: ["Constitution v19.0", "L3-Article-VI §6.1", "L1-Article-XIV"],
+          status: "ACTIVE",
+          statusNote: "Active per v25.3.2 — controls over historical material",
         },
         {
           sectionNumber: "§6.3",
@@ -491,6 +529,8 @@ const LAYER_3: Layer = {
             "Transition criteria: Expansion (opportunity + Council approval), Emergency (emergency event, automatic or Council), Resolution (invariants permanently unattainable + Council + Independent Review Panel), Succession (voluntary transfer + Council + Review Panel + supermajority).",
           ],
           references: ["Constitution v19.0", "L3-Article-VI §6.4", "L3-Article-VII"],
+          status: "ACTIVE",
+          statusNote: "Active per v25.3.2 — controls over historical material",
         },
         {
           sectionNumber: "§6.4",
@@ -507,6 +547,8 @@ const LAYER_3: Layer = {
             "Limitations: expansion cannot violate constitutional principles, change constitutional identity, or enable prohibited activities (anti-platform provisions remain non-amendable).",
           ],
           references: ["Constitution v19.0", "L3-Article-VI §6.3", "L1-Article-V", "L1-Article-XI"],
+          status: "ACTIVE",
+          statusNote: "Active per v25.3.2 — controls over historical material",
         },
         {
           sectionNumber: "§6.5",
@@ -523,6 +565,8 @@ const LAYER_3: Layer = {
             "Transition criteria: Operational (emergency resolved + Council approval), Resolution (emergency cannot be resolved + Council + Independent Review Panel).",
           ],
           references: ["Constitution v19.0", "L3-Article-VI §6.3", "L1-Article-X", "L4-Article-VIII"],
+          status: "ACTIVE",
+          statusNote: "Active per v25.3.2 — controls over historical material",
         },
         {
           sectionNumber: "§6.6",
@@ -539,6 +583,8 @@ const LAYER_3: Layer = {
             "Transition criteria: Wind-down (resolution complete + Wind-down Committee approval), Succession (successor identified + Council + Review Panel + supermajority).",
           ],
           references: ["Constitution v19.0", "L3-Article-VI §6.5", "L1-Article-VII"],
+          status: "ACTIVE",
+          statusNote: "Active per v25.3.2 — controls over historical material",
         },
         {
           sectionNumber: "§6.7",
@@ -555,6 +601,8 @@ const LAYER_3: Layer = {
             "Transition criteria: Operational (succession complete + successor operational), Wind-down (succession complete + original Institution dissolves).",
           ],
           references: ["Constitution v19.0", "L3-Article-VI §6.6", "L1-Article-IX"],
+          status: "ACTIVE",
+          statusNote: "Active per v25.3.2 — controls over historical material",
         },
         {
           sectionNumber: "§6.8",
@@ -571,6 +619,8 @@ const LAYER_3: Layer = {
             "Transition criteria: none — this is the final stage; dissolution completed; records preserved.",
           ],
           references: ["Constitution v19.0", "L3-Article-VI §6.6", "L1-Article-XIV"],
+          status: "ACTIVE",
+          statusNote: "Active per v25.3.2 — controls over historical material",
         },
         {
           sectionNumber: "§6.9",
@@ -587,6 +637,8 @@ const LAYER_3: Layer = {
             "Resolution → Wind-down: resolution complete, Wind-down Committee approval.",
           ],
           references: ["Constitution v19.0", "L3-Article-VI §6.2", "L3-Article-VI §6.3", "L3-Article-VI §6.4", "L3-Article-VI §6.5", "L3-Article-VI §6.6", "L3-Article-VI §6.7", "L3-Article-VI §6.8"],
+          status: "ACTIVE",
+          statusNote: "Active per v25.3.2 — controls over historical material",
         },
       ],
     },
@@ -611,6 +663,8 @@ const LAYER_3: Layer = {
             "Transparency — review findings, recommendations, and actions are published, accessible, and auditable.",
           ],
           references: ["Constitution v19.0", "L1-Article-XV", "L1-Article-XVII"],
+          status: "ACTIVE",
+          statusNote: "Active per v25.3.2 — controls over historical material",
         },
         {
           sectionNumber: "§7.2",
@@ -627,6 +681,8 @@ const LAYER_3: Layer = {
             "Sanctions Screening — Compliance Team — screening log (all participants).",
           ],
           references: ["Constitution v19.0", "L3-Article-VII §7.5", "L2-Article-VII"],
+          status: "ACTIVE",
+          statusNote: "Active per v25.3.2 — controls over historical material",
         },
         {
           sectionNumber: "§7.3",
@@ -643,6 +699,8 @@ const LAYER_3: Layer = {
             "Incident Review — Technical Committee — incident report.",
           ],
           references: ["Constitution v19.0", "L3-Article-VII §7.2"],
+          status: "ACTIVE",
+          statusNote: "Active per v25.3.2 — controls over historical material",
         },
         {
           sectionNumber: "§7.4",
@@ -659,6 +717,8 @@ const LAYER_3: Layer = {
             "Key Risk Indicators — Risk Committee — KRI dashboard.",
           ],
           references: ["Constitution v19.0", "L3-Article-VII §7.3", "L3-Article-V"],
+          status: "ACTIVE",
+          statusNote: "Active per v25.3.2 — controls over historical material",
         },
         {
           sectionNumber: "§7.5",
@@ -675,6 +735,8 @@ const LAYER_3: Layer = {
             "Audit Findings (Audit Committee) + Council Review (institutional performance, quarterly governance report) + Stress Testing (Risk Committee — stress test results).",
           ],
           references: ["Constitution v19.0", "L3-Article-VII §7.4", "L3-Article-II §2.3"],
+          status: "ACTIVE",
+          statusNote: "Active per v25.3.2 — controls over historical material",
         },
         {
           sectionNumber: "§7.6",
@@ -691,6 +753,8 @@ const LAYER_3: Layer = {
             "Governance Review (Council — governance report) + Reserve Review (Reserve Management — annual reserve report) + Sharia Compliance (Sharia Committee — Sharia compliance certificate) + Institutional Report (Council — annual report).",
           ],
           references: ["Constitution v19.0", "L3-Article-VII §7.5", "L3-Article-II §2.5", "L3-Article-II §2.6", "L3-Article-III"],
+          status: "ACTIVE",
+          statusNote: "Active per v25.3.2 — controls over historical material (Sharia + audit sub-components retain their own PENDING_VALIDATION status)",
         },
         {
           sectionNumber: "§7.7",
@@ -707,6 +771,8 @@ const LAYER_3: Layer = {
             "Technological Security (security architecture and controls — security assessment) + Institutional Review (comprehensive assessment — comprehensive review report).",
           ],
           references: ["Constitution v19.0", "L1-Article-XVII", "L2-Article-VI"],
+          status: "PENDING_VALIDATION",
+          statusNote: "Pending external validation (Independent Review Panel not yet convened; first 5-year review not yet conducted)",
         },
         {
           sectionNumber: "§7.8",
@@ -723,6 +789,8 @@ const LAYER_3: Layer = {
             "Step 8 Follow-up: implementation verified, effectiveness assessed, issues resolved, lessons learned; inter-review coordination prevents duplication and ensures coverage.",
           ],
           references: ["Constitution v19.0", "L3-Article-VII §7.2", "L3-Article-VII §7.3", "L3-Article-VII §7.4", "L3-Article-VII §7.5", "L3-Article-VII §7.6", "L3-Article-VII §7.7", "L3-Article-II §2.2"],
+          status: "ACTIVE",
+          statusNote: "Active per v25.3.2 — controls over historical material",
         },
       ],
     },

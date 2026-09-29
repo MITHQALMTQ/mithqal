@@ -15,6 +15,10 @@
 // CHANGE-LOG-v25.3.2.md for the migration map.
 // ============================================================================
 
+// === v25.3.2 STATUS MARKER ===
+// This entire module is HISTORICAL — see HISTORICAL/SUPERSEDED banner above.
+export const MODULE_STATUS: "ACTIVE" | "SUPERSEDED" | "HISTORICAL" | "PENDING_VALIDATION" = "HISTORICAL";
+export const SUPERSEDED_BY = "v25.3.2 policy-registry (see src/lib/policy-registry.ts)";
 // v24.2 §10-11 — 6-State Reserve State Machine
 // =================================================================
 // NORMAL → CAUTION → DEFENSIVE → STRESS → EMERGENCY → RECOVERY
