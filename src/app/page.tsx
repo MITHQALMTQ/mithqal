@@ -6,7 +6,7 @@
  * Rebuilt with institutional engagement links
  * ════════════════════════════════════════════════════════════ */
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import {
@@ -83,9 +83,47 @@ function StatBox({ label, value, sub, accent = "gold" }: { label: string; value:
   );
 }
 
-function Section({ id, icon: Icon, title, subtitle, children }: { id: string; icon: any; title: string; subtitle?: string; children: React.ReactNode }) {
+function Section({ id, icon: Icon, title, subtitle, children, lazy = false }: { id: string; icon: any; title: string; subtitle?: string; children: React.ReactNode; lazy?: boolean }) {
+  // R6 — Lazy-loading below-fold sections (v25.8)
+  //
+  // When `lazy` is true, this Section renders the heading + an h-96
+  // placeholder skeleton in place of `children` until the IntersectionObserver
+  // fires (with 400px rootMargin, so the body mounts ~400px before the user
+  // actually scrolls to it). This defers the expensive rendering of recharts
+  // ResponsiveContainers, tables, and other below-fold content until the
+  // user approaches it.
+  //
+  // HEADING HIERARCHY PRESERVED (audit 2-A defect 2): the `<h2>` is ALWAYS
+  // rendered in the SSR HTML — only the body is deferred. Screen-reader
+  // users who navigate by heading outline see all 19 `<h2>`s immediately,
+  // not just the hero's.
+  //
+  // Per IMPL-RECOMMENDATIONS R6 (MEDIUM priority UX debt from v25.4 audit).
+  //
+  // Constraints honored:
+  //   • Hero Section (mtq-value) does NOT pass `lazy` — above-the-fold
+  //     must render immediately.
+  //   • Sidebar nav does NOT pass `lazy` — must be usable immediately.
+  //   • ARIA role="region" + aria-label preserved on the motion.section.
+  //   • Sticky footer + heading hierarchy preserved (h2 always rendered).
+  const [visible, setVisible] = useState(!lazy);
+  const ref = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    if (!lazy || visible) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) setVisible(true);
+      },
+      { rootMargin: "400px 0px" }
+    );
+    if (ref.current) obs.observe(ref.current);
+    return () => obs.disconnect();
+  }, [lazy, visible]);
+
   return (
     <motion.section
+      ref={lazy ? ref : undefined}
       id={id}
       role="region"
       aria-label={title}
@@ -104,7 +142,20 @@ function Section({ id, icon: Icon, title, subtitle, children }: { id: string; ic
           {subtitle && <p className="mt-0.5 text-xs text-gray-500">{subtitle}</p>}
         </div>
       </div>
-      {children}
+      {lazy && !visible ? (
+        <div
+          className="flex h-96 animate-pulse items-center justify-center rounded-2xl border border-gold/10 bg-gold/5"
+          aria-hidden="true"
+          data-lazy-placeholder="true"
+        >
+          <div className="flex items-center gap-2 text-xs text-gray-500">
+            <RefreshCw className="h-4 w-4 animate-spin text-gold" />
+            <span>Loading section body…</span>
+          </div>
+        </div>
+      ) : (
+        children
+      )}
     </motion.section>
   );
 }
@@ -926,7 +977,7 @@ export default function Page() {
             </Section>
 
             {/* ═══ IDENTITY: WHAT MITHQAL IS / IS NOT ═══ */}
-            <Section id="identity" icon={Landmark} title="What MITHQAL Is — & Is Not" subtitle="§3-§4 Constitutional Identity · 10 functions MITHQAL performs · 26 things MITHQAL is NOT">
+            <Section id="identity" icon={Landmark} title="What MITHQAL Is — & Is Not" subtitle="§3-§4 Constitutional Identity · 10 functions MITHQAL performs · 26 things MITHQAL is NOT" lazy>
               <div className="grid gap-3 md:grid-cols-2">
                 <GlassCard glow className="p-5">
                   <div className="mb-3 flex items-center gap-2">
@@ -973,7 +1024,7 @@ export default function Page() {
             </Section>
 
             {/* ═══ HERO: LIVE STATE ═══ */}
-            <Section id="hero" icon={Activity} title="Live Monetary State" subtitle="Auto-refreshing from /api/nav + /api/oracle">
+            <Section id="hero" icon={Activity} title="Live Monetary State" subtitle="Auto-refreshing from /api/nav + /api/oracle" lazy>
               {!nav.data ? (nav.err ? <ErrorBox label="live data" msg={nav.err} /> : <LoadingBox label="live data" />) : (
                 <>
                   <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -998,7 +1049,7 @@ export default function Page() {
             </Section>
 
             {/* ═══ RESERVE ARCHITECTURE ═══ */}
-            <Section id="reserve" icon={Shield} title="Reserve Architecture — §V25.3" subtitle="130% institutional backing target · 80% fiat / 18% gold / 2% digital">
+            <Section id="reserve" icon={Shield} title="Reserve Architecture — §V25.3" subtitle="130% institutional backing target · 80% fiat / 18% gold / 2% digital" lazy>
               {!reserve.data ? (reserve.err ? <ErrorBox label="reserve architecture" msg={reserve.err} /> : <LoadingBox label="reserve architecture" />) : (
                 <>
                   <div className="grid gap-3 md:grid-cols-3">
@@ -1030,7 +1081,7 @@ export default function Page() {
             </Section>
 
             {/* ═══ CURRENCY ENGINE ═══ */}
-            <Section id="currency" icon={Network} title="Currency Weight Engine" subtitle="11 currencies · C = 0.50·COFER + 0.40·SWIFT + 0.10·BIS · 20% hard cap · proportional normalization">
+            <Section id="currency" icon={Network} title="Currency Weight Engine" subtitle="11 currencies · C = 0.50·COFER + 0.40·SWIFT + 0.10·BIS · 20% hard cap · proportional normalization" lazy>
               {!reserve.data ? (reserve.err ? <ErrorBox label="currency engine" msg={reserve.err} /> : <LoadingBox label="currency engine" />) : (
                 <>
                   <div className="grid gap-3 md:grid-cols-3">
@@ -1107,7 +1158,7 @@ export default function Page() {
             </Section>
 
             {/* ═══ GOLD & BULLION ═══ */}
-            <Section id="gold" icon={Scale} title="Gold & Bullion Module" subtitle="18% target · 15-25% corridor · silver 0% (SDC ≤ 0) · liquidation protects gold LAST">
+            <Section id="gold" icon={Scale} title="Gold & Bullion Module" subtitle="18% target · 15-25% corridor · silver 0% (SDC ≤ 0) · liquidation protects gold LAST" lazy>
               {!reserve.data ? (reserve.err ? <ErrorBox label="gold module" msg={reserve.err} /> : <LoadingBox label="gold module" />) : (
                 <>
                   <div className="grid gap-3 md:grid-cols-4">
@@ -1126,7 +1177,7 @@ export default function Page() {
             </Section>
 
             {/* ═══ DIGITAL LIQUIDITY ═══ */}
-            <Section id="digital" icon={Cpu} title="Digital Liquidity Module" subtitle="2% normal · ≤3% operational · 5% max · 0% emergency · algorithmic excluded">
+            <Section id="digital" icon={Cpu} title="Digital Liquidity Module" subtitle="2% normal · ≤3% operational · 5% max · 0% emergency · algorithmic excluded" lazy>
               {!reserve.data ? (reserve.err ? <ErrorBox label="digital module" msg={reserve.err} /> : <LoadingBox label="digital module" />) : (
                 <>
                   <div className="grid gap-3 md:grid-cols-4">
@@ -1155,7 +1206,7 @@ export default function Page() {
             </Section>
 
             {/* ═══ FINALITY GATE ═══ */}
-            <Section id="finality" icon={Lock} title="Finality-Before-Mint — §54" subtitle="NO FINAL SETTLEMENT ⇒ NO MTQ MINT · 7/7 enforcement layers · 10/10 bypass routes blocked">
+            <Section id="finality" icon={Lock} title="Finality-Before-Mint — §54" subtitle="NO FINAL SETTLEMENT ⇒ NO MTQ MINT · 7/7 enforcement layers · 10/10 bypass routes blocked" lazy>
               {!finality.data ? (finality.err ? <ErrorBox label="finality gate" msg={finality.err} /> : <LoadingBox label="finality gate" />) : (
                 <>
                   <GlassCard glow className="mb-3 p-4 text-center"><div className="font-display text-lg font-bold text-gold">{S(finality.data.invariant)}</div></GlassCard>
@@ -1182,7 +1233,7 @@ export default function Page() {
             </Section>
 
             {/* ═══ P1 FRAMEWORKS ═══ */}
-            <Section id="p1" icon={Building2} title="P1 Critical-Gap Frameworks" subtitle="6 modules + finality + contradiction scan — all IMPLEMENTED at code level, 0/20 institutional gates passed">
+            <Section id="p1" icon={Building2} title="P1 Critical-Gap Frameworks" subtitle="6 modules + finality + contradiction scan — all IMPLEMENTED at code level, 0/20 institutional gates passed" lazy>
               <div className="grid gap-3 md:grid-cols-2">
                 <GlassCard className="p-4"><div className="flex items-center justify-between"><span className="text-xs font-semibold text-white">§47 Protected Backing Cell</span><Badge variant="amber">0 live cells</Badge></div><div className="mt-1 text-[10px] text-gray-500">{pbc.data ? S(pbc.data.formula).slice(0, 80) : "AvailableBacking = Recognized − Encumbered − Allocated"}</div></GlassCard>
                 <GlassCard className="p-4"><div className="flex items-center justify-between"><span className="text-xs font-semibold text-white">§48 Bank Default & Resolution</span><Badge variant="red">NOT guarantor</Badge></div><div className="mt-1 text-[10px] text-gray-500">{bankDefault.data ? `${S(bankDefault.data.states?.length)} states · ${S(bankDefault.data.contractualQuestions?.length)} contractual Qs` : "8-state lifecycle"}</div></GlassCard>
@@ -1198,7 +1249,7 @@ export default function Page() {
             </Section>
 
             {/* ═══ IMPLEMENTATION STATUS ═══ */}
-            <Section id="status" icon={CheckCircle2} title="§87 Implementation Status Report" subtitle="Never inflate any column · 19/23 acceptance criteria met · 0/20 institutional gates passed">
+            <Section id="status" icon={CheckCircle2} title="§87 Implementation Status Report" subtitle="Never inflate any column · 19/23 acceptance criteria met · 0/20 institutional gates passed" lazy>
               {!status.data ? (status.err ? <ErrorBox label="implementation status" msg={status.err} /> : <LoadingBox label="implementation status" />) : (
                 <>
                   <div className="grid gap-3 md:grid-cols-3">
@@ -1242,17 +1293,17 @@ export default function Page() {
             </Section>
 
             {/* ═══ DYNAMIC RESERVE SIMULATOR ═══ */}
-            <Section id="simulator" icon={Zap} title="Dynamic Reserve Weighting Simulator" subtitle="Interactive stress-testing · Adjust parameters and simulate in real-time · Monte Carlo (1000 iterations) · §V25.3 formulas">
+            <Section id="simulator" icon={Zap} title="Dynamic Reserve Weighting Simulator" subtitle="Interactive stress-testing · Adjust parameters and simulate in real-time · Monte Carlo (1000 iterations) · §V25.3 formulas" lazy>
               <DynamicReserveSimulator />
             </Section>
 
             {/* ═══ DYNAMIC CROSS-BORDER CORRIDOR ═══ */}
-            <Section id="corridor" icon={Globe} title="Dynamic Cross-Border Corridor Simulator" subtitle="Select currencies, amount, and rail to simulate different settlement corridors in real-time">
+            <Section id="corridor" icon={Globe} title="Dynamic Cross-Border Corridor Simulator" subtitle="Select currencies, amount, and rail to simulate different settlement corridors in real-time" lazy>
               <DynamicCorridorSimulator />
             </Section>
 
             {/* ═══ STRESS TESTS ═══ */}
-            <Section id="stress" icon={AlertTriangle} title="Institutional Stress Tests" subtitle="10 real historical crisis scenarios · 2008 Lehman, 2020 COVID, 2022 FTX, 2023 SVB, combined systemic · 0 insolvencies">
+            <Section id="stress" icon={AlertTriangle} title="Institutional Stress Tests" subtitle="10 real historical crisis scenarios · 2008 Lehman, 2020 COVID, 2022 FTX, 2023 SVB, combined systemic · 0 insolvencies" lazy>
               {!stressTests.data ? (stressTests.err ? <ErrorBox label="stress tests" msg={stressTests.err} /> : <LoadingBox label="stress tests" />) : (
                 <>
                   <div className="grid gap-3 md:grid-cols-4">
@@ -1293,7 +1344,7 @@ export default function Page() {
             </Section>
 
             {/* ═══ REAL MARKET FEEDS ═══ */}
-            <Section id="feeds" icon={Activity} title="Real Market Data Feeds" subtitle="Live: VIX (FRED), Gold (LBMA), FX (er-api), BIS EER (SDMX) · Reference: COFER (IMF SDMX), SWIFT (publication)">
+            <Section id="feeds" icon={Activity} title="Real Market Data Feeds" subtitle="Live: VIX (FRED), Gold (LBMA), FX (er-api), BIS EER (SDMX) · Reference: COFER (IMF SDMX), SWIFT (publication)" lazy>
               {!marketFeeds.data ? (marketFeeds.err ? <ErrorBox label="market feeds" msg={marketFeeds.err} /> : <LoadingBox label="market feeds" />) : (
                 <>
                   <div className="grid gap-3 md:grid-cols-4">
@@ -1365,7 +1416,7 @@ export default function Page() {
             </Section>
 
             {/* ═══ LEGAL OBLIGATION REGISTER ═══ */}
-            <Section id="legal-register" icon={Gavel} title="Legal Obligation Register" subtitle="117 entries (9 jurisdictions × 13 obligation types) · ALL PENDING · 0 opinions obtained">
+            <Section id="legal-register" icon={Gavel} title="Legal Obligation Register" subtitle="117 entries (9 jurisdictions × 13 obligation types) · ALL PENDING · 0 opinions obtained" lazy>
               {!legalRegister.data ? (legalRegister.err ? <ErrorBox label="legal register" msg={legalRegister.err} /> : <LoadingBox label="legal register" />) : (
                 <>
                   <div className="grid gap-3 md:grid-cols-4">
@@ -1387,7 +1438,7 @@ export default function Page() {
             </Section>
 
             {/* ═══ SANCTIONS SCREENING ═══ */}
-            <Section id="sanctions" icon={Shield} title="Sanctions Screening Framework" subtitle="Fail-closed design (§V24.2.13) · OFAC/UN/EU/HMT lists · Ready for Chainalysis/Elliptic/TRM Labs integration">
+            <Section id="sanctions" icon={Shield} title="Sanctions Screening Framework" subtitle="Fail-closed design (§V24.2.13) · OFAC/UN/EU/HMT lists · Ready for Chainalysis/Elliptic/TRM Labs integration" lazy>
               {!sanctions.data ? (sanctions.err ? <ErrorBox label="sanctions" msg={sanctions.err} /> : <LoadingBox label="sanctions" />) : (
                 <>
                   <div className="grid gap-3 md:grid-cols-3">
@@ -1411,7 +1462,7 @@ export default function Page() {
             </Section>
 
             {/* ═══ DATA SOURCE OBSERVATIONS ═══ */}
-            <Section id="observations" icon={Activity} title="Data Source Observations" subtitle="Persisted provenance trail · Every ingested observation with full audit metadata · Idempotent (INSERT OR IGNORE)">
+            <Section id="observations" icon={Activity} title="Data Source Observations" subtitle="Persisted provenance trail · Every ingested observation with full audit metadata · Idempotent (INSERT OR IGNORE)" lazy>
               {!dataSourceObs.data ? (dataSourceObs.err ? <ErrorBox label="observations" msg={dataSourceObs.err} /> : <LoadingBox label="observations" />) : (
                 <>
                   <div className="grid gap-3 md:grid-cols-4">
@@ -1458,12 +1509,12 @@ export default function Page() {
             </Section>
 
             {/* ═══ VISUAL ANALYTICS (R10: Recharts) ═══ */}
-            <Section id="visual-analytics" icon={BarChart3} title="Visual Analytics" subtitle="Monte Carlo distribution · 11-currency weights donut · stress test comparison · dark gold theme · powered by Recharts">
+            <Section id="visual-analytics" icon={BarChart3} title="Visual Analytics" subtitle="Monte Carlo distribution · 11-currency weights donut · stress test comparison · dark gold theme · powered by Recharts" lazy>
               <VisualAnalytics />
             </Section>
 
             {/* ═══ INSTITUTIONAL ENGAGEMENT CTA ═══ */}
-            <Section id="institutional" icon={Building2} title="Institutional Engagement" subtitle="MITHQAL is seeking regulated institutions, monetary authorities, regulators, infrastructure providers and independent assurance institutions">
+            <Section id="institutional" icon={Building2} title="Institutional Engagement" subtitle="MITHQAL is seeking regulated institutions, monetary authorities, regulators, infrastructure providers and independent assurance institutions" lazy>
               <div className="grid gap-3 md:grid-cols-2">
                 <Link href="/institutional-engagement">
                   <GlassCard glow className="flex items-center justify-between p-5 transition hover:border-gold/40">
