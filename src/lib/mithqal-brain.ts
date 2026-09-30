@@ -183,6 +183,23 @@ const MODEL_LABELS: Record<ModelResponse["model"], string> = {
  *   - NVIDIA:   https://build.nvidia.com/explore/discover/models
  */
 const MODEL_FALLBACKS: Record<ModelResponse["model"], string[]> = {
+  // v25.3.22 (2026-09-30): model lists audited against live provider APIs.
+  //   - OpenRouter: 3 models VERIFIED working with the provisioned key (below).
+  //     The previous 5 free-tier models (:free) were deprecated by OpenRouter
+  //     and returned "unavailable for free" — removed.
+  //   - Groq: models are current per https://console.groq.com/docs/models.
+  //     (The sandbox key was rejected — Forbidden — but the model list is correct
+  //     for when a valid key is provisioned. Vercel production has a working key.)
+  //   - NVIDIA: models per https://build.nvidia.com/explore/discover/models.
+  //     NOTE: the provisioned NVIDIA account has NOT deployed general-purpose
+  //     LLMs — only `riva-translate-*` (translation) respond. The models below
+  //     are correct for a fully-deployed account.
+  //   - Gemini: models per https://ai.google.dev/gemini-api/docs/models.
+  //     (The sandbox key AQ.Ab8RN6... is non-standard — 401 in all auth formats.)
+  //   - HuggingFace: models per https://huggingface.co/models?other=inference.
+  //     NOTE: the free `hf-inference` provider doesn't support these models —
+  //     a dedicated Inference Endpoint or the `router.huggingface.co` with a
+  //     paid provider (novita/replicate/fal-ai) is required.
   groq: [
     "llama-3.3-70b-versatile",
     "llama-3.1-8b-instant",
@@ -200,12 +217,9 @@ const MODEL_FALLBACKS: Record<ModelResponse["model"], string[]> = {
     "meta/llama-3.1-405b-instruct",
   ],
   openrouter: [
-    "meta-llama/llama-3.3-70b-instruct",
-    "google/gemini-2.0-flash-exp:free",
-    "meta-llama/llama-3.1-70b-instruct",
-    "deepseek/deepseek-chat-v3-0324:free",
-    "qwen/qwen-2.5-72b-instruct:free",
-    "microsoft/phi-4:free",
+    "meta-llama/llama-3.3-70b-instruct", // ✅ VERIFIED working 2026-09-30
+    "meta-llama/llama-3.1-70b-instruct", // ✅ VERIFIED working 2026-09-30
+    "qwen/qwen-2.5-72b-instruct",         // ✅ VERIFIED working 2026-09-30
   ],
   gemini: [
     "gemini-2.0-flash",
