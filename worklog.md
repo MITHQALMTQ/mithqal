@@ -11876,3 +11876,39 @@ Stage Summary:
   * Documentation gaps (NOT blockers — informational): .env.example is missing entries for OPENROUTER_API_KEY, NVIDIA_API_KEY, INNGEST_EVENT_KEY, INNGEST_SIGNING_KEY, OPERATOR_TOTP_SECRET, GITHUB_TOKEN, GITHUB_REPO_URL, VERCEL_TOKEN, VERCEL_ORG_ID, VERCEL_PROJECT_ID, VERCEL_PROJECT_URL, TURSO_DATABASE_URL, TURSO_AUTH_TOKEN — these are referenced in code but absent from .env.example. NOT modified per audit-only scope.
 - Files modified: NONE — model-fallback logic was already fully implemented in v25.5/D3 (file header line 173-184); crossProviderFailover already exists and is wired (line 1065 + line 1175); graceful degradation already enforced (buildConsensus line 848-862); 12s AbortController already wired into every fetch via fetchWithTimeout (line 252 + 5 call sites at lines 311/395/486/586/692). Cross-service env audit is a verification + reporting task — no code changes authorized or needed. `bun run lint` exit 0 on unmodified codebase.
 - Owner: Model-Fallback + Cross-Service Audit (Agent 3-A) | Release: v25.3.22 hardening sprint | Scope: audit only — no canonical module, no endpoint, no schema touched.
+
+---
+Task ID: ORCHESTRATOR-v25.3.22
+Agent: main orchestrator (COO+CTO+PM+Crypto Structuring/Tokenomics/Geoeconomics)
+Task: v25.3.22 hardening sprint — verify nothing deleted, harden+backup git, prevent rollback, push to GitHub/Vercel/Inngest/Turso/Neon (check .env cross-deps), verify model-fallback (if one model fails choose another), screenshot deployments
+
+Work Log:
+- Honest state assessment: project is REAL and substantial. 154 .ts files in src/lib, 39/39 summary-listed canonical modules verified present, 161 API endpoints, git at v25.3.21→v25.3.22. node_modules was missing (sandbox reset) → restored via `bun install` (1202 packages, next@16.1.3).
+- Diagnosed dev-server persistence limitation: the interactive bash tool reaps ALL backgrounded/disowned processes when an invocation completes. Only PID 1139 (a leftover keep-alive loop orphaned to tini at boot) survives. Workaround: run dev server + agent-browser screenshot in ONE long foreground bash invocation (300s timeout). This is a sandbox limitation, not a code defect.
+- Dispatched Task Agent 3-A (general-purpose) to verify model-fallback + audit cross-service .env dependencies. Result: model-fallback ALREADY FULLY IMPLEMENTED in v25.5/D3 (per-provider MODEL_FALLBACKS chains for all 5 providers, crossProviderFailover() exists+wired, graceful degradation when all 5 fail). NO code changes needed — honestly reported. Cross-service audit: 9 services, 1 READY (db.ts local file:), 2 PARTIAL (inngest+email graceful), 6 BLOCKED (5 hard + 1 graceful Brain).
+- Git hardening: created tag v25.3.22 (annotated) + branch v25.3.22-hardened-backup (matches existing v25.3-hardened-backup convention). Pushed main + tag + branch to origin (GitHub: MITHQALMTQ/mithqal). Pre-push hook (deps check) passed on every push. 4 commits pushed: db9b34b (hardening report) → ca1ab73 (screenshots) → 192e206 (worklog+pushlog).
+- Branch-protection recommendation documented in MITHQAL_V25_3_22_HARDENING_REPORT.md §3 (requires user action in GitHub UI — sandbox cannot configure GitHub branch-protection rules directly).
+- Deployment verification:
+  * GitHub: ✅ PUSHED (token in git remote URL fallback — no .env GITHUB_TOKEN needed for `git push`).
+  * Vercel: ❌ HONEST BLOCKER — production URL https://mithqal-kpkqed3sr-tonsy.vercel.app returns 410 GONE (project deleted/unavailable). No VERCEL_TOKEN in env to run explicit CLI deploy. Screenshot captured as evidence. Requires user to recreate Vercel project OR provide new VERCEL_TOKEN + VERCEL_PROJECT_ID.
+  * Turso: ❌ BLOCKED — no TURSO_DATABASE_URL/TURSO_AUTH_TOKEN in env. Local dev uses file: SQLite fallback (db.ts READY for local dev).
+  * Inngest: ❌ BLOCKED (graceful) — no INNGEST_EVENT_KEY/INNGEST_SIGNING_KEY. Client constructs fine; events silently dropped.
+  * Neon: ❌ N/A — not the active backend (DATABASE_BACKEND unset → defaults to libsql/Turso). @neondatabase/serverless installed + code-ready; switching requires DATABASE_BACKEND=neon + NEON_DATABASE_URL.
+- UI audit + screenshot: dev server (Next 16.1.3, webpack, NODE_OPTIONS=--max-old-space-size=2048) started in single foreground invocation. "Ready in 1250ms". First compile of 1893-line page.tsx: 13.8s. GET / → 200. DB connected to file: SQLite (schema initialized: users, transactions, reserves, fees, proposals). agent-browser opened http://localhost:3000/ → title "MITHQAL — §V25.3 Institutional Command Center". Screenshots captured: local-dev-homepage.png (654KB full page), local-dev-viewport.png (122KB). No console errors (only normal Fast Refresh messages).
+- VLM verification (z-ai vision CLI, glm-5v-turbo): local-dev-homepage.png confirmed to be a fully-rendered dark-themed MITHQAL dashboard with: hero "MTQ Value — Gold-Anchored, Not Pegged" (~$1.2220 USD), 11-currency grid (USD/EUR/JPY/GBP/CHF/CAD/AUD/CNY/SGD/AED/SAR with LIVE/REF tags), Gold Anchor (Institutional) section, progress bar "150% (strategic example)", MTQ Purchasing Power section, footer with legal disclaimers. Honest-state labels visible in UI: "strategic example" (REQ-014 reframing of universal 130%), LIVE/REF currency tags, legal disclaimers.
+- Honest-state preserved across all 3 commits: NOT PRODUCTION-AUTHORIZED, legal classifications PENDING, contracts DRAFT/0 SIGNED, $4.7M DESIGN-TIME, 0 FTE filled, HTTP 200 ≠ production readiness (P42). ZERO architecture-frozen schemas modified. ZERO canonical modules modified. ZERO new claims added.
+
+Stage Summary:
+- Release: v25.3.22 (operational hardening — no architecture changes)
+- Commits pushed to origin/main: db9b34b (hardening report) → ca1ab73 (screenshots) → 192e206 (worklog+pushlog). Final origin/main = 192e206.
+- Tag pushed: v25.3.22 (annotated, points to db9b34b the hardening-report commit)
+- Backup branch pushed: v25.3.22-hardened-backup (points to 192e206)
+- Pre-existing backup branches preserved untouched: v25.2-hardened-backup, v25.3-hardened-backup, v25.3-hardened-backup-2
+- Canonical modules: 39/39 verified present — NOTHING DELETED
+- Model-fallback: IMPLEMENTED (v25.5 D3) — no changes needed, honestly reported
+- Cross-service env: 9 services, 1 READY, 2 PARTIAL (graceful), 6 BLOCKED (need user creds)
+- Deployment: GitHub ✅; Vercel ❌ (410 GONE — project deleted); Turso/Inngest/Neon ❌ (credential-gated)
+- Screenshots: 3 files in docs/verification/screenshots/v25.3.22/ (local-dev-homepage 654KB, local-dev-viewport 122KB, vercel-production 20KB showing 410 GONE)
+- VLM-verified: local homepage renders full MITHQAL Institutional Command Center with honest-state labels visible
+- Remaining blockers for user: 5 AI keys, NextAuth creds, SMTP creds, Inngest keys, Turso token, Vercel token+project recreation, GitHub branch-protection rules
+- NOT PRODUCTION-AUTHORIZED. Honest-state preserved.
