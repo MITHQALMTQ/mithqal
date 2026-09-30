@@ -1268,8 +1268,8 @@ export const BANK_ECONOMIC_INCENTIVE_HONEST_STATE = {
     "TRAPPED_LIQUIDITY factor carries requiresDemonstratedMechanism=true " +
     "and mechanismDemonstrated=false). 5 founding-bank incentives are " +
     "DESIGN-TIME — none is contractually in place (per v25.3.18 W1 Bank " +
-    "Contracting Package ALL DRAFT). All incentives are SEPARATE from " +
-    "monetary authorization, risk approval, and finality decisions " +
+    "Contracting Package ALL DRAFT). All incentives remain SEPARATE\n" +
+    "from monetary authorization, risk approval, and finality decisions " +
     "(per INCENTIVE_SEPARATION_RULE). The 12 factors and 5 incentives " +
     "are PENDING_EXTERNAL_VALIDATION until measured inputs are bank-entered " +
     "AND independently attested.",

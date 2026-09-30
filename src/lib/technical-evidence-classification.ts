@@ -564,8 +564,8 @@ export const TECHNICAL_EVIDENCE_CLASSES: EvidenceClass[] = [
     classId: "LEGAL_EVIDENCE",
     name: "Legal Evidence",
     description:
-      "Independent legal opinion or formally executed instrument from " +
-      "qualified external counsel. LEGAL_EVIDENCE is NOT established by an " +
+      "Independent legal opinion or formally executed instrument issued\n" +
+      "from qualified external counsel. LEGAL_EVIDENCE is NOT established by an " +
       "HTTP 200, a passing unit test, an integration test pass, or internal " +
       "verification. It requires an external legal opinion letter " +
       "(independent counsel) and/or formally executed operating agreements, " +
