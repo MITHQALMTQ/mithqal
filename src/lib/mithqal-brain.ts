@@ -9,15 +9,16 @@
  *   2. AI Compliance Assistant — KYC screening for Formation Committee
  *   3. AI Transaction Anomaly Detection — flags unusual on-chain activity
  *
- * Architecture: 5 external LLMs are called in parallel for every query.
+ * Architecture: 6 external LLMs are called in parallel for every query.
  *   - Gemini       (Google)               — broad reasoning + knowledge
  *   - HuggingFace  (Inference API)        — specialized financial models
  *   - Groq         (ultra-fast inference)  — real-time analysis
  *   - OpenRouter   (multi-model gateway)  — diverse model aggregation
  *   - NVIDIA       (Nemotron NIM)          — enterprise-grade reasoning
+ *   - Neon         (Neon AI Gateway)      — multi-model proxy (CR-2026-030)
  *
- * Consensus mechanism (5 providers):
- *   - 4–5 models agree  → high   confidence (green)
+ * Consensus mechanism (6 providers):
+ *   - 4–6 models agree  → high   confidence (green)
  *   - 3 models agree   → high   confidence (majority, green)
  *   - 2 models agree   → medium confidence (yellow)
  *   - 1 model responds  → low    confidence (red, needs human review)
@@ -56,7 +57,13 @@ export type ConsensusLevel = "high" | "medium" | "low";
 
 export interface ModelResponse {
   /** Stable identifier for this model (used by the UI to render cards). */
-  model: "gemini" | "huggingface" | "groq" | "openrouter" | "nvidia";
+  model:
+    | "gemini"
+    | "huggingface"
+    | "groq"
+    | "openrouter"
+    | "nvidia"
+    | "neon";
   /** Human-friendly label. */
   label: string;
   /** The model's textual response (may be empty if the call failed). */
@@ -83,7 +90,7 @@ export interface BrainResponse {
   recommendations: string[];
   /** ISO timestamp of when the Brain completed this query. */
   timestamp: string;
-  /** Number of models that responded successfully (0..5). */
+  /** Number of models that responded successfully (0..6). */
   modelsResponded: number;
 }
 
@@ -141,6 +148,12 @@ const HF_KEY = process.env.HUGGINGFACE_API_KEY;
 const GROQ_KEY = process.env.GROQ_API_KEY;
 const OPENROUTER_KEY = process.env.OPENROUTER_API_KEY;
 const NVIDIA_KEY = process.env.NVIDIA_API_KEY;
+// CR-2026-030 (Proposal E): Neon AI Gateway token (format: nt_live_...).
+// The Neon AI Gateway is a proxy that routes a single OpenAI-shaped
+// request to multiple underlying LLM providers. Stored at module load
+// so the infrastructure is ready when the gateway endpoint is confirmed
+// (see queryNeon() docstring for the endpoint-investigation results).
+const NEON_AI_GATEWAY_TOKEN = process.env.NEON_AI_GATEWAY_TOKEN;
 
 /** Per-call upstream timeout. 12s is generous for Groq, tight for HF. */
 const UPSTREAM_TIMEOUT_MS = 12_000;
@@ -155,6 +168,7 @@ const MODEL_LABELS: Record<ModelResponse["model"], string> = {
   groq: "Groq Llama 3.3 70B",
   openrouter: "OpenRouter (multi-model)",
   nvidia: "NVIDIA Nemotron",
+  neon: "Neon AI Gateway (multi-model)",
 };
 
 /**
@@ -235,6 +249,19 @@ const MODEL_FALLBACKS: Record<ModelResponse["model"], string[]> = {
     "mistralai/Mistral-Nemo-Instruct-2407",
     "Qwen/Qwen2.5-7B-Instruct",
   ],
+  // CR-2026-030 (Proposal E): Neon AI Gateway — multi-model proxy. The
+  // gateway routes a single OpenAI-shaped request to whichever backend
+  // (OpenAI, Anthropic, Meta, ...) has capacity, so the fallback list
+  // uses generic OpenAI-style model identifiers rather than provider-
+  // specific names. The gateway's chat-completions URL is UNVERIFIED —
+  // see the docstring on queryNeon() for the endpoint-investigation
+  // results. These model identifiers are placeholders ready for when
+  // the endpoint is confirmed.
+  neon: [
+    "gpt-4o-mini",
+    "claude-3.5-sonnet",
+    "meta-llama/llama-3.3-70b-instruct",
+  ],
 };
 
 /**
@@ -257,6 +284,12 @@ const PRIMARY_FAMILY: Record<ModelResponse["model"], string> = {
   groq: "llama-3.3-70b",
   openrouter: "llama-3.3-70b",
   nvidia: "mistral-nemotron",
+  // CR-2026-030 (Proposal E): Neon is a multi-model proxy, so it has
+  // no single coarse family — its primary is classed as "neon-gateway"
+  // which no other provider shares. This means crossProviderFailover()
+  // will never substitute for Neon (nor vice versa) — Neon's slot
+  // stays red if the gateway is unreachable, just like Gemini/NVIDIA.
+  neon: "neon-gateway",
 };
 
 /* ------------------------------------------------------------------ */
@@ -766,6 +799,152 @@ async function queryNVIDIA(prompt: string): Promise<ModelResponse> {
   return { ...base, latencyMs: Date.now() - start, error: lastError };
 }
 
+/**
+ * Query the Neon AI Gateway via the OpenAI-compatible chat completions API.
+ *
+ * CR-2026-030 (Proposal E) — Endpoint investigation (2026-09-30):
+ *   Candidate 1: https://ai.neon.tech/v1/chat/completions
+ *                → DNS does not resolve (no A record, getent/curl fail).
+ *   Candidate 2: https://api.neon.tech/ai/v1/chat/completions
+ *                → DNS does not resolve (api.neon.tech has no A record).
+ *   Candidate 3: https://neon.ai/v1/chat/completions
+ *                → 308 redirect to www.neon.ai, then 404 — that host is a
+ *                  Framer-built marketing site ("Neon.ai builds custom
+ *                  AI..."), not an LLM gateway.
+ *
+ * Additional probes during investigation:
+ *   - https://ai.gateway.neon.tech, https://gateway.neon.tech,
+ *     https://llm.neon.tech, https://inference.neon.tech,
+ *     https://ai.api.neon.tech, https://neon-gateway.com
+ *     → none resolve in DNS.
+ *   - The Neon REST API (api.neon.tech/v2/users/me) could not be probed
+ *     because api.neon.tech itself does not resolve from this sandbox.
+ *     The user's prior note that the REST API rejected the token as
+ *     "not a valid JWT" confirms the AI Gateway is a separate service
+ *     from the Neon Postgres platform API.
+ *   - The token format is `nt_live_...` (verified), distinct from Neon
+ *     Postgres platform tokens (`pat_...` / JWT-shaped) — confirming the
+ *     AI Gateway token is intended for a different endpoint.
+ *
+ * STUB STATE:
+ *   Until the gateway's actual chat-completions endpoint is confirmed,
+ *   this function returns `{ ok: false, error: "Neon AI Gateway endpoint
+ *   not yet verified" }` WITHOUT making any HTTP calls. The token IS
+ *   read from env so the infrastructure is ready — flipping
+ *   NEON_ENDPOINT_VERIFIED=true in the environment is the only change
+ *   required to enable live dispatch through MODEL_FALLBACKS.neon.
+ *
+ *   The full OpenAI-compatible fetch loop is preserved (mirrors
+ *   queryOpenRouter() exactly) so the live path is auditable + ready.
+ *
+ * Request/response shape: identical to Groq/OpenRouter/NVIDIA (OpenAI
+ * chat completions). Model identifiers come from MODEL_FALLBACKS.neon.
+ */
+const NEON_ENDPOINT = "https://ai.neon.tech/v1/chat/completions";
+// CR-2026-030 (Proposal E): flip to `true` (env: NEON_ENDPOINT_VERIFIED=true)
+// when the gateway URL is confirmed. This is a runtime check (not a const
+// literal) so TypeScript's control-flow analysis treats the live-dispatch
+// loop below as reachable — keeping the code structurally identical to
+// queryOpenRouter() even while the stub is in effect.
+const NEON_ENDPOINT_VERIFIED = process.env.NEON_ENDPOINT_VERIFIED === "true";
+
+async function queryNeon(prompt: string): Promise<ModelResponse> {
+  const start = Date.now();
+  const model: ModelResponse["model"] = "neon";
+  const base: ModelResponse = {
+    model,
+    label: MODEL_LABELS[model],
+    response: "",
+    confidence: 0,
+    latencyMs: 0,
+    ok: false,
+  };
+
+  if (!NEON_AI_GATEWAY_TOKEN) {
+    return { ...base, error: "NEON_AI_GATEWAY_TOKEN not configured" };
+  }
+
+  // STUB gate (CR-2026-030): the Neon AI Gateway endpoint is currently
+  // UNVERIFIED — see the docstring above for the endpoint-investigation
+  // results. Return a clear, honest stub error so the operator knows the
+  // slot is intentionally dark (not a transient upstream failure).
+  if (!NEON_ENDPOINT_VERIFIED) {
+    return {
+      ...base,
+      latencyMs: Date.now() - start,
+      error: "Neon AI Gateway endpoint not yet verified",
+    };
+  }
+
+  // Iterate the per-provider model fallback list (mirrors queryOpenRouter).
+  // The Neon AI Gateway is a multi-model proxy — we keep a small list of
+  // generic OpenAI-style identifiers so the gateway can route to whichever
+  // backend has capacity, and a gateway-side deprecation of one identifier
+  // does not kill the Neon vote in the consensus.
+  const models = MODEL_FALLBACKS.neon;
+  let lastError = "";
+
+  for (const modelName of models) {
+    try {
+      const res = await fetchWithTimeout(NEON_ENDPOINT, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${NEON_AI_GATEWAY_TOKEN}`,
+        },
+        body: JSON.stringify({
+          model: modelName,
+          messages: [
+            {
+              role: "system",
+              content:
+                "You are the Mithqal Brain, a multi-model consensus AI for a " +
+                "constitutional settlement infrastructure. Be precise, " +
+                "structured, and concise.",
+            },
+            { role: "user", content: prompt },
+          ],
+          temperature: 0.3,
+          max_tokens: 800,
+        }),
+      });
+
+      if (!res.ok) {
+        const errText = await res.text().catch(() => "");
+        lastError = `Neon ${modelName} HTTP ${res.status}: ${errText.slice(0, 200)}`;
+        continue;
+      }
+
+      const json = (await res.json()) as {
+        choices?: Array<{ message?: { content?: string } }>;
+      };
+      const text = json?.choices?.[0]?.message?.content?.trim() ?? "";
+
+      if (!text) {
+        lastError = `Neon ${modelName} returned an empty response`;
+        continue;
+      }
+
+      return {
+        ...base,
+        response: text,
+        confidence: scoreConfidence(text),
+        latencyMs: Date.now() - start,
+        ok: true,
+      };
+    } catch (err) {
+      lastError =
+        err instanceof Error && err.name === "AbortError"
+          ? `Neon ${modelName} timed out`
+          : err instanceof Error
+            ? `Neon ${modelName}: ${err.message}`
+            : `Neon ${modelName} call failed`;
+    }
+  }
+
+  return { ...base, latencyMs: Date.now() - start, error: lastError };
+}
+
 /* ------------------------------------------------------------------ */
 /*  Consensus + confidence heuristics                                  */
 /* ------------------------------------------------------------------ */
@@ -829,7 +1008,7 @@ function jaccard(a: Set<string>, b: Set<string>): number {
 }
 
 /**
- * Build the consensus result from up to 5 model responses.
+ * Build the consensus result from up to 6 model responses.
  *
  * Returns the consensus level + the combined answer + recommendations.
  * The "combined answer" is the response with the highest mean Jaccard
@@ -837,7 +1016,7 @@ function jaccard(a: Set<string>, b: Set<string>): number {
  * "central" to the cluster. In the case of a tie or no agreement, we
  * pick the response with the highest heuristic confidence.
  *
- * Consensus levels (5-provider spec):
+ * Consensus levels (6-provider spec):
  *   - Largest pairwise-agreement clique of size ≥ 3 → "high"
  *   - Largest clique of size 2                    → "medium"
  *   - Largest clique of size 1 (no pair agrees)   → "low"
@@ -845,7 +1024,7 @@ function jaccard(a: Set<string>, b: Set<string>): number {
  *
  * "Pairwise-agreement clique" = a subset of models where every pair
  * has Jaccard similarity ≥ AGREEMENT_THRESHOLD. We brute-force this
- * (≤5 models → ≤32 subsets) — trivially cheap, and far more accurate
+ * (≤6 models → ≤64 subsets) — trivially cheap, and far more accurate
  * than the old agreeingPairs-count heuristic which conflated "many
  * overlapping pairs" with "many models agree".
  */
@@ -863,12 +1042,12 @@ export function buildConsensus(responses: ModelResponse[]): {
     return {
       consensus: "low",
       combinedAnswer:
-        "The Mithqal Brain could not reach any of the 5 upstream models. " +
+        "The Mithqal Brain could not reach any of the 6 upstream models. " +
         "Check API keys, network connectivity, and try again. No consensus " +
         "was formed — operator review required.",
       recommendations: [
         "Verify GEMINI_API_KEY, HUGGINGFACE_API_KEY, GROQ_API_KEY, " +
-          "OPENROUTER_API_KEY, NVIDIA_API_KEY are set.",
+          "OPENROUTER_API_KEY, NVIDIA_API_KEY, NEON_AI_GATEWAY_TOKEN are set.",
         "Retry the query in a few seconds — upstream may be rate-limited.",
       ],
       modelsResponded: 0,
@@ -901,7 +1080,7 @@ export function buildConsensus(responses: ModelResponse[]): {
     }
   }
 
-  // Find the largest clique of pairwise-agreeing models. With ≤5
+  // Find the largest clique of pairwise-agreeing models. With ≤6
   // models this brute-force over subsets (largest first) is trivially
   // cheap and avoids the NP-hardness that bites general clique search.
   const isClique = (members: number[]): boolean => {
@@ -933,7 +1112,7 @@ export function buildConsensus(responses: ModelResponse[]): {
     }
   }
 
-  // Map agreement-clique size → consensus level (per 5-provider spec):
+  // Map agreement-clique size → consensus level (per 6-provider spec):
   //   ≥3 agree → high   ·   2 agree → medium   ·   1 → low
   let consensus: ConsensusLevel;
   if (largestAgreement >= 3) {
@@ -1134,13 +1313,13 @@ export function crossProviderFailover(
 /* ------------------------------------------------------------------ */
 
 /**
- * Query all 5 models in parallel for a single prompt.
+ * Query all 6 models in parallel for a single prompt.
  *
  * Uses `Promise.allSettled` so a single failure does not abort the
  * others. Each model function returns a `ModelResponse` (with `ok: false`
  * on failure), so we never throw — the caller gets the full picture.
  *
- * The optional `systemContext` is prepended to the prompt to give all 5
+ * The optional `systemContext` is prepended to the prompt to give all 6
  * models the same framing.
  *
  * v25.5 (D3): after `Promise.allSettled` returns, the result array is
@@ -1149,6 +1328,13 @@ export function crossProviderFailover(
  * by substituting the response of an alternate provider whose primary
  * model is in the same coarse family. See the docstring on
  * `crossProviderFailover()` for the full rationale + limits.
+ *
+ * v25.3.22 (CR-2026-030 / Proposal E): Neon AI Gateway added as the 6th
+ * provider. The gateway endpoint is UNVERIFIED — queryNeon() returns a
+ * stub error so the Neon slot renders as a clearly-marked "endpoint not
+ * yet verified" card rather than a transient upstream failure. The slot
+ * still occupies a place in the consensus pool (one of six) but does
+ * not contribute a vote until the endpoint is confirmed.
  */
 export async function queryAllModels(
   prompt: string,
@@ -1157,12 +1343,13 @@ export async function queryAllModels(
   const fullPrompt = systemContext
     ? `${systemContext}\n\n---\n\n${prompt}`
     : prompt;
-  const [gemini, groq, hf, openrouter, nvidia] = await Promise.allSettled([
+  const [gemini, groq, hf, openrouter, nvidia, neon] = await Promise.allSettled([
     queryGemini(fullPrompt),
     queryGroq(fullPrompt),
     queryHuggingFace(fullPrompt),
     queryOpenRouter(fullPrompt),
     queryNVIDIA(fullPrompt),
+    queryNeon(fullPrompt),
   ]);
   const results: ModelResponse[] = [
     gemini.status === "fulfilled"
@@ -1180,6 +1367,9 @@ export async function queryAllModels(
     nvidia.status === "fulfilled"
       ? nvidia.value
       : { model: "nvidia" as const, label: MODEL_LABELS.nvidia, response: "", confidence: 0, latencyMs: 0, ok: false, error: "NVIDIA rejected" },
+    neon.status === "fulfilled"
+      ? neon.value
+      : { model: "neon" as const, label: MODEL_LABELS.neon, response: "", confidence: 0, latencyMs: 0, ok: false, error: "Neon rejected" },
   ];
 
   // v25.5 (D3): apply cross-provider failover to recover any slot
@@ -1204,7 +1394,7 @@ const SYSTEM_CONTEXT =
 /**
  * Risk Monitor — analyzes currency / reserve risks from live oracle data.
  *
- * The Brain asks all 5 models to assess the current gold/silver/stablecoin
+ * The Brain asks all 6 models to assess the current gold/silver/stablecoin
  * snapshot, reserve ratio, and NAV for the Mithqal peg. Each model returns
  * a structured risk assessment; the Brain then forms a consensus.
  */
@@ -1249,7 +1439,7 @@ export async function riskMonitor(data: CurrencyData): Promise<{
 /**
  * Compliance Assistant — KYC screening for Formation Committee intake.
  *
- * The Brain asks all 5 models to assess the counterparty risk of a
+ * The Brain asks all 6 models to assess the counterparty risk of a
  * prospective Formation Committee participant based on the supplied
  * self-attested profile. Output: a risk score (0-100, higher = riskier),
  * a list of flags, and a recommendation (clear / review / escalate).
@@ -1295,7 +1485,7 @@ export async function complianceAssistant(user: UserData): Promise<{
 /**
  * Anomaly Detection — scans recent on-chain transactions for unusual patterns.
  *
- * The Brain asks all 5 models to flag suspicious activity: unusually large
+ * The Brain asks all 6 models to flag suspicious activity: unusually large
  * amounts, rapid sequences, circular transfers, unknown counterparties,
  * etc. Output: a list of anomalies with severity.
  */
@@ -1572,12 +1762,13 @@ export interface BrainStatus {
  */
 export async function getBrainStatus(): Promise<BrainStatus> {
   const pingPrompt = "Reply with the single word OK.";
-  const [gemini, groq, hf, openrouter, nvidia] = await Promise.allSettled([
+  const [gemini, groq, hf, openrouter, nvidia, neon] = await Promise.allSettled([
     queryGemini(pingPrompt),
     queryGroq(pingPrompt),
     queryHuggingFace(pingPrompt),
     queryOpenRouter(pingPrompt),
     queryNVIDIA(pingPrompt),
+    queryNeon(pingPrompt),
   ]);
 
   const models: BrainStatus["models"] = [
@@ -1643,6 +1834,19 @@ export async function getBrainStatus(): Promise<BrainStatus> {
         nvidia.status === "fulfilled" && !nvidia.value.ok
           ? nvidia.value.error
           : nvidia.status === "rejected"
+            ? "rejected"
+            : undefined,
+    },
+    {
+      model: "neon",
+      label: MODEL_LABELS.neon,
+      connected: neon.status === "fulfilled" && neon.value.ok,
+      configured: Boolean(NEON_AI_GATEWAY_TOKEN),
+      latencyMs: neon.status === "fulfilled" ? neon.value.latencyMs : 0,
+      error:
+        neon.status === "fulfilled" && !neon.value.ok
+          ? neon.value.error
+          : neon.status === "rejected"
             ? "rejected"
             : undefined,
     },
