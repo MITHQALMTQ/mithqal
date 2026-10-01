@@ -419,6 +419,50 @@ async function queryGemini(prompt: string): Promise<ModelResponse> {
  *
  * Model: "llama-3.3-70b-versatile" (per spec).
  */
+/**
+ * Dynamic Groq model discovery (CR-2026-033).
+ *
+ * Groq frequently deprecates/renames models (ALL 6 models in the original
+ * MODEL_FALLBACKS.groq were deprecated by 2026-09-30 — the Vercel
+ * production key returns HTTP 400 "model deprecated", NOT 401, confirming
+ * the key is valid). Rather than hardcoding model names that go stale,
+ * we fetch the CURRENT models list from the Groq API at runtime + cache
+ * it for 5 minutes. This makes the Brain resilient to Groq's model churn.
+ *
+ * If the models-list endpoint is unreachable (e.g., the key is Forbidden
+ * on the sandbox), falls back to MODEL_FALLBACKS.groq (hardcoded list).
+ */
+let GROQ_MODELS_CACHE: { models: string[]; fetchedAt: number } | null = null;
+const GROQ_MODELS_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
+async function fetchGroqModels(): Promise<string[]> {
+  // Return cached if fresh
+  if (GROQ_MODELS_CACHE && Date.now() - GROQ_MODELS_CACHE.fetchedAt < GROQ_MODELS_TTL_MS) {
+    return GROQ_MODELS_CACHE.models;
+  }
+  if (!GROQ_KEY) return MODEL_FALLBACKS.groq;
+  try {
+    const res = await fetchWithTimeout(
+      "https://api.groq.com/openai/v1/models",
+      { headers: { Authorization: `Bearer ${GROQ_KEY}` } },
+      5000, // 5s timeout for the models list (short — don't block the Brain)
+    );
+    if (res.ok) {
+      const json = (await res.json()) as { data?: Array<{ id: string; object_type?: string }> };
+      const chatModels = (json.data || [])
+        .filter((m) => !m.object_type || m.object_type === "chat")
+        .map((m) => m.id);
+      if (chatModels.length > 0) {
+        GROQ_MODELS_CACHE = { models: chatModels, fetchedAt: Date.now() };
+        return chatModels;
+      }
+    }
+  } catch {
+    // Fall through to hardcoded list
+  }
+  return MODEL_FALLBACKS.groq;
+}
+
 async function queryGroq(prompt: string): Promise<ModelResponse> {
   const start = Date.now();
   const model: ModelResponse["model"] = "groq";
@@ -435,12 +479,9 @@ async function queryGroq(prompt: string): Promise<ModelResponse> {
     return { ...base, error: "GROQ_API_KEY not configured" };
   }
 
-  // Iterate the per-provider model fallback list and return the first
-  // successful response. This protects the Brain against Groq retiring
-  // individual models (the original primary, `llama-3.3-70b-versatile`,
-  // has historically 404'd) — we silently fall through to the next
-  // candidate model in the same provider family.
-  const models = MODEL_FALLBACKS.groq;
+  // Dynamic model discovery: fetch the CURRENT models list from the Groq
+  // API (cached 5 min). Falls back to MODEL_FALLBACKS.groq if unreachable.
+  const models = await fetchGroqModels();
   let lastError = "";
 
   for (const modelName of models) {
