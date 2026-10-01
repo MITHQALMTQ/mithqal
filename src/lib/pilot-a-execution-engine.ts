@@ -845,11 +845,11 @@ export function executePilotA(instruction: PilotInstruction): PilotExecutionResu
     evidenceTier: "SIMULATED",
     honestState: {
       productionAuthorized: false,
-      mtqCompletelyDisabled: mtqDisabled && steps.every(s => !s.mtqUsed),
+      mtqCompletelyDisabled: steps.every(s => !s.mtqUsed) // RUNTIME TRUTH: no step used MTQ (per Definitive Authority Model: RUNTIME_OBSERVATION > CONFIGURATION),
       noSimulatedAsLive: true,
       allStepsClassified: steps.every(s => s.evidenceTier !== undefined),
     },
-    summary: `Pilot A executed ${steps.length} steps. MTQ ${mtqDisabled ? "DISABLED" : "ENABLED"}. Settlement asset: BANK_MONEY. Final state: ${finalState}. Finality: ${finalityStage}. Evidence: SIMULATED (no live institutional integration claimed).`,
+    summary: `Pilot A executed ${steps.length} steps. MTQ ${steps.every(s => !s.mtqUsed) ? "DISABLED (runtime: 0 steps used MTQ)" : "USED (runtime: " + steps.filter(s => s.mtqUsed).length + " steps used MTQ)"}. Settlement asset: BANK_MONEY. Final state: ${finalState}. Finality: ${finalityStage}. Evidence: SIMULATED (no live institutional integration claimed).`,
     timestamp: new Date().toISOString(),
   };
 }
