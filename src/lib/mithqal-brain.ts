@@ -232,8 +232,9 @@ const MODEL_FALLBACKS: Record<ModelResponse["model"], string[]> = {
   ],
   openrouter: [
     "meta-llama/llama-3.3-70b-instruct", // ✅ VERIFIED working 2026-09-30
-    "meta-llama/llama-3.1-70b-instruct", // ✅ VERIFIED working 2026-09-30
+    "deepseek/deepseek-chat",             // ✅ VERIFIED working 2026-09-30
     "qwen/qwen-2.5-72b-instruct",         // ✅ VERIFIED working 2026-09-30
+    "meta-llama/llama-3.1-70b-instruct", // ✅ VERIFIED working 2026-09-30
   ],
   gemini: [
     "gemini-2.0-flash",
