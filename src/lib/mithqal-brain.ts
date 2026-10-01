@@ -214,13 +214,18 @@ const MODEL_FALLBACKS: Record<ModelResponse["model"], string[]> = {
   //     NOTE: the free `hf-inference` provider doesn't support these models —
   //     a dedicated Inference Endpoint or the `router.huggingface.co` with a
   //     paid provider (novita/replicate/fal-ai) is required.
+  //   - Groq: Vercel production key WORKS (HTTP 400 "model deprecated" on
+  //     `gemma2-9b-it` — NOT 401/403, so the key is valid). ALL 6 previous
+  //     models in the list were deprecated by Groq. Updated below with
+  //     current 2026 model names. The user's sandbox key (gsk_ZKK3...) is
+  //     Forbidden separately — account suspended.
   groq: [
     "llama-3.3-70b-versatile",
     "llama-3.1-8b-instant",
-    "llama-3.2-3b-preview",
-    "llama-3.2-1b-preview",
-    "mixtral-8x7b-32768",
-    "gemma2-9b-it",
+    "llama-3.3-70b-specdec",
+    "qwen-2.5-32b",
+    "deepseek-r1-distill-llama-70b",
+    "llama-3.2-90b-vision-preview",
   ],
   nvidia: [
     "mistralai/mistral-nemotron",
