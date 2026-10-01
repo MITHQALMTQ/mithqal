@@ -845,7 +845,8 @@ export function executePilotA(instruction: PilotInstruction): PilotExecutionResu
     evidenceTier: "SIMULATED",
     honestState: {
       productionAuthorized: false,
-      mtqCompletelyDisabled: steps.every(s => !s.mtqUsed) // RUNTIME TRUTH: no step used MTQ (per Definitive Authority Model: RUNTIME_OBSERVATION > CONFIGURATION),
+      // RUNTIME TRUTH: no step used MTQ (per Definitive Authority Model: RUNTIME_OBSERVATION > CONFIGURATION)
+      mtqCompletelyDisabled: steps.every((s) => !s.mtqUsed),
       noSimulatedAsLive: true,
       allStepsClassified: steps.every(s => s.evidenceTier !== undefined),
     },
