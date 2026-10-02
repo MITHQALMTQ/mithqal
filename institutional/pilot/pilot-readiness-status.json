@@ -1,0 +1,41 @@
+{
+  "pilot_id": "PILOT-A-001",
+  "bank": "UNKNOWN (0 banks contacted)",
+  "corridor": "C-AE-SG (NOT bank-confirmed)",
+  "problem_status": "UNKNOWN (0 bank-validated problems)",
+  "workshop_status": "NOT_READY (0 workshops conducted)",
+  "legal_status": "LEGAL_VALIDATION_PENDING (0 counsel engaged)",
+  "regulatory_status": "JURISDICTION_PENDING (0/8 triaged)",
+  "technical_status": "PROPOSED (MBG designed, 0 bank assessments)",
+  "security_status": "UNKNOWN (0 bank assessments, 0 certifications)",
+  "compliance_status": "UNKNOWN (0 bank requirements captured)",
+  "data_status": "UNKNOWN (0 bank data, 0 NDA, 0 DPA)",
+  "custody_status": "UNKNOWN (0 custodians, 0/14 PBC predicates)",
+  "settlement_status": "PROPOSED (BANK_MONEY, MTQ disabled, SIMULATED)",
+  "reconciliation_status": "PROPOSED (6 policies, 0 bank-confirmed)",
+  "participant_status": "UNKNOWN (0 participants confirmed)",
+  "term_sheet_status": "BLOCKED_BY_WORKSHOP",
+  "conditions_precedent": "18/18 BLOCKING",
+  "critical_blockers": [
+    "B-LEGAL: G0_CONDITIONAL + G1 BLOCKED (0 counsel, 50 questions)",
+    "B-REGULATORY: 0/8 triaged, 0 filed",
+    "B-BANK: 0 banks contacted, 0 workshops",
+    "B-DATA: 0 bank baseline, 0 NDA"
+  ],
+  "unknowns": [
+    "ALL 15 KPI baselines UNKNOWN",
+    "ALL bank requirements UNKNOWN",
+    "ALL participant roles UNKNOWN",
+    "ALL workshop data UNKNOWN",
+    "ALL legal questions unanswered"
+  ],
+  "proposed_scope": "1 bank, 1 corridor (AE-SG), MTQ disabled, BANK_MONEY, controlled test, 19 BM steps",
+  "mtq_status": "DISABLED",
+  "kpi_baseline_status": "UNKNOWN (0/15 available)",
+  "kpi_target_status": "PROPOSED (0/15 agreed)",
+  "evidence_readiness": "PROPOSED (plan defined, 0 collected)",
+  "assurance_readiness": "PROPOSED (prepared, 0 conducted)",
+  "production_authorized": false,
+  "institutionally_validated": false,
+  "next_external_evidence": "G0_PASS (entity counsel-verified — currently G0_CONDITIONAL)"
+}
