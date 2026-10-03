@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "package_id": "REM-PA-001",
+  "version": "v25.3.2-P72-1.0",
+  "date": "2026-10-03T00:00:00Z",
+  "owner": "JOZOUR_LLC_NJ (G0_CONDITIONAL)",
+  "source": "Prompt 72, Section S",
+  "status": "ISSUED",
+  "pilot": "PILOT-A-001",
+  "pilot_executed": false,
+  "remediations_total_count": 5,
+  "remediations_classification": {
+    "CLOSED": 0,
+    "PARTIALLY_CLOSED": 0,
+    "OPEN": 5,
+    "NOT_RETESTED": 5
+  },
+  "per_remediation": [
+    {
+      "remediation_id": "REM-01",
+      "ORIGINAL_FINDING": "FINDING-GOVERNANCE-01",
+      "ROOT_CAUSE": "Environment reset caused loss of uncommitted institutional artifacts from Prompts 62-71. The work was not committed to git, so it was lost when the environment was reset.",
+      "REMEDIATION": "Restore the prior institutional artifacts from any available backup, OR re-create them from the conversation history of prior sessions. The /institutional/assurance/ directory (42 files from Prompt 70) and the /institutional/{g1,corridors,banks,legal,bank-workshop,pilot}/ directories from Prompts 62-69 must be present on the filesystem.",
+      "IMPLEMENTATION_EVIDENCE": "NONE",
+      "TEST_RESULT": "NOT_TESTED",
+      "INDEPENDENT_RETEST": "NOT_PERFORMED",
+      "FINAL_STATUS": "OPEN",
+      "note": "Per Section S: 'A code change alone does not close an institutional finding.' This remediation requires actual artifact restoration + verification, not just a claim."
+    },
+    {
+      "remediation_id": "REM-02",
+      "ORIGINAL_FINDING": "FINDING-GOVERNANCE-02",
+      "ROOT_CAUSE": "Entity JOZOUR_LLC_NJ is DESIGNED in code but NOT LEGALLY ESTABLISHED. 5 primary documents are MISSING or PENDING.",
+      "REMEDIATION": "G0_PASS — deposit the 5 primary documents (Articles of Incorporation, Operating Agreement, JOZOUR Amendment §1.6, Board Resolution, Shareholder Agreement) and engage qualified external counsel for entity verification.",
+      "IMPLEMENTATION_EVIDENCE": "NONE",
+      "TEST_RESULT": "NOT_TESTED",
+      "INDEPENDENT_RETEST": "NOT_PERFORMED",
+      "FINAL_STATUS": "OPEN",
+      "note": "External evidence required — cannot be self-remediated by MITHQAL."
+    },
+    {
+      "remediation_id": "REM-03",
+      "ORIGINAL_FINDING": "FINDING-GOVERNANCE-03",
+      "ROOT_CAUSE": "G1 legal evidence pack is READY_FOR_COUNSEL but BLOCKED by G0. 50 legal questions unanswered.",
+      "REMEDIATION": "G0_PASS → engage qualified external counsel for UAE (DIFC/ADGM) jurisdiction → answer 50 legal questions → produce 22 counsel deliverables.",
+      "IMPLEMENTATION_EVIDENCE": "NONE",
+      "TEST_RESULT": "NOT_TESTED",
+      "INDEPENDENT_RETEST": "NOT_PERFORMED",
+      "FINAL_STATUS": "OPEN",
+      "note": "External counsel engagement required — BLOCKED by G0_PASS."
+    },
+    {
+      "remediation_id": "REM-04",
+      "ORIGINAL_FINDING": "FINDING-GOVERNANCE-04",
+      "ROOT_CAUSE": "Bank engagement chain broken. 0 banks contacted out of 15 researched.",
+      "REMEDIATION": "G0_PASS → G1 counsel engagement → approach a UAE-based bank (DIFC/ADGM) → execute NDA → conduct Institutional Discovery Workshop → capture bank baseline data.",
+      "IMPLEMENTATION_EVIDENCE": "NONE",
+      "TEST_RESULT": "NOT_TESTED",
+      "INDEPENDENT_RETEST": "NOT_PERFORMED",
+      "FINAL_STATUS": "OPEN",
+      "note": "External bank engagement required — BLOCKED by G1 counsel."
+    },
+    {
+      "remediation_id": "REM-05",
+      "ORIGINAL_FINDING": "FINDING-GOVERNANCE-05",
+      "ROOT_CAUSE": "Pilot term sheet at DRAFT, not negotiated. 0/18 conditions precedent satisfied.",
+      "REMEDIATION": "G0_PASS → G1 → bank engagement → workshop → term-sheet negotiation (DRAFT → INTERNAL_REVIEW → BANK_REVIEW → LEGAL_REVIEW → COMMERCIAL_REVIEW → PILOT_NEGOTIATION → EXECUTED).",
+      "IMPLEMENTATION_EVIDENCE": "NONE",
+      "TEST_RESULT": "NOT_TESTED",
+      "INDEPENDENT_RETEST": "NOT_PERFORMED",
+      "FINAL_STATUS": "OPEN",
+      "note": "Term-sheet negotiation required — BLOCKED by workshop."
+    }
+  ],
+  "closure_rule": "Per Section S: 'A code change alone does not close an institutional finding.' A finding is closed only when: (1) root cause identified; (2) remediation implemented; (3) implementation tested; (4) independent retest passes. None of the 5 remediations has reached any of these stages. All 5 are OPEN + NOT_RETESTED.",
+  "NOT_PRODUCTION_AUTHORIZED": true
+}
