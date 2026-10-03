@@ -1,0 +1,28 @@
+{
+  "g0Status": "G0_FAIL",
+  "g0Decision": "G0_FAIL",
+  "unresolvedIssues": 16,
+  "primaryDocumentConflicts": [
+    "JOZOUR_LLC_NJ — PRIMARY_DOCUMENT_MISSING",
+    "JOZOUR Amendment §1.6 — PRIMARY_DOCUMENT_MISSING",
+    "Articles of Incorporation — PRIMARY_DOCUMENT_MISSING",
+    "Operating Agreement — PRIMARY_DOCUMENT_MISSING"
+  ],
+  "inheritedLegalQuestions": [
+    "Does the entity legally exist?",
+    "Who has authority to contract?",
+    "What are the ownership/control boundaries?",
+    "What is the IP ownership structure?",
+    "What are the related-party disclosures?"
+  ],
+  "controllingEntity": "JOZOUR_LLC_NJ (DESIGNED, NOT VERIFIED)",
+  "ownershipStructure": "UNKNOWN — no shareholder agreement",
+  "authorityMatrix": "PENDING_PRIMARY_DOCUMENT — no board resolution",
+  "mtqObligorRole": "INTERNAL_DESIGN — no executed obligor agreement",
+  "redemptionRole": "INTERNAL_DESIGN — no executed redemption framework",
+  "reserveOwnership": "INTERNAL_DESIGN — no qualified custodian",
+  "liabilityBoundaries": "INTERNAL_DESIGN — 17 contract sections ALL DRAFT",
+  "ipOwnership": "UNKNOWN — no IP assignment agreement",
+  "dataOwnership": "INTERNAL_DESIGN — no DPA",
+  "contractualAuthority": "PENDING_PRIMARY_DOCUMENT — no board resolution"
+}

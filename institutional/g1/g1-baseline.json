@@ -1,0 +1,22 @@
+{
+  "g0Status": "G0_FAIL",
+  "g1Status": "READY_FOR_COUNSEL",
+  "candidateJurisdictions": ["AE", "SG", "SA", "IN", "CN", "US", "GB", "EU"],
+  "externalEvidenceCount": 0,
+  "primarySourceCount": 0,
+  "legalQuestionsCount": 50,
+  "criticalOpenIssues": 16,
+  "primaryDocumentDependencies": [
+    "Articles of Incorporation (PRIMARY_DOCUMENT_MISSING)",
+    "Operating Agreement (PRIMARY_DOCUMENT_MISSING)",
+    "JOZOUR Amendment §1.6 (PRIMARY_DOCUMENT_MISSING)",
+    "Board Resolution (PENDING_PRIMARY_DOCUMENT)",
+    "Shareholder Agreement (PENDING_PRIMARY_DOCUMENT)"
+  ],
+  "counselRequired": true,
+  "regulatorEngagementRequired": true,
+  "bankDependency": true,
+  "productionAuthorized": false,
+  "institutionallyValidated": false,
+  "nextExternalEvidence": "Engage external legal counsel for UAE jurisdiction to answer 50 legal questions + 18 counsel deliverables. BLOCKED BY G0_FAIL — entity must be legally established first."
+}

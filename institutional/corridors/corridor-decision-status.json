@@ -1,0 +1,24 @@
+{
+  "g0_status": "G0_CONDITIONAL",
+  "g1_status": "READY_FOR_COUNSEL (BLOCKED_BY_G0)",
+  "candidate_count": 5,
+  "candidate_corridors": ["C-AE-SG", "C-AE-EG", "C-SA-IN", "C-AE-IN", "C-CN-AE"],
+  "evidence_counts": { "measured": 0, "external_source": 0, "assumed": 25, "unknown": 320 },
+  "critical_blockers": [
+    "G0_CONDITIONAL — counsel verification pending",
+    "G1 BLOCKED_BY_G0 — 50 legal questions unanswered",
+    "0 banks contacted (ALL RESEARCHED)",
+    "0 bank baseline data (ALL pain metrics UNKNOWN)",
+    "ALL legal dependencies COUNSEL_REQUIRED",
+    "ALL bank dependencies UNCONFIRMED"
+  ],
+  "shortlisted_corridors": ["C-AE-SG", "C-AE-EG", "C-CN-AE"],
+  "primary_corridor_for_deep_discovery": "C-AE-SG",
+  "mtq_independent_value_path": true,
+  "legal_validation_status": "JURISDICTION_PENDING",
+  "bank_dependency_status": "0 banks contacted, ALL UNCONFIRMED",
+  "pilot_a_readiness": "REQUIRES_BANK_DISCOVERY + REQUIRES_LEGAL_WORK",
+  "next_external_evidence": "Bank operations interview: approach a UAE-based bank (DIFC/ADGM) to discuss AE-SG corridor settlement pain + provide baseline data. REQUIRES G0_PASS + G1 counsel engagement first.",
+  "production_authorized": false,
+  "institutionally_validated": false
+}

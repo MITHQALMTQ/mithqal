@@ -1,0 +1,31 @@
+{
+  "package_status": "READY_WITH_LIMITATIONS",
+  "primary_corridor": "C-AE-SG (UAE → Singapore)",
+  "bank_pipeline_status": "15 researched, 0 contacted, 0 design partners",
+  "g0_status": "G0_CONDITIONAL",
+  "g1_status": "READY_FOR_COUNSEL (BLOCKED_BY_G0)",
+  "counsel_status": "NOT ENGAGED — 50 questions + 22 deliverables prepared",
+  "bank_validated_problem_count": 0,
+  "executive_interest_count": 0,
+  "architecture_review_count": 0,
+  "pilot_design_count": 0,
+  "known_external_evidence": 0,
+  "critical_unknowns": [
+    "ALL bank pain = UNKNOWN",
+    "ALL ROI = UNKNOWN",
+    "ALL legal = PENDING",
+    "ALL regulatory = PENDING",
+    "MTQ = DISABLED"
+  ],
+  "critical_blockers": [
+    "G0_CONDITIONAL — entity not counsel-verified",
+    "G1 BLOCKED_BY_G0 — 50 legal questions unanswered",
+    "0 banks contacted",
+    "0 counsel engaged"
+  ],
+  "mtq_independent_value_path": true,
+  "pilot_a_readiness": "REQUIRES_BANK_DISCOVERY + REQUIRES_LEGAL_WORK",
+  "production_authorized": false,
+  "institutionally_validated": false,
+  "next_external_evidence": "Institutional Discovery Workshop with UAE bank (DIFC/ADGM). BLOCKED by G0_PASS + G1 counsel engagement."
+}

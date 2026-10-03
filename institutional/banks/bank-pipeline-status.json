@@ -1,0 +1,41 @@
+{
+  "pipeline_version": "v25.3.2",
+  "generated_at": "2026-10-01T22:55:00Z",
+  "corridor_under_investigation": "C-AE-SG (UAE → Singapore)",
+  "candidate_institutions": 15,
+  "researched_count": 15,
+  "target_count": 0,
+  "contacted_count": 0,
+  "qualified_count": 0,
+  "executive_interest_count": 0,
+  "architecture_review_count": 0,
+  "legal_review_count": 0,
+  "pilot_design_count": 0,
+  "commercial_review_count": 0,
+  "pilot_negotiation_count": 0,
+  "contracted_count": 0,
+  "pilot_active_count": 0,
+  "measured_count": 0,
+  "repeatable_count": 0,
+  "design_partner_count": 0,
+  "bank_validated_problem_count": 0,
+  "critical_blockers": [
+    "G0_CONDITIONAL — entity not counsel-verified",
+    "G1 BLOCKED_BY_G0 — 50 legal questions unanswered",
+    "0 banks contacted (ALL RESEARCHED)",
+    "0 design partners",
+    "0 bank-validated problem statements",
+    "0 bank baseline data"
+  ],
+  "missing_external_evidence": [
+    "G0_PASS (counsel verification)",
+    "G1 counsel engagement (50 questions)",
+    "NDA execution",
+    "Bank operations interview",
+    "Bank technical assessment",
+    "Bank legal/compliance review"
+  ],
+  "next_external_evidence": "G0_PASS (entity legally established — currently G0_CONDITIONAL)",
+  "production_authorized": false,
+  "institutionally_validated": false
+}
