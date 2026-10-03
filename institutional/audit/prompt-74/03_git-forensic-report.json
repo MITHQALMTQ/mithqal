@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "audit_id": "FA74-PA-001",
+  "source": "Prompt 74, Section G (Git Forensic Audit)",
+  "status": "ISSUED",
+  "git_forensic_summary": {
+    "files_added_in_recent_commits": "institutional/outcome/ (37 files) + institutional/execution/ (26 files) in c7dafc6",
+    "files_deleted": "0 files deleted in recent commits (per git log --diff-filter=D)",
+    "files_renamed": "0 files renamed in recent commits",
+    "files_modified": "2 submodules (foundry/lib/forge-std, foundry/lib/openzeppelin-contracts) — pre-existing dirty state",
+    "files_replaced": "0",
+    "commits_associated_with_prompts_62_73": "c7dafc6 (Prompt 72 + 73 artifacts committed); NO commits for Prompts 62-71 (never committed)",
+    "branches_containing_implementation": "audit/prompt-1-73-forensic (current), main, backup/*, v25.*-hardened-backup",
+    "unmerged_implementation_branches": "none detected",
+    "orphaned_commits": "6 dangling commits (ae42e03, 51c6590, 7d0ce20, 829214b, d597fb1, 1cd8a82) — all from v25.0-v25.6 era; none contain missing frozen schemas or institutional/assurance/",
+    "reverted_commits": "none detected",
+    "accidental_reversions": "none detected",
+    "force_push_evidence": "not directly observable; UUID-tagged commits suggest automated/agent commits",
+    "duplicate_implementations": "2 duplicate commits (e4b19e4 + 3e9003e) both with message 'CRITICAL FIX: MODEL_LABELS typo'"
+  },
+  "suspicious_deletions": [],
+  "suspicious_deletions_note": "No suspicious deletions detected. The missing files (9 of 10 frozen schemas, Prompt 70 assurance framework, Prompts 62-69 directories) were NEVER in this repository — they cannot have been deleted because they were never committed. This is a 'never persisted' finding, not a 'deleted' finding.",
+  "do_not_restore_automatically_rule": "Per Section G: 'Do NOT restore automatically at this stage.' No files restored. All recovery is REMEDIATION_REQUIRED.",
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "audit_id": "FA74-PA-001",
+  "source": "Prompt 74, Section O (Database / Migration Audit)",
+  "status": "ISSUED",
+  "database_audit": {
+    "schema_file": "prisma/schema.prisma (69 lines, hash 1a028567...)",
+    "tables_declared_in_schema": "fewer than 19 (per prior worklog: 19 tables exist; discrepancy because additional tables created via CREATE TABLE IF NOT EXISTS in src/lib/db.ts)",
+    "indexes": "UNKNOWN — cannot verify without live database access",
+    "constraints": "UNKNOWN",
+    "migrations_directory": "MISSING — prisma/migrations/ does not exist; schema managed via db:push (not migrations)",
+    "seed_data": "UNKNOWN",
+    "audit_tables": "audit/push-log.jsonl present (modified in working tree)",
+    "state_tables": "per prior worklog: 19 tables in db.ts",
+    "evidence_tables": "CRITICAL — institutional-evidence-fabric.ts (which would store EvidencePackage) is MISSING; evidence schema not verifiable",
+    "policy_tables": "CRITICAL — policy-registry.ts MISSING; policy tables not verifiable",
+    "execution_tables": "per prior worklog: designed but not runtime-verified",
+    "reconciliation_tables": "per prior worklog: designed but not runtime-verified",
+    "pilot_tables": "per prior worklog: designed but not runtime-verified"
+  },
+  "checks": {
+    "migration_completeness": "UNKNOWN — no migrations directory",
+    "migration_order": "n/a",
+    "migration_reproducibility": "n/a (db:push is not reproducible in the way migrations are)",
+    "schema_drift": "UNKNOWN — cannot verify live schema without database access",
+    "orphan_tables": "UNKNOWN",
+    "missing_indexes": "UNKNOWN",
+    "missing_constraints": "UNKNOWN",
+    "deleted_migrations": "n/a (no migrations directory exists)",
+    "duplicate_migrations": "n/a",
+    "production_vs_test_differences": "UNKNOWN — no production access"
+  },
+  "never_modify_production_data_rule": "Per Section O: 'Never modify production data during this audit.' This audit is READ_ONLY. No database data was modified.",
+  "CRITICAL_FINDING": "The 'institutional-evidence-fabric.ts' file (referenced as the FROZEN EvidencePackage schema) DOES NOT EXIST. The evidence schema referenced across Prompts 70-73 is NOT present as a source file. This is a P0_CRITICAL loss.",
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

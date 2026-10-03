@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "audit_id": "FA74-PA-001",
+  "version": "v25.3.2-P74-1.0",
+  "date": "2026-10-03T05:12:00Z",
+  "owner": "JOZOUR_LLC_NJ (G0_CONDITIONAL)",
+  "source": "Prompt 74, Sections B + O",
+  "status": "IMMUTABLE_SNAPSHOT",
+  "database_state": {
+    "primary_database": "Turso (libsql/SQLite-edge via Prisma)",
+    "fallback_database": "file: SQLite (local fallback when Turso not configured)",
+    "analytics_replica": "Neon Postgres (CDC sync from Turso — configured in code; not live-verified)",
+    "evidence_archive": "Neon S3 (configured in code; returns 403 per prior worklog — credential issue)",
+    "prisma_schema": {
+      "file": "prisma/schema.prisma",
+      "present": true,
+      "lines": 69,
+      "hash": "1a0285671d5d1779360028f507ae1156207e874cd566e5afd053c2755a69c941"
+    },
+    "migrations_directory": {
+      "path": "prisma/migrations/",
+      "present": false,
+      "status": "MISSING — no migration directory exists; schema is managed via db:push (schema push) not migrate (migration-based)",
+      "migration_completeness": "UNKNOWN — no migrations to audit",
+      "migration_order": "n/a",
+      "migration_reproducibility": "n/a (db:push is not reproducible in the way migrations are)"
+    },
+    "schema_drift": "UNKNOWN — cannot verify live schema without database access (credentials absent from .env)",
+    "tables": "per prior worklog: 19 tables (honest discrepancy from prisma/schema.prisma which defines fewer models — the additional tables are created via CREATE TABLE IF NOT EXISTS in src/lib/db.ts)",
+    "orphan_tables": "UNKNOWN — cannot verify without live database access",
+    "missing_indexes": "UNKNOWN — cannot verify without live database access",
+    "missing_constraints": "UNKNOWN — cannot verify without live database access",
+    "deleted_migrations": "n/a (no migration directory exists)",
+    "duplicate_migrations": "n/a",
+    "production_vs_test_differences": "UNKNOWN — no production access",
+    "audit_tables": "per prior worklog: audit/push-log.jsonl exists (modified in working tree)",
+    "state_tables": "per prior worklog: present in db.ts (19 tables)",
+    "evidence_tables": "per prior worklog: EvidencePackage stored via institutional-evidence-fabric.ts — BUT THIS FILE DOES NOT EXIST in the current repository (MISSING frozen schema)",
+    "policy_tables": "UNKNOWN — policy-registry.ts is MISSING (frozen schema absent)",
+    "execution_tables": "per prior worklog: pilot/execution tables designed but not runtime-verified",
+    "reconciliation_tables": "per prior worklog: designed but not runtime-verified",
+    "pilot_tables": "per prior worklog: designed but not runtime-verified"
+  },
+  "database_audit_note": "Per Section O: 'Never modify production data during this audit.' This audit is READ_ONLY. No database data was modified. The prisma/schema.prisma was inspected (69 lines, hash recorded). No live database connection was attempted (credentials absent from .env). The schema is managed via db:push (not migrations), which means migration history is not available for audit. The 19-table count (per prior worklog) vs fewer Prisma models discrepancy is a known issue (additional tables created via raw SQL in db.ts).",
+  "CRITICAL_FINDING": "The 'institutional-evidence-fabric.ts' file (referenced in Prompts 70-73 as the FROZEN EvidencePackage schema with 15 fields and 3 access levels) DOES NOT EXIST in this repository. It was never committed. The evidence schema referenced across Prompts 70-73 is NOT present as a source file. This is a P0_CRITICAL loss.",
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

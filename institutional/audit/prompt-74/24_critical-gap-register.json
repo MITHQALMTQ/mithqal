@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "audit_id": "FA74-PA-001",
+  "source": "Prompt 74, Section AH (Critical-Gap Classification)",
+  "status": "ISSUED",
+  "gaps_total": 7,
+  "gaps_by_severity": { "P0_CRITICAL": 3, "P1_HIGH": 2, "P2_MEDIUM": 2, "P3_LOW": 0, "OBSERVATION": 0 },
+  "gaps": [
+    {
+      "GAP_ID": "GAP-01",
+      "PROMPT_OR_REQUIREMENT": "Prompts 70-73 (referenced 10 frozen schemas)",
+      "DESCRIPTION": "9 of 10 'frozen schema' files DO NOT EXIST in this repository: controlled-architecture-freeze.ts, institutional-evidence-fabric.ts, settlement-workflow-canonical.ts, canonical-finality-model.ts, policy-registry.ts, reserve-domains.ts, institutional-settlement-obligation-registry.ts, pilot-gate-framework.ts, mtq-economic-definition.ts. Only 1 of 10 (final-pilot-activation-gate.ts) exists.",
+      "CURRENT_STATE": "9 of 10 frozen schemas ABSENT — not in filesystem, not in any git branch, not in any tag, not in any dangling commit",
+      "EXPECTED_STATE": "10 frozen schemas present in src/lib/ as the v25.3.2 controlled architecture baseline",
+      "EVIDENCE": "git log --all -- <file> returns 0 matches for each; filesystem ls returns 'No such file'; similar-named files exist but are DIFFERENT artifacts",
+      "ROOT_CAUSE_IF_KNOWN": "The frozen schemas were developed in prior conversation sessions but were never committed to this git repository. They existed only in chat context, not as durable artifacts.",
+      "RECOVERY_PATH": "re-create from prior session conversation context OR correct the institutional record (Prompts 70-73) to reference actual file names (finality-before-mint.ts, legal-obligation-register.ts, reserve-policy-spec.ts, pilot-operational-readiness.ts, mtq-final-reserve-spec.ts) IF those files implement the same concepts (REQUIRES VERIFICATION)",
+      "RISK": "P0_CRITICAL — the architectural claims in Prompts 70-73 about '10 frozen schemas, all untouched' cannot be verified; the EvidencePackage schema (institutional-evidence-fabric.ts) is referenced as FROZEN across all post-Pilot-A work but does not exist",
+      "OWNER": "JOZOUR_LLC_NJ principal + AI developer",
+      "PRIORITY": "P0"
+    },
+    {
+      "GAP_ID": "GAP-02",
+      "PROMPT_OR_REQUIREMENT": "Prompt 70 (assurance framework)",
+      "DESCRIPTION": "/institutional/assurance/ (42 files — 20 criteria, 25 controls, 94 tests) was NEVER committed to git",
+      "CURRENT_STATE": "42 files ABSENT — not in filesystem, not in any git ref",
+      "EXPECTED_STATE": "/institutional/assurance/ with 42 files present and committed",
+      "EVIDENCE": "git log --all -- institutional/assurance/ returns 0 matches; filesystem ls returns 'No such file or directory'",
+      "ROOT_CAUSE_IF_KNOWN": "The assurance framework was developed in a prior conversation session (Prompt 70) but was never persisted to git. It existed only in chat context.",
+      "RECOVERY_PATH": "re-create from prior session conversation context (the conversation history contains the full content of all 42 files — they were written as Write tool calls in the prior session)",
+      "RISK": "P0_CRITICAL — the assurance framework is referenced extensively in Prompts 72-73; without it, the execution control tower (Prompt 73) has dangling references to a non-existent framework",
+      "OWNER": "JOZOUR_LLC_NJ principal + AI developer",
+      "PRIORITY": "P0"
+    },
+    {
+      "GAP_ID": "GAP-03",
+      "PROMPT_OR_REQUIREMENT": "Prompts 62-69 (G0/G1/corridor/bank/counsel/executive/workshop/term-sheet)",
+      "DESCRIPTION": "All 6 institutional directories from Prompts 62-69 NEVER committed: /institutional/{g1,corridors,banks,legal,bank-workshop,pilot}/",
+      "CURRENT_STATE": "14+ files ABSENT across 6 directories",
+      "EXPECTED_STATE": "6 directories with 14+ files present and committed",
+      "EVIDENCE": "git log --all -- institutional/{g1,corridors,banks,legal,bank-workshop,pilot}/ all return 0 matches",
+      "ROOT_CAUSE_IF_KNOWN": "Same as GAP-02 — developed in prior sessions but never persisted to git",
+      "RECOVERY_PATH": "re-create from prior session conversation context",
+      "RISK": "P0_CRITICAL — Prompts 72-73 reference these directories by path (e.g., /institutional/pilot/pilot-term-sheet-status.md); all such references are dangling",
+      "OWNER": "JOZOUR_LLC_NJ principal + AI developer",
+      "PRIORITY": "P0"
+    },
+    {
+      "GAP_ID": "GAP-04",
+      "PROMPT_OR_REQUIREMENT": "All prompts (runtime verification)",
+      "DESCRIPTION": ".env has only 1 line (51 of 52 expected environment variables MISSING); all credentials absent",
+      "CURRENT_STATE": ".env = 1 line; 51 vars missing; no runtime verifiable",
+      "EXPECTED_STATE": ".env = 52 lines with all credentials provisioned",
+      "EVIDENCE": "wc -l .env = 1; .env.example = 52 lines",
+      "ROOT_CAUSE_IF_KNOWN": "Environment was reset; .env was not re-provisioned with actual secrets",
+      "RECOVERY_PATH": "RECONSTRUCTABLE — re-provision from .env.example; operator must supply actual secrets (TURSO_DATABASE_URL, NEON_DATABASE_URL, AWS credentials, API keys, CRON_SECRET, NEXTAUTH_SECRET, etc.)",
+      "RISK": "P1_HIGH — no runtime can be verified; all integrations (Turso, Neon, Inngest, Brain, Vercel) are CONFIGURED but NOT VERIFIED at runtime",
+      "OWNER": "JOZOUR_LLC_NJ principal (operator)",
+      "PRIORITY": "P1"
+    },
+    {
+      "GAP_ID": "GAP-05",
+      "PROMPT_OR_REQUIREMENT": "All prompts (dev environment)",
+      "DESCRIPTION": "node_modules/ absent — dependencies not installed; bun run lint fails (eslint not found)",
+      "CURRENT_STATE": "node_modules/ absent; bun run lint exit 127",
+      "EXPECTED_STATE": "node_modules/ present; bun run lint exit 0",
+      "EVIDENCE": "ls node_modules/.bin/next returns 'No such file'; bun run lint returns 'eslint: command not found'",
+      "ROOT_CAUSE_IF_KNOWN": "Environment was reset; bun install was not re-run",
+      "RECOVERY_PATH": "RECONSTRUCTABLE — run bun install",
+      "RISK": "P1_HIGH — no dev server can run; no lint can verify code quality; no runtime testing possible",
+      "OWNER": "JOZOUR_LLC_NJ principal (operator) + AI developer",
+      "PRIORITY": "P1"
+    },
+    {
+      "GAP_ID": "GAP-06",
+      "PROMPT_OR_REQUIREMENT": "Database (migration audit)",
+      "DESCRIPTION": "prisma/migrations/ directory does not exist; schema managed via db:push (not migrations)",
+      "CURRENT_STATE": "no migrations directory; schema via db:push",
+      "EXPECTED_STATE": "prisma/migrations/ with migration history",
+      "EVIDENCE": "ls prisma/migrations/ returns 'No such file or directory'",
+      "ROOT_CAUSE_IF_KNOWN": "The project uses db:push (schema push) not migrate (migration-based); this is a design choice, not an accidental loss",
+      "RECOVERY_PATH": "RECONSTRUCTABLE — run prisma migrate dev to generate migrations (if migration-based schema management is desired); OR accept db:push as the schema management method (document this choice)",
+      "RISK": "P2_MEDIUM — migration history not available for audit; migration reproducibility not verifiable; but db:push is a valid schema management method",
+      "OWNER": "AI developer",
+      "PRIORITY": "P2"
+    },
+    {
+      "GAP_ID": "GAP-07",
+      "PROMPT_OR_REQUIREMENT": "Prompts 70-73 (version authority)",
+      "DESCRIPTION": "v25.3.2 CLAIMED as canonical version but NO git tag v25.3.2 exists; latest tag is v25.6",
+      "CURRENT_STATE": "v25.3.2 claimed in Prompts 70-73; no tag; latest tag v25.6",
+      "EXPECTED_STATE": "v25.3.2 tag exists OR Prompts 70-73 corrected to reference v25.6",
+      "EVIDENCE": "git tag -l 'v25.3*' returns v25.3-final, v25.3-final-v2 (no v25.3.2); git tag | tail -10 shows v25.6 as latest",
+      "ROOT_CAUSE_IF_KNOWN": "Version drift — Prompts 70-73 were developed referencing v25.3.2 (possibly the version at the time of prior sessions), but the repository has since advanced to v25.6",
+      "RECOVERY_PATH": "RECONSTRUCTABLE — either (a) tag the current commit as v25.3.2 if it represents that baseline, OR (b) correct Prompts 70-73 references to v25.6 (the current tag)",
+      "RISK": "P2_MEDIUM — version drift between claimed (v25.3.2) and actual (v25.6); documents reference stale version",
+      "OWNER": "AI developer",
+      "PRIORITY": "P2"
+    }
+  ],
+  "do_not_repair_yet_rule": "Per Section AI: 'Do NOT repair yet.' This gap register identifies gaps but does NOT repair them. All gaps are REMEDIATION_REQUIRED with approval_required=true.",
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

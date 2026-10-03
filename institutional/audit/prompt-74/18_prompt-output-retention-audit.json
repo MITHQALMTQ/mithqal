@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "audit_id": "FA74-PA-001",
+  "source": "Prompt 74, Section Y (Prompt Output Retention Audit)",
+  "status": "ISSUED",
+  "retention_summary": {
+    "PRESENT": 2,
+    "PRESENT_IN_GIT_HISTORY": 0,
+    "PRESENT_IN_LIBRARY_DATA_ROOM": 2,
+    "PRESENT_ONLY_IN_CHAT": 61,
+    "MISSING": 10,
+    "UNKNOWN": 0,
+    "total": 73
+  },
+  "per_prompt_retention": [
+    { "prompt_range": "Prompts 1-61", "retention_status": "PRESENT_ONLY_IN_CHAT", "detail": "prompt outputs exist only in prior conversation sessions; not persisted to this repository as durable artifacts; worklog has Task IDs but not full outputs" },
+    { "prompt_range": "Prompt 62 (G0)", "retention_status": "MISSING", "detail": "/institutional/g1/ G0 status files never committed" },
+    { "prompt_range": "Prompt 63 (G1)", "retention_status": "MISSING", "detail": "/institutional/g1/ G1 files never committed" },
+    { "prompt_range": "Prompt 64 (corridor)", "retention_status": "MISSING", "detail": "/institutional/corridors/ never committed" },
+    { "prompt_range": "Prompt 65 (bank pipeline)", "retention_status": "MISSING", "detail": "/institutional/banks/ never committed" },
+    { "prompt_range": "Prompt 66 (counsel)", "retention_status": "MISSING", "detail": "/institutional/legal/ never committed" },
+    { "prompt_range": "Prompt 67 (executive)", "retention_status": "MISSING", "detail": "/institutional/banks/executive-package/ never committed" },
+    { "prompt_range": "Prompt 68 (workshop)", "retention_status": "MISSING", "detail": "/institutional/bank-workshop/ never committed" },
+    { "prompt_range": "Prompt 69 (term sheet)", "retention_status": "MISSING", "detail": "/institutional/pilot/ never committed" },
+    { "prompt_range": "Prompt 70 (assurance)", "retention_status": "MISSING", "detail": "/institutional/assurance/ (42 files) never committed" },
+    { "prompt_range": "Prompt 71 (pilot execution)", "retention_status": "MISSING", "detail": "Pilot A never executed; no execution evidence package exists" },
+    { "prompt_range": "Prompt 72 (post-pilot outcome)", "retention_status": "PRESENT", "detail": "/institutional/outcome/ (37 files) committed in c7dafc6" },
+    { "prompt_range": "Prompt 73 (execution gate)", "retention_status": "PRESENT", "detail": "/institutional/execution/ (26 files) committed in c7dafc6" }
+  ],
+  "rule": "Per Section Y: 'PRESENT_ONLY_IN_CHAT does NOT equal fully implemented.' Prompts 1-61 are PRESENT_ONLY_IN_CHAT — this is a DURABILITY_GAP. Prompts 62-71 are MISSING — DURABILITY_GAP. Only Prompts 72-73 are PRESENT (durable committed artifacts).",
+  "DURABILITY_GAP_count": 71,
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "audit_id": "FA74-PA-001",
+  "source": "Prompt 74, Section V (Institutional Gate Audit)",
+  "status": "ISSUED",
+  "gates": {
+    "G0_Corporate_Contractual_Integrity": { "required_evidence": "entity legally established + counsel-verified", "implementation_state": "DESIGNED (entity JOZOUR_LLC_NJ in code; NOT legally established)", "external_evidence": "NONE", "current_status": "BLOCKED", "last_transition": "n/a", "transition_authority": "n/a", "audit_trail": "institutional/execution/institutional-gate-status.json" },
+    "G1_Legal": { "required_evidence": "signed counsel opinion", "implementation_state": "DESIGNED (50 questions prepared)", "external_evidence": "NONE", "current_status": "NOT_STARTED", "last_transition": "n/a", "transition_authority": "n/a", "audit_trail": "institutional/execution/" },
+    "G2_Regulatory": { "required_evidence": "regulator communication", "implementation_state": "DESIGNED", "external_evidence": "NONE", "current_status": "NOT_STARTED" },
+    "G3_Bank": { "required_evidence": "bank-confirmed requirement", "implementation_state": "RESEARCHED (15 researched, 0 contacted)", "external_evidence": "NONE", "current_status": "IN_PROGRESS" },
+    "G4_Bank_Contract": { "required_evidence": "executed agreement", "implementation_state": "DESIGNED (term sheet DRAFT)", "external_evidence": "NONE", "current_status": "NOT_STARTED" },
+    "G5_Technical_Integration": { "required_evidence": "integration evidence", "implementation_state": "DESIGNED", "external_evidence": "NONE", "current_status": "NOT_STARTED" },
+    "G6_Backing_Custody": { "required_evidence": "custodian agreement", "implementation_state": "NOT_REQUIRED for Pilot A (BANK_MONEY)", "external_evidence": "NONE", "current_status": "NOT_STARTED (DEFERRED)" },
+    "G7_Pilot": { "required_evidence": "executed pilot authorization + evidence", "implementation_state": "DESIGNED (not executed)", "external_evidence": "NONE", "current_status": "NOT_STARTED" },
+    "G8_Assurance": { "required_evidence": "independent assurance report", "implementation_state": "DESIGNED (framework MISSING from filesystem)", "external_evidence": "NONE", "current_status": "NOT_STARTED" },
+    "G9_Measured_Outcome": { "required_evidence": "KPI measurements", "implementation_state": "DESIGNED (not executed)", "external_evidence": "NONE", "current_status": "NOT_STARTED" },
+    "G10_Repeatability": { "required_evidence": "repeatability evidence", "implementation_state": "DESIGNED", "external_evidence": "NONE", "current_status": "NOT_STARTED" },
+    "G11_Production_Authorization_Review": { "required_evidence": "all prerequisites satisfied", "implementation_state": "DESIGNED", "external_evidence": "NONE", "current_status": "NOT_STARTED" }
+  },
+  "gates_passed": 0,
+  "gates_total": 12,
+  "rule": "Per Section V: 'A gate cannot be PASSED from technical implementation alone where external evidence is required.' No gate is PASSED. All gates require external evidence.",
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

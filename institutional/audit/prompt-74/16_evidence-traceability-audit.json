@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "audit_id": "FA74-PA-001",
+  "source": "Prompt 74, Section W (Evidence Traceability Audit)",
+  "status": "ISSUED",
+  "major_claims_audited": [
+    { "claim": "MITHQAL architecture is v25.3.2 frozen (10 frozen schemas)", "source": "Prompts 70-73", "evidence": "PARTIAL — only 1 of 10 frozen schemas exists (final-pilot-activation-gate.ts); 9 MISSING", "authority": "MITHQAL_DOCUMENT (Prompts 70-73)", "date": "2026-10-03", "status": "overstated_claim — '10 frozen schemas' is overstated because 9 do not exist" },
+    { "claim": "Pilot A was executed", "source": "n/a", "evidence": "NONE — Pilot A NOT_EXECUTED", "authority": "n/a", "date": "n/a", "status": "unsupported_claim (no one made this claim — Prompts 72-73 honestly report NOT_EXECUTED)" },
+    { "claim": "Independent assurance was performed", "source": "n/a", "evidence": "NONE — INDEPENDENT_ASSURANCE = NOT_PERFORMED", "authority": "n/a", "date": "n/a", "status": "unsupported_claim (no one made this claim — honestly reported)" },
+    { "claim": "Banks are engaged", "source": "n/a", "evidence": "NONE — 0 banks contacted", "authority": "n/a", "date": "n/a", "status": "unsupported_claim (honestly reported)" },
+    { "claim": "production_authorized", "source": "n/a", "evidence": "NONE — production_authorized=false", "authority": "n/a", "date": "n/a", "status": "unsupported_claim (honestly reported)" }
+  ],
+  "detections": {
+    "unsupported_claim": 0,
+    "unsupported_claim_detail": "no false claims in institutional/ documentation",
+    "stale_claim": 1,
+    "stale_claim_detail": "v25.3.2 frozen — v25.3.2 is not a git tag; latest tag is v25.6; the 10 frozen schemas claim is overstated because 9 do not exist",
+    "orphan_claim": 0,
+    "duplicate_claim": 0,
+    "contradictory_claim": 0,
+    "overstated_claim": 1,
+    "overstated_claim_detail": "10 frozen schemas, all untouched — overstated because 9 of 10 do not exist in this repository"
+  },
+  "CRITICAL_FINDING": "The claim 'v25.3.2 controlled architecture baseline with 10 frozen schemas' (made in Prompts 70-73) is OVERSTATED. Only 1 of 10 frozen schemas exists. The other 9 were never committed to this repository. This is a stale/overstated claim that must be corrected in the remediation phase.",
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

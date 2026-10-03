@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "audit_id": "FA74-PA-001",
+  "source": "Prompt 74, Section AA (Hash / Integrity Manifest)",
+  "status": "ISSUED",
+  "description": "Final hash manifest for all critical MITHQAL artifacts. This becomes the forensic baseline for future audits.",
+  "artifacts": [
+    { "artifact": "src/lib/final-pilot-activation-gate.ts", "path": "src/lib/final-pilot-activation-gate.ts", "commit": "c7dafc6", "hash": "0aa460fb4dc883367e376aaa10ea9228d0054d3b56bdb189c683c063b69ad0a8", "version": "v25.6 era", "authority": "MITHQAL_SYSTEM", "status": "PRESENT (1 of 10 frozen schemas)" },
+    { "artifact": "src/lib/mithqal-brain.ts", "path": "src/lib/mithqal-brain.ts", "commit": "c7dafc6", "hash": "426c05106fc0aca1b7d93849aa58e66b4ab86b03dadcde292c90d87c440b1c21", "version": "v25.6 era", "authority": "MITHQAL_SYSTEM", "status": "PRESENT" },
+    { "artifact": "src/lib/inngest-client.ts", "path": "src/lib/inngest-client.ts", "commit": "c7dafc6", "hash": "318e289053efbebaa3b3780d52c246684471e75a37f0a49f611f3115eed9620f", "version": "v25.6 era", "authority": "MITHQAL_SYSTEM", "status": "PRESENT" },
+    { "artifact": "prisma/schema.prisma", "path": "prisma/schema.prisma", "commit": "c7dafc6", "hash": "1a0285671d5d1779360028f507ae1156207e874cd566e5afd053c2755a69c941", "version": "v25.6 era", "authority": "MITHQAL_SYSTEM", "status": "PRESENT" },
+    { "artifact": "vercel.json", "path": "vercel.json", "commit": "c7dafc6", "hash": "6bdb511d0210b56e13789258ea4e144dc6b47988fd57a11dc66112695174bac3", "version": "v25.6 era", "authority": "MITHQAL_SYSTEM", "status": "PRESENT" },
+    { "artifact": "Caddyfile", "path": "Caddyfile", "commit": "c7dafc6", "hash": "89b7a9c04929989fb5014e1b5032ecd58df9491a3e3d09d69d62d740f29b0a7b", "version": "v25.6 era", "authority": "MITHQAL_SYSTEM", "status": "PRESENT" },
+    { "artifact": "package.json", "path": "package.json", "commit": "c7dafc6", "hash": "7956f1a7dacdc022bb55df5a449f39e9d44625412f3cd9c2f8f84df8b8d0e618", "version": "0.2.1", "authority": "MITHQAL_SYSTEM", "status": "PRESENT" },
+    { "artifact": ".env", "path": ".env", "commit": "c7dafc6", "hash": "be8e1a92feff8f6cb699a9a70cc7d76a183538ab8c68a45e7d40f0d32bf20b94", "version": "1 line", "authority": "MITHQAL_SYSTEM", "status": "PRESENT (near-empty)" },
+    { "artifact": ".env.example", "path": ".env.example", "commit": "c7dafc6", "hash": "aa47a79cbeb93fc94e6d217c6748707dd86adf308cdec98dc16e090ce01f96f0", "version": "52 lines", "authority": "MITHQAL_SYSTEM", "status": "PRESENT" },
+    { "artifact": "worklog.md", "path": "worklog.md", "commit": "c7dafc6", "hash": "af4869c94a85ca38438754631d5c4133f04aa0df39de3c618bec334217a59309", "version": "8888 lines (P73 append)", "authority": "MITHQAL_SYSTEM", "status": "PRESENT" },
+    { "artifact": "institutional/outcome/00_README.md", "path": "institutional/outcome/00_README.md", "commit": "c7dafc6", "hash": "b55d85e57542852c8265f7e2296c2b9847db9bd2b76e0d05f38b4227947c0dee", "version": "P72-1.0", "authority": "MITHQAL_DOCUMENT", "status": "PRESENT" },
+    { "artifact": "institutional/outcome/institutional-validation-status.json", "path": "institutional/outcome/institutional-validation-status.json", "commit": "c7dafc6", "hash": "766d432d6a09bc550b28033d46ca112e23c7b3766eba745d2f6935f21d646dcd", "version": "P72-1.0", "authority": "MITHQAL_DOCUMENT", "status": "PRESENT" },
+    { "artifact": "institutional/execution/00_README.md", "path": "institutional/execution/00_README.md", "commit": "c7dafc6", "hash": "e819996bba4556a2aedaa43abc926c0a74a788fcc3db84e0188d8fec6ff9995e", "version": "P73-1.0", "authority": "MITHQAL_DOCUMENT", "status": "PRESENT" },
+    { "artifact": "institutional/execution/execution-readiness-status.json", "path": "institutional/execution/execution-readiness-status.json", "commit": "c7dafc6", "hash": "b9bac7f7f0e8f5959a3cb78bbb4cb10dd9f1b864278bf32ee59d12f2a7761fe6", "version": "P73-1.0", "authority": "MITHQAL_DOCUMENT", "status": "PRESENT" }
+  ],
+  "MISSING_artifacts": [
+    "src/lib/controlled-architecture-freeze.ts (MISSING — no hash; never in repository)",
+    "src/lib/institutional-evidence-fabric.ts (MISSING)",
+    "src/lib/settlement-workflow-canonical.ts (MISSING)",
+    "src/lib/canonical-finality-model.ts (MISSING)",
+    "src/lib/policy-registry.ts (MISSING)",
+    "src/lib/reserve-domains.ts (MISSING)",
+    "src/lib/institutional-settlement-obligation-registry.ts (MISSING)",
+    "src/lib/pilot-gate-framework.ts (MISSING)",
+    "src/lib/mtq-economic-definition.ts (MISSING)",
+    "/institutional/assurance/ (42 files — MISSING)",
+    "/institutional/g1/ (3 files — MISSING)",
+    "/institutional/corridors/ (2 files — MISSING)",
+    "/institutional/banks/ (3+ files — MISSING)",
+    "/institutional/legal/ (2 files — MISSING)",
+    "/institutional/bank-workshop/ (2 files — MISSING)",
+    "/institutional/pilot/ (2 files — MISSING)"
+  ],
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

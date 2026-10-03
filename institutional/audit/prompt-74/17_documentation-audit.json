@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "audit_id": "FA74-PA-001",
+  "source": "Prompt 74, Section X (Documentation Audit)",
+  "status": "ISSUED",
+  "documentation_classification": {
+    "CANONICAL": "institutional/outcome/ (37 files — Prompt 72) + institutional/execution/ (26 files — Prompt 73) — both committed in c7dafc6, internally consistent, honest-state preserved",
+    "CURRENT_BUT_NONCANONICAL": "src/lib/*.ts (111 files) — current code but not mapped to canonical prompt requirements (prompt texts 1-61 not available)",
+    "HISTORICAL": "git tags v19.0 through v25.6 (25 tags) — historical versions preserved",
+    "STALE": "Prompts 70-73 references to 'v25.3.2' — v25.3.2 is not a git tag (latest tag v25.6); references to '10 frozen schemas' — 9 of 10 do not exist",
+    "CONFLICTED": "none detected in institutional/ documentation",
+    "UNCONTROLLED": "none detected in institutional/ documentation"
+  },
+  "stale_material_check": {
+    "wrong_version": "YES — v25.3.2 referenced but v25.6 is current tag",
+    "wrong_status": "NO — all status files honestly report NOT_VALIDATED/NOT_AUTHORIZED",
+    "old_terminology": "UNKNOWN — not fully inspected",
+    "stale_gates": "NO — institutional-gate-status.json correctly shows 0/12 PASSED",
+    "stale_entity_model": "NO — G0_CONDITIONAL honestly reported",
+    "stale_reserve_model": "UNKNOWN — reserve-domains.ts MISSING",
+    "stale_mtq_definition": "UNKNOWN — mtq-economic-definition.ts MISSING",
+    "stale_finality_model": "UNKNOWN — canonical-finality-model.ts MISSING",
+    "stale_contact_details": "UNKNOWN",
+    "stale_website": "UNKNOWN — https://mithqal.vercel.app referenced in prior worklog but not verified in this audit",
+    "stale_implementation_counts": "NO — institutional/execution/ correctly reports 0 banks, 0 counsel, 0 KPIs",
+    "stale_production_claims": "NO — production_authorized=false throughout"
+  },
+  "do_not_delete_stale_material_rule": "Per Section X: 'Do not delete stale material. Move or relabel only during a subsequent approved remediation phase.' No stale material deleted. All corrections are REMEDIATION_REQUIRED.",
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

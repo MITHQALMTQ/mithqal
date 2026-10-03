@@ -1,0 +1,181 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "audit_id": "FA74-PA-001",
+  "version": "v25.3.2-P74-1.0",
+  "date": "2026-10-03T05:12:00Z",
+  "owner": "JOZOUR_LLC_NJ (G0_CONDITIONAL)",
+  "source": "Prompt 74, Sections C + AB",
+  "status": "ISSUED",
+  "description": "Canonical audit matrix containing EVERY prompt from 1 through 73. Per Section C: 'Do not omit prompts. Do not merge unrelated prompts. Do not assume that a prompt is implemented merely because later work appears to depend on it.' Statuses: VERIFIED_COMPLETE, VERIFIED_PARTIAL, IMPLEMENTED_NOT_VERIFIED, DESIGNED_ONLY, MISSING, DELETED_OR_LOST, REGRESSED, CONFLICTED, BLOCKED_EXTERNAL, NOT_APPLICABLE. Per Section AV: do NOT use VERIFIED_COMPLETE without sufficient evidence.",
+  "prompts_total": 73,
+  "prompts_breakdown_by_status": {
+    "VERIFIED_COMPLETE": 0,
+    "VERIFIED_PARTIAL": 2,
+    "IMPLEMENTED_NOT_VERIFIED": 0,
+    "DESIGNED_ONLY": 0,
+    "MISSING": 10,
+    "DELETED_OR_LOST": 0,
+    "REGRESSED": 0,
+    "CONFLICTED": 0,
+    "BLOCKED_EXTERNAL": 0,
+    "NOT_APPLICABLE": 0,
+    "UNVERIFIABLE": 61
+  },
+  "prompt_groups": [
+    {
+      "group": "PROMPTS 1-24: Architectural remediation and canonicalization",
+      "prompt_count": 24,
+      "group_status": "UNVERIFIABLE",
+      "group_status_detail": "Prompt texts for Prompts 1-24 are NOT available in this audit environment. The worklog (8888 lines) contains Task IDs for some of this work (e.g., Task ID 18 — Canonical Institutional Principles; Task ID v25-SC-TESTS; Task ID v25-BLUEPRINT; etc.) but not the full prompt texts. Without the prompt texts, requirements cannot be reconstructed, and implementation cannot be verified against requirements. The source code (111 src/lib/*.ts files, 161 API routes) exists but cannot be mapped to specific prompt requirements without the prompt texts. Per Section AV: 'It must NOT say: The documentation indicates it was done.'"
+    },
+    {
+      "group": "PROMPTS 25-47: Institutionalization foundations",
+      "prompt_count": 23,
+      "group_status": "UNVERIFIABLE",
+      "group_status_detail": "Same as Prompts 1-24. Prompt texts not available. Worklog has Task IDs (e.g., BP-SEC-01 through BP-SEC-10, GAP-ANALYSIS-1/2, GAP-IMPL-007, etc.) but not full prompt texts."
+    },
+    {
+      "group": "PROMPTS 48-58: Operating-phase institutionalization",
+      "prompt_count": 11,
+      "group_status": "UNVERIFIABLE",
+      "group_status_detail": "Same as above. Worklog has Task IDs (e.g., LEGAL-OBLIGATION-REGISTER, REAL-MARKET-FEEDS, NEUTRAL-BANK-AUDIT, INSTITUTIONAL-STRESS-TESTS-FINAL, COO-REC6-SANCTIONS-SCREENING, COO-H1-MC-RECALIBRATION, etc.) but not full prompt texts."
+    },
+    {
+      "group": "PROMPTS 59-61: Evidence dossier / demonstration / first-bank evaluation",
+      "prompt_count": 3,
+      "group_status": "UNVERIFIABLE",
+      "group_status_detail": "Prompt texts not available. Worklog has some related Task IDs."
+    },
+    {
+      "group": "PROMPT 62: G0 Institutional Entry Gate",
+      "prompt_count": 1,
+      "group_status": "MISSING",
+      "group_status_detail": "The prompt text IS available (from conversation context). The REQUIRED ARTIFACTS (/institutional/g1/ — G0_STATUS.md, G0_STATUS.json, g0-baseline.json) DO NOT EXIST in this repository. They were developed in a prior session but NEVER committed to git. Per Section Y: PRESENT_ONLY_IN_CHAT does NOT equal fully implemented. DURABILITY_GAP.",
+      "expected_state": "G0_FAIL/G0_CONDITIONAL; entity JOZOUR_LLC_NJ DESIGNED not legally established; 5 primary documents MISSING/PENDING",
+      "actual_state": "artifacts MISSING from filesystem; cannot verify actual_state against expected_state without the artifacts",
+      "evidence": "NONE on filesystem; conversation context only",
+      "status": "MISSING",
+      "loss_status": "DELETED_OR_LOST (never committed — effectively lost from this repository)",
+      "regression_status": "NOT_APPLICABLE (no prior implementation to regress from)",
+      "recovery_required": true,
+      "open_issues": ["artifacts never committed", "must re-create from prior session context"]
+    },
+    {
+      "group": "PROMPT 63: G1 Pilot-Jurisdiction Legal Pack",
+      "prompt_count": 1,
+      "group_status": "MISSING",
+      "group_status_detail": "Same as Prompt 62. /institutional/g1/ (G1 files) never committed. 50 legal questions, 18 counsel deliverables, 8 jurisdictions — all designed in prior session, none persisted.",
+      "status": "MISSING",
+      "loss_status": "DELETED_OR_LOST",
+      "regression_status": "NOT_APPLICABLE",
+      "recovery_required": true
+    },
+    {
+      "group": "PROMPT 64: First Corridor Decision Pack",
+      "prompt_count": 1,
+      "group_status": "MISSING",
+      "group_status_detail": "/institutional/corridors/ never committed. 5 candidate corridors, C-AE-SG selected — designed in prior session, not persisted.",
+      "status": "MISSING",
+      "loss_status": "DELETED_OR_LOST",
+      "recovery_status": "NOT_APPLICABLE",
+      "recovery_required": true
+    },
+    {
+      "group": "PROMPT 65: Design-Partner Bank Pipeline",
+      "prompt_count": 1,
+      "group_status": "MISSING",
+      "group_status_detail": "/institutional/banks/ never committed. 15 researched, 0 contacted — designed in prior session, not persisted.",
+      "status": "MISSING",
+      "loss_status": "DELETED_OR_LOST",
+      "recovery_status": "NOT_APPLICABLE",
+      "recovery_required": true
+    },
+    {
+      "group": "PROMPT 66: Counsel Engagement & Legal Opinion Briefing",
+      "prompt_count": 1,
+      "group_status": "MISSING",
+      "group_status_detail": "/institutional/legal/ never committed. 22 counsel deliverables, 50 legal questions — designed in prior session, not persisted.",
+      "status": "MISSING",
+      "loss_status": "DELETED_OR_LOST",
+      "recovery_status": "NOT_APPLICABLE",
+      "recovery_required": true
+    },
+    {
+      "group": "PROMPT 67: Bank Executive Decision & Engagement Package",
+      "prompt_count": 1,
+      "group_status": "MISSING",
+      "group_status_detail": "/institutional/banks/executive-package/ never committed. 14 components, READY_WITH_LIMITATIONS — designed in prior session, not persisted.",
+      "status": "MISSING",
+      "loss_status": "DELETED_OR_LOST",
+      "recovery_status": "NOT_APPLICABLE",
+      "recovery_required": true
+    },
+    {
+      "group": "PROMPT 68: Bank Architecture & Institutional Requirements Workshop",
+      "prompt_count": 1,
+      "group_status": "MISSING",
+      "group_status_detail": "/institutional/bank-workshop/ never committed. 22 sections, NOT_READY — designed in prior session, not persisted.",
+      "status": "MISSING",
+      "loss_status": "DELETED_OR_LOST",
+      "recovery_status": "NOT_APPLICABLE",
+      "recovery_required": true
+    },
+    {
+      "group": "PROMPT 69: Controlled Pilot Term Sheet & Mutual Pilot Commitments",
+      "prompt_count": 1,
+      "group_status": "MISSING",
+      "group_status_detail": "/institutional/pilot/ never committed. 19 BM steps, 15 KPIs, 12 stop conditions, 18 conditions precedent, MTQ DISABLED, BANK_MONEY — designed in prior session, not persisted.",
+      "status": "MISSING",
+      "loss_status": "DELETED_OR_LOST",
+      "recovery_status": "NOT_APPLICABLE",
+      "recovery_required": true
+    },
+    {
+      "group": "PROMPT 70: Independent Assurance Scope & Evidence Audit Design",
+      "prompt_count": 1,
+      "group_status": "MISSING",
+      "group_status_detail": "/institutional/assurance/ (42 files) NEVER committed. 20 criteria, 25 controls, 94 tests — designed in a prior session, not persisted. This is the MOST CRITICAL LOSS because the assurance framework was referenced extensively in Prompts 72-73.",
+      "status": "MISSING",
+      "loss_status": "DELETED_OR_LOST",
+      "regression_status": "NOT_APPLICABLE",
+      "recovery_required": true,
+      "open_issues": ["42 files never committed", "not recoverable from git", "must re-create from prior session conversation context"]
+    },
+    {
+      "group": "PROMPT 71: Controlled Pilot A Execution & Evidence Capture",
+      "prompt_count": 1,
+      "group_status": "MISSING",
+      "group_status_detail": "Pilot A NEVER EXECUTED. No execution evidence package exists. This is not a filesystem gap — it is a factual gap. The pilot never ran (BLOCKED_BY_WORKSHOP per Prompt 69). 0 transactions, 0 KPIs, 0 evidence.",
+      "status": "MISSING",
+      "loss_status": "NOT_APPLICABLE (never produced — not 'lost', just 'not done')",
+      "regression_status": "NOT_APPLICABLE",
+      "recovery_required": true,
+      "recovery_required_detail": "requires G0_PASS → G1 → bank engagement → workshop → term sheet EXECUTED → pilot execution",
+      "open_issues": ["pilot never executed", "blocked by upstream chain"]
+    },
+    {
+      "group": "PROMPT 72: Independent Review, Measured Outcome & Institutional Validation Decision",
+      "prompt_count": 1,
+      "group_status": "VERIFIED_PARTIAL",
+      "group_status_detail": "/institutional/outcome/ (37 files) PRESENT + committed in c7dafc6 + all 12 JSON valid + honest-state preserved. VERIFIED_PARTIAL (not VERIFIED_COMPLETE) because: (a) the outcome package references prior prompt artifacts (Prompts 62-71) that are MISSING from the filesystem — the outcome package's cross-references are dangling; (b) the outcome package itself records INSTITUTIONAL_OUTCOME = NOT_YET_DETERMINED because Pilot A was not executed. The outcome package is internally consistent and honest-state-preserving, but it cannot be VERIFIED_COMPLETE because the prerequisites it references are absent.",
+      "status": "VERIFIED_PARTIAL",
+      "loss_status": "PRESERVED",
+      "regression_status": "NONE",
+      "recovery_required": false,
+      "open_issues": ["cross-references to Prompts 62-71 artifacts are dangling (those files don't exist)"]
+    },
+    {
+      "group": "PROMPT 73: External Institutional Execution Gate & No-More-Build Control",
+      "prompt_count": 1,
+      "group_status": "VERIFIED_PARTIAL",
+      "group_status_detail": "/institutional/execution/ (26 files) PRESENT + committed in c7dafc6 + all 22 JSON valid + honest-state preserved. VERIFIED_PARTIAL for the same reason as Prompt 72: the execution package references the assurance framework (Prompt 70) and prior institutional directories (Prompts 62-69) that are MISSING. The execution package correctly records BUILD_MODE = FROZEN, PROGRAM_PHASE = EXTERNAL_EXECUTION, and NEXT_EXTERNAL_EVIDENCE = G0_PASS.",
+      "status": "VERIFIED_PARTIAL",
+      "loss_status": "PRESERVED",
+      "regression_status": "NONE",
+      "recovery_required": false,
+      "open_issues": ["cross-references to Prompt 70 assurance framework + Prompts 62-69 directories are dangling"]
+    }
+  ],
+  "no_orphan_requirement_rule": "Per Section AB: 'No orphan requirement. No orphan implementation. Flag: ORPHAN_IMPLEMENTATION when code exists without a corresponding current requirement.' 111 src/lib/*.ts files + 161 API routes exist. Without the prompt texts for Prompts 1-61, we cannot determine which code files correspond to which requirements. This is an UNVERIFIABLE mapping, not an orphan implementation finding. If the prompt texts become available, a follow-up audit should map each requirement to its implementation.",
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

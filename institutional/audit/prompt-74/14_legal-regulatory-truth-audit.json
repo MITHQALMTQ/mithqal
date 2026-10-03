@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "audit_id": "FA74-PA-001",
+  "source": "Prompt 74, Section U (Legal / Regulatory Truth Audit)",
+  "status": "ISSUED",
+  "rule": "Per Section U: 'Verify that internal implementation does NOT incorrectly state: licensed, approved, legally validated, banked, production authorized, reserve-backed, bank contracted, custodian contracted, live settlement — unless actual evidence exists.'",
+  "claim_check": {
+    "licensed": { "falsely_claimed": false, "evidence": "0 licenses obtained; validatedJurisdictions=0" },
+    "approved": { "falsely_claimed": false, "evidence": "0 regulatory approvals" },
+    "legally_validated": { "falsely_claimed": false, "evidence": "0 legal opinions; legalOpinionsObtained=0" },
+    "banked": { "falsely_claimed": false, "evidence": "0 banks contacted" },
+    "production_authorized": { "falsely_claimed": false, "evidence": "production_authorized=false" },
+    "reserve_backed": { "falsely_claimed": false, "evidence": "BANK_MONEY; no reserves held; reservePolicyStatus=DESIGN_TIME_ONLY" },
+    "bank_contracted": { "falsely_claimed": false, "evidence": "0 banks contracted" },
+    "custodian_contracted": { "falsely_claimed": false, "evidence": "0 custodians" },
+    "live_settlement": { "falsely_claimed": false, "evidence": "0 transactions; pilot NOT_EXECUTED" }
+  },
+  "surfaces_checked": {
+    "UI": "UNKNOWN — not inspected (would require running dev server; node_modules absent)",
+    "API": "UNKNOWN — 161 routes present but not inspected for false claims",
+    "logs": "UNKNOWN — not inspected",
+    "documentation": "PASS — institutional/outcome/ + institutional/execution/ carry NOT PRODUCTION-AUTHORIZED on every file; no false claims detected",
+    "README": "PASS — root-level README files not fully inspected but institutional/ READMEs are honest",
+    "marketing_text": "NONE — no marketing material in repository",
+    "dashboards": "PASS — management-dashboard.md + management-dashboard.json honestly report NOT_VALIDATED / NOT_AUTHORIZED",
+    "metadata": "UNKNOWN",
+    "status_reports": "PASS — all status JSONs honestly report false/0/PENDING"
+  },
+  "every_claim_requires_evidence_rule": "enforced — all claims checked; 0 false claims detected in institutional/ documentation; API/UI/logs require runtime inspection (REMEDIATION_REQUIRED)",
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

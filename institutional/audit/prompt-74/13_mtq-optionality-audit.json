@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "audit_id": "FA74-PA-001",
+  "source": "Prompt 74, Section T (MTQ Optionality Audit)",
+  "status": "ISSUED",
+  "mtq_optionality": {
+    "control_plane_operates_without_mtq_issuance": "PASS — MTQ DISABLED; Pilot A uses BANK_MONEY",
+    "control_plane_operates_without_mtq_redemption": "PASS",
+    "control_plane_operates_without_mtq_liquidity_assumption": "PASS",
+    "control_plane_operates_without_mtq_legal_assumption": "PASS",
+    "control_plane_operates_without_mtq_reserve_assumption": "PASS"
+  },
+  "hidden_mtq_dependency_search": {
+    "CORE_DEPENDS_ON_MTQ": "NOT_DETECTED in available code — MTQ is DISABLED; the control plane (per Prompt 72 outcome) operates without MTQ",
+    "search_method": "limited — cannot run tsc/eslint (node_modules absent); search based on file names + prior worklog + Prompt 72/73 status files",
+    "search_limitation": "A full hidden-MTQ-dependency search requires tsc + import-graph analysis. REMEDIATION_REQUIRED after bun install."
+  },
+  "regression_detection": {
+    "CORE_DEPENDS_ON_MTQ_as_critical_regression": "NOT_DETECTED — no core-depends-on-MTQ regression found; MTQ remains optional",
+    "note": "This PASS is based on design-time analysis. A full runtime verification is REMEDIATION_REQUIRED."
+  },
+  "mtq_status": "DISABLED (6+11 prerequisites ALL PENDING; F3/F4 NOT_CLAIMED; unchanged from Prompt 69)",
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

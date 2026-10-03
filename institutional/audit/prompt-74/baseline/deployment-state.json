@@ -1,0 +1,116 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "audit_id": "FA74-PA-001",
+  "version": "v25.3.2-P74-1.0",
+  "date": "2026-10-03T05:12:00Z",
+  "owner": "JOZOUR_LLC_NJ (G0_CONDITIONAL)",
+  "source": "Prompt 74, Sections B + N",
+  "status": "IMMUTABLE_SNAPSHOT",
+  "deployment_configuration": {
+    "vercel": {
+      "config_file": "vercel.json",
+      "present": true,
+      "content": "{ crons: [ { path: /api/proofs/publish, schedule: 0 0 * * * }, { path: /api/data-source-sync, schedule: 0 6 * * * } ] }",
+      "crons_count": 2,
+      "deployment_url": "https://mithqal.vercel.app (per prior worklog — not verified in this audit)",
+      "auto_deploy": "presumed active (Vercel auto-deploys on push to main per prior worklog)"
+    },
+    "caddy_gateway": {
+      "config_file": "Caddyfile",
+      "present": true,
+      "lines": 23,
+      "purpose": "built-in gateway for external access; XTransformPort query parameter for cross-port routing",
+      "note": "single external port exposure; all internal services routed through Caddy"
+    },
+    "github_actions": {
+      "config_directory": ".github/",
+      "present": true,
+      "branch_protection": ".github/branch-protection.json (present, modified in working tree)",
+      "workflows": "present in .github/workflows/ (not inspected in detail in this audit)"
+    }
+  },
+  "runtime_stack_audit": {
+    "github": {
+      "intended_role": "source control + branch protection + Dependabot alerts",
+      "actual_role": "VERIFIED — repository at github.com/MITHQALMTQ/mithqal.git; 25 tags; 7 local branches; branch protection config present",
+      "configuration": "present (remote origin configured)",
+      "integration": "present (push history evident in git log)",
+      "authentication_presence": "present (x-access-token in remote URL — REDACTED per Section M)",
+      "deployment_path": "git push origin main → Vercel auto-deploy",
+      "workflow_path": "GitHub Actions workflows in .github/workflows/",
+      "database_usage": "none (GitHub is source control only)",
+      "retry": "n/a",
+      "idempotency": "n/a",
+      "failure_handling": "Dependabot alerts active (1 high vulnerability per prior worklog — pre-existing, not introduced by audit)",
+      "audit": "git log + git status + git tag + git branch + git fsck",
+      "recovery": "backup branches present (v25.2-hardened-backup, v25.3-hardened-backup, v25.3-hardened-backup-2)",
+      "evidence": "VERIFIED via git commands"
+    },
+    "vercel": {
+      "intended_role": "deployment platform (Next.js serverless)",
+      "actual_role": "CONFIGURED (vercel.json present with 2 crons)",
+      "configuration": "vercel.json present (6 lines, 2 cron entries)",
+      "integration": "presumed active (not directly verifiable in this audit — no Vercel API access)",
+      "authentication_presence": "UNKNOWN (Vercel token not in .env — .env has only 1 line)",
+      "deployment_path": "git push → Vercel auto-deploy → https://mithqal.vercel.app",
+      "workflow_path": "Vercel cron triggers /api/proofs/publish daily + /api/data-source-sync daily",
+      "database_usage": "none (Vercel is deployment platform)",
+      "retry": "Vercel serverless retry (platform-managed)",
+      "idempotency": "per-endpoint implementation",
+      "failure_handling": "per-endpoint error handling",
+      "audit": "vercel.json inspected",
+      "recovery": "Vercel deployment history (not accessible in this audit)",
+      "evidence": "PARTIAL — vercel.json present; live deployment not verified"
+    },
+    "inngest": {
+      "intended_role": "workflow orchestration + cron scheduling",
+      "actual_role": "CONFIGURED (src/lib/inngest-client.ts present, 80 lines)",
+      "configuration": "inngest-client.ts present",
+      "integration": "present (src/app/api/inngest/route.ts serves Inngest functions)",
+      "authentication_presence": "INNGEST_EVENT_KEY expected in .env (NOT PRESENT — .env has only 1 line)",
+      "deployment_path": "Inngest dashboard or Vercel cron triggers /api/inngest",
+      "workflow_path": "dataSourceSync + proofsPublishSync + marketDataSync (per prior worklog)",
+      "database_usage": "none (Inngest is orchestration)",
+      "retry": "Inngest built-in retry with exponential backoff",
+      "idempotency": "per-function implementation",
+      "failure_handling": "Inngest built-in failure handling",
+      "audit": "inngest-client.ts inspected",
+      "recovery": "Inngest run dashboard (not accessible in this audit)",
+      "evidence": "PARTIAL — code present; live Inngest connection not verified (event key absent)"
+    },
+    "turso": {
+      "intended_role": "primary database (SQLite-edge)",
+      "actual_role": "CONFIGURED (src/lib/db.ts references Turso; prisma/schema.prisma present)",
+      "configuration": "prisma/schema.prisma present (69 lines); db.ts present",
+      "integration": "present (Prisma client with libsql/Turso adapter)",
+      "authentication_presence": "TURSO_DATABASE_URL + TURSO_AUTH_TOKEN expected in .env (NOT PRESENT — .env has only 1 line; prior worklog noted Turso 'DB not found + CLI expired')",
+      "deployment_path": "Prisma migrate + db:push",
+      "workflow_path": "src/lib/db.ts createDbClient()",
+      "database_usage": "primary data store (19 tables per prior worklog — schema.prisma has fewer models; discrepancy flagged)",
+      "retry": "n/a (database)",
+      "idempotency": "per-query",
+      "failure_handling": "graceful degradation to file: SQLite (per prior worklog)",
+      "audit": "prisma/schema.prisma inspected; db.ts not fully inspected",
+      "recovery": "Turso backup (not accessible in this audit)",
+      "evidence": "PARTIAL — schema present; live Turso connection not verified (credentials absent)"
+    },
+    "neon": {
+      "intended_role": "Postgres database (analytics replica / fallback) + S3 evidence archive + AI Gateway",
+      "actual_role": "PARTIALLY_CONFIGURED (src/lib/turso-neon-sync.ts + src/lib/evidence-archive.ts + mithqal-brain.ts neon provider per prior worklog)",
+      "configuration": "code references present",
+      "integration": "present in code (neon() serverless driver; @aws-sdk/client-s3 for S3 archive)",
+      "authentication_presence": "NEON_DATABASE_URL + AWS_ENDPOINT_URL_S3 + AWS_ACCESS_KEY_ID + AWS_SECRET_ACCESS_KEY + NEON_AI_GATEWAY_TOKEN expected in .env (NOT PRESENT — .env has only 1 line; prior worklog noted Neon S3 '403 Forbidden' and Neon AI Gateway 'endpoint not verified')",
+      "deployment_path": "serverless functions via Vercel",
+      "workflow_path": "CDC sync (turso→neon) + evidence archive + Brain 6th provider",
+      "database_usage": "analytics replica + evidence archive",
+      "retry": "per-function",
+      "idempotency": "per-function",
+      "failure_handling": "graceful degradation (per prior worklog — all Neon services degrade gracefully)",
+      "audit": "code references inspected (not all files)",
+      "recovery": "Neon dashboard (not accessible in this audit)",
+      "evidence": "PARTIAL — code present; live Neon connections not verified (credentials absent; prior worklog documented 403/404 issues)"
+    }
+  },
+  "integration_audit_note": "Per Section N: 'Do not assume the integration is working because configuration exists. Verify where evidence is available.' Configuration exists for all 5 stack components. Live verification is NOT possible in this audit because: (a) .env has only 1 line (credentials not provisioned), (b) no API access to Vercel/Inngest/Turso/Neon dashboards, (c) no runtime to test. All integrations are CONFIGURED but NOT VERIFIED at runtime.",
+  "NOT_PRODUCTION_AUTHORIZED": true
+}
