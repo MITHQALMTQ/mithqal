@@ -15,7 +15,7 @@
 //
 // The 7 enforcement layers (per §54):
 //   L1: API layer                          — request validation, auth, idempotency
-//   L2: Workflow engine                    — 17-step canonical BM-01..BM-16B sequence
+//   L2: Workflow engine                    — 16-step BM-01..BM-16 sequence
 //   L3: Policy engine                      — constitutional rules + DMCE constraints
 //   L4: Authorization                      — MITHQAL Monetary & Reserve Control auth
 //   L5: Ledger / state machine             — mint-state transition guard
@@ -75,8 +75,8 @@ export const FINALITY_LAYERS: FinalityLayer[] = [
   {
     id: "L2_WORKFLOW",
     name: "Workflow Engine",
-    description: "17-step canonical settlement workflow BM-01..BM-16B (per src/lib/settlement-workflow-canonical.ts v25.3.2-J2)",
-    enforcementMechanism: "Workflow state machine cannot advance to BM-16B (mint) without BM-16A (finality verification) passing; BM-15 is Monetary Authorization (per canonical source)",
+    description: "16-step Bank Minting Workflow BM-01..BM-16 (per §V25.0.D.X)",
+    enforcementMechanism: "Workflow state machine cannot advance to BM-16 (mint) without BM-15 (finality verification) passing",
     designed: true, implemented: true, integrated: true, enforced: true,
     tested: true, sandboxValidated: false, institutionallyValidated: false, productionReady: false,
   },
@@ -184,10 +184,10 @@ export function runFinalityBypassTests(): BypassAttempt[] {
     },
     {
       route: "WORKFLOW_SKIP_BM15",
-      description: "Skip BM-16A finality verification and jump to BM-16B mint (legacy route name preserved for downstream consumers; under the canonical v25.3.2-J2 mapping, BM-15 = Monetary Authorization and BM-16A = Finality Verification — so this test now targets the BM-16A → BM-16B transition)",
+      description: "Skip BM-15 finality verification and jump to BM-16 mint",
       expectedBlockedBy: "L2_WORKFLOW",
       blocked: true,
-      reason: "L2 workflow state machine enforces BM-01..BM-16B canonical sequence (per settlement-workflow-canonical.ts); cannot advance from BM-16A to BM-16B without BM-16A (Finality Verification) passing",
+      reason: "L2 workflow state machine enforces BM-01..BM-16 sequence; cannot advance without BM-15 passing",
     },
     {
       route: "POLICY_OVERRIDE_BY_COMMERCIAL",

@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "audit_id": "FA74-PA-001",
+  "source": "Prompt 74, Section F (Version / Authority Audit)",
+  "status": "ISSUED",
+  "current_authoritative_version": "UNDETERMINED — v25.3.2 CLAIMED in Prompts 70-73 but NO git tag v25.3.2 exists",
+  "version_audit": {
+    "v24": { "status": "HISTORICAL", "evidence": "may exist in git history; not current" },
+    "v25.0": { "status": "HISTORICAL", "evidence": "dangling commits 7d0ce20 + 1cd8a82 reference v25.0" },
+    "v25.0.x": { "status": "UNKNOWN", "evidence": "not directly observable" },
+    "v25.1": { "status": "UNKNOWN", "evidence": "referenced in src/lib/v25-1-institutional-interop.ts filename; no tag" },
+    "v25.2": { "status": "HISTORICAL", "evidence": "tag v25.2-final exists; branch v25.2-hardened-backup exists" },
+    "v25.2.AUDIT-CLOSURE": { "status": "UNKNOWN", "evidence": "not directly observable" },
+    "v25.3": { "status": "HISTORICAL", "evidence": "tags v25.3-final + v25.3-final-v2 exist; branches v25.3-hardened-backup + v25.3-hardened-backup-2 exist" },
+    "v25.3.1": { "status": "UNKNOWN", "evidence": "no tag; no commit message reference" },
+    "v25.3.2": { "status": "CLAIMED_BUT_UNVERIFIED", "evidence": "referenced in Prompts 70-73 (prior session conversation context) as 'v25.3.2 controlled baseline'; NO git tag v25.3.2 exists; NO commit message references v25.3.2; the claim is unverifiable from this repository" },
+    "v25.4": { "status": "HISTORICAL", "evidence": "tag v25.4-final exists" },
+    "v25.5": { "status": "HISTORICAL", "evidence": "tags v25.5 + v25.5.1 exist" },
+    "v25.6": { "status": "CURRENT_LATEST_TAG", "evidence": "tag v25.6 exists; commit 8e13d05 'v25.6: caveat closure release'" },
+    "later_versions": { "status": "NONE", "evidence": "no tags later than v25.6" }
+  },
+  "version_drift_detection": {
+    "VERSION_DRIFT": { "detected": true, "description": "v25.3.2 CLAIMED in Prompts 70-73 but latest tag is v25.6. The 4-version drift (v25.3.2 → v25.4 → v25.5 → v25.6) means the institutional documentation (Prompts 70-73) references an older version than the current repository state.", "severity": "P2_MEDIUM" },
+    "STALE_VERSION": { "detected": true, "description": "Prompts 70-73 reference v25.3.2 as current; the current tag is v25.6. The v25.3.2 reference is stale.", "severity": "P2_MEDIUM" },
+    "MIXED_VERSION": { "detected": true, "description": "src/lib/ contains files from multiple eras: v25.1 (v25-1-institutional-interop.ts), v25.5 (DEPLOYMENT-PROVENANCE-v25.5.md), v25.6 (DEPLOYMENT-PROVENANCE-v25.6.md). The codebase has mixed versions.", "severity": "P3_LOW" },
+    "UNAUTHORIZED_VERSION": { "detected": false, "description": "no unauthorized version detected — all versions are historical tags" },
+    "DOCUMENT_VERSION_MISMATCH": { "detected": true, "description": "institutional/outcome/ + institutional/execution/ reference v25.3.2; root-level docs reference v25.5 + v25.6; src/lib filenames reference v25.1. Document versions are mismatched.", "severity": "P2_MEDIUM" },
+    "RUNTIME_VERSION_MISMATCH": { "detected": "UNKNOWN", "description": "cannot verify runtime version — no runtime available (node_modules absent, .env has 1 line)" }
+  },
+  "what_exists_vs_what_is_allowed_vs_what_is_proven": {
+    "WHAT_EXISTS": "111 src/lib/*.ts files + 161 API routes + prisma/schema.prisma + vercel.json + institutional/{outcome,execution,audit}/ + worklog.md (8888 lines)",
+    "WHAT_IS_ALLOWED": "v25.6 (latest tag) is the current authoritative version; BUILD_MODE = FROZEN per Prompt 73; no architecture changes allowed without external evidence trigger",
+    "WHAT_IS_PROVEN": "only what is verifiable from git + filesystem: Prompt 72 outcome (37 files), Prompt 73 execution (26 files), 1 of 10 frozen schemas (final-pilot-activation-gate.ts), v25.6 tag, BUILD_MODE = FROZEN"
+  },
+  "constitutional_violation_check": {
+    "IMPLEMENTATION_CONSTITUTIONAL_VIOLATION": { "detected": false, "description": "no code implementation found that violates canonical policy — but this is partly because the canonical policy files (9 of 10 frozen schemas) are ABSENT, so violations cannot be detected. This is an UNVERIFIABLE state, not a clean state." }
+  },
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

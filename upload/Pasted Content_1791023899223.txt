@@ -1,0 +1,1841 @@
+You are now operating MITHQAL after Prompt 75.
+
+PROMPT 76 — FORENSIC RECOVERY, COMPLETE PROMPT-1→75 INTEGRITY AUDIT & FULL GITHUB / VERCEL / INNGEST / TURSO / NEON HARMONY DEPLOYMENT
+
+OBJECTIVE
+
+Perform a complete forensic audit of everything implemented from Prompt 1 through the latest prompt, currently Prompt 75, identify anything that was:
+
+* missing
+* deleted
+* overwritten
+* partially implemented
+* silently reverted
+* orphaned
+* disconnected
+* broken
+* deployed incorrectly
+* present in one environment but absent in another
+* replaced by a non-equivalent implementation
+* lost from source control
+* lost from runtime configuration
+* lost from databases
+* lost from workflows
+* lost from deployment
+* lost from evidence
+
+Then:
+
+1. recover every recoverable lost artifact,
+2. restore every verified missing implementation,
+3. repair broken references,
+4. preserve historical versions,
+5. validate the final implementation,
+6. validate all critical secrets/keys/tokens WITHOUT exposing them,
+7. verify the complete GitHub → Vercel → Inngest → Turso/Neon system,
+8. synchronize only what is actually required,
+9. deploy the verified current state,
+10. execute end-to-end integration tests,
+11. produce a final immutable integrity/deployment manifest.
+
+This is a FORENSIC RECOVERY + INTEGRATION CERTIFICATION operation.
+
+This is NOT permission to redesign MITHQAL.
+
+This is NOT permission to add speculative features.
+
+This is NOT permission to change MTQ economics.
+
+This is NOT permission to silently delete historical artifacts.
+
+==================================================
+A. ABSOLUTE SAFETY RULES
+========================
+
+Before any change:
+
+CREATE A COMPLETE SNAPSHOT.
+
+Do NOT:
+
+* force-push
+* rewrite Git history
+* delete branches
+* delete tags
+* delete old deployments
+* delete database data
+* drop production databases
+* overwrite historical migrations
+* replace working secrets blindly
+* print secret values
+* commit secrets
+* expose tokens in logs
+* expose API keys in reports
+* copy production secrets into source files
+* change production data merely to make tests pass
+* disable security controls
+* bypass branch protection
+
+Secrets may ONLY be represented as:
+
+PRESENT
+MISSING
+INVALID
+EXPIRED
+UNKNOWN
+VERIFIED_WORKING
+
+NEVER print:
+
+token values
+API key values
+private keys
+passwords
+connection strings containing credentials
+session cookies
+JWT secrets
+encryption keys
+
+Mask all sensitive output.
+
+==================================================
+B. AUTHORITATIVE CURRENT PROGRAM RANGE
+======================================
+
+Audit:
+
+PROMPT 1
+through
+PROMPT 75
+
+Do not stop at Prompt 74.
+
+Prompt 75 remediation must also be included.
+
+Before beginning, discover whether a later prompt already exists.
+
+If prompts after 75 exist in the development environment:
+
+AUTO_DETECT_LATEST_PROMPT = TRUE
+
+and extend the audit through the actual latest prompt.
+
+Report:
+
+LATEST_PROMPT_FOUND
+LATEST_PROMPT_AUDITED
+
+==================================================
+C. FIRST ACTION — CREATE FORENSIC SNAPSHOT
+==========================================
+
+Create:
+
+/institutional/audit/prompt-76/before/
+
+repository-manifest.json
+git-state.json
+branch-state.json
+tag-state.json
+commit-state.json
+working-tree-state.json
+tracked-files.json
+untracked-files.json
+deleted-files.json
+rename-state.json
+deployment-state.json
+environment-schema.json
+workflow-state.json
+database-state.json
+turso-state.json
+neon-state.json
+vercel-state.json
+inngest-state.json
+secret-state-metadata.json
+documentation-state.json
+evidence-state.json
+
+Create SHA-256 hashes for all critical artifacts.
+
+==================================================
+D. COMPLETE PROMPT-BY-PROMPT AUDIT
+==================================
+
+Build a complete requirement matrix for EVERY prompt from 1 through the latest prompt.
+
+For each:
+
+prompt_id
+prompt_title
+objective
+requirements
+expected_artifacts
+expected_code
+expected_schema
+expected_configuration
+expected_tests
+expected_runtime_behavior
+expected_external_dependencies
+expected_documentation
+actual_artifacts
+actual_code
+actual_schema
+actual_configuration
+actual_tests
+actual_runtime
+actual_external_evidence
+status
+loss_status
+regression_status
+deployment_status
+
+Statuses:
+
+VERIFIED_COMPLETE
+VERIFIED_COMPLETE_RUNTIME
+PARTIAL
+IMPLEMENTED_NOT_VERIFIED
+MISSING
+DELETED
+RECOVERABLE
+RECOVERED
+REGRESSED
+CONFLICTED
+ORPHANED
+BLOCKED_EXTERNAL
+NOT_APPLICABLE
+
+Do NOT mark a prompt complete simply because a document says it was completed.
+
+==================================================
+E. RECOVER EVERY LOST ARTIFACT
+==============================
+
+Search for missing artifacts across:
+
+1. current filesystem
+2. Git history
+3. branches
+4. tags
+5. stashes
+6. reflog where available
+7. prior commits
+8. build artifacts
+9. Vercel deployment artifacts
+10. workflow definitions
+11. Inngest configuration/history where available
+12. Turso schema/migrations
+13. Neon schema/migrations
+14. evidence archives
+15. generated output
+16. documentation archives
+
+For every missing item:
+
+artifact
+last_known_good_version
+last_known_good_commit
+last_known_good_deployment
+recovery_source
+recovery_method
+equivalence_check
+hash_before
+hash_recovered
+status
+
+Recovery statuses:
+
+EXACT_RECOVERY
+VERIFIED_EQUIVALENT_RECOVERY
+PARTIAL_RECOVERY
+NOT_RECOVERABLE
+NOT_REQUIRED
+
+Do NOT reconstruct something from memory and call it recovered.
+
+==================================================
+F. DELETION FORENSICS
+=====================
+
+Specifically inspect:
+
+git log --diff-filter=D
+renames
+reverts
+branch divergence
+unmerged commits
+orphaned commits
+deployment rollback history
+migration deletion
+configuration replacement
+workflow deletion
+environment-variable disappearance
+database object disappearance
+
+Create:
+
+/institutional/audit/prompt-76/deletion-forensics.json
+
+For each:
+
+file/object
+type
+deleted_when
+deleted_from
+last_good_state
+reason_if_known
+replacement
+recovery_status
+risk
+
+==================================================
+G. EQUIVALENCE TEST FOR RECOVERED ARTIFACTS
+===========================================
+
+A recovered artifact is valid only if it is shown to satisfy the original requirement.
+
+For each recovered item:
+
+ORIGINAL_REQUIREMENT
+RECOVERED_IMPLEMENTATION
+FUNCTIONAL_EQUIVALENCE
+SCHEMA_EQUIVALENCE
+BEHAVIORAL_EQUIVALENCE
+TEST_EQUIVALENCE
+VERSION
+RESULT
+
+Do not treat similar filenames as equivalence.
+
+==================================================
+H. FULL REGRESSION AUDIT
+========================
+
+After recovery, re-run the full material regression suite covering every constitutional and critical requirement from Prompts 1–75.
+
+At minimum verify:
+
+authority model
+BM-15/BM-16A/BM-16B
+MTQ optionality
+PAR definition
+USD-peg consistency
+reserve rules
+backing rules
+three-book separation
+finality F0–F7
+atomicity restrictions
+reconciliation
+jurisdiction truth
+CNY/CNH treatment
+Sharia boundary
+bank incentive model
+evidence fabric
+legal obligation registry
+regulatory replay
+continuity
+failure management
+dispute/exception management
+bank ROI
+corridor pain index
+bank pipeline
+counsel package
+pilot term sheet
+assurance framework
+Pilot A
+post-pilot evidence
+external execution control tower
+build freeze
+claim-control rules
+
+==================================================
+I. REPOSITORY-WIDE CODE AUDIT
+=============================
+
+Audit the ENTIRE repository.
+
+Do not restrict yourself to src/lib.
+
+Inspect:
+
+src
+app
+pages
+components
+api
+workers
+jobs
+scripts
+tests
+migrations
+config
+infrastructure
+deployment
+GitHub workflows
+package files
+lockfiles
+environment templates
+database adapters
+event handlers
+scheduled jobs
+documentation
+generated files
+
+Detect:
+
+broken imports
+duplicate implementations
+dead code
+old versions
+conflicting constants
+feature flags
+forbidden fallback behavior
+stale enums
+orphaned modules
+missing modules
+unreferenced schemas
+missing tests
+bypasses
+unauthorized routes
+unsafe defaults
+runtime-only behavior not documented
+document-only features with no implementation
+
+==================================================
+J. SECRET / KEY / TOKEN FORENSIC AUDIT
+======================================
+
+IMPORTANT:
+
+NEVER PRINT OR EXPOSE SECRET VALUES.
+
+Build a secure secret inventory.
+
+For every required secret/configuration:
+
+secret_id
+provider
+purpose
+environment
+expected_location
+present
+format_valid
+last_successful_use
+expiration_if_available
+connection_test
+status
+
+Allowed:
+
+PRESENT_WORKING
+PRESENT_BUT_UNVERIFIED
+EXPIRED
+INVALID
+MISSING
+UNKNOWN
+
+Determine which credential was the LAST KNOWN GOOD credential using actual evidence such as:
+
+* previous successful deployment
+* successful API request
+* successful workflow invocation
+* successful database connection
+* successful webhook/event delivery
+* successful authentication
+* deployment environment metadata
+
+Do NOT determine “last working” merely from file modification time.
+
+==================================================
+K. SECRET PRIORITY RULE
+=======================
+
+If multiple credentials exist:
+
+select the credential with the strongest verified evidence of successful recent use.
+
+But:
+
+DO NOT replace a working production credential with a newer-looking credential without testing.
+
+Test candidates safely.
+
+If a current credential works:
+
+PRESERVE_IT.
+
+If a credential is invalid:
+
+do not print it.
+
+If no valid credential exists:
+
+STATUS = BLOCKED_BY_MISSING_SECRET
+
+Never invent a replacement key.
+
+==================================================
+L. SECRET LOCATION VALIDATION
+=============================
+
+For every provider determine where secrets are intended to live.
+
+Potential locations:
+
+GitHub Actions secrets
+Vercel environment variables
+Inngest configuration/environment
+Turso CLI/session configuration
+Neon connection configuration
+local development environment
+AI platform developer environment
+
+Ensure:
+
+NO_SECRET_IN_GIT = TRUE
+
+Search for accidental secret exposure using pattern detection and secret scanners.
+
+If a secret is detected in a tracked file:
+
+CRITICAL_SECURITY_FINDING
+
+Do not reproduce the secret in the report.
+
+==================================================
+M. GITHUB AUDIT
+===============
+
+Verify:
+
+repository
+correct organization
+correct remote
+branch
+latest commit
+commit integrity
+branch protection
+required reviews
+GitHub Actions
+build
+test
+secret references
+deployment hooks
+environment configuration
+release tags
+
+Check that the current implementation includes all recovered/remediated changes.
+
+Run:
+
+install
+typecheck
+lint where configured
+unit tests
+integration tests
+build
+security/dependency checks where configured
+
+Do not bypass failing checks.
+
+==================================================
+N. GITHUB PUSH / MERGE
+======================
+
+Prepare the verified code for GitHub.
+
+Before push:
+
+working_tree_clean_except_expected_changes
+tests_pass
+build_pass
+secret_scan_pass
+migration_validation_pass
+prompt_coverage_pass
+regression_pass
+
+Create a commit:
+
+P76-FORENSIC-RECOVERY-AND-INTEGRATION
+
+If branch protection requires a pull request:
+
+create a PR.
+
+Do not force-push.
+
+Do not disable branch protection.
+
+Merge only through the repository's configured approval path.
+
+After merge:
+
+record:
+
+commit
+branch
+timestamp
+checks
+deployment_reference
+
+==================================================
+O. VERCEL AUDIT
+===============
+
+Verify the correct Vercel project and deployment relationship.
+
+Check:
+
+project identity
+GitHub integration
+production branch
+deployment configuration
+build command
+output configuration
+environment variable presence
+environment variable environment scope
+deployment commit
+latest successful deployment
+latest failed deployment
+deployment status
+runtime errors
+function/API routes
+cron integrations where applicable
+
+Do not expose environment variable values.
+
+Perform a controlled health test against the deployed application.
+
+Verify:
+
+* application loads
+* critical API routes work
+* authentication works where applicable
+* database access works
+* workflow events work
+* evidence logging works
+* error handling works
+
+==================================================
+P. VERCEL DEPLOYMENT RULE
+=========================
+
+Only deploy the verified GitHub commit.
+
+Record:
+
+git_commit
+vercel_deployment_id
+deployment_status
+environment
+build_result
+runtime_health
+rollback_reference
+
+If deployment fails:
+
+DO NOT delete the previous working deployment.
+
+Create:
+
+DEPLOYMENT_FAILURE
+
+with logs/reference.
+
+If rollback is necessary:
+
+restore the last known-good deployment without destroying evidence.
+
+==================================================
+Q. INNGEST AUDIT
+================
+
+Verify the existing Inngest integration.
+
+Check:
+
+environment
+application registration
+event schemas
+functions
+handlers
+schedules
+retries
+idempotency
+concurrency
+timeouts
+dead-letter/failure behavior
+replay
+signing/authentication
+deployment/version
+Vercel integration where applicable
+
+Test:
+
+event delivery
+event processing
+retry
+idempotency
+failure handling
+replay
+completion
+
+Do not duplicate functions.
+
+Detect:
+
+DUPLICATE_FUNCTION
+MISSING_FUNCTION
+STALE_FUNCTION
+BROKEN_HANDLER
+VERSION_DRIFT
+
+==================================================
+R. INNGEST DEPLOYMENT
+=====================
+
+Deploy/synchronize only the verified workflow version.
+
+Record:
+
+function_versions
+deployment_state
+successful_invocation
+failed_invocation
+retry_test
+idempotency_test
+replay_test
+
+Do not call a function “working” just because it appears in configuration.
+
+==================================================
+S. TURSO AUDIT
+==============
+
+Verify the intended Turso role.
+
+Check:
+
+database identity
+connection
+schema
+migrations
+tables
+indexes
+constraints
+triggers
+audit tables
+evidence tables
+state tables
+workflow tables
+pilot tables
+reconciliation tables
+policy tables
+
+Run a safe connectivity test.
+
+Run schema comparison against canonical source.
+
+Detect:
+
+schema_drift
+missing_table
+unexpected_table
+missing_index
+missing_constraint
+migration_gap
+migration_order_problem
+
+Never drop unknown tables automatically.
+
+==================================================
+T. TURSO MIGRATION RULE
+=======================
+
+Never rewrite historical migrations.
+
+Create forward migrations only.
+
+Before migration:
+
+capture_schema_hash
+
+After migration:
+
+capture_schema_hash
+
+Verify:
+
+fresh_database_reproduction
+upgrade_from_previous
+migration_order
+application_compatibility
+
+==================================================
+U. NEON AUDIT
+=============
+
+Verify the intended Neon role.
+
+Check:
+
+project/database identity
+connection
+schema
+migrations
+tables
+indexes
+constraints
+extensions where used
+application integration
+query behavior
+connection pooling where configured
+branching/configuration where applicable
+
+Run safe connectivity and schema validation.
+
+Never expose credentials.
+
+==================================================
+V. TURSO ↔ NEON ROLE CONSISTENCY
+================================
+
+Determine exactly why both Turso and Neon exist in the architecture.
+
+For every data domain:
+
+domain
+system_of_record
+replica
+cache
+analytics
+migration_source
+read_model
+backup
+purpose
+
+Do NOT allow silent dual-writes.
+
+Detect:
+
+DUAL_SYSTEM_OF_RECORD
+UNCONTROLLED_DUAL_WRITE
+SCHEMA_DIVERGENCE
+DATA_OWNERSHIP_AMBIGUITY
+
+For each table/domain:
+
+CANONICAL_OWNER
+
+must be exactly one system unless the architecture explicitly defines otherwise.
+
+==================================================
+W. DATABASE CONNECTIVITY CHAIN
+==============================
+
+Validate:
+
+APPLICATION
+→
+DATABASE
+
+APPLICATION
+→
+Turso
+
+APPLICATION
+→
+Neon
+
+where applicable.
+
+Validate:
+
+read
+write
+transaction behavior
+error handling
+retry
+idempotency
+connection failure
+recovery
+
+Do not create duplicated data merely to make both systems appear active.
+
+==================================================
+X. FULL END-TO-END STACK TEST
+=============================
+
+Run an actual controlled test through the stack:
+
+USER / REQUEST
+→
+VERCEL
+→
+APPLICATION
+→
+INNGEST EVENT
+→
+DATABASE
+→
+POLICY / CONTROL LOGIC
+→
+EVIDENCE
+→
+RESPONSE
+
+Where applicable:
+
+VERCEL
+→
+INNGEST
+→
+TURSO
+→
+NEON
+
+Record every hop.
+
+For each:
+
+request_id
+timestamp
+system
+input
+output
+status
+latency
+evidence
+
+==================================================
+Y. FAILURE TEST
+===============
+
+Safely test:
+
+Vercel/API failure
+Inngest event failure
+Inngest retry
+database unavailable
+Turso unavailable
+Neon unavailable
+duplicate event
+timeout
+partial completion
+reconciliation mismatch
+
+Verify:
+
+safe state
+retry
+idempotency
+recovery
+evidence
+no duplicate execution
+no data corruption
+
+Do not perform destructive production tests.
+
+==================================================
+Z. DEPLOYMENT HARMONY MODEL
+===========================
+
+Create a dependency graph:
+
+GITHUB
+↓
+VERCEL
+↓
+INNGEST
+↓
+DATABASE(S)
+↓
+EVIDENCE / CONTROL STATE
+
+and all required feedback/monitoring paths.
+
+Every edge must specify:
+
+dependency
+authentication
+configuration
+version
+health check
+failure behavior
+owner
+
+==================================================
+AA. VERSION HARMONY
+===================
+
+Verify the same intended release/version across:
+
+GitHub
+Vercel
+Inngest
+Turso migrations
+Neon migrations
+application
+policy registry
+documentation
+status report
+evidence system
+
+Detect:
+
+VERSION_MISMATCH
+
+Do not deploy a mixed-version state unless explicitly supported.
+
+==================================================
+AB. RELEASE MANIFEST
+====================
+
+Create:
+
+/institutional/release/prompt-76/
+
+release-manifest.json
+release-manifest.md
+component-version-matrix.json
+environment-matrix.json
+secret-health-matrix.json
+deployment-chain.json
+database-schema-manifest.json
+workflow-manifest.json
+evidence-manifest.json
+
+Each component:
+
+component
+version
+commit
+hash
+environment
+status
+dependency
+
+==================================================
+AC. LAST-KNOWN-GOOD MANIFEST
+============================
+
+Create:
+
+/institutional/recovery/
+
+last-known-good.json
+
+For every critical component identify:
+
+component
+last_known_good_commit
+last_known_good_deployment
+last_known_good_schema
+last_known_good_configuration_reference
+evidence
+date
+verification
+
+Include:
+
+GitHub
+Vercel
+Inngest
+Turso
+Neon
+application
+database schemas
+critical workflows
+critical policies
+
+==================================================
+AD. RECOVERY DECISION
+=====================
+
+For each recovered component classify:
+
+KEEP_CURRENT
+ROLL_FORWARD
+RESTORE_EXACT
+RESTORE_EQUIVALENT
+ROLLBACK_TO_LAST_KNOWN_GOOD
+BLOCKED
+
+Do not rollback merely because an older version is more familiar.
+
+Use evidence.
+
+==================================================
+AE. APPLICATION / DATABASE COMPATIBILITY
+========================================
+
+Verify that:
+
+application version
+database schema
+migration version
+workflow version
+policy version
+
+are mutually compatible.
+
+Detect:
+
+APPLICATION_NEWER_THAN_SCHEMA
+SCHEMA_NEWER_THAN_APPLICATION
+WORKFLOW_VERSION_MISMATCH
+POLICY_VERSION_MISMATCH
+
+==================================================
+AF. EVIDENCE CHAIN VALIDATION
+=============================
+
+For a representative controlled request:
+
+prove:
+
+REQUEST
+→
+AUTHORIZATION
+→
+POLICY
+→
+WORKFLOW
+→
+DATABASE
+→
+RESULT
+→
+EVIDENCE
+
+Every step must be traceable.
+
+Do not accept:
+
+HTTP 200
+
+as evidence of correctness.
+
+==================================================
+AG. NO-SECRET-LEAK VALIDATION
+=============================
+
+Run secret scanning across:
+
+GitHub repository
+Git history where accessible
+build output
+logs
+documentation
+configuration
+deployment artifacts
+
+Do not print detected secret values.
+
+Classify:
+
+NO_LEAK_DETECTED
+POTENTIAL_LEAK
+CONFIRMED_LEAK
+
+If leak confirmed:
+
+CRITICAL
+
+and require credential rotation through the appropriate provider without exposing the value.
+
+==================================================
+AH. PROVIDER-SPECIFIC CREDENTIAL ROTATION
+=========================================
+
+If a credential is confirmed exposed or invalid:
+
+DO NOT print it.
+
+Do NOT guess the new value.
+
+Create:
+
+CREDENTIAL_ROTATION_REQUIRED
+
+with:
+
+provider
+credential_type
+reason
+affected_environment
+owner
+rotation_method
+verification_test
+
+After rotation:
+
+verify
+deploy
+retest
+
+==================================================
+AI. ENVIRONMENT MATRIX
+======================
+
+Create:
+
+DEVELOPMENT
+TEST
+CONTROLLED_PILOT
+PRODUCTION
+
+For every environment:
+
+GitHub
+Vercel
+Inngest
+Turso
+Neon
+credentials
+database
+workflow
+deployment
+
+Do not allow test credentials to access production.
+
+Do not allow production credentials in Git.
+
+==================================================
+AJ. ZERO-DATA-LOSS CHECK
+========================
+
+For every recovered or migrated data structure:
+
+verify:
+
+row/count consistency where meaningful
+schema consistency
+primary keys
+foreign keys
+indexes
+timestamps
+audit history
+evidence references
+
+Do not silently transform historical data.
+
+Any transformation:
+
+migration_id
+reason
+source
+target
+validation
+
+==================================================
+AK. HISTORICAL PRESERVATION
+===========================
+
+Preserve:
+
+all historical MITHQAL versions
+prior prompt outputs
+prior audit reports
+prior evidence
+prior migrations
+prior deployment references
+prior findings
+
+Never delete an older artifact just because it is not current.
+
+Current ≠ historical.
+
+==================================================
+AL. CANONICAL CURRENT STATE
+===========================
+
+After successful recovery, create ONE current release state.
+
+Fields:
+
+canonical_release
+git_commit
+vercel_deployment
+inngest_version
+turso_schema
+neon_schema
+policy_version
+document_version
+build_status
+runtime_status
+integration_status
+security_status
+evidence_status
+
+==================================================
+AM. COMPREHENSIVE HEALTH CHECK
+==============================
+
+Run:
+
+repository_health
+build_health
+test_health
+deployment_health
+workflow_health
+database_health
+secret_health
+security_health
+evidence_health
+version_health
+cross_system_health
+
+Each:
+
+PASS
+FAIL
+WARNING
+UNKNOWN
+
+==================================================
+AN. END-TO-END “HARMONY” TEST
+=============================
+
+The system passes HARMONY_TEST only if:
+
+1. GitHub contains the intended current code.
+2. Vercel deploys that intended code.
+3. Inngest executes the intended workflow version.
+4. Turso schema is compatible.
+5. Neon schema is compatible.
+6. Secrets required by each component are present and working.
+7. Events travel correctly.
+8. Database writes/reads work.
+9. Failures are handled safely.
+10. Idempotency works.
+11. Evidence is captured.
+12. Version references agree.
+13. No secret is leaked.
+14. No critical prompt requirement is missing.
+15. No verified lost artifact remains unrecovered unless genuinely unrecoverable and documented.
+
+==================================================
+AO. NO-BILLING / COST SAFETY
+============================
+
+Do NOT introduce a paid plan, billing requirement, or unnecessary resource merely to make the deployment pass.
+
+Preserve the existing cost-conscious architecture.
+
+Where a provider blocks a required operation because of plan limitations:
+
+report:
+
+PROVIDER_PLAN_BLOCKER
+
+Do not silently substitute an expensive service.
+
+Do not add billing credentials.
+
+==================================================
+AP. NO-ASSUMPTION RULE
+======================
+
+Never state:
+
+“all systems are connected”
+
+unless the end-to-end tests prove it.
+
+Never state:
+
+“keys are working”
+
+unless a safe authentication/connectivity test proves it.
+
+Never state:
+
+“deployment is successful”
+
+unless the deployed commit and runtime health are verified.
+
+Never state:
+
+“nothing was lost”
+
+unless the forensic audit proves preservation/recovery.
+
+==================================================
+AQ. FINAL ARTIFACTS
+===================
+
+Create:
+
+/institutional/audit/prompt-76/
+
+00_README.md
+01_prompt-complete-matrix.json
+02_prompt-regression-matrix.json
+03_loss-recovery-register.json
+04_git-forensic-report.json
+05_secret-health-report.json
+06_github-audit.json
+07_vercel-audit.json
+08_inngest-audit.json
+09_turso-audit.json
+10_neon-audit.json
+11_turso-neon-role-map.json
+12_end-to-end-stack-test.json
+13_failure-recovery-test.json
+14_version-harmony-audit.json
+15_document-code-runtime-audit.json
+16_evidence-chain-audit.json
+17_secret-leak-audit.json
+18_database-integrity-audit.json
+19_historical-preservation-audit.json
+20_last-known-good-manifest.json
+21_release-manifest.json
+22_provider-harmony-report.json
+23_critical-findings.json
+24_final-integrity-report.md
+25_final-integrity-report.json
+
+==================================================
+AR. FINAL DEPLOYMENT STATE
+==========================
+
+Create:
+
+/institutional/release/prompt-76/
+
+deployment-status.json
+
+Required:
+
+github_status
+github_commit
+github_checks
+vercel_status
+vercel_deployment
+inngest_status
+inngest_version
+turso_status
+turso_schema
+neon_status
+neon_schema
+secret_health
+database_health
+end_to_end_status
+harmony_test
+rollback_reference
+release_status
+
+==================================================
+AS. FINAL PROMPT COVERAGE
+=========================
+
+Create:
+
+prompt-1-to-latest-final-status.json
+
+Required:
+
+latest_prompt
+total_prompts
+verified_complete
+partial
+missing
+deleted
+recovered
+regressed
+conflicted
+external_dependency
+unverifiable
+
+For every prompt preserve the individual result.
+
+==================================================
+AT. FINAL LOSS / RECOVERY STATUS
+================================
+
+Return:
+
+LOSS_STATUS
+
+with:
+
+NOTHING_MISSING
+MISSING_RECOVERED
+MISSING_NONRECOVERABLE
+LOSS_REMAINS
+UNVERIFIABLE
+
+Then list every exception.
+
+==================================================
+AU. FINAL SECRET STATUS
+=======================
+
+Return:
+
+SECRET_STATUS
+
+with:
+
+ALL_REQUIRED_SECRETS_VERIFIED
+SOME_SECRETS_UNVERIFIED
+SECRET_MISSING
+SECRET_INVALID
+SECRET_ROTATION_REQUIRED
+BLOCKED
+
+NEVER DISPLAY SECRET VALUES.
+
+==================================================
+AV. FINAL DEPLOYMENT STATUS
+===========================
+
+Return:
+
+DEPLOYMENT_STATUS
+
+with:
+
+FULLY_DEPLOYED_AND_VERIFIED
+PARTIALLY_DEPLOYED
+DEPLOYMENT_BLOCKED
+ROLLBACK_REQUIRED
+RECOVERY_REQUIRED
+
+==================================================
+AW. FINAL HARMONY STATUS
+========================
+
+Return:
+
+HARMONY_STATUS
+
+with:
+
+FULLY_CONNECTED_AND_VERIFIED
+CONNECTED_WITH_WARNINGS
+PARTIALLY_CONNECTED
+BROKEN
+BLOCKED
+UNVERIFIABLE
+
+==================================================
+AX. FINAL PROGRAM INTEGRITY STATUS
+==================================
+
+Return:
+
+PROGRAM_INTEGRITY_STATUS
+
+with:
+
+FULLY_IMPLEMENTED_AND_PRESERVED
+FULLY_IMPLEMENTED_WITH_NONCRITICAL_GAPS
+PARTIAL
+LOSS_RECOVERED_WITH_LIMITATIONS
+REGRESSION_REMAINS
+CRITICAL_GAP_REMAINS
+UNVERIFIABLE
+
+==================================================
+AY. FINAL MANAGEMENT DASHBOARD
+==============================
+
+Create:
+
+/institutional/release/prompt-76/final-management-dashboard.md
+
+Display:
+
+LATEST_PROMPT
+PROMPTS_TOTAL
+PROMPTS_VERIFIED
+PROMPTS_PARTIAL
+PROMPTS_MISSING
+PROMPTS_LOST
+PROMPTS_RECOVERED
+PROMPTS_REGRESSED
+
+LOSS_STATUS
+REGRESSION_STATUS
+
+GITHUB
+VERCEL
+INNGEST
+TURSO
+NEON
+
+SECRET_STATUS
+DATABASE_STATUS
+END_TO_END_STATUS
+HARMONY_STATUS
+
+CURRENT_CANONICAL_VERSION
+CURRENT_GIT_COMMIT
+CURRENT_VERCEL_DEPLOYMENT
+CURRENT_INNGEST_VERSION
+CURRENT_TURSO_SCHEMA
+CURRENT_NEON_SCHEMA
+
+CRITICAL_FINDINGS
+OPEN_BLOCKERS
+ROLLBACK_REFERENCE
+
+PRODUCTION_AUTHORIZED
+INSTITUTIONALLY_VALIDATED
+
+NEXT_ACTION
+NEXT_EXTERNAL_EVIDENCE
+
+==================================================
+AZ. FINAL JSON
+==============
+
+Create:
+
+/institutional/release/prompt-76/final-program-status.json
+
+Required:
+
+audit_timestamp
+latest_prompt
+program_integrity_status
+prompt_coverage
+loss_status
+recovery_status
+regression_status
+github
+vercel
+inngest
+turso
+neon
+secret_status
+database_status
+end_to_end_status
+harmony_status
+canonical_release
+git_commit
+vercel_deployment
+inngest_version
+turso_schema
+neon_schema
+critical_findings
+open_blockers
+rollback_reference
+production_authorized
+institutionally_validated
+next_action
+next_external_evidence
+
+==================================================
+BA. FINAL RELEASE GATE
+======================
+
+The release may be marked:
+
+VERIFIED_RELEASE
+
+only if:
+
+* no unresolved P0/P1 internal implementation defect
+* all recoverable lost artifacts recovered
+* no unresolved critical regression
+* GitHub checks pass
+* Vercel deployment verified
+* Inngest workflows verified
+* Turso connectivity/schema verified
+* Neon connectivity/schema verified
+* critical credentials verified without exposing secrets
+* no secret leak detected
+* end-to-end stack test passes
+* version harmony passes
+* evidence capture works
+* rollback reference exists
+
+If any condition fails:
+
+RELEASE_BLOCKED
+
+Do not force the release through.
+
+==================================================
+BB. PRODUCTION FIREWALL
+=======================
+
+Even if deployment/harmony succeeds:
+
+DO NOT CHANGE:
+
+productionAuthorized
+institutionallyValidated
+legalOpinionsObtained
+validatedJurisdictions
+licensesObtained
+banksContracted
+custodiansContracted
+
+unless genuine external evidence exists and the canonical governance process permits the transition.
+
+Technical deployment ≠ institutional authorization.
+
+==================================================
+BC. MTQ FIREWALL
+================
+
+Deployment must not:
+
+* enable MTQ automatically
+* imply MTQ legal validation
+* imply MTQ redemption validation
+* imply reserve validation
+* change MTQ state merely because deployment works
+
+MTQ remains governed by its external-evidence state.
+
+==================================================
+BD. FINAL PUSH/DEPLOY ORDER
+===========================
+
+Use this sequence:
+
+1. FORENSIC SNAPSHOT
+2. PROMPT 1–LATEST AUDIT
+3. LOSS/DELETION DETECTION
+4. RECOVERY
+5. TARGETED REMEDIATION
+6. FULL REGRESSION
+7. SECRET HEALTH VALIDATION
+8. GITHUB VALIDATION
+9. GITHUB COMMIT / PR / MERGE ACCORDING TO PROTECTION
+10. VERCEL DEPLOYMENT
+11. INNGEST SYNCHRONIZATION/DEPLOYMENT
+12. TURSO SCHEMA/MIGRATION VALIDATION
+13. NEON SCHEMA/MIGRATION VALIDATION
+14. END-TO-END TEST
+15. FAILURE/RECOVERY TEST
+16. VERSION HARMONY CHECK
+17. EVIDENCE INTEGRITY CHECK
+18. RELEASE MANIFEST
+19. FINAL HEALTH CHECK
+20. FINAL STATUS
+
+DO NOT reverse this sequence unless a dependency requires it.
+
+==================================================
+BE. ROLLBACK RULE
+=================
+
+If deployment creates a verified regression:
+
+1. preserve failed state
+2. record evidence
+3. identify last known good
+4. rollback safely
+5. preserve failed deployment
+6. retest last-known-good state
+7. create remediation item
+
+Never delete the failed deployment to hide the failure.
+
+==================================================
+BF. FINAL HUMAN ACTION REGISTER
+===============================
+
+Identify anything that still requires the user/human:
+
+* secret rotation
+* provider approval
+* bank authorization
+* counsel
+* regulatory approval
+* billing-plan decision
+* manual deployment approval
+* GitHub review
+* Vercel approval
+* Inngest configuration
+* database privilege
+* external credentials
+
+Do not invent completion.
+
+==================================================
+BG. ABSOLUTE PROHIBITIONS
+=========================
+
+DO NOT:
+
+* expose secrets
+* commit secrets
+* force-push
+* rewrite Git history
+* delete historical artifacts
+* delete old deployments
+* drop databases
+* rewrite old migrations
+* silently overwrite schemas
+* fabricate successful tests
+* fabricate working keys
+* fabricate provider connectivity
+* fabricate end-to-end success
+* fabricate recovery
+* fabricate external evidence
+* enable production authorization
+* enable MTQ because deployment succeeded
+* create new architecture merely to satisfy the audit
+* introduce paid dependencies unnecessarily
+
+==================================================
+BH. FINAL OPERATING PRINCIPLE
+=============================
+
+The desired result is NOT:
+
+“everything looks green.”
+
+The desired result is:
+
+EVERY PROMPT
+→
+EVERY REQUIREMENT
+→
+EVERY IMPLEMENTATION
+→
+EVERY TEST
+→
+EVERY CRITICAL ARTIFACT
+→
+EVERY DEPLOYMENT
+→
+EVERY DATABASE
+→
+EVERY WORKFLOW
+→
+EVERY REQUIRED CREDENTIAL
+→
+EVERY INTEGRATION
+→
+EVERY EVIDENCE CHAIN
+
+is accounted for.
+
+The final system must be:
+
+PRESERVED
+RECOVERED
+TRACEABLE
+TESTED
+DEPLOYED
+CONNECTED
+REPRODUCIBLE
+ROLLBACK-CAPABLE
+SECRET-SAFE
+VERSION-CONSISTENT
+
+and still:
+
+NOT_PRODUCTION_AUTHORIZED
+
+unless the real external institutional gates independently establish otherwise.
+
+END PROMPT 76.

@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "package_id": "NA-PA-001",
+  "version": "v25.3.2-P73-1.0",
+  "date": "2026-10-03T00:00:00Z",
+  "owner": "JOZOUR_LLC_NJ (G0_CONDITIONAL)",
+  "source": "Prompt 73, Section F #14",
+  "status": "ISSUED",
+  "pilot": "PILOT-A-001",
+  "next_actions_count": 6,
+  "next_actions": [
+    { "action_id": "NA-01", "action": "Engage qualified external legal counsel for UAE (DIFC/ADGM) to verify entity JOZOUR_LLC_NJ", "type": "LEGAL", "owner": "JOZOUR_LLC_NJ principal", "external_party": "external legal counsel (to be identified)", "dependency": "none (root action — G0_PASS)", "status": "NOT_STARTED", "next_step": "identify candidate counsel firms with UAE DIFC/ADGM expertise; perform conflict checks; scope inquiry; engagement", "evidence_required": "G0_PASS — counsel-verified entity status (signed)", "deadline": "TBD by human owner", "blocking": true, "decision_required": "engage counsel (yes/no)" },
+    { "action_id": "NA-02", "action": "Restore institutional record (Prompts 62-71 artifacts) from backup OR re-create from prior session context", "type": "GOVERNANCE", "owner": "JOZOUR_LLC_NJ principal", "external_party": "n/a (internal restoration)", "dependency": "none (can proceed in parallel with NA-01)", "status": "NOT_STARTED", "next_step": "check for backup of /institutional/assurance/ (42 files) + /institutional/{g1,corridors,banks,legal,bank-workshop,pilot}/ directories; if no backup, re-create from prior session conversation context", "evidence_required": "restored /institutional/ tree with all prior prompt artifacts present", "deadline": "TBD by human owner", "blocking": true, "decision_required": "restore strategy (backup vs re-create)" },
+    { "action_id": "NA-03", "action": "Contact 1 UAE bank (DIFC/ADGM) for initial institutional discovery meeting", "type": "BANK", "owner": "JOZOUR_LLC_NJ principal", "external_party": "UAE bank (to be identified — 15 researched)", "dependency": "G0_PASS + G1 counsel engagement (NA-01 + counsel opinion)", "status": "BLOCKED", "next_step": "BLOCKED — cannot proceed until NA-01 completes and counsel opines on jurisdiction", "evidence_required": "executed NDA + executed DPA + bank baseline data + executed term sheet", "deadline": "TBD (after NA-01)", "blocking": true, "decision_required": "target bank selection (yes/no)" },
+    { "action_id": "NA-04", "action": "Triage 8 jurisdictions (AE, SG, SA, IN, CN, US, GB, EU) for regulatory engagement", "type": "REGULATORY", "owner": "JOZOUR_LLC_NJ principal + counsel", "external_party": "UAE/SG regulator", "dependency": "G1 counsel engagement (NA-01 + counsel opinion)", "status": "BLOCKED", "next_step": "BLOCKED — cannot proceed until NA-01 completes and counsel opines on jurisdiction", "evidence_required": "regulator communication + authorization path", "deadline": "TBD (after NA-01)", "blocking": true, "decision_required": "regulatory engagement strategy (yes/no)" },
+    { "action_id": "NA-05", "action": "Select independent assurance provider via evaluation framework", "type": "ASSURANCE", "owner": "JOZOUR_LLC_NJ principal", "external_party": "independent assurance provider (to be selected)", "dependency": "G7 pilot execution + evidence (downstream of NA-03 + NA-06)", "status": "BLOCKED", "next_step": "BLOCKED — cannot proceed until pilot executes and produces evidence", "evidence_required": "independent assurance report", "deadline": "TBD (after pilot execution)", "blocking": true, "decision_required": "provider selection (yes/no)" },
+    { "action_id": "NA-06", "action": "Negotiate term sheet DRAFT → EXECUTED; satisfy 18 conditions precedent; authorize pilot", "type": "PILOT", "owner": "JOZOUR_LLC_NJ principal + bank", "external_party": "bank", "dependency": "G4 bank contract (downstream of NA-03)", "status": "BLOCKED", "next_step": "BLOCKED — cannot proceed until NA-03 completes and bank contracts", "evidence_required": "executed pilot authorization + 16 scenarios executed + evidence", "deadline": "TBD (after NA-03)", "blocking": true, "decision_required": "pilot authorization (yes/no)" }
+  ],
+  "principal_next_action": "NA-01 (engage counsel) is the root action. NA-02 (record restoration) can proceed in parallel. All other actions are downstream-blocked.",
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

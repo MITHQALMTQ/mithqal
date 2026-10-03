@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "remediation_id": "FR75-PA-001",
+  "source": "Prompt 75, Section AA (Full Adversarial Recheck)",
+  "status": "ISSUED",
+  "tests_total": 30,
+  "tests_executed": 0,
+  "tests_not_executed": 30,
+  "comparison": {
+    "P74_BASELINE": "30 tests NOT_TESTED (no runtime); 3 findings CONFIRMED via audit (test 27 deleted-artifact, test 29 stale-doc, test 30 external-evidence-absence)",
+    "P75_POST_REMEDIATION": "30 tests NOT_TESTED (still no runtime); 3 findings still CONFIRMED; but test 27 (deleted-artifact) IMPROVED — Prompt 70 assurance framework is now RECOVERED (was MISSING)"
+  },
+  "per_test_comparison": "0 tests changed from NOT_TESTED to PASS because no runtime was added. The dev environment is now functional (node_modules installed, lint clean) but no application runtime (no dev server started, no API tested, no pilot executed). Adversarial tests require a running application to execute.",
+  "no_new_regression": true,
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

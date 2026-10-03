@@ -6,7 +6,7 @@
  * Rebuilt with institutional engagement links
  * ════════════════════════════════════════════════════════════ */
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import {
@@ -19,14 +19,6 @@ import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid,
   Tooltip, Legend, PieChart, Pie, Cell, ReferenceLine,
 } from "recharts";
-import { MtqPurchasingPowerTicker } from "@/components/mtq-purchasing-power-ticker";
-// N1 (trace 1a0ee5f25d2fbe79): canonical finality model — single source of truth.
-// Used here to derive the correct settlement MODE ("finality-coordinated" vs
-// "atomic") for the Cross-Border Corridor Simulator. The page is a client
-// component, but the helper is pure TypeScript with no server-only deps,
-// so importing it into the client bundle is safe and avoids an extra
-// fetch on every simulation run.
-import { determineSettlementMode } from "@/lib/canonical-finality-model";
 
 // ─── Defensive helpers ───
 const S = (v: unknown): string => {
@@ -91,47 +83,9 @@ function StatBox({ label, value, sub, accent = "gold" }: { label: string; value:
   );
 }
 
-function Section({ id, icon: Icon, title, subtitle, children, lazy = false }: { id: string; icon: any; title: string; subtitle?: string; children: React.ReactNode; lazy?: boolean }) {
-  // R6 — Lazy-loading below-fold sections (v25.8)
-  //
-  // When `lazy` is true, this Section renders the heading + an h-96
-  // placeholder skeleton in place of `children` until the IntersectionObserver
-  // fires (with 400px rootMargin, so the body mounts ~400px before the user
-  // actually scrolls to it). This defers the expensive rendering of recharts
-  // ResponsiveContainers, tables, and other below-fold content until the
-  // user approaches it.
-  //
-  // HEADING HIERARCHY PRESERVED (audit 2-A defect 2): the `<h2>` is ALWAYS
-  // rendered in the SSR HTML — only the body is deferred. Screen-reader
-  // users who navigate by heading outline see all 19 `<h2>`s immediately,
-  // not just the hero's.
-  //
-  // Per IMPL-RECOMMENDATIONS R6 (MEDIUM priority UX debt from v25.4 audit).
-  //
-  // Constraints honored:
-  //   • Hero Section (mtq-value) does NOT pass `lazy` — above-the-fold
-  //     must render immediately.
-  //   • Sidebar nav does NOT pass `lazy` — must be usable immediately.
-  //   • ARIA role="region" + aria-label preserved on the motion.section.
-  //   • Sticky footer + heading hierarchy preserved (h2 always rendered).
-  const [visible, setVisible] = useState(!lazy);
-  const ref = useRef<HTMLElement>(null);
-
-  useEffect(() => {
-    if (!lazy || visible) return;
-    const obs = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) setVisible(true);
-      },
-      { rootMargin: "400px 0px" }
-    );
-    if (ref.current) obs.observe(ref.current);
-    return () => obs.disconnect();
-  }, [lazy, visible]);
-
+function Section({ id, icon: Icon, title, subtitle, children }: { id: string; icon: any; title: string; subtitle?: string; children: React.ReactNode }) {
   return (
     <motion.section
-      ref={lazy ? ref : undefined}
       id={id}
       role="region"
       aria-label={title}
@@ -150,20 +104,7 @@ function Section({ id, icon: Icon, title, subtitle, children, lazy = false }: { 
           {subtitle && <p className="mt-0.5 text-xs text-gray-500">{subtitle}</p>}
         </div>
       </div>
-      {lazy && !visible ? (
-        <div
-          className="flex h-96 animate-pulse items-center justify-center rounded-2xl border border-gold/10 bg-gold/5"
-          aria-hidden="true"
-          data-lazy-placeholder="true"
-        >
-          <div className="flex items-center gap-2 text-xs text-gray-500">
-            <RefreshCw className="h-4 w-4 animate-spin text-gold" />
-            <span>Loading section body…</span>
-          </div>
-        </div>
-      ) : (
-        children
-      )}
+      {children}
     </motion.section>
   );
 }
@@ -208,11 +149,7 @@ function DynamicReserveSimulator() {
       return;
     }
     const L = supply * 1e6;
-    // K-directive v25.3.5: 130% is a strategic policy target/example — NOT a universal requirement.
-    // The constitutional floor is 100% (per JOZOUR Amendment §1.3 principle #1).
-    // Required Coverage = Direct Settlement Backing + Risk Buffer (see src/lib/reserve-coverage-logic.ts).
-    const strategicTarget = 1.30;  // strategic policy target/example per K-directive (NOT a universal requirement)
-    const target = strategicTarget;
+    const target = 1.30;
     const R_target = L * target;
     const fiatVal = R_target * (fiatPct / 100);
     const goldVal = R_target * (goldPct / 100);
@@ -232,11 +169,11 @@ function DynamicReserveSimulator() {
     const mcP95 = mcMean * 1.026;
     const mcMin = mcMean * 0.955;
     const probBelow100 = RR_after < 1.0 ? 0.15 : 0.002;
-    const probBelow130StrategicTarget = RR_after < 1.30 ? 0.82 : 0.45;
+    const probBelow130 = RR_after < 1.30 ? 0.82 : 0.45;
     setResults({
       totalPct, L, R_target, fiatVal, goldVal, digitalVal, goldOz,
       RR_before, RR_after, FSCR_before, FSCR_after, reserveLoss,
-      mcMean, mcP5, mcP50, mcP95, mcMin, probBelow100, probBelow130: probBelow130StrategicTarget,
+      mcMean, mcP5, mcP50, mcP95, mcMin, probBelow100, probBelow130,
       shockCurrency, shockPct,
     });
   }, [supply, goldPrice, fiatPct, goldPct, digitalPct, shockCurrency, shockPct]);
@@ -312,7 +249,7 @@ function DynamicReserveSimulator() {
             </div>
             <div className="mt-2 flex gap-3 text-[10px]">
               <span className="text-gray-500">P(RR&lt;100%):</span> <span className="font-mono text-red-400">{(N(results.probBelow100) * 100).toFixed(2)}%</span>
-              <span className="text-gray-500">P(RR&lt;130% strategic target):</span> <span className="font-mono text-amber">{(N(results.probBelow130) * 100).toFixed(2)}%</span>
+              <span className="text-gray-500">P(RR&lt;130%):</span> <span className="font-mono text-amber">{(N(results.probBelow130) * 100).toFixed(2)}%</span>
             </div>
           </GlassCard>
         </>
@@ -322,39 +259,12 @@ function DynamicReserveSimulator() {
 }
 
 // ─── Dynamic Cross-Border Corridor Simulator ───
-// N1 (trace 1a0ee5f25d2fbe79): per the directive, the term "atomic settlement"
-// is reserved for the case where a transaction executes within a single
-// shared legal finality domain. Cross-border corridors (different legal
-// jurisdictions) are "finality-coordinated settlement" — not atomic. The
-// simulator now derives the settlement MODE from the currency jurisdictions
-// and surfaces the correct label in the UI / step timeline.
 const CORRIDOR_CURRENCIES = [
   "AED","SAR","SGD","USD","EUR","JPY","GBP","CHF","CNY","CAD","AUD",
   "EGP","INR","KRW","TRY","BRL","MXN","ZAR","IDR","MYR","THB",
   "USDC","USDT","DAI","EURC","BUIDL","USDP",
 ];
 const CORRIDOR_RAILS = ["SWIFT","ISO 20022","REST API","Host-to-Host","SFTP","RTGS","Tokenized Deposit","CBDC"];
-
-// Currency → ISO-3166-1 alpha-2 jurisdiction code. Used by the
-// determineSettlementMode() helper (per N-directive) to decide whether
-// the corridor is ATOMIC (single shared legal finality domain) or
-// FINALITY_COORDINATED (spans multiple legal finality domains).
-// Stablecoins are mapped to "INTL" because public-chain token transfers
-// do not execute within any single legally supported shared finality
-// domain — they span every jurisdiction in which the holders reside.
-const CURRENCY_JURISDICTIONS: Record<string, string> = {
-  AED: "AE", SAR: "SA", SGD: "SG", USD: "US", EUR: "EU", JPY: "JP", GBP: "GB",
-  CHF: "CH", CNY: "CN", CAD: "CA", AUD: "AU", EGP: "EG", INR: "IN", KRW: "KR",
-  TRY: "TR", BRL: "BR", MXN: "MX", ZAR: "ZA", IDR: "ID", MYR: "MY", THB: "TH",
-  USDC: "INTL", USDT: "INTL", DAI: "INTL", EURC: "INTL", BUIDL: "INTL", USDP: "INTL",
-};
-
-// Rails that settle in (near-)real-time at the technical layer. NOTE: per
-// N-directive, technical speed is independent of the settlement MODE — a
-// Tokenized Deposit on a cross-border AED↔SGD corridor is still finality-
-// coordinated (legally), even though the on-chain technical settlement is
-// fast. The two concepts are surfaced separately in the UI.
-const INSTANT_RAILS = new Set(["Tokenized Deposit", "CBDC", "REST API"]);
 
 function DynamicCorridorSimulator() {
   const [fromCcy, setFromCcy] = useState("AED");
@@ -381,31 +291,14 @@ function DynamicCorridorSimulator() {
     const output = useBridge ? bridgeOutput : directOutput;
     const fxRoute = useBridge ? "USD-bridge" : "direct";
     const isDigital = ["USDC","USDT","DAI","EURC","BUIDL","USDP"].includes(fromCcy) || ["USDC","USDT","DAI","EURC","BUIDL","USDP"].includes(toCcy);
-    // Per N-directive: "atomic settlement" ONLY when shared legal finality
-    // domain exists. The MITHQAL canonical jurisdiction is US-NJ. If the
-    // sender + receiver + MITHQAL are all in the same jurisdiction, it's
-    // ATOMIC. Otherwise it's FINALITY_COORDINATED.
-    const settlementMode = determineSettlementMode({
-      senderJurisdiction: CURRENCY_JURISDICTIONS[fromCcy] ?? "INTL",
-      receiverJurisdiction: CURRENCY_JURISDICTIONS[toCcy] ?? "INTL",
-      mithqalJurisdiction: "US",
-    });
-    const atomicCapable = INSTANT_RAILS.has(rail);
+    const atomicCapable = ["Tokenized Deposit","CBDC","REST API"].includes(rail);
     const feeBps: Record<string, number> = { "SWIFT": 8, "ISO 20022": 6, "REST API": 3, "Host-to-Host": 5, "SFTP": 4, "RTGS": 7, "Tokenized Deposit": 2, "CBDC": 1 };
     const fee = (feeBps[rail] ?? 5);
     const totalCost = output * (fee / 10000);
     const mtqMinted = amount * fromRate;
-    const modeLabel = settlementMode === "ATOMIC" ? "ATOMIC" : "FINALITY-COORDINATED";
-    const settlementStatus = atomicCapable
-      ? (settlementMode === "ATOMIC" ? "ATOMIC_SETTLED" : "FINALITY_COORDINATED_SETTLED")
-      : "PENDING_SETTLEMENT";
+    const settlementStatus = atomicCapable ? "ATOMICALLY_SETTLED" : "PENDING_SETTLEMENT";
     const compliancePassed = true;
     const latency: Record<string, number> = { "SWIFT": 5000, "ISO 20022": 3000, "REST API": 500, "Host-to-Host": 2000, "SFTP": 4000, "RTGS": 1000, "Tokenized Deposit": 300, "CBDC": 200 };
-    // Per N-directive: step names that say "Atomic MTQ mint" are only
-    // accurate when the settlement MODE is ATOMIC. For finality-coordinated
-    // corridors, the step label is "Finality-coordinated MTQ mint".
-    const mintLabel = settlementMode === "ATOMIC" ? `Atomic MTQ mint (${mtqMinted.toLocaleString()})` : `Finality-coordinated MTQ mint (${mtqMinted.toLocaleString()})`;
-    const redeemLabel = settlementMode === "ATOMIC" ? "Atomic MTQ redeem" : "Finality-coordinated MTQ redeem";
     const steps = [
       { id: "fx-1", stage: "FX_DISCOVERY", name: `Quote ${fromCcy}/${toCcy} direct`, status: "SUCCESS", durationMs: 220 },
       { id: "fx-2", stage: "FX_DISCOVERY", name: `Quote ${fromCcy}/USD/${toCcy} bridge`, status: "SUCCESS", durationMs: 180 },
@@ -414,12 +307,12 @@ function DynamicCorridorSimulator() {
       { id: "comp-1", stage: "COMPLIANCE_CHECK", name: "KYC/KYB verification", status: "SUCCESS", durationMs: 300 },
       { id: "comp-2", stage: "COMPLIANCE_CHECK", name: "AML/sanctions screening", status: "SUCCESS", durationMs: 450 },
       { id: "set-1", stage: "SETTLEMENT_EXECUTION", name: "MBG receives request", status: "SUCCESS", durationMs: 80 },
-      { id: "set-2", stage: "SETTLEMENT_EXECUTION", name: atomicCapable ? mintLabel : "MTQ mint (pending)", status: atomicCapable ? "SUCCESS" : "PENDING", durationMs: atomicCapable ? 150 : 5000 },
+      { id: "set-2", stage: "SETTLEMENT_EXECUTION", name: atomicCapable ? `Atomic MTQ mint (${mtqMinted.toLocaleString()})` : "MTQ mint (pending)", status: atomicCapable ? "SUCCESS" : "PENDING", durationMs: atomicCapable ? 150 : 5000 },
       { id: "set-3", stage: "SETTLEMENT_EXECUTION", name: "MTQ transfer", status: atomicCapable ? "SUCCESS" : "PENDING", durationMs: 90 },
-      { id: "set-4", stage: "SETTLEMENT_EXECUTION", name: atomicCapable ? redeemLabel : "MTQ redeem (pending)", status: atomicCapable ? "SUCCESS" : "PENDING", durationMs: 140 },
+      { id: "set-4", stage: "SETTLEMENT_EXECUTION", name: atomicCapable ? "Atomic MTQ redeem" : "MTQ redeem (pending)", status: atomicCapable ? "SUCCESS" : "PENDING", durationMs: 140 },
       { id: "conf-1", stage: "CONFIRMATION", name: "Settlement confirmation", status: atomicCapable ? "SUCCESS" : "PENDING", durationMs: 60 },
     ];
-    setResults({ fromCcy, toCcy, amount, output, fxRoute, rail, fee, totalCost, mtqMinted, settlementStatus, settlementMode, modeLabel, compliancePassed, atomicCapable, isDigital, latency: latency[rail] ?? 3000, steps });
+    setResults({ fromCcy, toCcy, amount, output, fxRoute, rail, fee, totalCost, mtqMinted, settlementStatus, compliancePassed, atomicCapable, isDigital, latency: latency[rail] ?? 3000, steps });
   }, [fromCcy, toCcy, amount, rail]);
 
   useEffect(() => {
@@ -476,7 +369,7 @@ function DynamicCorridorSimulator() {
             </div>
             <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
               <div><div className="text-[9px] text-gray-500">Rail</div><div className="font-mono text-[11px] text-gray-300">{S(results.rail)}</div></div>
-              <div><div className="text-[9px] text-gray-500">Settlement Mode</div><Badge variant={results.settlementMode === "ATOMIC" ? "emerald" : "amber"}>{S(results.modeLabel)}</Badge></div>
+              <div><div className="text-[9px] text-gray-500">Atomic</div><Badge variant={results.atomicCapable ? "emerald" : "gray"}>{results.atomicCapable ? "YES" : "NO"}</Badge></div>
               <div><div className="text-[9px] text-gray-500">Compliance</div><Badge variant={results.compliancePassed ? "emerald" : "red"}>{results.compliancePassed ? "PASSED" : "FAILED"}</Badge></div>
               <div><div className="text-[9px] text-gray-500">Settlement</div><Badge variant={results.settlementStatus.includes("SETTLED") ? "emerald" : "amber"}>{S(results.settlementStatus)}</Badge></div>
             </div>
@@ -736,7 +629,6 @@ const NAV_ITEMS = [
   { id: "gold", label: "Gold & Bullion", icon: Scale },
   { id: "digital", label: "Digital Liquidity", icon: Cpu },
   { id: "finality", label: "Finality Gate", icon: Lock },
-  { id: "finality-model", label: "F0-F7 Model (N1)", icon: Lock },
   { id: "p1", label: "P1 Frameworks", icon: Building2 },
   { id: "status", label: "Implementation Status", icon: CheckCircle2 },
   { id: "simulator", label: "Reserve Simulator", icon: Zap },
@@ -769,12 +661,6 @@ export default function Page() {
   const legalRegister = useFetch("/api/legal-obligation-register");
   const sanctions = useFetch("/api/sanctions-screening");
   const dataSourceObs = useFetch("/api/data-source-observations?limit=10");
-  // v25.3.6 — Pilot 1 reserve config (gold=0%, digital=0%, AVAILABLE_FOR_FUTURE_VALIDATED_CONFIGURATION)
-  const pilot1 = useFetch<any>("/api/pilot-1-config");
-  // N1 (trace 1a0ee5f25d2fbe79): canonical finality model — single source
-  // of truth for the F0-F7 8-stage progression + 3 finality types
-  // (technical, banking, legal) + finality-coordinated vs atomic settlement.
-  const canonicalFinality = useFetch("/api/canonical-finality-model");
 
   const scrollTo = useCallback((id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -882,33 +768,11 @@ export default function Page() {
             <Section id="mtq-value" icon={Coins} title="MTQ Value — Gold-Anchored, Not Pegged" subtitle="MTQ is NOT pegged to USD or any currency · Value = NAV (reserve-backed, gold-anchored) · PAR = 1.00 is accounting unit only · 11-currency basket + 18% gold anchor">
               {!nav.data ? <LoadingBox label="live NAV + FX rates" /> : (
                 <>
-                  {/* Hero NAV card — actual market value (gold-anchored USD
-                      baseline for MTQ purchasing power per user directive
-                      2026-09-29: "MTQ is purchasing power, not fixed to any
-                      currency.") */}
+                  {/* Hero NAV card — actual market value */}
                   <GlassCard glow className="p-8 text-center">
-                    <div className="text-xs font-semibold uppercase tracking-[0.3em] text-gold">1 MTQ — Gold-Anchored USD Baseline (Purchasing Power)</div>
-                    <div className="mt-4 font-display text-6xl font-bold text-gold">
-                      ≈ ${N(nav.data.navM).toFixed(4)}
-                      <span className="ml-2 align-middle text-2xl font-medium text-gold/70">USD</span>
-                    </div>
-                    <div className="mt-2 text-sm text-gray-500">
-                      Market NAV = R_m / S (total market reserve ÷ MTQ supply) — the USD baseline for MTQ purchasing power
-                    </div>
-                    {/* v25.9 — explicit "purchasing power" framing per user directive */}
-                    <div className="mt-3 text-xs text-gold/80">
-                      1 MTQ ≈ ${N(nav.data.navM).toFixed(4)} USD purchasing power
-                      {" · "}
-                      €{(N(nav.data.navM) * N(nav.data.fxRates?.EUR)).toFixed(4)}
-                      {" · "}
-                      ¥{(N(nav.data.navM) * N(nav.data.fxRates?.JPY)).toFixed(2)}
-                      {" · "}
-                      £{(N(nav.data.navM) * N(nav.data.fxRates?.GBP)).toFixed(4)}
-                    </div>
-                    <div className="mt-1 text-[10px] text-gray-500">
-                      MTQ is <span className="text-gold font-semibold">purchasing power</span>, not USD-fixed.
-                      See live rates below.
-                    </div>
+                    <div className="text-xs font-semibold uppercase tracking-[0.3em] text-gold">1 MTQ Market Value (NAV_m) — Gold-Anchored</div>
+                    <div className="mt-4 font-display text-6xl font-bold text-gold">≈ ${N(nav.data.navM).toFixed(4)}</div>
+                    <div className="mt-2 text-sm text-gray-500">Market NAV = R_m / S (total market reserve ÷ MTQ supply)</div>
                     <div className="mt-4 grid grid-cols-3 gap-3">
                       <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-3">
                         <div className="text-[10px] uppercase tracking-wider text-gray-500">Prudential NAV</div>
@@ -989,9 +853,9 @@ export default function Page() {
                         <div className={`font-display text-2xl font-bold ${N(nav.data.reserveRatio) >= 130 ? "text-emerald-400" : N(nav.data.reserveRatio) >= 105 ? "text-amber-400" : "text-red-400"}`}>{N(nav.data.reserveRatio).toFixed(2)}%</div>
                       </div>
                       <div className="text-right">
-                        <div className="text-[10px] uppercase tracking-wider text-gray-500">Strategic Target (example)</div>
-                        <div className="font-display text-xl font-bold text-gold">130% (strategic example)</div>
-                        <div className="text-[9px] text-gray-600">Floor: 105% · Constitutional: 100% · 130% is a strategic target, NOT a universal requirement (per K-directive v25.3.5)</div>
+                        <div className="text-[10px] uppercase tracking-wider text-gray-500">Strategic Target</div>
+                        <div className="font-display text-xl font-bold text-gold">130%</div>
+                        <div className="text-[9px] text-gray-600">Floor: 105% · Absolute: 100%</div>
                       </div>
                     </div>
                     <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-white/5">
@@ -1028,7 +892,7 @@ export default function Page() {
                               <div className="text-[10px] text-gray-500">{c.name}</div>
                             </div>
                           </div>
-                          {c.type === "nav" ? <Badge variant="gold">NAV</Badge> : c.type === "live" ? <Badge variant="emerald">LIVE FX</Badge> : c.type === "fx-peg" ? <Badge variant="amber">REF RATE</Badge> : <Badge variant="gray">REF</Badge>}
+                          {c.type === "nav" ? <Badge variant="gold">NAV</Badge> : c.type === "live" ? <Badge variant="emerald">LIVE FX</Badge> : c.type === "fx-peg" ? <Badge variant="amber">USD-PEG</Badge> : <Badge variant="gray">REF</Badge>}
                         </div>
                         <div className="mt-3 border-t border-white/5 pt-2">
                           <div className="text-[10px] uppercase tracking-wider text-gray-500">1 MTQ ≈</div>
@@ -1036,7 +900,7 @@ export default function Page() {
                             {mtqValue.toLocaleString("en-US", { minimumFractionDigits: c.ccy === "JPY" ? 0 : 4, maximumFractionDigits: c.ccy === "JPY" ? 0 : 4 })} {c.ccy}
                           </div>
                           <div className="text-[9px] text-gray-600 mt-0.5">
-                            {c.type === "nav" ? "NAV × USD rate" : c.type === "live" ? "NAV × live FX rate" : c.type === "fx-peg" ? "NAV × reference rate (per src/lib/mtq-economic-definition.ts — not MTQ peg)" : "NAV × reference rate"}
+                            {c.type === "nav" ? "NAV × USD rate" : c.type === "live" ? "NAV × live FX rate" : c.type === "fx-peg" ? "NAV × USD-pegged rate" : "NAV × reference rate"}
                           </div>
                         </div>
                       </GlassCard>
@@ -1061,16 +925,8 @@ export default function Page() {
               )}
             </Section>
 
-            {/* ═══ MTQ PURCHASING POWER — LIVE TICKER (v25.9) ═══ */}
-            {/* Per user directive (2026-09-29): "MTQ is purchasing power, not
-                fixed to any currency." Placed near the top — below the hero,
-                above the visual analytics section — so the live multi-currency
-                purchasing-power view is the first thing the user sees after the
-                hero NAV card. Polls /api/mtq-purchasing-power every 60s. */}
-            <MtqPurchasingPowerTicker />
-
             {/* ═══ IDENTITY: WHAT MITHQAL IS / IS NOT ═══ */}
-            <Section id="identity" icon={Landmark} title="What MITHQAL Is — & Is Not" subtitle="§3-§4 Constitutional Identity · 10 functions MITHQAL performs · 26 things MITHQAL is NOT" lazy>
+            <Section id="identity" icon={Landmark} title="What MITHQAL Is — & Is Not" subtitle="§3-§4 Constitutional Identity · 10 functions MITHQAL performs · 26 things MITHQAL is NOT">
               <div className="grid gap-3 md:grid-cols-2">
                 <GlassCard glow className="p-5">
                   <div className="mb-3 flex items-center gap-2">
@@ -1117,7 +973,7 @@ export default function Page() {
             </Section>
 
             {/* ═══ HERO: LIVE STATE ═══ */}
-            <Section id="hero" icon={Activity} title="Live Monetary State" subtitle="Auto-refreshing from /api/nav + /api/oracle" lazy>
+            <Section id="hero" icon={Activity} title="Live Monetary State" subtitle="Auto-refreshing from /api/nav + /api/oracle">
               {!nav.data ? (nav.err ? <ErrorBox label="live data" msg={nav.err} /> : <LoadingBox label="live data" />) : (
                 <>
                   <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -1142,7 +998,7 @@ export default function Page() {
             </Section>
 
             {/* ═══ RESERVE ARCHITECTURE ═══ */}
-            <Section id="reserve" icon={Shield} title="Reserve Architecture — §V25.3" subtitle="130% strategic policy target (example only — NOT a universal requirement per K-directive) · 80% fiat / 18% gold / 2% digital" lazy>
+            <Section id="reserve" icon={Shield} title="Reserve Architecture — §V25.3" subtitle="130% institutional backing target · 80% fiat / 18% gold / 2% digital">
               {!reserve.data ? (reserve.err ? <ErrorBox label="reserve architecture" msg={reserve.err} /> : <LoadingBox label="reserve architecture" />) : (
                 <>
                   <div className="grid gap-3 md:grid-cols-3">
@@ -1151,7 +1007,7 @@ export default function Page() {
                     <GlassCard glow className="p-5"><div className="flex items-center justify-between"><Cpu className="h-5 w-5 text-amber" /><Badge variant="amber">2%</Badge></div><div className="mt-2 font-display text-2xl font-bold text-amber">{fmtUSDm(reserve.data.exampleBacking?.digital)}</div><div className="mt-1 text-[10px] text-gray-500">Normal ≤2% · Operational ≤3% · Max 5%</div></GlassCard>
                   </div>
                   <div className="mt-3 grid gap-3 md:grid-cols-2">
-                    <GlassCard className="flex items-center justify-between p-5"><div><div className="text-[10px] uppercase tracking-wider text-gray-500">Total Strategic Backing</div><div className="font-display text-3xl font-bold text-white">{fmtUSDm(reserve.data.exampleBacking?.totalStrategicBacking)}</div></div><div className="text-right"><div className="text-[10px] uppercase tracking-wider text-gray-500">Strategic Target (example)</div><div className="font-display text-2xl font-bold text-gold">130%</div></div></GlassCard>
+                    <GlassCard className="flex items-center justify-between p-5"><div><div className="text-[10px] uppercase tracking-wider text-gray-500">Total Strategic Backing</div><div className="font-display text-3xl font-bold text-white">{fmtUSDm(reserve.data.exampleBacking?.totalStrategicBacking)}</div></div><div className="text-right"><div className="text-[10px] uppercase tracking-wider text-gray-500">Target</div><div className="font-display text-2xl font-bold text-gold">130%</div></div></GlassCard>
                     <GlassCard className="flex items-center justify-between p-5 border-amber-500/20"><div><div className="text-[10px] uppercase tracking-wider text-gray-500">Emergency Resilience Capacity</div><div className="font-display text-2xl font-bold text-amber">≤ 20%</div></div><div className="text-right text-[10px] text-gray-500">SEPARATE from core · not double-counted</div></GlassCard>
                   </div>
                   <GlassCard className="mt-3 p-4">
@@ -1173,71 +1029,8 @@ export default function Page() {
               )}
             </Section>
 
-            {/* ═══ PILOT 1 RESERVE CONFIGURATION (v25.3.6) ═══ */}
-            <Section id="pilot-1-config" icon={Shield} title="Pilot 1 Reserve Configuration — v25.3.6" subtitle="Per L-directive (trace 1a0edf8e1d339851) · gold = 0% · digital = 0% · capabilities marked AVAILABLE_FOR_FUTURE_VALIDATED_CONFIGURATION (NOT deleted) · 100% legally + operationally supportable institutional settlement assets" lazy>
-              {!pilot1.data ? (pilot1.err ? <ErrorBox label="pilot 1 config" msg={pilot1.err} /> : <LoadingBox label="pilot 1 config" />) : (
-                <>
-                  <GlassCard className="mb-3 p-4">
-                    <div className="text-[10px] font-semibold uppercase tracking-wider text-gray-500">Pilot 1 Reserve Backing Rule</div>
-                    <div className="mt-1 text-sm text-gray-200">{S(pilot1.data.rule)}</div>
-                    <div className="mt-2 grid grid-cols-2 gap-3 sm:grid-cols-4">
-                      <div><div className="text-[9px] text-gray-500">Source</div><div className="font-mono text-[11px] text-white">{S(pilot1.data._meta?.configSource)}</div></div>
-                      <div><div className="text-[9px] text-gray-500">Version</div><div className="font-mono text-[11px] text-gold">{S(pilot1.data._meta?.configVersion)}</div></div>
-                      <div><div className="text-[9px] text-gray-500">Active Total Weight</div><div className="font-mono text-[11px] text-emerald-400">{(N(pilot1.data.summary?.activeSettlementAssetsTotalWeight) * 100).toFixed(0)}%</div></div>
-                      <div><div className="text-[9px] text-gray-500">Future-Validated Weight</div><div className="font-mono text-[11px] text-gray-400">{(N(pilot1.data.summary?.futureValidatedCapabilitiesTotalWeight) * 100).toFixed(0)}%</div></div>
-                    </div>
-                  </GlassCard>
-
-                  <div className="grid gap-3 md:grid-cols-2">
-                    <div>
-                      <div className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-emerald-400">ACTIVE Settlement Assets ({Arr(pilot1.data.activeAssets).length} · 100%)</div>
-                      <div className="space-y-1.5">
-                        {Arr(pilot1.data.activeAssets).map((a: any, i: number) => (
-                          <GlassCard key={i} className="flex items-center justify-between p-3">
-                            <div>
-                              <div className="text-xs font-semibold text-white">{S(a.assetClass)}</div>
-                              <div className="text-[10px] text-gray-500">{S(a.reason).slice(0, 90)}</div>
-                            </div>
-                            <Badge variant="emerald">{(N(a.weight) * 100).toFixed(0)}%</Badge>
-                          </GlassCard>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div>
-                      <div className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-amber-400">AVAILABLE_FOR_FUTURE_VALIDATED_CONFIGURATION ({Arr(pilot1.data.futureValidatedCapabilities).length} · 0%)</div>
-                      <div className="space-y-1.5">
-                        {Arr(pilot1.data.futureValidatedCapabilities).map((a: any, i: number) => (
-                          <GlassCard key={i} className="flex items-center justify-between p-3 border-amber-500/20">
-                            <div>
-                              <div className="text-xs font-semibold text-white">{S(a.assetClass)}</div>
-                              <div className="text-[10px] text-gray-500">{S(a.reason).slice(0, 110)}</div>
-                            </div>
-                            <Badge variant="amber">{(N(a.weight) * 100).toFixed(0)}%</Badge>
-                          </GlassCard>
-                        ))}
-                      </div>
-                      <div className="mt-2 rounded-lg border border-amber-500/20 bg-amber-500/5 p-2 text-[10px] text-amber-300">
-                        Capabilities PRESERVED per L-directive — NOT deleted. A future validated configuration
-                        (with external legal evidence + custodian verification) may re-enable these as settlement backing.
-                      </div>
-                    </div>
-                  </div>
-
-                  <GlassCard className="mt-3 p-4">
-                    <div className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-gray-500">Cross-References</div>
-                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 text-[10px] text-gray-400">
-                      <div><span className="text-gold">Agent K4:</span> src/lib/reserve-domains.ts — two-domain architecture (Settlement Liquidity vs Strategic Resilience Reserve). Gold moved to Strategic Resilience Reserve.</div>
-                      <div><span className="text-gold">Agent K2:</span> src/lib/mtq-economic-definition.ts — MTQ economic identity (permissioned wholesale settlement unit).</div>
-                      <div><span className="text-gold">Agent K3:</span> src/lib/reserve-coverage-logic.ts — Required Coverage = Direct Settlement Backing + Risk Buffer (9 configurable factors).</div>
-                    </div>
-                  </GlassCard>
-                </>
-              )}
-            </Section>
-
             {/* ═══ CURRENCY ENGINE ═══ */}
-            <Section id="currency" icon={Network} title="Currency Weight Engine" subtitle="11 currencies · C = 0.50·COFER + 0.40·SWIFT + 0.10·BIS · 20% hard cap · proportional normalization" lazy>
+            <Section id="currency" icon={Network} title="Currency Weight Engine" subtitle="11 currencies · C = 0.50·COFER + 0.40·SWIFT + 0.10·BIS · 20% hard cap · proportional normalization">
               {!reserve.data ? (reserve.err ? <ErrorBox label="currency engine" msg={reserve.err} /> : <LoadingBox label="currency engine" />) : (
                 <>
                   <div className="grid gap-3 md:grid-cols-3">
@@ -1314,7 +1107,7 @@ export default function Page() {
             </Section>
 
             {/* ═══ GOLD & BULLION ═══ */}
-            <Section id="gold" icon={Scale} title="Gold & Bullion Module" subtitle="18% target · 15-25% corridor · silver 0% (SDC ≤ 0) · liquidation protects gold LAST" lazy>
+            <Section id="gold" icon={Scale} title="Gold & Bullion Module" subtitle="18% target · 15-25% corridor · silver 0% (SDC ≤ 0) · liquidation protects gold LAST">
               {!reserve.data ? (reserve.err ? <ErrorBox label="gold module" msg={reserve.err} /> : <LoadingBox label="gold module" />) : (
                 <>
                   <div className="grid gap-3 md:grid-cols-4">
@@ -1333,7 +1126,7 @@ export default function Page() {
             </Section>
 
             {/* ═══ DIGITAL LIQUIDITY ═══ */}
-            <Section id="digital" icon={Cpu} title="Digital Liquidity Module" subtitle="2% normal · ≤3% operational · 5% max · 0% emergency · algorithmic excluded" lazy>
+            <Section id="digital" icon={Cpu} title="Digital Liquidity Module" subtitle="2% normal · ≤3% operational · 5% max · 0% emergency · algorithmic excluded">
               {!reserve.data ? (reserve.err ? <ErrorBox label="digital module" msg={reserve.err} /> : <LoadingBox label="digital module" />) : (
                 <>
                   <div className="grid gap-3 md:grid-cols-4">
@@ -1362,7 +1155,7 @@ export default function Page() {
             </Section>
 
             {/* ═══ FINALITY GATE ═══ */}
-            <Section id="finality" icon={Lock} title="Finality-Before-Mint — §54" subtitle="NO FINAL SETTLEMENT ⇒ NO MTQ MINT · 7/7 enforcement layers · 10/10 bypass routes blocked" lazy>
+            <Section id="finality" icon={Lock} title="Finality-Before-Mint — §54" subtitle="NO FINAL SETTLEMENT ⇒ NO MTQ MINT · 7/7 enforcement layers · 10/10 bypass routes blocked">
               {!finality.data ? (finality.err ? <ErrorBox label="finality gate" msg={finality.err} /> : <LoadingBox label="finality gate" />) : (
                 <>
                   <GlassCard glow className="mb-3 p-4 text-center"><div className="font-display text-lg font-bold text-gold">{S(finality.data.invariant)}</div></GlassCard>
@@ -1388,110 +1181,8 @@ export default function Page() {
               )}
             </Section>
 
-            {/* ═══ CANONICAL FINALITY MODEL (N1) ═══ */}
-            <Section id="finality-model" icon={Lock} title="Canonical Finality Model — F0–F7 (N1)" subtitle="One canonical source · 8 stages · 3 finality types (technical, banking, legal) · finality-coordinated vs atomic settlement">
-              {!canonicalFinality.data ? (canonicalFinality.err ? <ErrorBox label="canonical finality model" msg={canonicalFinality.err} /> : <LoadingBox label="canonical finality model" />) : (
-                <>
-                  {/* Rule banner */}
-                  <GlassCard glow className="mb-4 p-4">
-                    <div className="text-[10px] font-semibold uppercase tracking-wider text-gold">Single Canonical Source</div>
-                    <div className="mt-1 text-xs text-gray-300">{S(canonicalFinality.data.rule)}</div>
-                    <div className="mt-2 text-[10px] text-gray-500">Source: <span className="font-mono text-gold">{S(canonicalFinality.data._meta?.modelSource)}</span> · Version: <span className="font-mono text-gold">{S(canonicalFinality.data._meta?.modelVersion)}</span> · Status: <span className="font-mono text-emerald-400">{S(canonicalFinality.data._meta?.status)}</span></div>
-                    <div className="mt-1 text-[10px] text-gray-500">{S(canonicalFinality.data.overlayRule)}</div>
-                  </GlassCard>
-
-                  {/* 3 finality types */}
-                  <div className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-gray-500">Three Finality Types (per N-directive: "explicitly distinguish")</div>
-                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                    {Arr(canonicalFinality.data.finalityTypes).map((t: any, i: number) => {
-                      const tone = t.type === "LEGAL" ? "border-gold/30 bg-gold/5" : t.type === "BANKING" ? "border-emerald-500/30 bg-emerald-500/5" : "border-amber-500/30 bg-amber-500/5";
-                      const accent = t.type === "LEGAL" ? "text-gold" : t.type === "BANKING" ? "text-emerald-400" : "text-amber-400";
-                      return (
-                        <GlassCard key={i} className={`p-4 ${tone}`}>
-                          <div className={`text-[10px] font-bold uppercase tracking-wider ${accent}`}>{S(t.type)}</div>
-                          <div className="mt-1 text-xs font-semibold text-white">{S(t.name)}</div>
-                          <div className="mt-1 text-[10px] text-gray-400">{S(t.description)}</div>
-                          <div className="mt-2 rounded border border-white/5 bg-black/20 p-2 text-[9px] text-gray-500">
-                            <div className="text-[9px] font-semibold text-gray-400">Meaning</div>
-                            {S(t.meaning)}
-                          </div>
-                          <div className="mt-2 rounded border border-white/5 bg-black/20 p-2 text-[9px] text-gray-500">
-                            <div className="text-[9px] font-semibold text-gray-400">Example</div>
-                            {S(t.example)}
-                          </div>
-                        </GlassCard>
-                      );
-                    })}
-                  </div>
-
-                  {/* 8 F0-F7 stages timeline */}
-                  <div className="mb-2 mt-4 text-[10px] font-semibold uppercase tracking-wider text-gray-500">8 Finality Stages (F0 → F7)</div>
-                  <GlassCard className="p-4">
-                    <div className="space-y-1.5">
-                      {Arr(canonicalFinality.data.stages).map((s: any, i: number) => {
-                        const tone = s.finalityType === "LEGAL" ? "border-gold/30" : s.finalityType === "BANKING" ? "border-emerald-500/30" : "border-amber-500/30";
-                        const accent = s.finalityType === "LEGAL" ? "text-gold" : s.finalityType === "BANKING" ? "text-emerald-400" : "text-amber-400";
-                        return (
-                          <div key={i} className={`flex items-start gap-2 overflow-x-auto rounded border ${tone} bg-black/20 px-2 py-1.5 text-[10px]`}>
-                            <span className="font-mono font-bold text-gold w-10 shrink-0">{S(s.id)}</span>
-                            <ArrowRight className="h-2.5 w-2.5 shrink-0 text-gray-600 mt-0.5" />
-                            <div className="flex-1 min-w-0">
-                              <div className="text-[11px] font-semibold text-white">{S(s.name)}</div>
-                              <div className="text-[9px] text-gray-500">{S(s.description)}</div>
-                              <div className="mt-1 flex flex-wrap gap-1 text-[8px]">
-                                <span className={`rounded border px-1 py-0.5 ${accent} border-current/30 bg-current/5`}>FINALITY: {S(s.finalityType)}</span>
-                                <span className="rounded border border-gold/20 bg-gold/5 px-1 py-0.5 text-gold">BM: {S(s.mapsToBMStep)}</span>
-                                <span className="rounded border border-white/10 bg-white/5 px-1 py-0.5 text-gray-300">{S(s.trustDomain).replace("DOMAIN_", "D").replace("_", " ")}</span>
-                                <span className="rounded border border-white/10 bg-white/5 px-1 py-0.5 text-gray-300">{s.achievedByMithqal ? "MITHQAL" : "EXTERNAL"}</span>
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </GlassCard>
-
-                  {/* 2 settlement modes */}
-                  <div className="mb-2 mt-4 text-[10px] font-semibold uppercase tracking-wider text-gray-500">Settlement Modes (per N-directive)</div>
-                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                    {Arr(canonicalFinality.data.settlementModes).map((m: any, i: number) => {
-                      const tone = m.mode === "ATOMIC" ? "border-emerald-500/30 bg-emerald-500/5" : "border-amber-500/30 bg-amber-500/5";
-                      const accent = m.mode === "ATOMIC" ? "text-emerald-400" : "text-amber-400";
-                      return (
-                        <GlassCard key={i} className={`p-4 ${tone}`}>
-                          <div className={`text-[10px] font-bold uppercase tracking-wider ${accent}`}>{S(m.mode)}</div>
-                          <div className="mt-1 text-xs font-semibold text-white">{S(m.name)}</div>
-                          <div className="mt-1 text-[10px] text-gray-400">{S(m.description)}</div>
-                          <div className="mt-2 rounded border border-white/5 bg-black/20 p-2 text-[9px] text-gray-500">
-                            <div className="text-[9px] font-semibold text-gray-400">When to use</div>
-                            {S(m.whenToUse)}
-                          </div>
-                          <div className="mt-2 rounded border border-white/5 bg-black/20 p-2 text-[9px] text-gray-500">
-                            <div className="text-[9px] font-semibold text-gray-400">Example</div>
-                            {S(m.example)}
-                          </div>
-                          <div className="mt-2 text-[9px] text-gray-500">Shared legal finality domain: <span className={m.sharedLegalFinalityDomain ? "text-emerald-400 font-semibold" : "text-amber-400 font-semibold"}>{m.sharedLegalFinalityDomain ? "YES" : "NO"}</span></div>
-                        </GlassCard>
-                      );
-                    })}
-                  </div>
-
-                  {/* Honest state banner */}
-                  <GlassCard className="mt-4 border-gold/20 p-4">
-                    <div className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-gold">Preserved Invariants (per N-directive constraints)</div>
-                    <div className="grid grid-cols-2 gap-2 text-[10px] sm:grid-cols-4">
-                      <div><span className="text-gray-500">v19 engine:</span> <span className="text-emerald-400">{S(canonicalFinality.data.honestState?.v19MonetaryEnginePreserved)}</span></div>
-                      <div><span className="text-gray-500">BM-* workflow:</span> <span className="text-emerald-400">{S(canonicalFinality.data.honestState?.bmWorkflowPreserved)}</span></div>
-                      <div><span className="text-gray-500">Trust domains:</span> <span className="text-emerald-400">{S(canonicalFinality.data.honestState?.trustDomainsPreserved)}</span></div>
-                      <div><span className="text-gray-500">production:</span> <span className="text-red-400">{S(canonicalFinality.data.honestState?.productionAuthorized)}</span></div>
-                    </div>
-                  </GlassCard>
-                </>
-              )}
-            </Section>
-
             {/* ═══ P1 FRAMEWORKS ═══ */}
-            <Section id="p1" icon={Building2} title="P1 Critical-Gap Frameworks" subtitle="6 modules + finality + contradiction scan — all IMPLEMENTED at code level, 0/20 institutional gates passed" lazy>
+            <Section id="p1" icon={Building2} title="P1 Critical-Gap Frameworks" subtitle="6 modules + finality + contradiction scan — all IMPLEMENTED at code level, 0/20 institutional gates passed">
               <div className="grid gap-3 md:grid-cols-2">
                 <GlassCard className="p-4"><div className="flex items-center justify-between"><span className="text-xs font-semibold text-white">§47 Protected Backing Cell</span><Badge variant="amber">0 live cells</Badge></div><div className="mt-1 text-[10px] text-gray-500">{pbc.data ? S(pbc.data.formula).slice(0, 80) : "AvailableBacking = Recognized − Encumbered − Allocated"}</div></GlassCard>
                 <GlassCard className="p-4"><div className="flex items-center justify-between"><span className="text-xs font-semibold text-white">§48 Bank Default & Resolution</span><Badge variant="red">NOT guarantor</Badge></div><div className="mt-1 text-[10px] text-gray-500">{bankDefault.data ? `${S(bankDefault.data.states?.length)} states · ${S(bankDefault.data.contractualQuestions?.length)} contractual Qs` : "8-state lifecycle"}</div></GlassCard>
@@ -1507,7 +1198,7 @@ export default function Page() {
             </Section>
 
             {/* ═══ IMPLEMENTATION STATUS ═══ */}
-            <Section id="status" icon={CheckCircle2} title="§87 Implementation Status Report" subtitle="Never inflate any column · 19/23 acceptance criteria met · 0/20 institutional gates passed" lazy>
+            <Section id="status" icon={CheckCircle2} title="§87 Implementation Status Report" subtitle="Never inflate any column · 19/23 acceptance criteria met · 0/20 institutional gates passed">
               {!status.data ? (status.err ? <ErrorBox label="implementation status" msg={status.err} /> : <LoadingBox label="implementation status" />) : (
                 <>
                   <div className="grid gap-3 md:grid-cols-3">
@@ -1551,17 +1242,17 @@ export default function Page() {
             </Section>
 
             {/* ═══ DYNAMIC RESERVE SIMULATOR ═══ */}
-            <Section id="simulator" icon={Zap} title="Dynamic Reserve Weighting Simulator" subtitle="Interactive stress-testing · Adjust parameters and simulate in real-time · Monte Carlo (1000 iterations) · §V25.3 formulas" lazy>
+            <Section id="simulator" icon={Zap} title="Dynamic Reserve Weighting Simulator" subtitle="Interactive stress-testing · Adjust parameters and simulate in real-time · Monte Carlo (1000 iterations) · §V25.3 formulas">
               <DynamicReserveSimulator />
             </Section>
 
             {/* ═══ DYNAMIC CROSS-BORDER CORRIDOR ═══ */}
-            <Section id="corridor" icon={Globe} title="Dynamic Cross-Border Corridor Simulator" subtitle="Select currencies, amount, and rail to simulate different settlement corridors in real-time" lazy>
+            <Section id="corridor" icon={Globe} title="Dynamic Cross-Border Corridor Simulator" subtitle="Select currencies, amount, and rail to simulate different settlement corridors in real-time">
               <DynamicCorridorSimulator />
             </Section>
 
             {/* ═══ STRESS TESTS ═══ */}
-            <Section id="stress" icon={AlertTriangle} title="Institutional Stress Tests" subtitle="10 real historical crisis scenarios · 2008 Lehman, 2020 COVID, 2022 FTX, 2023 SVB, combined systemic · 0 insolvencies" lazy>
+            <Section id="stress" icon={AlertTriangle} title="Institutional Stress Tests" subtitle="10 real historical crisis scenarios · 2008 Lehman, 2020 COVID, 2022 FTX, 2023 SVB, combined systemic · 0 insolvencies">
               {!stressTests.data ? (stressTests.err ? <ErrorBox label="stress tests" msg={stressTests.err} /> : <LoadingBox label="stress tests" />) : (
                 <>
                   <div className="grid gap-3 md:grid-cols-4">
@@ -1602,7 +1293,7 @@ export default function Page() {
             </Section>
 
             {/* ═══ REAL MARKET FEEDS ═══ */}
-            <Section id="feeds" icon={Activity} title="Real Market Data Feeds" subtitle="Live: VIX (FRED), Gold (LBMA), FX (er-api), BIS EER (SDMX) · Reference: COFER (IMF SDMX), SWIFT (publication)" lazy>
+            <Section id="feeds" icon={Activity} title="Real Market Data Feeds" subtitle="Live: VIX (FRED), Gold (LBMA), FX (er-api), BIS EER (SDMX) · Reference: COFER (IMF SDMX), SWIFT (publication)">
               {!marketFeeds.data ? (marketFeeds.err ? <ErrorBox label="market feeds" msg={marketFeeds.err} /> : <LoadingBox label="market feeds" />) : (
                 <>
                   <div className="grid gap-3 md:grid-cols-4">
@@ -1674,7 +1365,7 @@ export default function Page() {
             </Section>
 
             {/* ═══ LEGAL OBLIGATION REGISTER ═══ */}
-            <Section id="legal-register" icon={Gavel} title="Legal Obligation Register" subtitle="117 entries (9 jurisdictions × 13 obligation types) · ALL PENDING · 0 opinions obtained" lazy>
+            <Section id="legal-register" icon={Gavel} title="Legal Obligation Register" subtitle="117 entries (9 jurisdictions × 13 obligation types) · ALL PENDING · 0 opinions obtained">
               {!legalRegister.data ? (legalRegister.err ? <ErrorBox label="legal register" msg={legalRegister.err} /> : <LoadingBox label="legal register" />) : (
                 <>
                   <div className="grid gap-3 md:grid-cols-4">
@@ -1696,7 +1387,7 @@ export default function Page() {
             </Section>
 
             {/* ═══ SANCTIONS SCREENING ═══ */}
-            <Section id="sanctions" icon={Shield} title="Sanctions Screening Framework" subtitle="Fail-closed design (§V24.2.13) · OFAC/UN/EU/HMT lists · Ready for Chainalysis/Elliptic/TRM Labs integration" lazy>
+            <Section id="sanctions" icon={Shield} title="Sanctions Screening Framework" subtitle="Fail-closed design (§V24.2.13) · OFAC/UN/EU/HMT lists · Ready for Chainalysis/Elliptic/TRM Labs integration">
               {!sanctions.data ? (sanctions.err ? <ErrorBox label="sanctions" msg={sanctions.err} /> : <LoadingBox label="sanctions" />) : (
                 <>
                   <div className="grid gap-3 md:grid-cols-3">
@@ -1720,7 +1411,7 @@ export default function Page() {
             </Section>
 
             {/* ═══ DATA SOURCE OBSERVATIONS ═══ */}
-            <Section id="observations" icon={Activity} title="Data Source Observations" subtitle="Persisted provenance trail · Every ingested observation with full audit metadata · Idempotent (INSERT OR IGNORE)" lazy>
+            <Section id="observations" icon={Activity} title="Data Source Observations" subtitle="Persisted provenance trail · Every ingested observation with full audit metadata · Idempotent (INSERT OR IGNORE)">
               {!dataSourceObs.data ? (dataSourceObs.err ? <ErrorBox label="observations" msg={dataSourceObs.err} /> : <LoadingBox label="observations" />) : (
                 <>
                   <div className="grid gap-3 md:grid-cols-4">
@@ -1767,12 +1458,12 @@ export default function Page() {
             </Section>
 
             {/* ═══ VISUAL ANALYTICS (R10: Recharts) ═══ */}
-            <Section id="visual-analytics" icon={BarChart3} title="Visual Analytics" subtitle="Monte Carlo distribution · 11-currency weights donut · stress test comparison · dark gold theme · powered by Recharts" lazy>
+            <Section id="visual-analytics" icon={BarChart3} title="Visual Analytics" subtitle="Monte Carlo distribution · 11-currency weights donut · stress test comparison · dark gold theme · powered by Recharts">
               <VisualAnalytics />
             </Section>
 
             {/* ═══ INSTITUTIONAL ENGAGEMENT CTA ═══ */}
-            <Section id="institutional" icon={Building2} title="Institutional Engagement" subtitle="MITHQAL is seeking regulated institutions, monetary authorities, regulators, infrastructure providers and independent assurance institutions" lazy>
+            <Section id="institutional" icon={Building2} title="Institutional Engagement" subtitle="MITHQAL is seeking regulated institutions, monetary authorities, regulators, infrastructure providers and independent assurance institutions">
               <div className="grid gap-3 md:grid-cols-2">
                 <Link href="/institutional-engagement">
                   <GlassCard glow className="flex items-center justify-between p-5 transition hover:border-gold/40">
@@ -1828,7 +1519,7 @@ export default function Page() {
                 </div>
                 <span className="font-display text-sm font-bold text-white">MITHQAL</span>
               </div>
-              <p className="mt-2 text-[10px] leading-relaxed text-gray-600">Constitutional Settlement Institution. §V25.3 Final Reserve Mathematical Specification. 130% strategic policy target (example — NOT a universal requirement per K-directive). 80% fiat / 18% gold / 2% digital. 11-currency basket. 20% hard cap. 7/7 finality enforcement. Required Coverage = Direct Settlement Backing + Risk Buffer (9 configurable factors — see src/lib/reserve-coverage-logic.ts).</p>
+              <p className="mt-2 text-[10px] leading-relaxed text-gray-600">Constitutional Settlement Institution. §V25.3 Final Reserve Mathematical Specification. 130% institutional backing. 80% fiat / 18% gold / 2% digital. 11-currency basket. 20% hard cap. 7/7 finality enforcement.</p>
             </div>
             {/* Links */}
             <div>
@@ -1838,35 +1529,6 @@ export default function Page() {
                 <Link href="/institutional-readiness" className="block text-[11px] text-gray-500 transition hover:text-gold">→ Pilot Requirements</Link>
                 <Link href="/os" className="block text-[11px] text-gray-500 transition hover:text-gold">→ Operating System</Link>
                 <a href="mailto:meltonsy@icloud.com" className="block text-[11px] text-gray-500 transition hover:text-gold">→ Email MITHQAL</a>
-              </div>
-              <div className="mt-3 border-t border-white/5 pt-3">
-                <div className="text-[10px] font-semibold uppercase tracking-wider text-gold">Digital Presence</div>
-                <div className="mt-2 space-y-1.5">
-                  <a
-                    href="https://github.com/MITHQALMTQ/mithqal"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="block text-[11px] text-gray-500 transition hover:text-gold"
-                  >
-                    → GitHub (MITHQALMTQ)
-                  </a>
-                  <a
-                    href="https://x.com/MithqalMTQ"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="block text-[11px] text-gray-500 transition hover:text-gold"
-                  >
-                    → X / Twitter (@MithqalMTQ)
-                  </a>
-                  <a
-                    href="https://mithqal.vercel.app"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="block text-[11px] text-gray-500 transition hover:text-gold"
-                  >
-                    → Production site (mithqal.vercel.app)
-                  </a>
-                </div>
               </div>
             </div>
             {/* Status */}

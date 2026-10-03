@@ -1,0 +1,17 @@
+{"$schema": "https://json-schema.org/draft-07/schema#",
+ "audit_id": "FA77-PA-001",
+ "chain_title": "Deployment Chain",
+ "release_prompt": 77,
+ "chain_timestamp": "2026-10-03T13:05:00Z",
+ "build_mode": "FROZEN",
+ "production_authorized": false,
+ "chain_links": {
+   "github_to_vercel": "UNVERIFIABLE",
+   "vercel_to_inngest": "BLOCKED",
+   "inngest_to_turso": "BLOCKED",
+   "inngest_to_neon": "BLOCKED",
+   "database_to_evidence": "BLOCKED"
+ },
+ "chain_status": "BLOCKED",
+ "chain_blocked_reason": "no secrets -> no provider connectivity -> deployment chain broken",
+ "NOT_PRODUCTION_AUTHORIZED": true}

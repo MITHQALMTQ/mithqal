@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "package_id": "IGM-PA-001",
+  "version": "v25.3.2-P72-1.0",
+  "date": "2026-10-03T00:00:00Z",
+  "owner": "JOZOUR_LLC_NJ (G0_CONDITIONAL)",
+  "source": "Prompt 72, Section Z",
+  "status": "ISSUED",
+  "pilot": "PILOT-A-001",
+  "pilot_executed": false,
+  "gates_total_count": 14,
+  "gates_passed_count": 0,
+  "gates_summary": {
+    "G0": "FAIL / CONDITIONAL",
+    "G1": "READY_FOR_COUNSEL (BLOCKED_BY_G0)",
+    "G2_regulatory": "JURISDICTION_PENDING (0/8 triaged)",
+    "G3_bank": "0 contacted / 15 researched",
+    "G4_contract": "0 contracted",
+    "G5_technical": "DESIGNED (not executed)",
+    "G6_custody": "0 custodians / 0/14 PBC predicates",
+    "G7_pilot": "BLOCKED_BY_WORKSHOP (NOT_EXECUTED)"
+  },
+  "gate_matrix": [
+    { "gate": "G0", "current_status": "FAIL / CONDITIONAL", "required_evidence": "entity legally established (Articles of Incorporation, Operating Agreement, JOZOUR Amendment §1.6, Board Resolution, Shareholder Agreement deposited + counsel-verified)", "evidence_present": false, "evidence_source": "—", "external_validation": "NONE", "remaining_gap": "all 5 primary documents MISSING or PENDING; counsel verification not performed", "owner": "JOZOUR_LLC_NJ", "next_action": "deposit 5 primary documents + engage counsel" },
+    { "gate": "G1", "current_status": "READY_FOR_COUNSEL (BLOCKED_BY_G0)", "required_evidence": "50 legal questions answered + 22 counsel deliverables produced", "evidence_present": false, "evidence_source": "—", "external_validation": "NONE", "remaining_gap": "0/50 questions answered; 0/22 deliverables produced; 0 counsel engaged", "owner": "JOZOUR_LLC_NJ + external counsel", "next_action": "BLOCKED — requires G0_PASS first" },
+    { "gate": "G2_regulatory", "current_status": "JURISDICTION_PENDING", "required_evidence": "8 jurisdictions triaged + 0 filed (AE, SG, SA, IN, CN, US, GB, EU)", "evidence_present": false, "evidence_source": "—", "external_validation": "NONE", "remaining_gap": "0/8 triaged; 0 filed; 0 regulator engagements", "owner": "JOZOUR_LLC_NJ + counsel", "next_action": "BLOCKED — requires G1 counsel" },
+    { "gate": "G3_bank", "current_status": "0 contacted / 15 researched", "required_evidence": "1+ bank engaged + NDA + DPA + baseline data + design partner", "evidence_present": false, "evidence_source": "—", "external_validation": "NONE", "remaining_gap": "0 contacted; 0 NDAs; 0 DPAs; 0 baseline data; 0 design partners", "owner": "JOZOUR_LLC_NJ + bank", "next_action": "BLOCKED — requires G1 counsel" },
+    { "gate": "G4_contract", "current_status": "0 contracted", "required_evidence": "executed pilot term sheet + 18 conditions precedent satisfied", "evidence_present": false, "evidence_source": "—", "external_validation": "NONE", "remaining_gap": "term sheet at DRAFT; 0/18 conditions precedent satisfied", "owner": "JOZOUR_LLC_NJ + bank + counsel", "next_action": "BLOCKED — requires G3 bank + workshop" },
+    { "gate": "G5_technical", "current_status": "DESIGNED (not executed)", "required_evidence": "Pilot A executed + 16 scenarios + 19 BM steps + 15 KPIs measured", "evidence_present": false, "evidence_source": "—", "external_validation": "NONE", "remaining_gap": "0 scenarios executed; 0 KPIs measured; 0 evidence collected", "owner": "JOZOUR_LLC_NJ + bank", "next_action": "BLOCKED — requires G4 contract" },
+    { "gate": "G6_custody", "current_status": "0 custodians / 0/14 PBC predicates", "required_evidence": "qualified custodian contracted + 14 PBC predicates satisfied", "evidence_present": false, "evidence_source": "—", "external_validation": "NONE", "remaining_gap": "0 custodians; 0/14 PBC predicates; reserve backing NOT_TESTED (BANK_MONEY in pilot)", "owner": "JOZOUR_LLC_NJ + custodian", "next_action": "BLOCKED — requires G1 counsel (Pilot A does not require custody — BANK_MONEY)" },
+    { "gate": "G7_pilot", "current_status": "BLOCKED_BY_WORKSHOP (NOT_EXECUTED)", "required_evidence": "pilot executed + evidence collected + KPIs measured + reconciliation performed", "evidence_present": false, "evidence_source": "—", "external_validation": "NONE", "remaining_gap": "pilot not executed; 0 evidence; 0 KPIs", "owner": "JOZOUR_LLC_NJ + bank", "next_action": "BLOCKED — requires G5 technical" },
+    { "gate": "G8_independent_assurance", "current_status": "DESIGNED (not performed)", "required_evidence": "independent provider selected + engagement signed + fieldwork + findings + report", "evidence_present": false, "evidence_source": "—", "external_validation": "NONE", "remaining_gap": "0 providers selected; 0 engagements; 0 fieldwork; 0 findings; 0 report", "owner": "JOZOUR_LLC_NJ + assurance provider", "next_action": "BLOCKED — requires G7 pilot execution + evidence" },
+    { "gate": "G9_production_authorization", "current_status": "NOT_AUTHORIZED", "required_evidence": "all canonical production-review prerequisites satisfied (legal + regulatory + contractual + technical + assurance + security + reconciliation + risk + governance + commercial)", "evidence_present": false, "evidence_source": "—", "external_validation": "NONE", "remaining_gap": "all prerequisites unsatisfied", "owner": "JOZOUR_LLC_NJ + governance authority", "next_action": "BLOCKED — requires G8 + all prerequisites" }
+  ],
+  "no_gate_passed_for_technical_existence_rule": "Per Section Z: 'Do not mark a gate passed merely because the technical implementation exists.' No gate is marked passed. The technical implementation (v25.3.2 frozen architecture) exists, but G5/G7 require EXECUTION evidence, not just implementation. No execution evidence exists.",
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

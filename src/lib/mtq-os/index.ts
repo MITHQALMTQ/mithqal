@@ -1,67 +1,29 @@
 // ════════════════════════════════════════════════════════════
 // MITHQAL §V25.3 — MTQ Operating System
-// 17-step canonical settlement pipeline + bank integration + ISO 20022
+// 16-step issuance pipeline + bank integration + ISO 20022
 // ════════════════════════════════════════════════════════════
-//
-// v25.3.2 — CANONICAL SOURCE MOVED. The single canonical definition of
-// the BM-01..BM-16B settlement workflow now lives in:
-//
-//     src/lib/settlement-workflow-canonical.ts
-//
-// (per the J-directive 2026-09-29 "Canonicalize the settlement workflow").
-// This module re-exports the canonical workflow with MTQ-OS-specific
-// presentation. The underlying BM-* definitions are NOT duplicated here.
-//
-// SUPERSEDED DEFINITIONS (removed in v25.3.2-J2):
-//   OLD BM-15 = "Monetary Authorization — MITHQAL Monetary Control authorizes"
-//     (the ID was correct; the description is now sourced from canonical)
-//   OLD BM-16 = "Finality Verification + Mint — Finality verified →
-//                deterministic mint"
-//     (CONFLICT — old BM-16 conflated finality and mint into one step;
-//      now split into BM-16A = Finality Verification + BM-16B = Mint
-//      Execution per the J-directive)
-//
-// See SUPERSEDED-3 in src/lib/settlement-workflow-canonical.ts for the
-// full traceability record.
-
-import {
-  CANONICAL_SETTLEMENT_WORKFLOW,
-  CANONICAL_WORKFLOW_VERSION,
-  CANONICAL_WORKFLOW_SOURCE,
-  type CanonicalBMStep,
-} from "../settlement-workflow-canonical";
-
 export const MODULE_ID = "v25.3-mtq-os-1.0";
 export const HONEST_STATE = { productionAuthorized: false, simulated: true };
 
-// Re-export the canonical constants so callers that import from
-// mtq-os can verify the canonical source at runtime.
-export const MTQ_OS_WORKFLOW_VERSION = CANONICAL_WORKFLOW_VERSION;
-export const MTQ_OS_WORKFLOW_SOURCE = CANONICAL_WORKFLOW_SOURCE;
-
-// mtq-os presents the canonical workflow with its own per-step shape.
-// The underlying definitions come from the single canonical source — DO
-// NOT re-define BM-* inline here (any such re-definition is a
-// contradiction per the contradiction scanner).
-export interface IssuanceStep {
-  id: string;
-  name: string;
-  description: string;
-  phase: string;
-  capability: "CONTROL_PLANE_CORE" | "MTQ_SETTLEMENT_MODULE";
-  status: "ACTIVE" | "SUPERSEDED" | "HISTORICAL" | "PENDING_VALIDATION";
-}
-
-export const ISSUANCE_STEPS: IssuanceStep[] = CANONICAL_SETTLEMENT_WORKFLOW.map(
-  (step: CanonicalBMStep) => ({
-    id: step.id,
-    name: step.name,
-    description: step.description,
-    phase: step.phase,
-    capability: step.capability,
-    status: step.status,
-  }),
-);
+export interface IssuanceStep { id: string; name: string; description: string; phase: string; }
+export const ISSUANCE_STEPS: IssuanceStep[] = [
+  { id: "BM-01", name: "Corporate Request", description: "Corporate initiates settlement request", phase: "BANK" },
+  { id: "BM-02", name: "Bank Receives", description: "Participating bank receives request", phase: "BANK" },
+  { id: "BM-03", name: "KYC/KYB", description: "Know Your Customer / Business verification", phase: "BANK" },
+  { id: "BM-04", name: "AML/Sanctions", description: "Anti-money laundering and sanctions screening", phase: "BANK" },
+  { id: "BM-05", name: "Bank Establishes Backing", description: "Bank establishes applicable backing", phase: "BANK" },
+  { id: "BM-06", name: "Protected Backing Evidence", description: "Backing evidence generated", phase: "BANK" },
+  { id: "BM-07", name: "Bank Requests MTQ", description: "Bank requests MTQ issuance via MBG", phase: "MBG" },
+  { id: "BM-08", name: "MBG Translation", description: "MBG translates (not transforms) bank request", phase: "MBG" },
+  { id: "BM-09", name: "Eligibility Check", description: "MITHQAL Core checks eligibility", phase: "MITHQAL" },
+  { id: "BM-10", name: "Jurisdiction Check", description: "Jurisdiction verification", phase: "MITHQAL" },
+  { id: "BM-11", name: "Backing Verification", description: "Backing verification", phase: "MITHQAL" },
+  { id: "BM-12", name: "Bank-Specific Risk", description: "Bank-specific risk assessment", phase: "MITHQAL" },
+  { id: "BM-13", name: "System-Wide Risk", description: "System-wide concentration check", phase: "MITHQAL" },
+  { id: "BM-14", name: "DMCE Check", description: "Dynamic Minting Capacity Engine", phase: "MITHQAL" },
+  { id: "BM-15", name: "Monetary Authorization", description: "MITHQAL Monetary Control authorizes", phase: "MITHQAL" },
+  { id: "BM-16", name: "Finality Verification + Mint", description: "Finality verified → deterministic mint", phase: "MITHQAL" },
+];
 
 export interface BankNode { id: string; name: string; domain: string; description: string; }
 export const BANK_INTEGRATION_NODES: BankNode[] = [

@@ -316,7 +316,7 @@ export default function ApiDocsPage() {
         {/* Footer — converted to a real <footer> element (defect 3 fix, audit 2-A) */}
         <footer className="mt-12 border-t border-line pt-6 text-center text-xs text-fg-muted">
           <p>
-            © 2026 Mithqal Constitutional Settlement Institution · v19.0 specification.
+            © 2026 Mithqal Constitutional Settlement Institution · v19.0.3 specification.
           </p>
           <p className="mt-1">
             This page is auto-generated from{" "}

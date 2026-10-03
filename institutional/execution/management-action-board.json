@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "package_id": "MAB-PA-001",
+  "version": "v25.3.2-P73-1.0",
+  "date": "2026-10-03T00:00:00Z",
+  "owner": "JOZOUR_LLC_NJ (G0_CONDITIONAL)",
+  "source": "Prompt 73, Section W",
+  "status": "ISSUED",
+  "pilot": "PILOT-A-001",
+  "action_types": ["LEGAL", "REGULATORY", "BANK", "CUSTODY", "ASSURANCE", "PILOT", "COMMERCIAL", "ENGINEERING", "GOVERNANCE"],
+  "actions_total_count": 7,
+  "actions": [
+    { "action_id": "MAB-01", "objective": "Engage qualified external legal counsel for UAE (DIFC/ADGM) to verify entity", "type": "LEGAL", "owner": "JOZOUR_LLC_NJ principal", "external_party": "external legal counsel (to be identified)", "dependency": "none (root)", "status": "NOT_STARTED", "next_step": "identify candidate counsel firms; conflict checks; scope inquiry; engagement", "evidence_required": "G0_PASS — counsel-verified entity status", "deadline": "TBD by human owner", "blocking": true, "decision_required": "engage counsel (yes/no)" },
+    { "action_id": "MAB-02", "objective": "Restore institutional record (Prompts 62-71 artifacts)", "type": "GOVERNANCE", "owner": "JOZOUR_LLC_NJ principal", "external_party": "n/a (internal restoration)", "dependency": "none (parallel with MAB-01)", "status": "NOT_STARTED", "next_step": "check for backup; if no backup, re-create from prior session context", "evidence_required": "restored /institutional/ tree", "deadline": "TBD by human owner", "blocking": true, "decision_required": "restore strategy (backup vs re-create)" },
+    { "action_id": "MAB-03", "objective": "Contact 1 UAE bank for institutional discovery meeting", "type": "BANK", "owner": "JOZOUR_LLC_NJ principal", "external_party": "UAE bank (to be identified)", "dependency": "MAB-01 (G0_PASS + G1 counsel)", "status": "BLOCKED", "next_step": "BLOCKED — wait for MAB-01 + counsel opinion", "evidence_required": "executed NDA + DPA + bank baseline data + executed term sheet", "deadline": "TBD (after MAB-01)", "blocking": true, "decision_required": "target bank selection" },
+    { "action_id": "MAB-04", "objective": "Triage 8 jurisdictions for regulatory engagement", "type": "REGULATORY", "owner": "JOZOUR_LLC_NJ principal + counsel", "external_party": "UAE/SG regulator", "dependency": "MAB-01 (G0_PASS + G1 counsel)", "status": "BLOCKED", "next_step": "BLOCKED — wait for MAB-01 + counsel opinion", "evidence_required": "regulator communication + authorization path", "deadline": "TBD (after MAB-01)", "blocking": true, "decision_required": "regulatory engagement strategy" },
+    { "action_id": "MAB-05", "objective": "Select independent assurance provider", "type": "ASSURANCE", "owner": "JOZOUR_LLC_NJ principal", "external_party": "assurance provider (to be selected)", "dependency": "MAB-06 (pilot execution + evidence)", "status": "BLOCKED", "next_step": "BLOCKED — wait for pilot execution", "evidence_required": "independent assurance report", "deadline": "TBD (after pilot)", "blocking": true, "decision_required": "provider selection" },
+    { "action_id": "MAB-06", "objective": "Negotiate term sheet EXECUTED + authorize + execute pilot", "type": "PILOT", "owner": "JOZOUR_LLC_NJ principal + bank", "external_party": "bank", "dependency": "MAB-03 (bank contract)", "status": "BLOCKED", "next_step": "BLOCKED — wait for MAB-03 + bank contract", "evidence_required": "executed pilot authorization + 16 scenarios + evidence", "deadline": "TBD (after MAB-03)", "blocking": true, "decision_required": "pilot authorization" },
+    { "action_id": "MAB-07", "objective": "Maintain execution control tower (AI developer role)", "type": "ENGINEERING", "owner": "AI developer (Z.ai Code)", "external_party": "n/a (internal maintenance)", "dependency": "none (ongoing)", "status": "ACTIVE", "next_step": "maintain /institutional/execution/ files; record external evidence as obtained; update workstream states; update dashboard; NEVER fabricate evidence; NEVER advance state without external evidence; NEVER add architecture unless external-evidence trigger (Section R) occurs", "evidence_required": "n/a (ongoing maintenance)", "deadline": "ongoing", "blocking": false, "decision_required": "n/a (ongoing)" }
+  ],
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "package_id": "KPI-PA-001",
+  "version": "v25.3.2-P72-1.0",
+  "date": "2026-10-03T00:00:00Z",
+  "owner": "JOZOUR_LLC_NJ (G0_CONDITIONAL)",
+  "source": "Prompt 72, Section G",
+  "status": "ISSUED",
+  "pilot": "PILOT-A-001",
+  "pilot_executed": false,
+  "kpis_total_count": 15,
+  "kpis_measured_count": 0,
+  "kpis_not_measured_count": 15,
+  "classification_summary": {
+    "MEASURED": 0,
+    "PARTIALLY_MEASURED": 0,
+    "NOT_MEASURED": 15
+  },
+  "outcome_classification_summary": {
+    "IMPROVED": 0,
+    "UNCHANGED": 0,
+    "WORSENED": 0,
+    "INCONCLUSIVE": 0,
+    "NOT_APPLICABLE": 15,
+    "note": "Outcome classification (IMPROVED/UNCHANGED/WORSENED/INCONCLUSIVE) requires a pilot_value AND a baseline. Both are UNKNOWN for all 15 KPIs (0/15 baselines available per Prompt 69). Therefore outcome classification is NOT_APPLICABLE — not INCONCLUSIVE — because there is no comparison to make."
+  },
+  "per_kpi_assessment": [
+    { "KPI_ID": "KPI-01", "definition": "TBD (per Prompt 69 spec — 15 KPIs defined in pilot term sheet; specific KPI identities to be enumerated at engagement sign-on)", "formula": "TBD", "population": 0, "baseline": "UNKNOWN", "pilot_result": "NOT_MEASURED", "variance": "NOT_COMPUTABLE", "data_source": "NONE", "calculation_version": "TBD", "independent_recalculation": "NOT_PERFORMED", "bank_confirmation": "NOT_CONFIRMED", "limitations": ["pilot not executed", "baseline UNKNOWN", "0 banks engaged"], "classification": "NOT_MEASURED", "outcome": "NOT_APPLICABLE" },
+    { "KPI_ID": "KPI-02", "definition": "TBD", "formula": "TBD", "population": 0, "baseline": "UNKNOWN", "pilot_result": "NOT_MEASURED", "variance": "NOT_COMPUTABLE", "data_source": "NONE", "calculation_version": "TBD", "independent_recalculation": "NOT_PERFORMED", "bank_confirmation": "NOT_CONFIRMED", "limitations": ["pilot not executed", "baseline UNKNOWN"], "classification": "NOT_MEASURED", "outcome": "NOT_APPLICABLE" },
+    { "KPI_ID": "KPI-03", "definition": "TBD", "formula": "TBD", "population": 0, "baseline": "UNKNOWN", "pilot_result": "NOT_MEASURED", "variance": "NOT_COMPUTABLE", "data_source": "NONE", "calculation_version": "TBD", "independent_recalculation": "NOT_PERFORMED", "bank_confirmation": "NOT_CONFIRMED", "limitations": ["pilot not executed", "baseline UNKNOWN"], "classification": "NOT_MEASURED", "outcome": "NOT_APPLICABLE" },
+    { "KPI_ID": "KPI-04", "definition": "TBD", "formula": "TBD", "population": 0, "baseline": "UNKNOWN", "pilot_result": "NOT_MEASURED", "variance": "NOT_COMPUTABLE", "data_source": "NONE", "calculation_version": "TBD", "independent_recalculation": "NOT_PERFORMED", "bank_confirmation": "NOT_CONFIRMED", "limitations": ["pilot not executed", "baseline UNKNOWN"], "classification": "NOT_MEASURED", "outcome": "NOT_APPLICABLE" },
+    { "KPI_ID": "KPI-05", "definition": "TBD", "formula": "TBD", "population": 0, "baseline": "UNKNOWN", "pilot_result": "NOT_MEASURED", "variance": "NOT_COMPUTABLE", "data_source": "NONE", "calculation_version": "TBD", "independent_recalculation": "NOT_PERFORMED", "bank_confirmation": "NOT_CONFIRMED", "limitations": ["pilot not executed", "baseline UNKNOWN"], "classification": "NOT_MEASURED", "outcome": "NOT_APPLICABLE" },
+    { "KPI_ID": "KPI-06", "definition": "TBD", "formula": "TBD", "population": 0, "baseline": "UNKNOWN", "pilot_result": "NOT_MEASURED", "variance": "NOT_COMPUTABLE", "data_source": "NONE", "calculation_version": "TBD", "independent_recalculation": "NOT_PERFORMED", "bank_confirmation": "NOT_CONFIRMED", "limitations": ["pilot not executed", "baseline UNKNOWN"], "classification": "NOT_MEASURED", "outcome": "NOT_APPLICABLE" },
+    { "KPI_ID": "KPI-07", "definition": "TBD", "formula": "TBD", "population": 0, "baseline": "UNKNOWN", "pilot_result": "NOT_MEASURED", "variance": "NOT_COMPUTABLE", "data_source": "NONE", "calculation_version": "TBD", "independent_recalculation": "NOT_PERFORMED", "bank_confirmation": "NOT_CONFIRMED", "limitations": ["pilot not executed", "baseline UNKNOWN"], "classification": "NOT_MEASURED", "outcome": "NOT_APPLICABLE" },
+    { "KPI_ID": "KPI-08", "definition": "TBD", "formula": "TBD", "population": 0, "baseline": "UNKNOWN", "pilot_result": "NOT_MEASURED", "variance": "NOT_COMPUTABLE", "data_source": "NONE", "calculation_version": "TBD", "independent_recalculation": "NOT_PERFORMED", "bank_confirmation": "NOT_CONFIRMED", "limitations": ["pilot not executed", "baseline UNKNOWN"], "classification": "NOT_MEASURED", "outcome": "NOT_APPLICABLE" },
+    { "KPI_ID": "KPI-09", "definition": "TBD", "formula": "TBD", "population": 0, "baseline": "UNKNOWN", "pilot_result": "NOT_MEASURED", "variance": "NOT_COMPUTABLE", "data_source": "NONE", "calculation_version": "TBD", "independent_recalculation": "NOT_PERFORMED", "bank_confirmation": "NOT_CONFIRMED", "limitations": ["pilot not executed", "baseline UNKNOWN"], "classification": "NOT_MEASURED", "outcome": "NOT_APPLICABLE" },
+    { "KPI_ID": "KPI-10", "definition": "TBD", "formula": "TBD", "population": 0, "baseline": "UNKNOWN", "pilot_result": "NOT_MEASURED", "variance": "NOT_COMPUTABLE", "data_source": "NONE", "calculation_version": "TBD", "independent_recalculation": "NOT_PERFORMED", "bank_confirmation": "NOT_CONFIRMED", "limitations": ["pilot not executed", "baseline UNKNOWN"], "classification": "NOT_MEASURED", "outcome": "NOT_APPLICABLE" },
+    { "KPI_ID": "KPI-11", "definition": "TBD", "formula": "TBD", "population": 0, "baseline": "UNKNOWN", "pilot_result": "NOT_MEASURED", "variance": "NOT_COMPUTABLE", "data_source": "NONE", "calculation_version": "TBD", "independent_recalculation": "NOT_PERFORMED", "bank_confirmation": "NOT_CONFIRMED", "limitations": ["pilot not executed", "baseline UNKNOWN"], "classification": "NOT_MEASURED", "outcome": "NOT_APPLICABLE" },
+    { "KPI_ID": "KPI-12", "definition": "TBD", "formula": "TBD", "population": 0, "baseline": "UNKNOWN", "pilot_result": "NOT_MEASURED", "variance": "NOT_COMPUTABLE", "data_source": "NONE", "calculation_version": "TBD", "independent_recalculation": "NOT_PERFORMED", "bank_confirmation": "NOT_CONFIRMED", "limitations": ["pilot not executed", "baseline UNKNOWN"], "classification": "NOT_MEASURED", "outcome": "NOT_APPLICABLE" },
+    { "KPI_ID": "KPI-13", "definition": "TBD", "formula": "TBD", "population": 0, "baseline": "UNKNOWN", "pilot_result": "NOT_MEASURED", "variance": "NOT_COMPUTABLE", "data_source": "NONE", "calculation_version": "TBD", "independent_recalculation": "NOT_PERFORMED", "bank_confirmation": "NOT_CONFIRMED", "limitations": ["pilot not executed", "baseline UNKNOWN"], "classification": "NOT_MEASURED", "outcome": "NOT_APPLICABLE" },
+    { "KPI_ID": "KPI-14", "definition": "TBD", "formula": "TBD", "population": 0, "baseline": "UNKNOWN", "pilot_result": "NOT_MEASURED", "variance": "NOT_COMPUTABLE", "data_source": "NONE", "calculation_version": "TBD", "independent_recalculation": "NOT_PERFORMED", "bank_confirmation": "NOT_CONFIRMED", "limitations": ["pilot not executed", "baseline UNKNOWN"], "classification": "NOT_MEASURED", "outcome": "NOT_APPLICABLE" },
+    { "KPI_ID": "KPI-15", "definition": "TBD", "formula": "TBD", "population": 0, "baseline": "UNKNOWN", "pilot_result": "NOT_MEASURED", "variance": "NOT_COMPUTABLE", "data_source": "NONE", "calculation_version": "TBD", "independent_recalculation": "NOT_PERFORMED", "bank_confirmation": "NOT_CONFIRMED", "limitations": ["pilot not executed", "baseline UNKNOWN"], "classification": "NOT_MEASURED", "outcome": "NOT_APPLICABLE" }
+  ],
+  "no_improvement_claim_rule": "Per Section G: 'Do not use improved unless there is a valid comparison against a defensible baseline.' No baseline exists for any KPI (0/15 baselines available per Prompt 69). Therefore IMPROVED is not used for any KPI. Outcome classification is NOT_APPLICABLE for all 15 KPIs.",
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

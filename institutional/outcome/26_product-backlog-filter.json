@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "package_id": "PBF-PA-001",
+  "version": "v25.3.2-P72-1.0",
+  "date": "2026-10-03T00:00:00Z",
+  "owner": "JOZOUR_LLC_NJ (G0_CONDITIONAL)",
+  "source": "Prompt 72, Section AH",
+  "status": "ISSUED",
+  "pilot": "PILOT-A-001",
+  "pilot_executed": false,
+  "post_pilot_requested_changes_count": 0,
+  "classification_summary": {
+    "CRITICAL_CONTROL_FIX": 0,
+    "PILOT_BLOCKING_REQUIREMENT": 0,
+    "GENERALIZABLE_REQUIREMENT": 0,
+    "BANK_SPECIFIC": 0,
+    "OPTIONAL": 0,
+    "FUTURE": 0,
+    "NOT_JUSTIFIED": 0
+  },
+  "items": [],
+  "note": "The items array is empty because no post-pilot requested changes exist. Pilot A was not executed, so no bank or executive has provided feedback, no pilot results have been observed, and no change requests have been generated. Per Section AH: 'Only evidence-supported items should affect the core roadmap.' No evidence exists; no items affect the roadmap.",
+  "no_new_architecture_rule": "Per Section AV: 'do not create new architecture merely because of pilot feedback'. No pilot feedback exists; no new architecture is created. The v25.3.2 controlled architecture baseline is MAINTAINED.",
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

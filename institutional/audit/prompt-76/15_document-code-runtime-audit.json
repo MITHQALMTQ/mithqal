@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "audit_id": "FA76-PA-001",
+  "audit_timestamp": "2026-10-03T11:20:00Z",
+  "audit_phase": "P76_FORENSIC_RECOVERY_AND_INTEGRATION_CERTIFICATION",
+  "audit_branch": "audit/remediation/prompt-75",
+  "repository_commit": "455f9d3",
+  "audit_question": "Triangulate DOCUMENT vs CODE vs RUNTIME state across P74→P75→P76",
+  "document_state": {
+    "status": "IMPROVED",
+    "improvements": [
+      "Assurance framework (42 files in /institutional/assurance/) RECOVERED via RECONSTRUCTED_FROM_EVIDENCE in P75. All 8 JSON VALID. All 34 markdown carry RECONSTRUCTED_FROM_EVIDENCE marker.",
+      "Remediation package (30 files in /institutional/remediation/prompt-75/) created. All 27 JSON VALID.",
+      "Frozen schema references CORRECTED to REFERENCED_BUT_ABSENT (per Section G) instead of falsely claiming existence.",
+      "Version drift DOCUMENTED: v25.3.2 claimed in Prompts 70-73 was a referential construct; canonical version corrected to v25.6 (latest tag).",
+      "Honest-state markers present on every institutional file: NOT PRODUCTION-AUTHORIZED / NOT_PRODUCTION_AUTHORIZED."
+    ],
+    "audit_total_institutional_files": 173,
+    "audit_breakdown": {
+      "audit_files": 38,
+      "remediation_files": 30,
+      "assurance_files": 42,
+      "outcome_files": 37,
+      "execution_files": 26
+    }
+  },
+  "code_state": {
+    "status": "UNCHANGED",
+    "evidence": [
+      "No source code modified by P74 audit or P75 remediation.",
+      "src/lib/ — 111 .ts files unchanged from c7dafc6 baseline (P74).",
+      "prisma/schema.prisma — 69 lines unchanged.",
+      "1 existing frozen schema (final-pilot-activation-gate.ts) — untouched.",
+      "9 frozen schemas (controlled-architecture-freeze.ts, institutional-evidence-fabric.ts, settlement-workflow-canonical.ts, canonical-finality-model.ts, policy-registry.ts, reserve-domains.ts, institutional-settlement-obligation-registry.ts, pilot-gate-framework.ts, mtq-economic-definition.ts) — still REFERENCED_BUT_ABSENT; NOT re-created because they were referential constructs (never existed as source files).",
+      "No new architecture added. No MTQ economics changed. No reserve policy changed. BUILD_MODE = FROZEN."
+    ],
+    "git_diff": "git diff c7dafc6..455f9d3 -- src/ prisma/ returns empty (no source code changes).",
+    "frozen_schemas_modified": "ZERO — 1 existing untouched; 9 not re-created."
+  },
+  "runtime_state": {
+    "status": "BLOCKED",
+    "blocker": "No secrets provisioned. .env is a 52-line template (cp .env.example .env). 0 of 52 expected environment variables have actual values. No runtime can be exercised.",
+    "node_modules": "INSTALLED (1307 packages, bun install exit 0 in P75). Dev environment FUNCTIONAL for lint/build, NOT for runtime.",
+    "lint": "exit 0 (clean — bun run lint)",
+    "build": "NOT_TESTED in this audit (build not required for static audit; P75 verified lint only).",
+    "dev_server": "NOT_STARTED — would fail at runtime boot due to missing TURSO_DATABASE_URL, NEXTAUTH_SECRET, etc.",
+    "pilot_executed": false,
+    "transactions_recorded": 0,
+    "kpis_measured": 0,
+    "replays_executed": 0
+  },
+  "triangulation": {
+    "document": "IMPROVED",
+    "code": "UNCHANGED",
+    "runtime": "BLOCKED",
+    "drift_assessment": "DRIFT_REMAINS for frozen schemas (9 of 10) — documentation now correctly references them as REFERENCED_BUT_ABSENT (no longer falsely claims existence), but the source files themselves are still absent. The drift is between DOCUMENTATION (now honest about absence) and CODE (still missing the files). This drift is acknowledged, not hidden.",
+    "drift_frozen_schemas": "DRIFT_REMAINS — 9 of 10 frozen schema files are referenced-but-absent. The 1 existing (final-pilot-activation-gate.ts) is present and unchanged.",
+    "drift_runtime_vs_documentation": "DRIFT_PRESENT — documentation describes runtime behaviors (graceful degradation, reconciliation, evidence chain) but runtime is BLOCKED so cannot verify the documented behaviors actually execute as described. This is acknowledged."
+  },
+  "production_authorized": false,
+  "institutionally_validated": false,
+  "next_external_evidence": "G0_PASS (entity counsel-verified — unchanged from Prompts 62-73)",
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

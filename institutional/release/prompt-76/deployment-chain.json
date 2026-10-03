@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "audit_id": "FA76-PA-001",
+  "chain": "GITHUB → VERCEL → INNGEST → DATABASE(S) → EVIDENCE/CONTROL STATE",
+  "edges": [
+    { "edge": "GITHUB → VERCEL", "dependency": "auto-deploy on push to main", "authentication": "GitHub integration (presumed)", "status": "UNVERIFIABLE (no Vercel API access)" },
+    { "edge": "VERCEL → INNGEST", "dependency": "Vercel serverless function + Inngest event key", "authentication": "INNGEST_EVENT_KEY (MISSING)", "status": "BLOCKED" },
+    { "edge": "INNGEST → TURSO", "dependency": "Inngest function writes to Turso via Prisma", "authentication": "TURSO_DATABASE_URL + TURSO_AUTH_TOKEN (MISSING)", "status": "BLOCKED" },
+    { "edge": "INNGEST → NEON", "dependency": "CDC sync (turso-neon-sync.ts) + S3 archive (evidence-archive.ts)", "authentication": "NEON_DATABASE_URL + AWS credentials (MISSING)", "status": "BLOCKED" },
+    { "edge": "DATABASE → EVIDENCE", "dependency": "EvidencePackage records stored in DB + archived to Neon S3", "authentication": "institutional-evidence-fabric.ts (REFERENCED_BUT_ABSENT)", "status": "BLOCKED (source file MISSING)" }
+  ],
+  "chain_status": "BLOCKED — 4 of 5 edges blocked or unverifiable",
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

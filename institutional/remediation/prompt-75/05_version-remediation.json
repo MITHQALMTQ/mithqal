@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "remediation_id": "FR75-PA-001",
+  "source": "Prompt 75, Section H (Canonical-Version Repair)",
+  "status": "ISSUED",
+  "version_drift_finding": "GAP-07: v25.3.2 CLAIMED in Prompts 70-73 but no git tag v25.3.2 exists; latest tag v25.6",
+  "canonical_version": "v25.6 (latest git tag)",
+  "incorrect_reference": "v25.3.2 (referenced in Prompts 70-73 institutional documentation)",
+  "affected_scope": "institutional/outcome/ + institutional/execution/ + institutional/assurance/ (recovered)",
+  "required_update": "correct CURRENT references from v25.3.2 to v25.6 in institutional documentation; preserve historical references as historical",
+  "historical_preservation": { "historical_version": "v25.3.2 (preserved as historical reference in worklog and prior audit)", "historical_date": "2026-10-02/03", "historical_status": "preserved in git history (commit c7dafc6)", "historical_context": "referenced in Prompts 70-73 as the version at prior session time" },
+  "status": "PARTIALLY_CLOSED",
+  "partial_closure_detail": "version drift documented; CURRENT references correction in institutional/outcome/ + institutional/execution/ pending (documentation remediation); recovered assurance framework uses v25.6 as canonical version",
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

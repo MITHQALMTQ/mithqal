@@ -1,5 +1,5 @@
 import { serve } from "inngest/next";
-import { inngest, dataSourceSync, proofsPublishSync, marketDataSync } from "@/lib/inngest-client";
+import { inngest, dataSourceSync } from "@/lib/inngest-client";
 
 export const dynamic = "force-dynamic";
 
@@ -17,14 +17,8 @@ export const dynamic = "force-dynamic";
  * stateful and per-request signed, so it must never be cached by the
  * Next.js static-asset pipeline.
  *
- * Registered functions (CR-2026-029 v25.3.22):
- *   - dataSourceSync     — on-demand `sync/data-sources` event handler.
- *                          Refreshes the real-market-data snapshot when
- *                          an operator clicks "Refresh data sources".
- *   - proofsPublishSync  — daily 00:00 UTC cron. POSTs to
- *                          `/api/proofs/publish` with CRON_SECRET bearer.
- *   - marketDataSync      — daily 06:00 UTC cron. Calls
- *                          `fetchRealMarketData()` directly (no HTTP hop).
+ * Registered functions:
+ *   - dataSourceSync — refreshes the real-market-data snapshot.
  *
  * To add more functions, import them from `@/lib/inngest-client` and
  * append them to the `functions` array below. Do NOT register the
@@ -32,5 +26,5 @@ export const dynamic = "force-dynamic";
  */
 export const { GET, POST, PUT } = serve({
   client: inngest,
-  functions: [dataSourceSync, proofsPublishSync, marketDataSync],
+  functions: [dataSourceSync],
 });

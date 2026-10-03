@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "audit_id": "FA74-PA-001",
+  "version": "v25.3.2-P74-1.0",
+  "date": "2026-10-03T05:12:00Z",
+  "owner": "JOZOUR_LLC_NJ (G0_CONDITIONAL)",
+  "source": "Prompt 74, Section B",
+  "status": "IMMUTABLE_SNAPSHOT",
+  "audit_branch": "audit/prompt-1-73-forensic",
+  "repository_commit": "c7dafc6040916e3020dd8be194af64686d817ef1",
+  "branch": "audit/prompt-1-73-forensic (created from main at c7dafc6)",
+  "remote_references": {
+    "origin": "https://github.com/MITHQALMTQ/mithqal.git",
+    "origin_main": "c7dafc6 (per remote tracking)",
+    "origin_v25.2-hardened-backup": "present",
+    "origin_v25.3-hardened-backup": "present"
+  },
+  "tags_count": 25,
+  "tags_recent_10": ["v19.0-verified-2", "v19.0-wallet-fixed", "v20.3-verified", "v25.2-final", "v25.3-final", "v25.3-final-v2", "v25.4-final", "v25.5", "v25.5.1", "v25.6"],
+  "working_tree_status": {
+    "modified_files_count": 2,
+    "modified_files": ["foundry/lib/forge-std (submodule)", "foundry/lib/openzeppelin-contracts (submodule)"],
+    "note": "Only 2 submodule modifications (pre-existing dirty submodule state, not introduced by audit). No untracked files. No deleted files. No renamed files."
+  },
+  "tracked_files_count": 2491,
+  "untracked_files_count": 0,
+  "ignored_files_count": 18,
+  "submodules": [
+    { "name": "foundry/lib/forge-std", "status": "modified (pre-existing)", "commit": "37a36ca389095b2f677abb07642634573ba7e265" },
+    { "name": "foundry/lib/openzeppelin-contracts", "status": "modified (pre-existing)", "commit": "cab19933c33c2ad1d4c7a84864a3601dddfd16f3" }
+  ],
+  "package_versions": {
+    "name": "nextjs_tailwind_shadcn_ts",
+    "version": "0.2.1",
+    "dependencies_count": 80,
+    "devDependencies_count": 10
+  },
+  "lockfiles": {
+    "bun_lock": "present (bun.lock)",
+    "package_lock": "present (package.json)"
+  },
+  "node_modules_present": false,
+  "node_modules_note": "node_modules/ is absent — dependencies are not installed. bun run lint fails with exit 127 (eslint not found). This is an environment state, not a code defect.",
+  "documentation_index": {
+    "root_md_files": "many (AUDIT.md, BACKUP-AND-RECOVERY.md, CODE_OF_CONDUCT.md, COMPREHENSIVE-AUDIT.md, CONTRIBUTING.md, COO-CTO-RECOMMENDATIONS.md, DEV-WORKFLOW.md, DEPLOYMENT-PROVENANCE-v25.5.md, DEPLOYMENT-PROVENANCE-v25.6.md, ENV-CROSS-CONNECTIONS.md, ENV-PROVISIONING-CHECKLIST.md, EXPERT-AUDIT.md, etc.)",
+    "docs_directory": "present (docs/)",
+    "institutional_directory": "present (institutional/) with 3 subdirectories: outcome/ (37 files from Prompt 72), execution/ (26 files from Prompt 73), audit/prompt-74/ (this audit)"
+  },
+  "evidence_store_index": {
+    "institutional_outcome": "37 files (Prompt 72 — committed in c7dafc6)",
+    "institutional_execution": "26 files (Prompt 73 — committed in c7dafc6)",
+    "institutional_assurance": "ABSENT (Prompt 70's 42 files — NEVER committed to git; developed in a prior session but never persisted to this repository)",
+    "institutional_g1_corridors_banks_legal_bank_workshop_pilot": "ABSENT (Prompts 62-69 artifacts — NEVER committed to git)"
+  },
+  "audit_branch_protection_rule": "Per Section AL: DO NOT push directly to main, rewrite history, delete branches, delete tags, force-push, squash historical implementation commits, remove stale material. Audit first. This audit branch is for audit artifacts only; no source code modifications.",
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

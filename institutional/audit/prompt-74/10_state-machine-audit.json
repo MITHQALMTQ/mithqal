@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "audit_id": "FA74-PA-001",
+  "source": "Prompt 74, Section Q (State-Machine Audit)",
+  "status": "ISSUED",
+  "state_machines": {
+    "authorization": { "status": "UNKNOWN — institutional-authorization.ts exists but canonical authorization model (settlement-workflow-canonical.ts) MISSING" },
+    "transaction_lifecycle": { "status": "UNKNOWN — settlement-workflow-canonical.ts (BM-01..BM-16B canonical sequence) MISSING" },
+    "finality": { "status": "UNKNOWN — canonical-finality-model.ts (F0-F7) MISSING; finality-before-mint.ts exists but different" },
+    "reconciliation": { "status": "UNKNOWN — no reconciliation engine file identified in available code" },
+    "bank_pipeline": { "status": "VERIFIED (designed) — institutional/execution/05_bank-workstream.json defines 14 lifecycle stages (RESEARCHED through REPEATABLE)" },
+    "legal_workstream": { "status": "VERIFIED (designed) — institutional/execution/03_legal-workstream.json defines 9 stages (NOT_STARTED through GOVERNANCE_ACCEPTED)" },
+    "pilot": { "status": "VERIFIED (designed) — institutional/execution/08_pilot-authorization-workstream.json defines 12 stages" },
+    "assurance": { "status": "VERIFIED (designed) — institutional/execution/07_assurance-workstream.json defines 12 stages" },
+    "external_execution": { "status": "VERIFIED (designed) — institutional/execution/01_execution-control-tower.md defines 6 workstreams" },
+    "production_authorization": { "status": "VERIFIED (designed) — institutional/execution/institutional-gate-status.json defines G0-G11 gates" }
+  },
+  "verifications": {
+    "allowed_states": "VERIFIED for designed workstreams; UNKNOWN for runtime state machines (missing frozen schemas)",
+    "allowed_transitions": "VERIFIED for designed workstreams; UNKNOWN for runtime",
+    "forbidden_transitions": "VERIFIED for designed workstreams (no_skipped_transitions_rule enforced in bank workstream)",
+    "transition_guards": "UNKNOWN for runtime",
+    "role_permissions": "UNKNOWN",
+    "audit_evidence": "PRESENT for designed workstreams (documentary_evidence_required per stage)",
+    "rollback_recovery": "UNKNOWN for runtime",
+    "stale_state_handling": "UNKNOWN",
+    "adversarial_transition_tests": "NOT_PERFORMED — no runtime to test against"
+  },
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "remediation_id": "FR75-PA-001",
+  "source": "Prompt 75, Section AJ (Closure Rule)",
+  "status": "ISSUED",
+  "description": "Findings that remain OPEN or PARTIALLY_CLOSED after remediation.",
+  "open_findings_total": 15,
+  "partially_closed_findings_total": 3,
+  "not_applicable_total": 1,
+  "findings": [
+    { "finding_id": "LD-01 through LD-09", "description": "9 missing frozen schemas (referential constructs; never source files)", "status": "PARTIALLY_CLOSED", "partial_closure": "documentation references corrected to REFERENCED_BUT_ABSENT in recovered assurance framework; files NOT re-created (were never source files); similar-named files NOT verified as equivalent", "remaining_gap": "similar-named files (finality-before-mint.ts, legal-obligation-register.ts, etc.) may or may not implement the same concepts — REQUIRES VERIFICATION", "next_action": "verify equivalence of similar-named files OR accept that the frozen schemas were referential constructs and update all institutional documentation accordingly" },
+    { "finding_id": "LD-11 through LD-16", "description": "Prompts 62-69 institutional directories (14+ files) never committed", "status": "OPEN", "remaining_gap": "NOT_RECOVERABLE from current conversation context (content was in prior truncated conversation)", "next_action": "operator must recover from prior conversation log OR re-create from specification" },
+    { "finding_id": "LD-18", "description": ".env has 1 line (51 vars missing)", "status": "PARTIALLY_CLOSED", "partial_closure": ".env created from .env.example (52 lines template)", "remaining_gap": "operator must supply actual secrets (TURSO_DATABASE_URL, NEON_DATABASE_URL, AWS credentials, API keys, CRON_SECRET, NEXTAUTH_SECRET, etc.)", "next_action": "operator fills in actual secret values" },
+    { "finding_id": "GAP-07", "description": "v25.3.2 claimed but no git tag (latest v25.6)", "status": "PARTIALLY_CLOSED", "partial_closure": "version drift documented in remediation register; CURRENT references to be corrected in institutional documentation", "remaining_gap": "version reference correction in institutional/outcome/ + institutional/execution/ not yet executed (documentation remediation pending)", "next_action": "correct v25.3.2 references to v25.6 in CURRENT documents; preserve historical references" },
+    { "finding_id": "LD-17", "description": "prisma/migrations/ does not exist", "status": "NOT_APPLICABLE", "remaining_gap": "n/a — db:push is the chosen schema management method, not a defect", "next_action": "none" }
+  ],
+  "no_false_cleanup_rule": "Per Section AK: no findings reclassified, deleted, merged, or excluded. All 19 findings accounted for: 2 CLOSED + 3 PARTIALLY_CLOSED + 13 OPEN + 1 NOT_APPLICABLE = 19.",
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

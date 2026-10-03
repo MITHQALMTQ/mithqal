@@ -150,7 +150,7 @@ const SCENES: Scene[] = [
     animation:
       "Fade-in statistics with staggered timing (300ms apart). Gold underline draws left-to-right over 600ms using clip-path animation.",
     voiceOver:
-      "Cross-border settlement remains slow, expensive, and fragmented. [PAUSE] Despite decades of innovation, international trade still relies on correspondent banking and systems never designed for real-time technical settlement coordinated across legal finality domains.",
+      "Cross-border settlement remains slow, expensive, and fragmented. [PAUSE] Despite decades of innovation, international trade still relies on correspondent banking and systems never designed for real-time settlement.",
     assets:
       "Stat cards (×3), gold divider SVG, navy gradient background, Inter typography kit.",
     transition: "Cross-dissolve to Scene 2 (400ms).",
@@ -365,7 +365,7 @@ const RAW_SCRIPT: { scene: number; title: string; time: string; text: string }[]
     scene: 1,
     title: "The Problem",
     time: "0:00–0:10",
-    text: "Cross-border settlement remains **slow, expensive, and fragmented**. [PAUSE] Despite decades of innovation, international trade still relies on correspondent banking and systems never designed for real-time technical settlement coordinated across legal finality domains.",
+    text: "Cross-border settlement remains **slow, expensive, and fragmented**. [PAUSE] Despite decades of innovation, international trade still relies on correspondent banking and systems never designed for real-time settlement.",
   },
   {
     scene: 2,

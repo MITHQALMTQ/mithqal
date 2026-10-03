@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "package_id": "EMR-PA-001",
+  "version": "v25.3.2-P73-1.0",
+  "date": "2026-10-03T00:00:00Z",
+  "owner": "JOZOUR_LLC_NJ (G0_CONDITIONAL)",
+  "source": "Prompt 73, Section P",
+  "status": "ISSUED",
+  "pilot": "PILOT-A-001",
+  "description": "Register of every external interaction. Each record has: meeting_id, organization, role, date, purpose, participants, questions, answers, commitments, documents_promised, next_action, owner, evidence_status. Never create fictional meetings. Never populate future meetings as completed.",
+  "meetings_total_count": 0,
+  "meetings_completed_count": 0,
+  "meetings_scheduled_count": 0,
+  "meetings": [],
+  "note": "The meetings array is EMPTY. Zero external meetings have occurred. Zero external meetings are scheduled. Per Section P: 'Never create fictional meetings. Never populate future meetings as completed.' This register accepts only actual meetings that have actually occurred (with meeting minutes / correspondence as evidence) or are actually scheduled (with confirmed date + confirmed participants).",
+  "no_fictional_meetings_rule": "enforced — no fictional meetings are created. A meeting entry requires actual correspondence evidence (email thread, calendar invitation with acceptance, signed meeting minutes, or equivalent).",
+  "no_future_meetings_as_completed_rule": "enforced — future meetings are NOT populated as completed. A scheduled meeting has evidence_status=SCHEDULED until it occurs; only after it occurs (with minutes) does it become COMPLETED.",
+  "evidence_status_values": ["SCHEDULED", "COMPLETED", "CANCELLED", "NO_SHOW"],
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

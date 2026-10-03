@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "audit_id": "FA74-PA-001",
+  "source": "Prompt 74, Section N (GitHub/Vercel/Inngest/Turso/Neon Integration Audit)",
+  "status": "ISSUED",
+  "integrations": {
+    "github": { "intended_role": "source control + branch protection + Dependabot", "actual_role": "VERIFIED", "evidence": "git remote origin configured; 25 tags; 7 branches; branch-protection.json present" },
+    "vercel": { "intended_role": "deployment platform", "actual_role": "PARTIAL (vercel.json present; live not verified)", "evidence": "vercel.json with 2 crons; no Vercel API access" },
+    "inngest": { "intended_role": "workflow orchestration", "actual_role": "PARTIAL (code present; live not verified)", "evidence": "src/lib/inngest-client.ts (80 lines, 3 functions); INNGEST_EVENT_KEY not in .env" },
+    "turso": { "intended_role": "primary database", "actual_role": "PARTIAL (code present; live not verified)", "evidence": "prisma/schema.prisma + db.ts present; TURSO_DATABASE_URL not in .env; prior worklog noted 'DB not found + CLI expired'" },
+    "neon": { "intended_role": "analytics replica + S3 evidence archive + AI Gateway", "actual_role": "PARTIAL (code present; live not verified)", "evidence": "turso-neon-sync.ts + evidence-archive.ts + mithqal-brain.ts neon provider present; NEON_DATABASE_URL + AWS S3 credentials + NEON_AI_GATEWAY_TOKEN not in .env; prior worklog documented 403/404 issues" }
+  },
+  "rule": "Per Section N: 'Do not assume the integration is working because configuration exists. Verify where evidence is available.' Configuration exists for all 5; live verification NOT possible (credentials absent; no API access; no runtime).",
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

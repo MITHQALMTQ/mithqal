@@ -827,18 +827,7 @@ export const RECONCILIATION_FIVE_SOURCES = [
   "proofOfLiabilities        — independent proof of liabilities (Source D, where available)",
 ] as const;
 
-// v25.3.9 — SUPERSEDED. Universal 1 bps tolerance replaced by 6 separate
-// tolerance policies per src/lib/reconciliation-tolerance-policies.ts (per
-// O-directive trace 1a0ee793ba929555 — "Do NOT use one universal tolerance
-// for every reconciliation type"). Each reconciliation type now has its OWN
-// policy: LEDGER_TO_LEDGER (1 bps), BANK_ATTESTATION (5 bps), CUSTODY_QUANTITY
-// (10 bps), MARKET_VALUATION (50 bps), FX_VALUATION (20 bps), STRESSED_VALUATION
-// (200 bps). Kept here for backward compat — `runReserveBackingReconciliation`
-// below still references it (the function is PRESERVED per CRITICAL CONSTRAINTS).
-// New reconciliation callers SHOULD use the 6-policy `reconcile()` from
-// src/lib/reconciliation-tolerance-policies.ts instead.
-// See LEGACY_UNIVERSAL_TOLERANCE_STATUS in src/lib/reconciliation-tolerance-policies.ts.
-export const RECONCILIATION_TOLERANCE = 0.0001; // 1 bps tolerance (SUPERSEDED — see comment above)
+export const RECONCILIATION_TOLERANCE = 0.0001; // 1 bps tolerance
 
 /**
  * runReserveBackingReconciliation — 5-way reconciliation.
@@ -1187,7 +1176,7 @@ export interface LegalOwnershipMatrix {
 export const LEGAL_OWNERSHIP_MATRIX: LegalOwnershipMatrix[] = [
   {
     reserveCategory: "Physical allocated gold (structural/anchor reserve)",
-    legalOwner: "MITHQAL Foundation (to be formed per JOZOUR Amendment §1.6; where MITHQAL-owned) or Customer/Bank (where bank-custodied)",
+    legalOwner: "MITHQAL Foundation (where MITHQAL-owned) or Customer/Bank (where bank-custodied)",
     beneficialOwner: "Per legal title (varies — JURISDICTION_PENDING)",
     custodian: "Qualified custodian (e.g. Brink's, Loomis) — segregated allocated",
     mtqLiabilityRelationship: "MTQ issuer of record = MITHQAL; redemption obligor varies (see §15)",
@@ -1214,7 +1203,7 @@ export const LEGAL_OWNERSHIP_MATRIX: LegalOwnershipMatrix[] = [
   {
     reserveCategory: "Fiat sovereign debt (HQLA)",
     legalOwner: "Bank (as deposit holder) or segregated reserve structure (where authorized)",
-    beneficialOwner: "Customer (where bank-custodied) or MITHQAL Foundation (to be formed per JOZOUR Amendment §1.6; where structural)",
+    beneficialOwner: "Customer (where bank-custodied) or MITHQAL Foundation (where structural)",
     custodian: "Participating regulated bank / authorized custodian",
     mtqLiabilityRelationship: "MTQ issuer = MITHQAL; fiat held by bank/custodian as backing",
     redemptionObligor: "Participating bank (ordinary) or designated institutional vehicle",
@@ -1299,7 +1288,7 @@ export const REDEMPTION_OBLIGATION_PROFILE: RedemptionObligationProfile = {
   insolvencyTreatment:
     "Where redemption obligor is the bank: bank resolution regime (e.g. bail-in, deposit insurance). " +
     "Where redemption obligor is the custodian / segregated structure: segregated asset protected. " +
-    "Where redemption obligor is MITHQAL (structural/anchor only): MITHQAL Foundation (to be formed per JOZOUR Amendment §1.6) resolution regime.",
+    "Where redemption obligor is MITHQAL (structural/anchor only): MITHQAL Foundation resolution regime.",
   jurisdictionStatus: "JURISDICTION_PENDING",
 };
 
@@ -1462,7 +1451,7 @@ export const SEVEN_CAPITAL_CATEGORIES: CapitalCategoryEntry[] = [
       "Emergency liquidity + structural reserve subset of ILPS ($23.8M — ILPS Layer 3 + Layer 4). Activated " +
       "under Exhaustion Certificate or emergency state. NOT additional to ILPS total — this is a SUBSET " +
       "classification (no double counting).",
-    legalOwner: "MITHQAL Foundation (to be formed per JOZOUR Amendment §1.6; where MITHQAL-owned)",
+    legalOwner: "MITHQAL Foundation (where MITHQAL-owned)",
     accountingClassification: "EMERGENCY_RESERVE (subset of ILPS)",
     purpose: "Emergency liquidity + structural/anchor reserve (gold + PAXG). Activated under stress.",
     modeledAmount: 23_800_000,
@@ -1941,10 +1930,6 @@ export const VERSION_CONTROL = {
     "possession of customer funds or reserve assets by default.",
 } as const;
 
-
-// v25.3.2 Remediation Layer marker — controls over v25.3 parent spec where it explicitly supersedes.
-// Per MITHQAL-V25.3.2-REMEDIATION-LAYER.md (2026-09-29).
-export const REMEDIATION_LAYER = "v25.3.2";
 // ---- Section 28: 18 Test Scenarios ----
 
 export interface NonCustodialTestScenario {

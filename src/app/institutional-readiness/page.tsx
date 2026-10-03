@@ -49,7 +49,6 @@ import {
   type ReadinessCategory,
   type JurisdictionStatus,
 } from "@/lib/institutional/types";
-import { ProjectAuthorization } from "@/components/project-authorization";
 
 /* ─── Defensive helpers ───────────────────────────────────────
  * Mirrors the pattern used across the MITHQAL institutional
@@ -871,14 +870,6 @@ export default function InstitutionalReadinessPage() {
         <EvidenceDiscipline />
         <StatusDisciplineReference />
         <JurisdictionWorkflow />
-
-        {/* Project Authorization — JOZOUR, LLC Resolution dated
-            July 31, 2026 (F1 Gap 4 remediation). Surfaces that MITHQAL
-            is an authorized project of the Company, the Manager's 7
-            authorities, the three named digital assets, the two-entity
-            architecture, and the §1.4 successor-transfer clause. */}
-        <ProjectAuthorization variant="readiness" />
-
         <ContactCTA />
       </div>
       <PageFooter />

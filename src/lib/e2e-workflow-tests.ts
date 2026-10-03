@@ -570,7 +570,7 @@ function scenario1(): ScenarioResult {
     invariantsHold: invariants.allPass(),
     invariantPassCount: invariants.passCount(),
     invariantTotalCount: invariants.count(),
-    insight: `MTQ fees of $${fmt(totalFees, 2)} are ${fmt(savings, 0)}% cheaper than ~$${fmtComma(traditionalCost)} traditional wire — finality-coordinated real-time settlement vs 1-3 days`,
+    insight: `MTQ fees of $${fmt(totalFees, 2)} are ${fmt(savings, 0)}% cheaper than ~$${fmtComma(traditionalCost)} traditional wire — instant settlement vs 1-3 days`,
   };
 }
 

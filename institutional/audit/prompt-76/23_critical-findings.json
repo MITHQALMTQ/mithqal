@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "audit_id": "FA76-PA-001",
+  "audit_timestamp": "2026-10-03T12:00:00Z",
+  "audit_phase": "P76_FORENSIC_RECOVERY_AND_INTEGRATION_CERTIFICATION",
+  "audit_branch": "audit/remediation/prompt-75",
+  "repository_commit": "455f9d3",
+  "critical_findings_count": 6,
+  "critical_findings": [
+    {
+      "finding_id": "P76-CF-01",
+      "severity": "P0_CRITICAL",
+      "title": "All 52 expected secrets are template-only",
+      "status": "BLOCKED_BY_MISSING_SECRET",
+      "description": "The .env file is a verbatim copy of .env.example (52 lines, all template values). 0 of 52 expected environment variables have actual secret values. This blocks ALL runtime verification: no Vercel API access, no Inngest event enqueue, no Turso connection, no Neon connection, no S3 archive writes, no AI Gateway invocations, no NextAuth sessions.",
+      "impact": "No runtime can be exercised. No end-to-end stack test. No Pilot A. No evidence chain. No KPI measurements. No replays. Production deployment is BLOCKED.",
+      "recovery": "Operator must provision actual secrets in .env. NOT automatable — secrets must be supplied by operator from each provider's dashboard/CLI. After provisioning: re-run P76 audit to upgrade runtime-related findings from BLOCKED to VERIFIED.",
+      "introduced_by_p75": false,
+      "introduced_by_p75_note": "P75 created the .env template (cp .env.example .env) — this is the correct action when actual secrets are not available. P75 did NOT cause this finding; it documented it as PARTIALLY_CLOSED (LD-18). The finding persists in P76 because operator has not yet provisioned actual secrets."
+    },
+    {
+      "finding_id": "P76-CF-02",
+      "severity": "P0_CRITICAL",
+      "title": "Prompts 62-69 institutional directories NOT_RECOVERABLE",
+      "status": "NOT_RECOVERABLE",
+      "description": "6 institutional directories (8 prompts) were never persisted to git: /institutional/g1/ (P62-63), /institutional/corridors/ (P64), /institutional/banks/ (P65+67), /institutional/legal/ (P66), /institutional/bank-workshop/ (P68), /institutional/pilot/ (P69). P74 attempted recovery (failed). P75 attempted recovery (failed). NOT recoverable from current conversation context.",
+      "impact": "7 prompts (P62-69 except P70) are MISSING. The institutional record has dangling references (Prompts 72-73 cross-reference these paths but the paths don't exist). This is a permanent loss unless operator recovers from external backups or re-creates from prior conversation logs that may exist outside this session.",
+      "recovery": "Operator must recover from external backup OR re-create from prior conversation logs that may exist outside this session. NOT automatable. Until then: 7 prompts remain MISSING.",
+      "count_of_items": 7,
+      "introduced_by_p75": false
+    },
+    {
+      "finding_id": "P76-CF-03",
+      "severity": "P1_HIGH",
+      "title": "9 frozen schemas REFERENCED_BUT_ABSENT (documentation corrected)",
+      "status": "REFERENCED_BUT_ABSENT",
+      "description": "9 of 10 'frozen schema' files referenced in Prompts 70-73 DO NOT EXIST as source files: controlled-architecture-freeze.ts, institutional-evidence-fabric.ts, settlement-workflow-canonical.ts, canonical-finality-model.ts, policy-registry.ts, reserve-domains.ts, institutional-settlement-obligation-registry.ts, pilot-gate-framework.ts, mtq-economic-definition.ts. P75 corrected the documentation to honestly reference them as REFERENCED_BUT_ABSENT (instead of falsely claiming existence). Files NOT re-created because they were referential constructs (never existed as source files).",
+      "impact": "The 9 frozen schemas are not implementable. The evidence-fabric (institutional-evidence-fabric.ts) is the most critical: without it, no evidence records can be constructed at runtime (even with secrets provisioned). The other 8 affect: architecture freeze, settlement workflow, canonical finality model, policy registry, reserve domains, settlement obligation registry, pilot gate framework, MTQ economics.",
+      "recovery": "Operator must EITHER re-create these 9 frozen schemas from prior conversation context OR verify equivalence with similar-named src/lib files (finality-before-mint.ts, legal-obligation-register.ts, reserve-policy-spec.ts, pilot-operational-readiness.ts, mtq-final-reserve-spec.ts) OR correct the institutional record to definitively drop the references. NOT automatable.",
+      "count_of_items": 9,
+      "introduced_by_p75": false,
+      "p75_action": "P75 partially closed this finding by correcting documentation to REFERENCED_BUT_ABSENT (no longer falsely claims existence). The source files themselves remain absent."
+    },
+    {
+      "finding_id": "P76-CF-04",
+      "severity": "P1_HIGH",
+      "title": "Vercel/Inngest/Turso/Neon connectivity UNVERIFIABLE",
+      "status": "UNVERIFIABLE",
+      "description": "Connectivity to all 4 production-runtime providers cannot be verified. Vercel: no VERCEL_TOKEN (UNVERIFIABLE). Inngest: no INNGEST_EVENT_KEY + INNGEST_SIGNING_KEY (BLOCKED). Turso: no TURSO_DATABASE_URL + TURSO_AUTH_TOKEN (BLOCKED). Neon: no NEON_DATABASE_URL + NEON_AUTH (BLOCKED). Without runtime connectivity, all 4 providers' integration health is untestable.",
+      "impact": "Cannot verify production deployment exists, is healthy, or matches HEAD 455f9d3. Cannot verify event flow, transactional integrity, replica lag, reconciliation, evidence archive. Cross-provider harmony checks untestable.",
+      "recovery": "Operator must provision all 4 providers' credentials in .env. After provisioning: re-run P76 audit to upgrade from UNVERIFIABLE/BLOCKED to VERIFIED. Requires: VERCEL_TOKEN, INNGEST_EVENT_KEY, INNGEST_SIGNING_KEY, TURSO_DATABASE_URL, TURSO_AUTH_TOKEN, NEON_DATABASE_URL, NEON_AUTH (at minimum).",
+      "count_of_items": 4,
+      "introduced_by_p75": false
+    },
+    {
+      "finding_id": "P76-CF-05",
+      "severity": "P1_HIGH",
+      "title": "End-to-end stack test BLOCKED",
+      "status": "BLOCKED",
+      "description": "End-to-end stack test (Vercel → Inngest → Turso → Neon → S3 → AI Gateway) is BLOCKED. Without secrets, no component can be exercised. Without runtime, no transaction can be initiated, no event enqueued, no DB write performed, no analytics replica updated, no evidence archived, no AI model invoked.",
+      "impact": "No Pilot A execution. No KPI measurements. No replays. No evidence chain production. No external G0_PASS evidence can be produced. Production deployment unauthorized.",
+      "recovery": "Blocked by P76-CF-01 (secrets not provisioned). Once secrets are provisioned, run end-to-end smoke test (auth → obligation creation → settlement event → mint record → KPI recalculation → evidence archive → AI Gateway metadata). Then produce G0_PASS evidence.",
+      "count_of_items": 1,
+      "introduced_by_p75": false
+    },
+    {
+      "finding_id": "P76-CF-06",
+      "severity": "P2_MEDIUM",
+      "title": "Version drift v25.3.2 vs v25.6 (PARTIALLY_CLOSED)",
+      "status": "PARTIALLY_CLOSED",
+      "description": "Prompts 70-73 referenced 'v25.3.2 controlled baseline' but no git tag v25.3.2 exists. Latest tag is v25.6. Version drift between claimed (v25.3.2) and tagged (v25.6). P75 documented the drift and corrected canonical version to v25.6. P76 confirms PARTIALLY_CLOSED — drift documented but original v25.3.2 claim still appears in historical prompt outputs (P72 outcome + P73 execution files).",
+      "impact": "Documentation inconsistency: historical files reference v25.3.2; current canonical is v25.6. Future audits may be confused. Not production-blocking but should be cleaned up.",
+      "recovery": "Operator may either (a) tag v25.3.2 retroactively (NOT RECOMMENDED — rewrites history), (b) accept v25.6 as canonical and update historical references (RECOMMENDED), or (c) leave as-is with documented drift (CURRENT STATE — acceptable for now).",
+      "count_of_items": 1,
+      "introduced_by_p75": false,
+      "p75_action": "P75 documented the drift and corrected canonical version reference. NOT fully closed because historical files still contain v25.3.2 references (intentionally preserved — historical versions NOT deleted)."
+    }
+  ],
+  "critical_findings_summary": {
+    "total": 6,
+    "p0_critical": 2,
+    "p1_high": 3,
+    "p2_medium": 1,
+    "introduced_by_p75": 0,
+    "introduced_by_p76": 0,
+    "new_in_p76": 0,
+    "all_pre_existing_from_p74_or_earlier": true,
+    "summary": "All 6 critical findings pre-date P76. P76 did NOT introduce any new critical finding. P76 confirms the P75 partial closure status of findings and re-documents them with full evidence."
+  },
+  "production_authorized": false,
+  "institutionally_validated": false,
+  "next_external_evidence": "G0_PASS (entity counsel-verified — unchanged from Prompts 62-73)",
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

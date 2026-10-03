@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "audit_id": "FA76-PA-001",
+  "environments": {
+    "DEVELOPMENT": { "github": "VERIFIED (branch audit/remediation/prompt-75)", "vercel": "n/a (local dev)", "inngest": "code present; key MISSING", "turso": "schema present; connection BLOCKED", "neon": "code present; connection BLOCKED", "credentials": "template only (52 vars from .env.example)", "status": "PARTIALLY_FUNCTIONAL (lint clean; no runtime integrations)" },
+    "TEST": { "status": "NOT_CONFIGURED" },
+    "CONTROLLED_PILOT": { "status": "NOT_CONFIGURED (Pilot A NOT_EXECUTED)" },
+    "PRODUCTION": { "status": "NOT_AUTHORIZED (production_authorized=false)" }
+  },
+  "no_test_credentials_accessing_production": "TRUE — no credentials provisioned at all",
+  "no_production_credentials_in_git": "TRUE — .env contains only template values",
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

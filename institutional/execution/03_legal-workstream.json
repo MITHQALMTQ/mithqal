@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "package_id": "WS1-PA-001",
+  "version": "v25.3.2-P73-1.0",
+  "date": "2026-10-03T00:00:00Z",
+  "owner": "JOZOUR_LLC_NJ (G0_CONDITIONAL)",
+  "source": "Prompt 73, Sections G + H",
+  "status": "ISSUED",
+  "pilot": "PILOT-A-001",
+  "workstream_id": "WS1",
+  "workstream_name": "LEGAL",
+  "objective": "Obtain qualified external legal opinion on UAE (DIFC/ADGM) operating model — verify entity (G0_PASS), answer 50 legal questions (G1), produce 22 counsel deliverables, resolve 3 blocking contradictions",
+  "owner_human": "JOZOUR_LLC_NJ principal (human — NOT the AI developer)",
+  "current_state": "NOT_STARTED",
+  "external_party": "NONE (counsel not identified — to be identified by human owner)",
+  "required_evidence": [
+    "G0_PASS — counsel-verified entity status",
+    "signed counsel opinion answering 50 legal questions",
+    "22 counsel deliverables (CD-A through CD-R per Prompt 66)",
+    "resolution of 3 blocking legal contradictions (CON-01, CON-03, CON-04)"
+  ],
+  "blocking_dependencies": [
+    "G0_PASS (entity must be counsel-verified first — but G0_PASS IS the first step of this workstream; the entity documents must be deposited before counsel can verify)"
+  ],
+  "next_action": "Engage qualified external legal counsel for UAE (DIFC/ADGM) jurisdiction; deposit 5 primary documents; obtain entity verification (G0_PASS)",
+  "next_action_owner": "JOZOUR_LLC_NJ principal (human)",
+  "target_state": "GOVERNANCE_ACCEPTED (counsel opinion accepted by governance)",
+  "stop_condition": "counsel opinion obtained AND accepted by governance, OR counsel declines engagement after good-faith attempt",
+  "lifecycle_stages": [
+    { "stage": "NOT_STARTED", "status": "CURRENT", "documentary_evidence_required": "none", "documentary_evidence_present": false },
+    { "stage": "RESEARCHING", "status": "NOT_REACHED", "documentary_evidence_required": "counsel research notes", "documentary_evidence_present": false },
+    { "stage": "COUNSEL_CONTACTED", "status": "NOT_REACHED", "documentary_evidence_required": "contact log", "documentary_evidence_present": false },
+    { "stage": "SCOPE_DISCUSSION", "status": "NOT_REACHED", "documentary_evidence_required": "scope discussion notes", "documentary_evidence_present": false },
+    { "stage": "ENGAGED", "status": "NOT_REACHED", "documentary_evidence_required": "executed engagement letter", "documentary_evidence_present": false },
+    { "stage": "IN_REVIEW", "status": "NOT_REACHED", "documentary_evidence_required": "counsel review notes", "documentary_evidence_present": false },
+    { "stage": "DRAFT_RECEIVED", "status": "NOT_REACHED", "documentary_evidence_required": "draft counsel opinion", "documentary_evidence_present": false },
+    { "stage": "FINAL_RECEIVED", "status": "NOT_REACHED", "documentary_evidence_required": "signed final counsel opinion", "documentary_evidence_present": false },
+    { "stage": "GOVERNANCE_ACCEPTED", "status": "NOT_REACHED", "documentary_evidence_required": "governance acceptance resolution", "documentary_evidence_present": false }
+  ],
+  "never_mark_engaged_without_documentary_evidence_rule": "enforced — ENGAGED requires executed engagement letter; FINAL_RECEIVED requires signed final counsel opinion",
+  "legal_questions_count": 50,
+  "legal_questions_answered_count": 0,
+  "counsel_deliverables_count": 22,
+  "counsel_deliverables_produced_count": 0,
+  "blocking_legal_contradictions": [
+    { "id": "CON-01", "description": "4-entity (code) vs 2-entity (documents) structure mismatch", "status": "UNRESOLVED" },
+    { "id": "CON-03", "description": "Existing judgment (§1.7) vs bankability assumption", "status": "UNRESOLVED" },
+    { "id": "CON-04", "description": "MTQ self-asserted classifications vs no legal opinion", "status": "UNRESOLVED (MTQ DISABLED; not relevant to Pilot A)" }
+  ],
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

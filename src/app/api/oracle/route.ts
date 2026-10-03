@@ -1,17 +1,6 @@
 import { NextResponse } from "next/server";
 import { getOracleSnapshot, priceToWei } from "@/lib/oracle-client";
 
-// ---- v25.3.22 Edge Runtime (CR-2026-028) ----
-// This route is read-heavy + globally-latency-sensitive (the oracle snapshot
-// feeds the homepage + the dashboard). It runs on the Vercel Edge Runtime for
-// sub-100ms global reads. Edge-compatibility verified: this route and its only
-// import (`@/lib/oracle-client`) use ONLY Web APIs (`fetch`, `Buffer`, `Date`,
-// `BigInt`) — no `node:fs`, no `node:crypto`, no Prisma, no libsql client.
-// `runtime = "edge"` + `dynamic = "force-dynamic"` keeps the snapshot fresh on
-// every request (the upstream gold/silver prices tick every few seconds).
-export const runtime = "edge";
-export const dynamic = "force-dynamic";
-
 /**
  * GET /api/oracle — public, unauthenticated snapshot of oracle prices.
  *

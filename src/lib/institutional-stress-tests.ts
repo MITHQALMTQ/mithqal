@@ -504,7 +504,7 @@ export function runStressTest(scenario: StressScenario): StressTestResult {
   } else if (RR_after < 1.05) {
     status = "EMERGENCY";
     defensiveFloorBreached = true;
-  } else if (RR_after < 1.30) {  // strategic target (not universal requirement — per K-directive v25.3.5)
+  } else if (RR_after < 1.30) {
     status = "DEFENSIVE";
     strategicTargetBreached = true;
   }
@@ -524,11 +524,11 @@ export function runStressTest(scenario: StressScenario): StressTestResult {
     honestAssessment = `CRITICAL: Reserve ratio falls to ${(RR_after * 100).toFixed(2)}% — below the 105% defensive floor. Stress-Adjusted Coverage Ratio (FSCR) at ${(FSCR_after * 100).toFixed(2)}%.`;
     recommendation = "Activate CALM EMERGENCY state. Reduce digital sleeve to 0%. Draw on ILPS emergency layer. Prepare Article X liquidation sequence (gold LAST).";
   } else if (status === "DEFENSIVE") {
-    honestAssessment = `STRESSED: Reserve ratio at ${(RR_after * 100).toFixed(2)}% — below the 130% strategic target (configurable, not a universal requirement per K-directive v25.3.5) but above the 105% defensive floor. Recovery capacity exists.`;
+    honestAssessment = `STRESSED: Reserve ratio at ${(RR_after * 100).toFixed(2)}% — below the 130% strategic target but above the 105% defensive floor. Recovery capacity exists.`;
     recommendation = "Activate CALM DEFENSIVE/STRESS state. Monitor redemptions. Prepare ILPS layers 2-3. No emergency action required yet.";
   } else {
-    honestAssessment = `WITHIN LIMITS: Reserve ratio at ${(RR_after * 100).toFixed(2)}% — above the 130% strategic target (configurable, not a universal requirement per K-directive v25.3.5). The reserve architecture absorbs the shock.`;
-    recommendation = "Monitor. No action required. The constitutional corridor (80/18/2) with 130% strategic overcollateralization (configurable target, not a universal requirement per K-directive v25.3.5) provides adequate buffer.";
+    honestAssessment = `WITHIN LIMITS: Reserve ratio at ${(RR_after * 100).toFixed(2)}% — above the 130% strategic target. The reserve architecture absorbs the shock.`;
+    recommendation = "Monitor. No action required. The constitutional corridor (80/18/2) with 130% overcollateralization provides adequate buffer.";
   }
 
   if (lcrBreach) {

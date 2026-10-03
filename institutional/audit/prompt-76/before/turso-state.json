@@ -1,0 +1,9 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "audit_id": "FA76-PA-001",
+  "intended_role": "primary database (SQLite-edge via Prisma)",
+  "connection": "UNKNOWN — TURSO_DATABASE_URL is template value; no actual credential provisioned",
+  "schema": "prisma/schema.prisma (69 lines) present; live schema not verifiable",
+  "status": "BLOCKED_BY_MISSING_SECRET",
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

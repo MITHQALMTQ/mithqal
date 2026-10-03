@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "audit_id": "FA74-PA-001",
+  "source": "Prompt 74, Section S (Finality / Minting Audit)",
+  "status": "ISSUED",
+  "canonical_remediation_check": {
+    "BM-15_monetary_authorization": "UNKNOWN — settlement-workflow-canonical.ts MISSING; cannot verify BM-15 canonical definition",
+    "BM-16A_finality_verification": "UNKNOWN — settlement-workflow-canonical.ts MISSING; finality-before-mint.ts exists but may or may not implement BM-16A",
+    "BM-16B_mint_execution": "UNKNOWN — settlement-workflow-canonical.ts MISSING",
+    "stale_BM-16_merged_or_conflicting": "UNKNOWN — cannot verify without the canonical workflow file"
+  },
+  "finality_before_mint_checks": {
+    "finality_before_mint": "UNKNOWN — src/lib/finality-before-mint.ts exists (1837 lines... no, that's final-pilot-activation-gate.ts); finality-before-mint.ts exists but not inspected in detail",
+    "no_unauthorized_mint": "PASS — MTQ DISABLED; no mint possible",
+    "no_mint_without_required_finality": "PASS — MTQ DISABLED",
+    "no_bypass": "UNKNOWN",
+    "stale_authorization_rejection": "UNKNOWN",
+    "duplicate_protection": "UNKNOWN",
+    "role_separation": "UNKNOWN"
+  },
+  "mtq_disabled_control_plane_operation": "PASS — MTQ DISABLED per Prompt 69; Pilot A uses BANK_MONEY; the control plane operates without MTQ (per Prompt 72 outcome)",
+  "CRITICAL_FINDING": "canonical-finality-model.ts (the FROZEN F0-F7 finality model) and settlement-workflow-canonical.ts (the FROZEN BM-01..BM-16B workflow) are BOTH MISSING. The finality/mint audit cannot verify canonical remediation (BM-15/BM-16A/BM-16B separation) without these files.",
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

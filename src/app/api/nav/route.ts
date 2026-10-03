@@ -1,12 +1,5 @@
 import { NextResponse } from "next/server";
 import { computeLiveNav } from "@/lib/nav-compute";
-import { mtqDisabledResponse } from "@/lib/mtq-settlement-config";
-
-// ---- v25.3.2 CONTROL_PLANE_CORE vs MTQ_SETTLEMENT_MODULE boundary ----
-// This route is MTQ-specific (computes the MTQ NAV via the v19 monetary
-// engine). When MTQ_SETTLEMENT_ENABLED = false, it returns 503 immediately.
-// The control plane (/api/control-plane/*) remains operational.
-// See docs/architecture/CONTROL-PLANE-VS-MTQ-BOUNDARY.md.
 
 /**
  * GET /api/nav — The SINGLE source of truth for MTQ's live NAV.
@@ -54,19 +47,11 @@ import { mtqDisabledResponse } from "@/lib/mtq-settlement-config";
  *   }
  */
 export async function GET() {
-  // v25.3.2: MTQ_SETTLEMENT_MODULE gate. When MTQ_SETTLEMENT_ENABLED = false,
-  // return 503 immediately (the control plane remains usable — see
-  // /api/control-plane/settlement-status).
-  const mtqDisabled = mtqDisabledResponse();
-  if (mtqDisabled) return mtqDisabled;
-
   try {
     const nav = await computeLiveNav();
     return NextResponse.json({
       navM: nav.navM,
-      navM_label: "MTQ M-NAV (purchasing power, USD baseline)",
       navL: nav.navL,
-      navL_label: "MTQ L-NAV (liquidation-adjusted, USD baseline)",
       navStress: nav.navStress,
       reserveRatio: nav.reserveRatio,
       goldUsd: nav.goldUsd,
@@ -89,15 +74,6 @@ export async function GET() {
       usdConcentration: nav.usdConcentration,
       currencyConcentration: nav.currencyConcentration,
       pillarBreakdown: nav.pillarBreakdown,
-      // v25.9 — explicit "purchasing power" framing per user directive
-      // (2026-09-29): "MTQ is purchasing power, not fixed to any currency."
-      // navM is the gold-anchored USD baseline (Constitution v19.0 §22). For
-      // MTQ's purchasing power in EUR/JPY/GBP/CNY/CHF/AUD/CAD with live 24h
-      // FX changes, see /api/mtq-purchasing-power.
-      explanation:
-        "MTQ is purchasing power, not USD-fixed. navM is the gold-anchored " +
-        "USD baseline (Constitution v19.0 §22 — gold-anchored basket). For " +
-        "purchasing power in EUR/JPY/GBP/etc., see /api/mtq-purchasing-power.",
     });
   } catch (err) {
     return NextResponse.json(

@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "audit_id": "FA76-PA-001",
+  "audit_timestamp": "2026-10-03T11:50:00Z",
+  "audit_phase": "P76_FORENSIC_RECOVERY_AND_INTEGRATION_CERTIFICATION",
+  "audit_branch": "audit/remediation/prompt-75",
+  "repository_commit": "455f9d3",
+  "release_manifest_purpose": "Document the release state of each external provider integration as of P76 audit start.",
+  "release_status": "RELEASE_BLOCKED",
+  "release_status_detail": "RELEASE_BLOCKED because secrets are not provisioned (52 of 52 expected environment variables are template-only). No provider integration can be exercised at runtime. No production deployment is authorized.",
+  "release_components": {
+    "github": {
+      "role": "Source code repository + CI/CD pipeline trigger",
+      "status": "VERIFIED",
+      "commit": "455f9d3",
+      "branch": "audit/remediation/prompt-75",
+      "remote_sync": "origin/main + 4 backup branches tracked remotely",
+      "tags_synced": 25,
+      "secrets_required_for_release": "GITHUB_TOKEN (for Actions); present status: UNKNOWN (not in .env — possibly available via Actions runtime, not local)",
+      "verdict": "VERIFIED — git history intact, branches + tags preserved, no rewrite/force-push/squash/deletion"
+    },
+    "vercel": {
+      "role": "Production deployment platform (Next.js app host)",
+      "status": "UNKNOWN",
+      "vercel_project_linked": "UNKNOWN",
+      "vercel_token_provisioned": false,
+      "vercel_token_status": "BLOCKED_BY_MISSING_SECRET (VERCEL_TOKEN not in .env)",
+      "api_access": "BLOCKED (no VERCEL_TOKEN)",
+      "deployment_last_known": "UNKNOWN (no API access; cannot list deployments)",
+      "verdict": "UNKNOWN — no API access. Cannot verify whether production deployment exists, is healthy, or has any commits deployed."
+    },
+    "inngest": {
+      "role": "Event-driven workflow orchestration (async job queue)",
+      "status": "CODE_PRESENT_KEY_MISSING",
+      "code_present": true,
+      "code_files": "src/lib/inngest/* + inngest.config.ts",
+      "inngest_event_key_provisioned": false,
+      "inngest_event_key_status": "BLOCKED_BY_MISSING_SECRET (INNGEST_EVENT_KEY not in .env)",
+      "inngest_signing_key_provisioned": false,
+      "inngest_signing_key_status": "BLOCKED_BY_MISSING_SECRET (INNGEST_SIGNING_KEY not in .env)",
+      "api_access": "BLOCKED",
+      "verdict": "BLOCKED — code is present and committed, but signing key is missing. Cannot enqueue events; cannot verify worker registration."
+    },
+    "turso": {
+      "role": "Primary transactional database (SQLite-edge)",
+      "status": "SCHEMA_PRESENT_CONNECTION_BLOCKED",
+      "schema_present": true,
+      "schema_file": "prisma/schema.prisma (69 lines)",
+      "turso_database_url_provisioned": false,
+      "turso_database_url_status": "BLOCKED_BY_MISSING_SECRET (TURSO_DATABASE_URL not in .env)",
+      "turso_auth_token_provisioned": false,
+      "turso_auth_token_status": "BLOCKED_BY_MISSING_SECRET (TURSO_AUTH_TOKEN not in .env)",
+      "connection_test": "BLOCKED",
+      "verdict": "BLOCKED — schema is present, but connection is blocked. Cannot verify live schema matches committed schema (drift untestable)."
+    },
+    "neon": {
+      "role": "Analytics replica + S3 archive + AI Gateway metadata",
+      "status": "CODE_PRESENT_CONNECTION_BLOCKED",
+      "code_present": true,
+      "code_files": "src/lib/db.ts DATABASE_BACKEND=neon branch (commit 9a97cae)",
+      "neon_database_url_provisioned": false,
+      "neon_database_url_status": "BLOCKED_BY_MISSING_SECRET (NEON_DATABASE_URL not in .env)",
+      "neon_auth_provisioned": false,
+      "neon_auth_status": "BLOCKED_BY_MISSING_SECRET (NEON_AUTH not in .env)",
+      "s3_archive_credentials_provisioned": false,
+      "s3_archive_credentials_status": "BLOCKED_BY_MISSING_SECRET (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, S3_BUCKET not in .env)",
+      "ai_gateway_credentials_provisioned": false,
+      "ai_gateway_credentials_status": "BLOCKED_BY_MISSING_SECRET (OPENAI_API_KEY, ANTHROPIC_API_KEY, AI_GATEWAY_TOKEN not in .env)",
+      "connection_test": "BLOCKED",
+      "verdict": "BLOCKED — code is present, but all Neon-side credentials are missing. Cannot verify analytics replica, S3 archive, or AI Gateway."
+    }
+  },
+  "release_blockers_summary": {
+    "total_release_blockers": 5,
+    "blockers": [
+      "BLOCKER-1: Vercel API access BLOCKED (no VERCEL_TOKEN)",
+      "BLOCKER-2: Inngest BLOCKED (no INNGEST_EVENT_KEY + INNGEST_SIGNING_KEY)",
+      "BLOCKER-3: Turso BLOCKED (no TURSO_DATABASE_URL + TURSO_AUTH_TOKEN)",
+      "BLOCKER-4: Neon BLOCKED (no NEON_DATABASE_URL + NEON_AUTH)",
+      "BLOCKER-5: S3 archive + AI Gateway BLOCKED (no AWS + AI provider credentials)"
+    ],
+    "github_only_verified": "GitHub is the ONLY provider VERIFIED. All 4 production-runtime providers (Vercel, Inngest, Turso, Neon) are BLOCKED or UNKNOWN.",
+    "release_authorized": false
+  },
+  "production_authorized": false,
+  "institutionally_validated": false,
+  "next_external_evidence": "G0_PASS (entity counsel-verified — unchanged from Prompts 62-73)",
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

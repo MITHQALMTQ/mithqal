@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "package_id": "EDR-PA-001",
+  "version": "v25.3.2-P73-1.0",
+  "date": "2026-10-03T00:00:00Z",
+  "owner": "JOZOUR_LLC_NJ (G0_CONDITIONAL)",
+  "source": "Prompt 73, Section F #02",
+  "status": "ISSUED",
+  "pilot": "PILOT-A-001",
+  "description": "Register of all external dependencies blocking MITHQAL institutional advancement. Each dependency records the external party, required evidence, blocking state, and owner.",
+  "dependencies_total_count": 10,
+  "dependencies_blocking_count": 10,
+  "dependencies_satisfied_count": 0,
+  "dependencies": [
+    { "dependency_id": "ED-01", "dependency": "Entity legal establishment (G0_PASS)", "external_party": "external legal counsel (UAE DIFC/ADGM)", "required_evidence": "counsel-verified entity status (signed)", "blocking": true, "blocking_state": "G0_FAIL/G0_CONDITIONAL — entity DESIGNED, not legally established", "owner": "JOZOUR_LLC_NJ principal", "status": "NOT_STARTED", "target_gate": "G0" },
+    { "dependency_id": "ED-02", "dependency": "Counsel opinion (50 legal questions answered)", "external_party": "external legal counsel", "required_evidence": "signed counsel opinion", "blocking": true, "blocking_state": "0/50 questions answered; 0 counsel engaged", "owner": "JOZOUR_LLC_NJ principal", "status": "NOT_STARTED", "target_gate": "G1" },
+    { "dependency_id": "ED-03", "dependency": "Jurisdiction triage + regulatory engagement", "external_party": "UAE/SG regulator", "required_evidence": "regulator communication + authorization path", "blocking": true, "blocking_state": "0/8 jurisdictions triaged; 0 engagements", "owner": "JOZOUR_LLC_NJ principal + counsel", "status": "NOT_STARTED", "target_gate": "G2" },
+    { "dependency_id": "ED-04", "dependency": "Bank engagement (NDA + DPA + baseline data)", "external_party": "UAE bank (DIFC/ADGM)", "required_evidence": "executed NDA + DPA + bank baseline data", "blocking": true, "blocking_state": "0 contacted (15 researched)", "owner": "JOZOUR_LLC_NJ principal", "status": "NOT_STARTED", "target_gate": "G3" },
+    { "dependency_id": "ED-05", "dependency": "Term sheet execution (DRAFT → EXECUTED)", "external_party": "bank", "required_evidence": "executed term sheet + 18 conditions precedent satisfied", "blocking": true, "blocking_state": "term sheet at DRAFT; 0/18 conditions precedent satisfied", "owner": "JOZOUR_LLC_NJ principal + bank + counsel", "status": "NOT_STARTED", "target_gate": "G4" },
+    { "dependency_id": "ED-06", "dependency": "Technical integration with bank + rail", "external_party": "bank + rail operator", "required_evidence": "technical integration evidence", "blocking": true, "blocking_state": "0 integration", "owner": "JOZOUR_LLC_NJ + bank", "status": "NOT_STARTED", "target_gate": "G5" },
+    { "dependency_id": "ED-07", "dependency": "Custodian agreement (DEFERRED — BANK_MONEY)", "external_party": "qualified custodian", "required_evidence": "executed custodian agreement + live backing evidence", "blocking": false, "blocking_state": "DEFERRED — Pilot A uses BANK_MONEY; custody required only if MTQ enabled", "owner": "JOZOUR_LLC_NJ principal", "status": "DEFERRED", "target_gate": "G6" },
+    { "dependency_id": "ED-08", "dependency": "Pilot authorization + execution", "external_party": "bank + governance authority", "required_evidence": "executed pilot authorization + 16 scenarios executed + evidence", "blocking": true, "blocking_state": "pilot not authorized; 0 scenarios executed", "owner": "JOZOUR_LLC_NJ principal + bank", "status": "NOT_STARTED", "target_gate": "G7" },
+    { "dependency_id": "ED-09", "dependency": "Independent assurance engagement + report", "external_party": "independent assurance provider", "required_evidence": "independent assurance report", "blocking": true, "blocking_state": "0 providers selected; 0 engagements; 0 reports", "owner": "JOZOUR_LLC_NJ principal", "status": "NOT_STARTED", "target_gate": "G8" },
+    { "dependency_id": "ED-10", "dependency": "Institutional record continuity restoration", "external_party": "n/a (internal restoration)", "required_evidence": "restored /institutional/assurance/ (42 files) + /institutional/{g1,corridors,banks,legal,bank-workshop,pilot}/ directories", "blocking": true, "blocking_state": "artifacts from Prompts 62-71 absent from current filesystem (environment reset)", "owner": "JOZOUR_LLC_NJ principal", "status": "NOT_STARTED", "target_gate": "ALL (governance prerequisite)" }
+  ],
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

@@ -1,24 +1,3 @@
-// ============================================================================
-// ⚠ VERSIONED API ROUTE — v25.3.2 remediation layer (2026-09-29)
-// ============================================================================
-// This is a versioned API route (/api/v23-stablecoin). Per the v25.3.2 authority hierarchy:
-//   - Versioned routes are HISTORICAL — they implement API versioning for
-//     backward compatibility
-//   - The current normative API is the unversioned /api/* endpoints
-//   - This route is PRESERVED (not deleted) because it is referenced by
-//     other modules and external integrations
-//
-// All versioned API routes respond with header:
-//   X-Mithqal-API-Version: v23-stablecoin (historical; current normative layer = v25.3.2)
-//
-// HISTORICAL VERSIONS RETAIN TRACEABILITY ONLY.
-// ============================================================================
-
-// === v25.3.2 STATUS MARKER ===
-// This versioned API route is HISTORICAL — see VERSIONED API ROUTE banner above.
-export const ROUTE_STATUS: "ACTIVE" | "SUPERSEDED" | "HISTORICAL" | "PENDING_VALIDATION" = "HISTORICAL";
-export const CURRENT_NORMATIVE_API = "/api/mtq-final-reserve";
-
 import { NextResponse } from "next/server";
 import { computeLiveNav } from "@/lib/nav-compute";
 import {

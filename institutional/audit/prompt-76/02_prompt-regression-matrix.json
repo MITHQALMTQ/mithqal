@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "audit_id": "FA76-PA-001",
+  "audit_timestamp": "2026-10-03T11:00:00Z",
+  "audit_phase": "P76_FORENSIC_RECOVERY_AND_INTEGRATION_CERTIFICATION",
+  "audit_branch": "audit/remediation/prompt-75",
+  "repository_commit": "455f9d3",
+  "matrix_scope": "Prompts 1-75 (cumulative through P75 remediation)",
+  "regression_definition": "A regression is a previously-verified-passing requirement that now fails. No prior runtime exists, so no runtime regression is possible. No source code was modified by P75 remediation, so no code regression is possible.",
+  "regressions_total": 0,
+  "regressions_detail": "0 confirmed regressions across Prompts 1-75. No new regressions introduced by P75 remediation (assurance framework recovery was purely additive: 42 NEW files in /institutional/assurance/; node_modules install was additive; .env replacement was 1-line → 52-line template with original preserved in git history at c7dafc6).",
+  "new_regressions_from_p75": 0,
+  "new_regressions_from_p75_detail": "P75 remediation introduced 0 new regressions. The 30 remediation files are additive (no existing files modified). The 42 assurance files are additive. The 1 .env modification preserved the original in git history. No frozen schema was modified (BUILD_MODE = FROZEN).",
+  "prompt_status_breakdown": {
+    "verified_partial_count": 3,
+    "verified_partial_prompts": [
+      {"prompt": "P70", "status": "VERIFIED_PARTIAL", "reason": "assurance framework (42 files) RECOVERED via RECONSTRUCTED_FROM_EVIDENCE in P75; all 8 JSON VALID; all 34 markdown carry RECONSTRUCTED_FROM_EVIDENCE marker; underlying frozen schema (institutional-evidence-fabric.ts) still REFERENCED_BUT_ABSENT — hence PARTIAL not COMPLETE"},
+      {"prompt": "P72", "status": "VERIFIED_PARTIAL", "reason": "/institutional/outcome/ (37 files) present + committed in c7dafc6 + all JSON valid; PARTIAL because external G0_PASS evidence not yet produced"},
+      {"prompt": "P73", "status": "VERIFIED_PARTIAL", "reason": "/institutional/execution/ (26 files) present + committed in c7dafc6 + all JSON valid; PARTIAL because external G0_PASS evidence not yet produced"}
+    ],
+    "missing_count": 10,
+    "missing_prompts": [
+      {"prompt": "P62", "status": "MISSING", "reason": "/institutional/g1/ (G0 status files) never committed; NOT_RECOVERABLE from current conversation context"},
+      {"prompt": "P63", "status": "MISSING", "reason": "/institutional/g1/ (G1 legal pack) never committed; NOT_RECOVERABLE"},
+      {"prompt": "P64", "status": "MISSING", "reason": "/institutional/corridors/ never committed; NOT_RECOVERABLE"},
+      {"prompt": "P65", "status": "MISSING", "reason": "/institutional/banks/ never committed; NOT_RECOVERABLE"},
+      {"prompt": "P66", "status": "MISSING", "reason": "/institutional/legal/ never committed; NOT_RECOVERABLE"},
+      {"prompt": "P67", "status": "MISSING", "reason": "/institutional/banks/executive-package/ never committed; NOT_RECOVERABLE"},
+      {"prompt": "P68", "status": "MISSING", "reason": "/institutional/bank-workshop/ never committed; NOT_RECOVERABLE"},
+      {"prompt": "P69", "status": "MISSING", "reason": "/institutional/pilot/ never committed; NOT_RECOVERABLE"},
+      {"prompt": "P71", "status": "MISSING", "reason": "Pilot A never executed; no execution evidence package exists; no runtime evidence"},
+      {"prompt": "P75_external_closure", "status": "MISSING", "reason": "P75 remediation internal artifacts present (30 files) BUT external closure NOT verifiable: secrets not provisioned (.env is template-only); runtime not testable; Vercel/Inngest/Turso/Neon connectivity unverifiable; 9 frozen schemas still REFERENCED_BUT_ABSENT"}
+    ],
+    "unverifiable_count": 62,
+    "unverifiable_prompts_summary": "P1-P61 (61 prompts — prompt texts not available in this audit environment; only worklog Task IDs available; cannot verify requirements without prompt texts) + P74 (1 prompt — audit prompt; internal artifacts produced but external effect on production state NOT verifiable without runtime + secrets).",
+    "regressed_count": 0,
+    "regressed_prompts": [],
+    "conflicted_count": 0,
+    "lost_count": 0
+  },
+  "totals_check": {
+    "verified_partial": 3,
+    "missing": 10,
+    "unverifiable": 62,
+    "regressed": 0,
+    "conflicted": 0,
+    "lost": 0,
+    "sum": 75,
+    "sum_matches_scope": true
+  },
+  "regression_free_rate": 1.0,
+  "regression_free_rate_detail": "0 confirmed regressions / 75 prompts = 1.0. This is technically correct but does NOT mean the program is healthy — it means there is no prior runtime/code implementation to regress from. The MISSING prompts (P62-69, P71, P75_external_closure) are NOT regressions because the artifacts were never persisted; they are LOSSES, not REGRESSIONS.",
+  "p75_introduced_regressions": false,
+  "p75_introduced_regressions_detail": "P75 remediation was purely additive: 42 assurance files (RECONSTRUCTED_FROM_EVIDENCE) + 30 remediation files (audit evidence) + node_modules (1307 packages) + .env (52-line template from .env.example). No existing source file was modified. No frozen schema was modified. No git history was rewritten. Therefore: 0 new regressions.",
+  "regression_check_method": "git diff audit/remediation/prompt-75 vs main (c7dafc6 baseline) shows ONLY additions in /institutional/{assurance,remediation}/ + node_modules/ + .env replacement. No deletions of source files. No modifications to src/lib/ (111 .ts files unchanged). No modifications to prisma/schema.prisma (69 lines unchanged). No modifications to the 1 existing frozen schema (final-pilot-activation-gate.ts unchanged).",
+  "production_authorized": false,
+  "institutionally_validated": false,
+  "next_external_evidence": "G0_PASS (entity counsel-verified — unchanged from Prompts 62-73)",
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

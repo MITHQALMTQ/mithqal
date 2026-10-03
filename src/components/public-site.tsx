@@ -1822,7 +1822,7 @@ function PublicFooter() {
               <BoxesIcon className="h-4 w-4" /> GitHub
             </a>
             <span className="inline-flex items-center gap-1.5">
-              <FileCheck className="h-4 w-4" /> Constitution v19.0
+              <FileCheck className="h-4 w-4" /> Constitution v25.0
             </span>
             {/* A5 — Powered by Monad badge. Links to the Monad Testnet explorer
                 so visitors can verify MTQ on-chain. */}

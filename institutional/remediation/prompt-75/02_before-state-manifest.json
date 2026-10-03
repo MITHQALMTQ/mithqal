@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "remediation_id": "FR75-PA-001",
+  "source": "Prompt 75, Section E (Preserve Before Repair)",
+  "status": "ISSUED",
+  "description": "Before-state snapshot of all artifacts BEFORE remediation. Per Section E: 'Before modifying ANY artifact: create a before-state snapshot containing path, commit, hash, version, authority, status.'",
+  "baseline_commit": "c7dafc6",
+  "remediation_branch": "audit/remediation/prompt-75",
+  "before_state_artifacts": [
+    { "path": "institutional/outcome/", "commit": "c7dafc6", "file_count": 37, "version": "P72-1.0", "authority": "MITHQAL_DOCUMENT", "status": "PRESENT — will be modified for version reference correction (v25.3.2 → v25.6) and frozen-schema reference correction" },
+    { "path": "institutional/execution/", "commit": "c7dafc6", "file_count": 26, "version": "P73-1.0", "authority": "MITHQAL_DOCUMENT", "status": "PRESENT — will be modified for version reference correction and frozen-schema reference correction" },
+    { "path": "institutional/audit/prompt-74/", "commit": "c7dafc6 (on audit/prompt-1-73-forensic branch)", "file_count": 38, "version": "P74-1.0", "authority": "MITHQAL_DOCUMENT", "status": "PRESENT — READ_ONLY (forensic audit baseline; will NOT be modified)" },
+    { "path": "src/lib/final-pilot-activation-gate.ts", "commit": "c7dafc6", "hash": "0aa460fb4dc883367e376aaa10ea9228d0054d3b56bdb189c683c063b69ad0a8", "version": "v25.6 era", "authority": "MITHQAL_SYSTEM", "status": "PRESENT — will NOT be modified (frozen schema; only 1 of 10 that exists)" },
+    { "path": "src/lib/mithqal-brain.ts", "commit": "c7dafc6", "hash": "426c05106fc0aca1b7d93849aa58e66b4ab86b03dadcde292c90d87c440b1c21", "version": "v25.6 era", "authority": "MITHQAL_SYSTEM", "status": "PRESENT — will NOT be modified" },
+    { "path": "prisma/schema.prisma", "commit": "c7dafc6", "hash": "1a0285671d5d1779360028f507ae1156207e874cd566e5afd053c2755a69c941", "version": "v25.6 era", "authority": "MITHQAL_SYSTEM", "status": "PRESENT — will NOT be modified" },
+    { "path": "vercel.json", "commit": "c7dafc6", "hash": "6bdb511d0210b56e13789258ea4e144dc6b47988fd57a11dc66112695174bac3", "version": "v25.6 era", "authority": "MITHQAL_SYSTEM", "status": "PRESENT — will NOT be modified" },
+    { "path": ".env", "commit": "c7dafc6", "hash": "be8e1a92feff8f6cb699a9a70cc7d76a183538ab8c68a45e7d40f0d32bf20b94", "version": "1 line", "authority": "MITHQAL_SYSTEM", "status": "PRESENT (near-empty) — will be RECONSTRUCTED from .env.example template" },
+    { "path": ".env.example", "commit": "c7dafc6", "hash": "aa47a79cbeb93fc94e6d217c6748707dd86adf308cdec98dc16e090ce01f96f0", "version": "52 lines", "authority": "MITHQAL_SYSTEM", "status": "PRESENT — will NOT be modified (source for .env reconstruction)" },
+    { "path": "package.json", "commit": "c7dafc6", "hash": "7956f1a7dacdc022bb55df5a449f39e9d44625412f3cd9c2f8f84df8b8d0e618", "version": "0.2.1", "authority": "MITHQAL_SYSTEM", "status": "PRESENT — will NOT be modified" },
+    { "path": "worklog.md", "commit": "c7dafc6", "hash": "af4869c94a85ca38438754631d5c4133f04aa0df39de3c618bec334217a59309", "version": "8888 lines (P73 append)", "authority": "MITHQAL_SYSTEM", "status": "PRESENT — will be appended (P75 worklog entry)" }
+  ],
+  "before_state_missing_artifacts": [
+    { "path": "institutional/assurance/", "expected_file_count": 42, "status": "MISSING — will be RECOVERED via RECONSTRUCTED_FROM_EVIDENCE (re-created from Prompt 70 conversation context)", "before_hash": "NONE (never committed)" },
+    { "path": "institutional/g1/", "expected_file_count": 3, "status": "MISSING — NOT_RECOVERABLE from current conversation context (content was in prior truncated conversation)", "before_hash": "NONE" },
+    { "path": "institutional/corridors/", "expected_file_count": 2, "status": "MISSING — NOT_RECOVERABLE", "before_hash": "NONE" },
+    { "path": "institutional/banks/", "expected_file_count": 3, "status": "MISSING — NOT_RECOVERABLE", "before_hash": "NONE" },
+    { "path": "institutional/legal/", "expected_file_count": 2, "status": "MISSING — NOT_RECOVERABLE", "before_hash": "NONE" },
+    { "path": "institutional/bank-workshop/", "expected_file_count": 2, "status": "MISSING — NOT_RECOVERABLE", "before_hash": "NONE" },
+    { "path": "institutional/pilot/", "expected_file_count": 2, "status": "MISSING — NOT_RECOVERABLE", "before_hash": "NONE" },
+    { "path": "src/lib/controlled-architecture-freeze.ts", "expected": "frozen schema", "status": "MISSING — REFERENCED_BUT_ABSENT; will be DOCUMENTED as absent; similar-named files do not exist; NOT re-created (was never a source file, only a referential construct)", "before_hash": "NONE" },
+    { "path": "src/lib/institutional-evidence-fabric.ts", "expected": "frozen schema", "status": "MISSING — REFERENCED_BUT_ABSENT; NOT re-created", "before_hash": "NONE" },
+    { "path": "src/lib/settlement-workflow-canonical.ts", "expected": "frozen schema", "status": "MISSING — REFERENCED_BUT_ABSENT; NOT re-created", "before_hash": "NONE" },
+    { "path": "src/lib/canonical-finality-model.ts", "expected": "frozen schema", "status": "MISSING — REFERENCED_BUT_ABSENT; similar-named file finality-before-mint.ts exists but is DIFFERENT", "before_hash": "NONE" },
+    { "path": "src/lib/policy-registry.ts", "expected": "frozen schema", "status": "MISSING — REFERENCED_BUT_ABSENT; NOT re-created", "before_hash": "NONE" },
+    { "path": "src/lib/reserve-domains.ts", "expected": "frozen schema", "status": "MISSING — REFERENCED_BUT_ABSENT; similar-named files exist (reserve-policy-spec.ts, reserve-allocation.ts, etc.) but are DIFFERENT", "before_hash": "NONE" },
+    { "path": "src/lib/institutional-settlement-obligation-registry.ts", "expected": "frozen schema", "status": "MISSING — REFERENCED_BUT_ABSENT; similar-named file legal-obligation-register.ts exists but is DIFFERENT", "before_hash": "NONE" },
+    { "path": "src/lib/pilot-gate-framework.ts", "expected": "frozen schema", "status": "MISSING — REFERENCED_BUT_ABSENT; similar-named file pilot-operational-readiness.ts exists but is DIFFERENT", "before_hash": "NONE" },
+    { "path": "src/lib/mtq-economic-definition.ts", "expected": "frozen schema", "status": "MISSING — REFERENCED_BUT_ABSENT; similar-named file mtq-final-reserve-spec.ts exists but is DIFFERENT", "before_hash": "NONE" },
+    { "path": "node_modules/", "expected": "dependency tree", "status": "MISSING — will be RECONSTRUCTED via bun install", "before_hash": "NONE" }
+  ],
+  "database_before_state": {
+    "schema_file": "prisma/schema.prisma (69 lines, hash 1a028567...)",
+    "migrations": "NONE — prisma/migrations/ does not exist; schema managed via db:push",
+    "sensitive_data": "NOT EXPOSED — per Section E: 'capture schema/version state without exposing sensitive data'",
+    "status": "NO_DATABASE_MODIFICATION — per Section R: 'Never modify historical migrations'; per Section O: 'Never modify production data during this audit'"
+  },
+  "configuration_before_state": {
+    "env_file": ".env (1 line, hash be8e1a92...)",
+    "env_structure": "1 line — 51 of 52 expected vars MISSING",
+    "secrets": "NOT EXPOSED — per Section E: 'capture configuration structure without exposing secrets'",
+    "status": "will be RECONSTRUCTED from .env.example (template only; operator must supply actual secrets)"
+  },
+  "preservation_rule": "Per Section E: all before-state captured. For databases: schema/version captured without exposing data. For configuration: structure captured without exposing secrets. For documentation: original version preserved. For deleted artifacts: forensic proof of deletion preserved (in Prompt 74 audit).",
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

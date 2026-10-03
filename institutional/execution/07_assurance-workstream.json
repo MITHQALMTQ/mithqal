@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "package_id": "WS5-PA-001",
+  "version": "v25.3.2-P73-1.0",
+  "date": "2026-10-03T00:00:00Z",
+  "owner": "JOZOUR_LLC_NJ (G0_CONDITIONAL)",
+  "source": "Prompt 73, Sections G + L",
+  "status": "ISSUED",
+  "pilot": "PILOT-A-001",
+  "workstream_id": "WS5",
+  "workstream_name": "INDEPENDENT ASSURANCE",
+  "objective": "Engage qualified independent assurance provider to examine Pilot A — select provider, sign engagement, conduct fieldwork (94 tests per Prompt 70), issue findings, remediate, retest, issue report",
+  "owner_human": "JOZOUR_LLC_NJ principal (human — NOT the AI developer)",
+  "current_state": "NOT_STARTED (assurance framework DESIGNED per Prompt 70 but NOT executed; framework artifacts NOT on current filesystem due to environment reset)",
+  "external_party": "NONE (provider not selected)",
+  "required_evidence": [
+    "independent assurance report (REPORT_ISSUED status)",
+    "94 tests executed with results",
+    "findings register (per Prompt 70 23_finding-classification.md)",
+    "remediation + retest records (per Prompt 70 25_remediation-retest.md)"
+  ],
+  "blocking_dependencies": [
+    "G7 pilot execution (assurance requires pilot evidence to examine — 0 transactions, 0 evidence currently)"
+  ],
+  "next_action": "Select provider via assurance-provider-evaluation-framework.md (per Prompt 70 — needs restoration) — BLOCKED by G7 pilot execution",
+  "next_action_owner": "JOZOUR_LLC_NJ principal (human)",
+  "target_state": "REPORT_ISSUED (independent assurance report issued)",
+  "stop_condition": "report issued AND all findings closed (per Prompt 70 25_remediation-retest.md closure rule), OR provider declines engagement",
+  "lifecycle_stages": [
+    { "stage": "provider research", "status": "NOT_STARTED", "documentary_evidence_required": "provider research notes", "documentary_evidence_present": false },
+    { "stage": "conflict checks", "status": "NOT_STARTED", "documentary_evidence_required": "conflict check responses (COI-01..COI-10 per Prompt 70)", "documentary_evidence_present": false },
+    { "stage": "scope inquiry", "status": "NOT_STARTED", "documentary_evidence_required": "scope inquiry correspondence", "documentary_evidence_present": false },
+    { "stage": "SOW", "status": "NOT_STARTED", "documentary_evidence_required": "SOW document (assurance-provider-sow.md per Prompt 70 — needs restoration)", "documentary_evidence_present": false },
+    { "stage": "commercial proposal", "status": "NOT_STARTED", "documentary_evidence_required": "commercial proposal", "documentary_evidence_present": false },
+    { "stage": "engagement", "status": "NOT_STARTED", "documentary_evidence_required": "executed engagement letter", "documentary_evidence_present": false },
+    { "stage": "evidence preparation", "status": "NOT_STARTED", "documentary_evidence_required": "evidence package delivered to provider", "documentary_evidence_present": false },
+    { "stage": "testing", "status": "NOT_STARTED", "documentary_evidence_required": "94 tests executed with results", "documentary_evidence_present": false },
+    { "stage": "findings", "status": "NOT_STARTED", "documentary_evidence_required": "findings register", "documentary_evidence_present": false },
+    { "stage": "remediation", "status": "NOT_STARTED", "documentary_evidence_required": "remediation records", "documentary_evidence_present": false },
+    { "stage": "retest", "status": "NOT_STARTED", "documentary_evidence_required": "retest results", "documentary_evidence_present": false },
+    { "stage": "report", "status": "NOT_STARTED", "documentary_evidence_required": "independent assurance report", "documentary_evidence_present": false }
+  ],
+  "no_independent_assurance_completed_without_genuine_external_report_rule": "enforced — independent assurance is NOT marked completed without a genuine external report issued by the selected provider",
+  "providers_researched": 0,
+  "providers_selected": 0,
+  "engagements_signed": 0,
+  "tests_defined": 94,
+  "tests_executed": 0,
+  "findings_issued": 0,
+  "reports_issued": 0,
+  "assurance_framework_status": "DESIGNED (per Prompt 70 — 42 files, 20 criteria, 25 controls, 94 tests — all at status DESIGNED; framework artifacts NOT on current filesystem due to environment reset; needs restoration before engagement)",
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

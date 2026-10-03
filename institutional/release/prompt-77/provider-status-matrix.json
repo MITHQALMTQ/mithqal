@@ -1,0 +1,22 @@
+{"$schema": "https://json-schema.org/draft-07/schema#",
+ "audit_id": "FA77-PA-001",
+ "matrix_title": "Provider Status Matrix",
+ "release_prompt": 77,
+ "matrix_timestamp": "2026-10-03T13:05:00Z",
+ "build_mode": "FROZEN",
+ "production_authorized": false,
+ "providers": {
+   "github": "VERIFIED",
+   "vercel": "UNVERIFIABLE",
+   "inngest": "BLOCKED",
+   "turso": "BLOCKED",
+   "neon": "BLOCKED"
+ },
+ "providers_verified_count": 1,
+ "providers_blocked_count": 3,
+ "providers_unverifiable_count": 1,
+ "providers_total": 5,
+ "harmony_score": 0.2,
+ "harmony_score_explanation": "1 of 5 providers verified",
+ "matrix_status": "PARTIAL",
+ "NOT_PRODUCTION_AUTHORIZED": true}

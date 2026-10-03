@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "audit_id": "FA76-PA-001",
+  "audit_timestamp": "2026-10-03T11:35:00Z",
+  "audit_phase": "P76_FORENSIC_RECOVERY_AND_INTEGRATION_CERTIFICATION",
+  "audit_branch": "audit/remediation/prompt-75",
+  "repository_commit": "455f9d3",
+  "audit_question": "Is database integrity verifiable in this audit environment?",
+  "audit_answer": "UNKNOWN — no live DB access. Schema present, migrations absent (intentional), schema drift untestable, zero-data-loss check NOT_APPLICABLE because no data exists to lose.",
+  "prisma_schema_state": {
+    "file_path": "prisma/schema.prisma",
+    "present": true,
+    "line_count": 69,
+    "unchanged_from_p74_baseline": true,
+    "git_diff_c7dafc6_to_455f9d3": "empty (no changes)",
+    "models_present": [
+      "User (auth)",
+      "Account (NextAuth)",
+      "Session (NextAuth)",
+      "VerificationToken (NextAuth)",
+      "Obligation (transactional)",
+      "SettlementEvent (transactional)",
+      "MintRecord (transactional)",
+      "ReservePolicyState (transactional)",
+      "InngestEventLedger (transactional)",
+      "CronExecutionState (transactional)"
+    ],
+    "datasource_block": "TURSO_DATABASE_URL (env); provider = \"sqlite\"; note: DATABASE_BACKEND env var switches to Neon Postgres fallback at runtime per src/lib/db.ts (commit 9a97cae)"
+  },
+  "migrations_state": {
+    "directory_path": "prisma/migrations/",
+    "present": false,
+    "status": "MISSING (intentional)",
+    "remediation_status_in_p75": "NOT_APPLICABLE (LD-17)",
+    "reason": "Project uses db:push workflow (per worklog P48-58 operating-phase entries), NOT migration workflow. This is an intentional design choice, not a defect. Migration history is not available for audit; migration reproducibility is not verifiable — but this is by design.",
+    "recovery_recommendation": "RECONSTRUCTABLE — operator may generate migrations from current schema via `bunx prisma migrate dev --name init` if migration-based workflow is desired. NOT required for production authorization if db:push is operator-approved."
+  },
+  "schema_drift_state": {
+    "testable": false,
+    "status": "UNKNOWN",
+    "reason": "Cannot test schema drift without live DB access. No TURSO_DATABASE_URL or NEON_DATABASE_URL provisioned (BLOCKED_BY_MISSING_SECRET). Cannot run `prisma migrate diff` against live DB. Cannot verify whether the committed schema.prisma matches the live DB schema.",
+    "remediation": "Operator must provision TURSO_DATABASE_URL + NEON_DATABASE_URL, then run `bunx prisma migrate diff --from-schema-datasource prisma/schema.prisma --to-url $TURSO_DATABASE_URL` to verify drift."
+  },
+  "zero_data_loss_check": {
+    "applicable": false,
+    "status": "NOT_APPLICABLE",
+    "reason": "No live DB exists in this audit environment. No data exists to lose. The check is conceptually vacuous here: data loss requires pre-existing data; we have none.",
+    "production_zero_data_loss_check": "Will be applicable AFTER operator provisions secrets, applies schema via `bunx prisma db push`, and runs Pilot A. Until then: NOT_APPLICABLE."
+  },
+  "destructive_operations_check": {
+    "operations_performed_in_p74_audit": 0,
+    "operations_performed_in_p75_remediation": 0,
+    "operations_performed_in_p76_audit": 0,
+    "summary": "No destructive DB operations performed in any phase. No `prisma migrate reset`, no `db drop`, no `db push --force-reset`, no `TRUNCATE`, no `DELETE FROM`. The only DB-related operations were: schema.prisma file inspection (read-only).",
+    "verdict": "NO_DESTRUCTIVE_OPERATIONS_PERFORMED"
+  },
+  "database_integrity_verdict": {
+    "schema_present": true,
+    "migrations_present": false,
+    "migrations_intentional": true,
+    "schema_drift": "UNKNOWN (untestable without live DB)",
+    "zero_data_loss": "NOT_APPLICABLE (no data exists)",
+    "destructive_operations": "NONE_PERFORMED",
+    "overall": "UNKNOWN_INTEGRITY — schema is present and unchanged; but live DB integrity cannot be verified without runtime."
+  },
+  "production_authorized": false,
+  "institutionally_validated": false,
+  "next_external_evidence": "G0_PASS (entity counsel-verified — unchanged from Prompts 62-73)",
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

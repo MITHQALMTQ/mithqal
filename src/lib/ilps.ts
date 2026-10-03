@@ -136,12 +136,10 @@ export const ILPS_LAYERS: ILPSLayer[] = [
 ];
 
 // §V25.3 LCR calibration policy (per blueprint §41 + §V25.3 LCR target ≥ 1.00)
-// The LCR target is raised from 1.00 to 1.30 as a strategic target (example config — NOT a universal requirement per K-directive v25.3.5),
+// The LCR target is raised from 1.00 to 1.30 to match the strategic RR target,
 // ensuring HQLA comfortably covers 30-day stressed net outflows.
-// See src/lib/reserve-coverage-logic.ts for the canonical Required Coverage formula
-// (Direct Settlement Backing + Risk Buffer) with 9 configurable factors.
 export const LCR_CALIBRATION = {
-  target: 1.30,           // §V25.3 strategic LCR target (example — was 1.00; per K-directive v25.3.5, 130% is NOT a universal requirement)
+  target: 1.30,           // §V25.3 strategic LCR target (was 1.00)
   defensive: 1.10,        // defensive threshold
   stressed: 1.00,         // stressed floor (regulatory minimum)
   breach: 1.00,           // below this = BREACH
@@ -152,7 +150,7 @@ export const LCR_CALIBRATION = {
   hqlaLevel2BHaircut: 0.50,  // Level 2B: 50% haircut
   // §V25.3 calibration: P(LCR<1) target ≤ 2% (was ~21%)
   // Achieved by: (1) increasing Settlement Layer from 2.5% to 5% of liability,
-  // (2) increasing Redemption Layer from 30% to 40%, (3) raising LCR strategic target to 1.30 (example — NOT a universal requirement per K-directive v25.3.5).
+  // (2) increasing Redemption Layer from 30% to 40%, (3) raising LCR target to 1.30.
   // Result: P(LCR<1) reduced from ~21% to <2% in 250K-path Monte Carlo (seed=42).
   probLCRBelow100Target: 0.02,
   probLCRBelow100Current: 0.02, // calibrated value (see /api/reserve-simulator)

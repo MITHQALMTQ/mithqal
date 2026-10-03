@@ -1,0 +1,22 @@
+{"$schema": "https://json-schema.org/draft-07/schema#",
+ "audit_id": "FA77-PA-001",
+ "audit_title": "GitHub Restoration",
+ "audit_prompt": 77,
+ "audit_timestamp": "2026-10-03T13:05:00Z",
+ "build_mode": "FROZEN",
+ "production_authorized": false,
+ "github_status": "VERIFIED",
+ "git_branch": "main",
+ "git_commit": "312369a",
+ "git_branch_protection_present": true,
+ "git_tags_count": 25,
+ "git_branches_count": 8,
+ "lint_exit_code": 0,
+ "recovered_files_present": true,
+ "recovered_files_breakdown": {
+   "prompts_62_to_69_files": 15,
+   "assurance_files": 42,
+   "remediation_files": 30
+ },
+ "github_restoration_status": "VERIFIED",
+ "NOT_PRODUCTION_AUTHORIZED": true}

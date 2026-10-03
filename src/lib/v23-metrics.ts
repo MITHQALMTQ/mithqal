@@ -1,24 +1,3 @@
-// ============================================================================
-// ⚠ HISTORICAL/SUPERSEDED — v25.3.2 remediation layer (2026-09-29)
-// ============================================================================
-// This file is part of the v23/v24 historical implementation. Per the v25.3
-// master blueprint authority hierarchy:
-//   v25.3.2 (current normative) > v25.3 (parent) > Constitution v19.0 (canonical) > historical
-//
-// HISTORICAL VERSIONS RETAIN TRACEABILITY ONLY. They cannot override the
-// current normative layer.
-//
-// This file is PRESERVED (not deleted) because it is still imported by other
-// modules. It is marked HISTORICAL for honest-state discipline per §74.
-//
-// Importers should migrate to the v25.x equivalents where available. See
-// CHANGE-LOG-v25.3.2.md for the migration map.
-// ============================================================================
-
-// === v25.3.2 STATUS MARKER ===
-// This entire module is HISTORICAL — see HISTORICAL/SUPERSEDED banner above.
-export const MODULE_STATUS: "ACTIVE" | "SUPERSEDED" | "HISTORICAL" | "PENDING_VALIDATION" = "HISTORICAL";
-export const SUPERSEDED_BY = "v25.3.2 policy-registry (see src/lib/policy-registry.ts)";
 // v23 Four-Layer Metrics Engine — Layer 2/3/4 advisory metrics
 // =================================================================
 // Implements the v23 advisory metrics that sit alongside the Layer 1

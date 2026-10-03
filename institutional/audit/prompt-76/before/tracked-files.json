@@ -1,0 +1,9 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "audit_id": "FA76-PA-001",
+  "tracked_files_count": 2491,
+  "src_lib_files": 111,
+  "api_routes": 161,
+  "institutional_files": 173,
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

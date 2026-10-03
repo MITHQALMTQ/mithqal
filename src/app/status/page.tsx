@@ -40,7 +40,6 @@ import {
 import { Logo } from "@/components/logo";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ProjectAuthorization } from "@/components/project-authorization";
 import { CHAINS, SOLANA_NETWORKS, type ChainConfig, type SolanaNetwork } from "@/lib/chains";
 
 /* ---- Types matching the /api/health and /api/onchain-test responses ---- */
@@ -345,7 +344,7 @@ export default function StatusPage() {
         <section className="mt-10">
           <h2 className="font-display text-lg text-foreground">On-Chain Verification</h2>
           <p className="mb-3 text-xs text-fg-muted">
-            Live reads from the deployed MTQ v19.0 contract suite on Monad
+            Live reads from the deployed MTQ v19.0.3 contract suite on Monad
             Testnet (source:{" "}
             <code className="rounded bg-ink-card px-1 py-0.5 text-[11px] text-foreground">
               /api/onchain-test
@@ -430,13 +429,6 @@ export default function StatusPage() {
             /api/status consume) so the displayed addresses cannot drift from
             the canonical registry. */}
         <ContractAddressesSection />
-
-        {/* Project Authorization — JOZOUR, LLC Resolution dated
-            July 31, 2026 (F1 Gap 4 remediation). Surfaces that MITHQAL is
-            an authorized project of the Company, the Manager's 7
-            authorities, the three named digital assets, the two-entity
-            architecture, and the §1.4 successor-transfer clause. */}
-        <ProjectAuthorization variant="status" />
 
         {/* Footer link back to main site */}
         <footer className="mt-12 border-t border-line pt-6 text-xs text-fg-muted">

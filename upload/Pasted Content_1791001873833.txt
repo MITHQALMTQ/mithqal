@@ -1,0 +1,1684 @@
+You are now operating MITHQAL under the post-Prompt-73 external-execution phase.
+
+PROMPT 74 — FORENSIC FULL IMPLEMENTATION AUDIT OF PROMPTS 1–73
+
+OBJECTIVE
+
+Perform a forensic, non-destructive, end-to-end audit proving whether Prompts 1 through 73 were:
+
+1. actually implemented,
+2. implemented correctly,
+3. preserved,
+4. not accidentally deleted,
+5. not overwritten,
+6. not partially lost,
+7. not silently regressed,
+8. not contradicted by later implementations,
+9. not implemented only as documentation,
+10. correctly connected across code, schemas, configuration, workflows, runtime, database, documentation, evidence, and governance.
+
+This is an AUDIT FIRST / REPAIR SECOND exercise.
+
+DO NOT immediately modify the system.
+
+First establish the exact current state.
+
+Only after the forensic audit is complete may a separate remediation phase be proposed.
+
+==================================================
+A. ABSOLUTE NON-DESTRUCTIVE RULE
+================================
+
+Before auditing:
+
+CREATE AN IMMUTABLE AUDIT SNAPSHOT.
+
+Do NOT:
+
+* delete files,
+* overwrite files,
+* rename authoritative files,
+* rewrite history,
+* force-push,
+* reset branches,
+* squash commits,
+* remove old versions,
+* replace historical evidence,
+* alter production settings,
+* change database data,
+* change deployment configuration,
+* change environment variables,
+* change secrets,
+* modify external integrations.
+
+The audit must be READ_ONLY except for creation of new audit artifacts.
+
+Create a dedicated audit branch or equivalent isolated workspace.
+
+Name:
+
+audit/prompt-1-73-forensic
+
+Never alter main merely to make the audit pass.
+
+==================================================
+B. SNAPSHOT EVERYTHING BEFORE AUDIT
+===================================
+
+Create a forensic baseline containing:
+
+repository_commit
+branch
+remote_references
+tags
+working_tree_status
+tracked_files
+untracked_files
+ignored_files
+deleted_files
+renamed_files
+modified_files
+submodules
+package_versions
+lockfiles
+database_migrations
+database_schema
+environment_schema
+deployment_configuration
+workflow_configuration
+scheduled_jobs
+integration_configuration
+documentation_index
+evidence_store_index
+
+Generate SHA-256 hashes for all relevant tracked source artifacts.
+
+Create:
+
+/institutional/audit/prompt-74/baseline/
+
+repository-manifest.json
+file-hashes.json
+git-history-summary.json
+branch-state.json
+deployment-state.json
+database-state.json
+configuration-state.json
+
+==================================================
+C. RECONSTRUCT THE PROMPT 1–73 REQUIREMENT MASTER
+=================================================
+
+Create a canonical audit matrix containing EVERY prompt from 1 through 73.
+
+Do not omit prompts.
+
+Do not merge unrelated prompts.
+
+Do not assume that a prompt is implemented merely because later work appears to depend on it.
+
+For every prompt create:
+
+prompt_id
+title
+objective
+requirements
+required_artifacts
+required_code
+required_schema
+required_configuration
+required_tests
+required_runtime_evidence
+required_documentation
+required_external_evidence
+dependencies
+expected_state
+actual_state
+evidence
+status
+regression_status
+loss_status
+owner
+open_issues
+
+Statuses:
+
+VERIFIED_COMPLETE
+VERIFIED_PARTIAL
+IMPLEMENTED_NOT_VERIFIED
+DESIGNED_ONLY
+MISSING
+DELETED_OR_LOST
+REGRESSED
+CONFLICTED
+BLOCKED_EXTERNAL
+NOT_APPLICABLE
+
+Do not use “VERIFIED_COMPLETE” without sufficient evidence.
+
+==================================================
+D. USE THE FULL PROMPT SEQUENCE
+===============================
+
+The audit must reconstruct and test the following program sequence:
+
+PROMPTS 1–24
+Architectural remediation and canonicalization
+
+PROMPTS 25–47
+Institutionalization foundations
+
+PROMPTS 48–58
+Operating-phase institutionalization
+
+PROMPTS 59–61
+Evidence dossier / demonstration / first-bank evaluation
+
+PROMPT 62
+G0 Institutional Entry Gate
+
+PROMPT 63
+G1 Pilot-Jurisdiction Legal Pack
+
+PROMPT 64
+First Corridor Decision Pack
+
+PROMPT 65
+Design-Partner Bank Pipeline
+
+PROMPT 66
+Counsel Engagement & Legal Opinion Briefing
+
+PROMPT 67
+Bank Executive Decision & Engagement Package
+
+PROMPT 68
+Bank Architecture & Institutional Requirements Workshop
+
+PROMPT 69
+Controlled Pilot Term Sheet & Mutual Pilot Commitments
+
+PROMPT 70
+Independent Assurance Scope & Evidence Audit Design
+
+PROMPT 71
+Controlled Pilot A Execution & Evidence Capture
+
+PROMPT 72
+Independent Review, Measured Outcome & Institutional Validation Decision
+
+PROMPT 73
+External Institutional Execution Gate & No-More-Build Control
+
+The detailed requirement of each prompt must be reconstructed from the authoritative prompt history available to the development environment.
+
+Do NOT rely only on filenames or summary descriptions.
+
+==================================================
+E. SOURCE HIERARCHY
+===================
+
+Use the following hierarchy when determining whether something was actually implemented:
+
+1. Runtime behavior
+2. Executable source code
+3. Database/schema/configuration state
+4. Automated tests
+5. Deployment/build evidence
+6. Controlled documentation
+7. Internal status reports
+8. Historical documents
+9. Chat/prompt descriptions
+
+However, architecture/legal/governance requirements must NOT be “overruled” by code if the code violates the controlling constitutional rule.
+
+Therefore distinguish:
+
+WHAT_EXISTS
+
+from:
+
+WHAT_IS_ALLOWED
+
+from:
+
+WHAT_IS_PROVEN.
+
+If code implements something forbidden by canonical policy:
+
+IMPLEMENTATION_CONSTITUTIONAL_VIOLATION
+
+Do not call it correct merely because it executes.
+
+==================================================
+F. VERSION / AUTHORITY AUDIT
+============================
+
+Determine the CURRENT AUTHORITATIVE VERSION.
+
+Do not assume that v25.3.1 or v25.3.2 is authoritative without evidence.
+
+Audit all version references:
+
+v24
+v25.0
+v25.0.x
+v25.1
+v25.2
+v25.2.AUDIT-CLOSURE
+v25.3
+v25.3.1
+v25.3.2
+any later versions
+
+Check:
+
+* source
+* docs
+* package metadata
+* runtime
+* APIs
+* schemas
+* configs
+* deployment
+* dashboards
+* status reports
+
+Detect:
+
+VERSION_DRIFT
+STALE_VERSION
+MIXED_VERSION
+UNAUTHORIZED_VERSION
+DOCUMENT_VERSION_MISMATCH
+RUNTIME_VERSION_MISMATCH
+
+==================================================
+G. GIT FORENSIC AUDIT
+=====================
+
+Use repository history to determine:
+
+* files added
+* files deleted
+* files renamed
+* files modified
+* files replaced
+* commits associated with Prompts 1–73
+* branches containing implementation
+* unmerged implementation branches
+* orphaned commits
+* reverted commits
+* accidental reversions
+* force-push evidence where available
+* duplicate implementations
+
+Search git history for:
+
+Prompt identifiers
+architecture component names
+major remediation terms
+v25.3.2
+institutionalization
+G0
+G1
+corridor
+bank
+counsel
+pilot
+assurance
+execution control tower
+
+For every suspicious deletion:
+
+file
+last_known_good_commit
+deletion_commit
+reason_if_documented
+replacement_if_any
+current_status
+
+Do NOT restore automatically at this stage.
+
+==================================================
+H. LOST / DELETED / ORPHANED IMPLEMENTATION DETECTION
+=====================================================
+
+Specifically detect:
+
+1. deleted source modules
+2. deleted schemas
+3. deleted tests
+4. deleted workflow definitions
+5. deleted policy files
+6. deleted database migrations
+7. deleted documentation
+8. deleted evidence artifacts
+9. deleted configuration
+10. deleted deployment files
+11. deleted prompt outputs
+12. renamed modules with broken references
+13. orphaned components
+14. unused components that earlier prompts required
+15. implementation existing only in git history
+
+Classify every finding:
+
+INTENTIONAL_HISTORICAL
+ACCIDENTAL_LOSS
+UNCLEAR
+REPLACED_WITH_EQUIVALENT
+REPLACED_WITH_NON_EQUIVALENT
+ACTIVE
+ORPHANED
+
+Do not assume deletion is a defect if canonical versioning requires preservation as historical material.
+
+==================================================
+I. IMPLEMENTATION COVERAGE
+==========================
+
+For each Prompt 1–73 map:
+
+REQUIREMENT
+→
+IMPLEMENTATION
+→
+TEST
+→
+RUNTIME
+→
+EVIDENCE
+
+Each requirement must produce one of:
+
+FULLY_TRACED
+PARTIALLY_TRACED
+NOT_TRACED
+
+The audit must identify requirements with no implementation trace.
+
+==================================================
+J. CROSS-PROMPT REGRESSION AUDIT
+================================
+
+Later prompts must not silently break earlier prompts.
+
+Check all major invariant groups.
+
+A later implementation that reverses an earlier constitutional requirement becomes:
+
+REGRESSION.
+
+At minimum test:
+
+AUTHORITY MODEL
+BM-15 / BM-16 semantics
+MTQ optionality
+PAR definition
+USD-peg prohibition/consistency
+reserve policy
+direct backing + risk buffer model
+settlement liquidity vs strategic reserve
+gold/digital Pilot-A restrictions
+entity model
+contracting-entity model
+trust domains
+finality F0–F7
+atomicity limitation
+protected backing
+anti-double-count
+three-book separation
+reconciliation
+jurisdiction truth
+CNY/CNH treatment
+Sharia boundary
+bank incentive model
+evidence fabric
+legal obligation registry
+regulatory replay
+continuity
+dispute/exception model
+bank ROI
+corridor pain index
+pilot A/B separation
+external claim discipline
+document control
+assurance
+execution freeze
+
+==================================================
+K. FUNCTIONAL TEST AUDIT
+========================
+
+For every required implementation, determine whether automated tests exist.
+
+Classify:
+
+UNIT_TESTED
+INTEGRATION_TESTED
+END_TO_END_TESTED
+ADVERSARIAL_TESTED
+REPLAY_TESTED
+RUNTIME_TESTED
+NOT_TESTED
+
+Do not equate test existence with successful testing.
+
+Record:
+
+test_name
+requirement
+expected_result
+actual_result
+timestamp
+commit
+environment
+
+==================================================
+L. STATIC CODE AUDIT
+====================
+
+Run a repository-wide static audit.
+
+Do NOT restrict the audit to:
+
+src/lib/*.ts
+
+Also inspect:
+
+src/
+app/
+pages/
+components/
+api/
+workers/
+jobs/
+scripts/
+tests/
+migrations/
+config/
+public/
+deployment files
+package files
+environment templates
+workflow files
+database code
+documentation
+generated configuration where relevant
+
+Detect:
+
+duplicate logic
+dead logic
+conflicting constants
+stale enums
+contradictory interfaces
+unused required modules
+shadowed configuration
+broken imports
+dead feature flags
+hard-coded old versions
+forbidden states
+missing state transitions
+incorrect defaults
+unsafe fallbacks
+bypasses
+unprotected routes
+incomplete error handling
+missing audit events
+
+==================================================
+M. RUNTIME CONFIGURATION AUDIT
+==============================
+
+Inspect runtime-relevant configuration.
+
+Check:
+
+environment variables
+feature flags
+policy registry
+deployment configuration
+cron/schedule configuration
+Inngest workflows
+database connections
+Turso
+Neon
+Vercel
+GitHub Actions
+secrets references
+auth configuration
+logging
+monitoring
+retry configuration
+dead-letter handling
+idempotency
+replay
+audit trail
+
+Do not expose secret values.
+
+Only report:
+
+PRESENT
+MISSING
+MISCONFIGURED
+UNKNOWN
+
+==================================================
+N. GITHUB / VERCEL / INNGEST / TURSO / NEON INTEGRATION AUDIT
+=============================================================
+
+Audit the declared MITHQAL runtime stack:
+
+GitHub
+Vercel
+Inngest
+Turso
+Neon
+
+For each determine:
+
+intended_role
+actual_role
+configuration
+integration
+authentication_presence
+deployment_path
+workflow_path
+database_usage
+retry
+idempotency
+failure_handling
+audit
+recovery
+evidence
+
+Do not assume the integration is working because configuration exists.
+
+Verify where evidence is available.
+
+==================================================
+O. DATABASE / MIGRATION AUDIT
+=============================
+
+Audit:
+
+schema
+tables
+indexes
+constraints
+migrations
+seed data
+audit tables
+state tables
+evidence tables
+policy tables
+execution tables
+reconciliation tables
+pilot tables
+
+Check:
+
+migration completeness
+migration order
+migration reproducibility
+schema drift
+orphan tables
+missing indexes
+missing constraints
+deleted migrations
+duplicate migrations
+production-vs-test differences
+
+Never modify production data during this audit.
+
+==================================================
+P. DATA MODEL AUDIT
+===================
+
+Verify existence and integrity of required models for:
+
+authority
+participants
+obligations
+MTQ
+backing
+redemption
+finality
+settlement
+reconciliation
+risk
+compliance
+jurisdiction
+evidence
+policy
+bank
+pilot
+assurance
+execution control tower
+
+For every model:
+
+schema_exists
+validation_exists
+runtime_usage
+test_coverage
+evidence
+
+==================================================
+Q. STATE-MACHINE AUDIT
+======================
+
+Audit all material state machines.
+
+At minimum:
+
+authorization
+transaction lifecycle
+finality
+reconciliation
+bank pipeline
+legal workstream
+pilot
+assurance
+external execution
+production authorization
+
+Verify:
+
+allowed states
+allowed transitions
+forbidden transitions
+transition guards
+role permissions
+audit evidence
+rollback/recovery
+stale-state handling
+
+Attempt adversarial transition tests.
+
+==================================================
+R. SECURITY / PRIVILEGE AUDIT
+=============================
+
+Verify:
+
+authentication
+authorization
+RBAC/ABAC as applicable
+privileged access
+admin paths
+emergency paths
+service accounts
+secret references
+audit logging
+security events
+policy changes
+deployment changes
+
+Attempt or simulate:
+
+unauthorized action
+privilege escalation
+role confusion
+stale credential
+stale authority
+cross-role execution
+
+Do NOT perform destructive security actions.
+
+==================================================
+S. FINALITY / MINTING AUDIT
+===========================
+
+Specifically verify canonical remediation:
+
+BM-15 = Monetary Authorization
+BM-16A = Finality Verification
+BM-16B = Mint Execution
+
+Check that no stale implementation still treats BM-16 as one merged or conflicting operation.
+
+Verify:
+
+finality-before-mint
+no unauthorized mint
+no mint without required finality
+no bypass
+stale authorization rejection
+duplicate protection
+role separation
+
+MTQ-disabled control-plane operation must remain possible.
+
+==================================================
+T. MTQ OPTIONALITY AUDIT
+========================
+
+Verify that:
+
+MITHQAL CONTROL PLANE
+
+can operate without:
+
+MTQ issuance
+MTQ redemption
+MTQ liquidity assumption
+MTQ legal assumption
+MTQ reserve assumption
+
+Search for hidden MTQ dependencies.
+
+Detect:
+
+CORE_DEPENDS_ON_MTQ
+
+as a critical regression.
+
+==================================================
+U. LEGAL / REGULATORY TRUTH AUDIT
+=================================
+
+Verify that internal implementation does NOT incorrectly state:
+
+licensed
+approved
+legally validated
+banked
+production authorized
+reserve-backed
+bank contracted
+custodian contracted
+live settlement
+
+unless actual evidence exists.
+
+Check:
+
+UI
+API
+logs
+documentation
+README
+marketing text
+dashboards
+metadata
+status reports
+
+Every claim requires evidence.
+
+==================================================
+V. INSTITUTIONAL GATE AUDIT
+===========================
+
+Verify all defined institutional gates.
+
+For each gate:
+
+required_evidence
+implementation_state
+external_evidence
+current_status
+last_transition
+transition_authority
+audit_trail
+
+A gate cannot be PASSED from technical implementation alone where external evidence is required.
+
+==================================================
+W. EVIDENCE TRACEABILITY AUDIT
+==============================
+
+For every major claim determine:
+
+CLAIM
+→
+SOURCE
+→
+EVIDENCE
+→
+AUTHORITY
+→
+DATE
+→
+STATUS
+
+Detect:
+
+unsupported_claim
+stale_claim
+orphan_claim
+duplicate_claim
+contradictory_claim
+overstated_claim
+
+==================================================
+X. DOCUMENTATION AUDIT
+======================
+
+Audit all documents for:
+
+wrong version
+wrong status
+old terminology
+stale gates
+stale entity model
+stale reserve model
+stale MTQ definition
+stale finality model
+stale contact details
+stale website
+stale implementation counts
+stale production claims
+
+Classify:
+
+CANONICAL
+CURRENT_BUT_NONCANONICAL
+HISTORICAL
+STALE
+CONFLICTED
+UNCONTROLLED
+
+Do not delete stale material.
+
+Move or relabel only during a subsequent approved remediation phase.
+
+==================================================
+Y. PROMPT OUTPUT RETENTION AUDIT
+================================
+
+Ensure outputs from Prompts 1–73 have not disappeared.
+
+For every prompt output determine:
+
+PRESENT
+PRESENT_IN_GIT_HISTORY
+PRESENT_IN_LIBRARY/DATA_ROOM
+PRESENT_ONLY_IN_CHAT
+MISSING
+UNKNOWN
+
+Important:
+
+PRESENT_ONLY_IN_CHAT
+
+does NOT equal fully implemented.
+
+If a requirement has no durable artifact or implementation trace:
+
+DURABILITY_GAP.
+
+==================================================
+Z. DELETION / LOSS CERTIFICATION
+================================
+
+Produce a dedicated:
+
+LOSS_AND_DELETION_REPORT
+
+It must identify:
+
+* deleted files
+* missing artifacts
+* overwritten artifacts
+* lost database migrations
+* lost test coverage
+* lost documentation
+* lost configuration
+* lost evidence
+* broken references caused by deletion
+* orphaned git commits
+* unmerged branches
+* possible accidental losses
+
+For every item:
+
+severity
+historical_recoverability
+recommended_recovery
+evidence
+
+Do not restore until explicitly authorized by the remediation phase.
+
+==================================================
+AA. HASH / INTEGRITY MANIFEST
+=============================
+
+Create a final hash manifest for all critical MITHQAL artifacts:
+
+artifact
+path
+commit
+hash
+version
+authority
+status
+
+This becomes the forensic baseline for future audits.
+
+==================================================
+AB. REQUIREMENT TRACEABILITY MATRIX
+===================================
+
+Create:
+
+/institutional/audit/prompt-74/
+
+01_prompt-requirement-matrix.json
+
+Every Prompt 1–73 requirement must trace to:
+
+prompt
+requirement
+component
+file
+function/class/schema
+test
+runtime evidence
+documentation
+status
+
+No orphan requirement.
+
+No orphan implementation.
+
+Flag:
+
+ORPHAN_IMPLEMENTATION
+
+when code exists without a corresponding current requirement.
+
+==================================================
+AC. FULL CROSS-SYSTEM CONSISTENCY AUDIT
+=======================================
+
+Check consistency across:
+
+CODE
+DATABASE
+CONFIGURATION
+WORKFLOWS
+DEPLOYMENT
+TESTS
+DOCUMENTATION
+STATUS REPORTS
+EVIDENCE
+DASHBOARDS
+
+For every critical field:
+
+canonical_value
+code_value
+database_value
+config_value
+documentation_value
+runtime_value
+
+Detect:
+
+MATCH
+MISMATCH
+MISSING
+UNKNOWN
+
+==================================================
+AD. CRITICAL INVARIANT AUDIT
+============================
+
+Create a mandatory invariant checklist.
+
+At minimum:
+
+I01 productionAuthorized remains false unless externally evidenced
+I02 legal status cannot be inferred from code
+I03 regulatory status cannot be inferred from code
+I04 bank partnership cannot be inferred from simulation
+I05 reserve backing cannot be inferred from model
+I06 MTQ remains optional
+I07 no mint without required authorization/finality
+I08 protected backing requires legal controllability
+I09 no double-counting of backing
+I10 three-book separation is preserved
+I11 legal finality is not equated with technical finality
+I12 atomicity is not overclaimed
+I13 reconciliation breaks cannot disappear
+I14 failed transactions cannot be silently removed
+I15 evidence cannot be silently rewritten
+I16 policy changes are versioned
+I17 deployment changes are traceable
+I18 historical versions are preserved
+I19 external evidence cannot be fabricated
+I20 production cannot be enabled through internal audit status
+I21 external validation cannot be simulated
+I22 bank value cannot be claimed without bank evidence
+I23 pilot results cannot be fabricated
+I24 assurance cannot be self-declared as independent
+I25 Prompt 73 build freeze remains active unless justified by external evidence
+
+Every invariant:
+
+PASS
+FAIL
+UNKNOWN
+
+==================================================
+AE. ADVERSARIAL REGRESSION SUITE
+================================
+
+Execute or verify tests for:
+
+1. MTQ disabled
+2. unauthorized mint
+3. missing obligor
+4. missing backing
+5. encumbered backing
+6. duplicate backing
+7. stale authorization
+8. stale policy
+9. unauthorized role
+10. contradictory instruction
+11. duplicate transaction
+12. settlement rail failure
+13. bank failure simulation
+14. custodian failure simulation
+15. reconciliation mismatch
+16. missing event
+17. out-of-order event
+18. policy version mismatch
+19. jurisdiction status change
+20. legal validation withdrawn
+21. data integrity failure
+22. security compromise
+23. privileged misuse
+24. deployment drift
+25. configuration drift
+26. database schema drift
+27. deleted-artifact reference
+28. orphan implementation
+29. stale documentation
+30. external-evidence absence
+
+Record:
+
+test
+expected
+actual
+evidence
+status
+
+==================================================
+AF. PERFORMANCE / RUNTIME REGRESSION
+====================================
+
+Check whether previously implemented functionality still executes.
+
+Measure only if the relevant test existed and is meaningful.
+
+At minimum verify:
+
+workflow execution
+event processing
+retry behavior
+idempotency
+DLQ behavior
+replay
+reconciliation
+audit logging
+policy evaluation
+authorization
+safe halt
+
+Do not fabricate production-performance results.
+
+==================================================
+AG. COMPLETENESS CALCULATION
+============================
+
+Generate these independently:
+
+# PROMPT_IMPLEMENTATION_COMPLETENESS
+
+verified complete requirements / total auditable requirements
+
+# PROMPT_EVIDENCE_COMPLETENESS
+
+requirements with sufficient evidence / total auditable requirements
+
+# PROMPT_RUNTIME_COMPLETENESS
+
+requirements with runtime evidence where applicable / runtime-applicable requirements
+
+# PROMPT_REGRESSION_FREE_RATE
+
+requirements without confirmed regression / total tested requirements
+
+# PROMPT_DURABILITY_COMPLETENESS
+
+requirements with durable artifact/implementation evidence / total auditable requirements
+
+Do NOT collapse these into one misleading percentage.
+
+==================================================
+AH. CRITICAL-GAP CLASSIFICATION
+===============================
+
+Every deficiency must be classified:
+
+P0_CRITICAL
+P1_HIGH
+P2_MEDIUM
+P3_LOW
+OBSERVATION
+
+P0 examples:
+
+* lost canonical implementation
+* production firewall bypass
+* legal/regulatory status falsely represented
+* unauthorized mint path
+* missing critical security control
+* broken authority model
+* data/evidence destruction
+* unrecoverable implementation loss
+* canonical requirement absent
+
+==================================================
+AI. REPAIR RECOMMENDATION WITHOUT REPAIR
+========================================
+
+For every gap generate:
+
+GAP_ID
+PROMPT_OR_REQUIREMENT
+DESCRIPTION
+CURRENT_STATE
+EXPECTED_STATE
+EVIDENCE
+ROOT_CAUSE_IF_KNOWN
+RECOVERY_PATH
+RISK
+OWNER
+PRIORITY
+
+Do NOT repair yet.
+
+==================================================
+AJ. RECOVERY PLAN FOR LOST ARTIFACTS
+====================================
+
+For every DELETED_OR_LOST item determine whether it can be recovered from:
+
+* git history
+* tags
+* branches
+* build artifacts
+* deployment artifacts
+* evidence archive
+* database migration history
+* generated files
+* prior controlled documents
+
+Classify:
+
+DIRECT_RECOVERY
+RECONSTRUCTABLE
+REPLACED
+NOT_RECOVERABLE
+UNKNOWN
+
+Never silently reconstruct a lost artifact and pretend it was preserved.
+
+==================================================
+AK. NO-SILENT-REPAIR RULE
+=========================
+
+If something is missing or incorrect:
+
+DO NOT silently fix it during the audit.
+
+Create:
+
+REMEDIATION_REQUIRED
+
+with:
+
+before_state
+after_intended_state
+evidence
+approval_required
+
+Any repair must occur in a separate remediation change.
+
+==================================================
+AL. MAIN-BRANCH PROTECTION
+==========================
+
+During this audit:
+
+DO NOT:
+
+* push directly to main
+* rewrite history
+* delete branches
+* delete tags
+* force-push
+* squash historical implementation commits
+* remove stale material
+
+Audit first.
+
+==================================================
+AM. FINAL FORENSIC REPORT
+=========================
+
+Create:
+
+/institutional/audit/prompt-74/
+
+00_README.md
+01_prompt-requirement-matrix.json
+02_implementation-traceability.json
+03_git-forensic-report.json
+04_loss-and-deletion-report.json
+05_version-authority-audit.json
+06_code-regression-report.json
+07_database-regression-report.json
+08_configuration-audit.json
+09_runtime-integration-audit.json
+10_state-machine-audit.json
+11_security-regression-audit.json
+12_finality-mint-audit.json
+13_mtq-optionality-audit.json
+14_legal-regulatory-truth-audit.json
+15_institutional-gate-audit.json
+16_evidence-traceability-audit.json
+17_documentation-audit.json
+18_prompt-output-retention-audit.json
+19_integrity-hash-manifest.json
+20_invariant-audit.json
+21_adversarial-regression-results.json
+22_runtime-regression-results.json
+23_completeness-calculations.json
+24_critical-gap-register.json
+25_recovery-plan.json
+26_remediation-plan.md
+27_final-forensic-report.md
+28_final-forensic-report.json
+
+==================================================
+AN. FORENSIC CERTIFICATION LEVELS
+=================================
+
+For the entire program assign:
+
+LEVEL 0
+UNVERIFIABLE
+
+LEVEL 1
+DOCUMENTED
+
+LEVEL 2
+IMPLEMENTED
+
+LEVEL 3
+TESTED
+
+LEVEL 4
+RUNTIME_VERIFIED
+
+LEVEL 5
+EXTERNALLY_VALIDATED
+
+Do not award a level higher than available evidence.
+
+A prompt involving external institutional evidence cannot be certified merely from internal implementation.
+
+==================================================
+AO. PROMPT-LEVEL FINAL STATUS
+=============================
+
+For EVERY prompt 1–73 output:
+
+PROMPT_ID
+IMPLEMENTATION_STATUS
+LOSS_STATUS
+REGRESSION_STATUS
+EVIDENCE_LEVEL
+CRITICAL_GAPS
+RECOVERY_REQUIRED
+FINAL_VERDICT
+
+Final verdict:
+
+COMPLETE
+COMPLETE_WITH_GAPS
+IMPLEMENTED_NOT_VERIFIED
+PARTIAL
+MISSING
+LOST
+REGRESSED
+CONFLICTED
+EXTERNAL_DEPENDENCY
+UNVERIFIABLE
+
+==================================================
+AP. PROGRAM-LEVEL VERDICT
+=========================
+
+Return one:
+
+A. FULLY_IMPLEMENTED_AND_PRESERVED
+
+Only if ALL auditable internal requirements for Prompts 1–73 are verified and no material loss/regression exists.
+
+B. FULLY_IMPLEMENTED_WITH_NONCRITICAL_GAPS
+
+Only if implementation is substantially complete and all gaps are noncritical.
+
+C. PARTIALLY_IMPLEMENTED
+
+If material requirements remain unverified or incomplete.
+
+D. REGRESSED
+
+If later work broke material earlier requirements.
+
+E. LOSS_DETECTED
+
+If material implementation/artifacts were deleted or cannot be accounted for.
+
+F. CONFLICTED
+
+If canonical requirements and implementation materially disagree.
+
+G. BLOCKED_BY_EXTERNAL_EVIDENCE
+
+If internal implementation is complete enough but external requirements cannot yet be verified internally.
+
+Never choose A merely because most prompts were implemented.
+
+==================================================
+AQ. “NOTHING WAS LOST” CERTIFICATION
+====================================
+
+Do NOT state:
+
+“Nothing was lost”
+
+unless the forensic evidence supports it.
+
+Instead return:
+
+PRESERVATION_STATUS
+
+with:
+
+FULLY_PRESERVED
+PRESERVED_WITH_HISTORICAL_GAPS
+LOSS_DETECTED
+RECOVERY_REQUIRED
+UNVERIFIABLE
+
+Then list every exception.
+
+==================================================
+AR. “ALL 73 PROMPTS IMPLEMENTED” CERTIFICATION
+==============================================
+
+Do NOT state:
+
+“All prompts 1–73 are implemented”
+
+unless every prompt has been individually audited.
+
+Return:
+
+PROMPTS_VERIFIED_COMPLETE
+PROMPTS_PARTIAL
+PROMPTS_UNVERIFIED
+PROMPTS_MISSING
+PROMPTS_LOST
+PROMPTS_REGRESSED
+PROMPTS_CONFLICTED
+PROMPTS_EXTERNAL_DEPENDENCY
+
+==================================================
+AS. FINAL MANAGEMENT DASHBOARD
+==============================
+
+Create:
+
+/institutional/audit/prompt-74/management-dashboard.md
+
+Display:
+
+PROGRAM_VERDICT
+PRESERVATION_STATUS
+PROMPTS_1_73_TOTAL
+PROMPTS_VERIFIED_COMPLETE
+PROMPTS_PARTIAL
+PROMPTS_UNVERIFIED
+PROMPTS_MISSING
+PROMPTS_LOST
+PROMPTS_REGRESSED
+PROMPTS_CONFLICTED
+P0_COUNT
+P1_COUNT
+P2_COUNT
+P3_COUNT
+CRITICAL_REGRESSIONS
+CRITICAL_LOSS
+CRITICAL_SECURITY_FINDINGS
+CRITICAL_AUTHORITY_FINDINGS
+CRITICAL_DOCUMENT_DRIFT
+CRITICAL_RUNTIME_DRIFT
+CRITICAL_EVIDENCE_GAPS
+CURRENT_CANONICAL_VERSION
+BUILD_MODE
+PRODUCTION_AUTHORIZED
+INSTITUTIONALLY_VALIDATED
+NEXT_ACTION
+
+==================================================
+AT. FINAL JSON
+==============
+
+Create:
+
+/institutional/audit/prompt-74/prompt-1-73-forensic-status.json
+
+Required fields:
+
+audit_id
+audit_timestamp
+repository_commit
+branch
+canonical_version
+program_verdict
+preservation_status
+build_mode
+prompts_total
+prompts_verified_complete
+prompts_partial
+prompts_unverified
+prompts_missing
+prompts_lost
+prompts_regressed
+prompts_conflicted
+prompts_external_dependency
+implementation_completeness
+evidence_completeness
+runtime_completeness
+regression_free_rate
+durability_completeness
+critical_findings
+critical_loss
+critical_regressions
+critical_unknowns
+recovery_required
+production_authorized
+institutionally_validated
+architecture_change_allowed
+next_action
+next_external_evidence
+
+==================================================
+AU. FINAL MANAGEMENT DECISION
+=============================
+
+Return:
+
+FORENSIC_AUDIT_STATUS
+
+with:
+
+COMPLETE
+COMPLETE_WITH_GAPS
+REQUIRES_REMEDIATION
+LOSS_DETECTED
+REGRESSION_DETECTED
+BLOCKED
+UNVERIFIABLE
+
+Then:
+
+ARE_PROMPTS_1_TO_73_FULLY_IMPLEMENTED
+
+YES
+NO
+PARTIALLY
+UNVERIFIABLE
+
+Then:
+
+WAS_ANYTHING_LOST_OR_DELETED
+
+NO
+YES
+POSSIBLY
+UNVERIFIABLE
+
+Then:
+
+ARE_THERE_ANY_MATERIAL_REGRESSIONS
+
+NO
+YES
+POSSIBLY
+
+Then:
+
+MOST_CRITICAL_FINDING
+
+Then:
+
+MOST_CRITICAL_LOSS_OR_DELETION
+
+Then:
+
+MOST_CRITICAL_REGRESSION
+
+Then:
+
+RECOVERY_REQUIRED
+
+YES / NO
+
+Then:
+
+REMEDIATION_REQUIRED
+
+YES / NO
+
+Then:
+
+ARCHITECTURE_CHANGE_ALLOWED
+
+NO
+
+unless a separate approved remediation process identifies a justified change.
+
+Then:
+
+NEXT_ACTION
+
+Then:
+
+NEXT_EXTERNAL_EVIDENCE
+
+Exactly one item if an external dependency remains.
+
+==================================================
+AV. FINAL RULE — DO NOT FAKE CERTAINTY
+======================================
+
+A complete implementation audit must be able to say:
+
+“We found evidence.”
+
+or:
+
+“We did not find evidence.”
+
+It must NOT say:
+
+“It probably exists.”
+
+It must NOT say:
+
+“It should have been implemented.”
+
+It must NOT say:
+
+“The documentation indicates it was done.”
+
+It must NOT say:
+
+“The latest prompt assumes it was done.”
+
+The standard is:
+
+REQUIREMENT
+→
+IMPLEMENTATION
+→
+TEST
+→
+RUNTIME
+→
+EVIDENCE
+→
+PRESERVATION
+→
+NO REGRESSION.
+
+==================================================
+AW. FINAL OPERATING MODE
+========================
+
+After generating the forensic report:
+
+SET:
+
+BUILD_MODE = FROZEN
+
+until the audit results are reviewed.
+
+Do NOT automatically execute remediation.
+
+Do NOT automatically restore deleted files.
+
+Do NOT automatically change the canonical architecture.
+
+Do NOT automatically update production status.
+
+Do NOT automatically update institutional-validation status.
+
+The audit must produce the truth first.
+
+Only after the audit establishes the exact gaps should a separate remediation plan be executed.
+
+END PROMPT 74.

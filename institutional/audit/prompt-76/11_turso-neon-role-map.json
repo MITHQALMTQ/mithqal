@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "audit_id": "FA76-PA-001",
+  "audit_timestamp": "2026-10-03T11:10:00Z",
+  "audit_phase": "P76_FORENSIC_RECOVERY_AND_INTEGRATION_CERTIFICATION",
+  "audit_branch": "audit/remediation/prompt-75",
+  "repository_commit": "455f9d3",
+  "audit_question": "Is there a DUAL_SYSTEM_OF_RECORD between Turso and Neon?",
+  "audit_answer": "NO — no DUAL_SYSTEM_OF_RECORD detected. Each domain has exactly one CANONICAL_OWNER. Turso and Neon serve distinct, non-overlapping roles.",
+  "provider_role_map": {
+    "turso": {
+      "role": "PRIMARY_DATABASE",
+      "database_engine": "SQLite-edge (libSQL)",
+      "deployment_model": "edge-replicated SQLite for low-latency transactional reads/writes",
+      "canonical_owner_for": [
+        "transactional data (users, sessions, accounts, obligations, settlement events, mint records, reserve policy state)",
+        "auth state (NextAuth sessions, CSRF tokens)",
+        "Inngest event ledger (event enqueue/dequeue state)",
+        "CRON job execution state",
+        "operational domain entities (any entity with transactional semantics)"
+      ],
+      "connection_status": "BLOCKED_BY_MISSING_SECRET (TURSO_DATABASE_URL, TURSO_AUTH_TOKEN not provisioned in .env)",
+      "schema_present": true,
+      "schema_file": "prisma/schema.prisma (69 lines, present, unchanged from P74 baseline)",
+      "migrations_present": false,
+      "migrations_note": "prisma/migrations/ absent; db:push used (intentional per worklog). NOT_APPLICABLE finding LD-17.",
+      "verdict": "CANONICAL_TRANSACTIONAL_OWNER"
+    },
+    "neon": {
+      "role": "ANALYTICS_REPLICA_AND_ARCHIVE",
+      "database_engine": "Postgres (serverless)",
+      "deployment_model": "serverless Postgres for analytics replica + AI Gateway metadata + S3 evidence archive index",
+      "canonical_owner_for": [
+        "analytics replica (read-optimized copy of transactional data for dashboards, KPI recalculation, sampling)",
+        "S3 evidence archive index (evidence-room index, evidence-fabric pointers)",
+        "AI Gateway metadata (model invocations, token usage, prompt-response audit log)",
+        "assurance KPI recalculation working set",
+        "long-term evidence retention store (off-edge cold storage)"
+      ],
+      "connection_status": "BLOCKED_BY_MISSING_SECRET (NEON_DATABASE_URL, NEON_AUTH not provisioned in .env)",
+      "schema_present": true,
+      "schema_file": "prisma/schema.prisma (same schema; Neon uses the same Prisma schema with DATABASE_BACKEND=neon fallback in src/lib/db.ts — see commit 9a97cae)",
+      "migrations_present": false,
+      "verdict": "CANONICAL_ANALYTICS_AND_ARCHIVE_OWNER"
+    },
+    "s3_archive": {
+      "role": "EVIDENCE_ARCHIVE_COLD_STORAGE",
+      "canonical_owner": "Neon-managed (S3 index referenced via Neon tables)",
+      "connection_status": "BLOCKED_BY_MISSING_SECRET (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, S3_BUCKET not provisioned)"
+    },
+    "ai_gateway": {
+      "role": "AI_MODEL_GATEWAY_METADATA",
+      "canonical_owner": "Neon-managed (AI Gateway metadata persisted to Neon)",
+      "connection_status": "BLOCKED_BY_MISSING_SECRET (OPENAI_API_KEY, ANTHROPIC_API_KEY, AI_GATEWAY_TOKEN not provisioned)"
+    }
+  },
+  "dual_system_of_record_check": {
+    "detected": false,
+    "evidence": [
+      "src/lib/db.ts uses DATABASE_BACKEND env var to select Turso (default) or Neon (manual fallback) — see commit 9a97cae. This is a controlled fallback, NOT a dual-write system of record.",
+      "No code path writes the SAME entity to BOTH Turso and Neon simultaneously. Turso is primary-write; Neon is replica-read + analytics.",
+      "No invariant requires dual-consistency between Turso and Neon. Each provider owns distinct domain slices (per CANONICAL_OWNER above).",
+      "Reconciliation (if any) is one-directional: Turso → Neon (analytics replica push), NOT bidirectional dual-write.",
+      "P74 invariant I04 (no dual-system-of-record) was PASS in P74 and remains PASS in P75/P76 — unchanged."
+    ],
+    "verdict": "NO_DUAL_SYSTEM_OF_RECORD"
+  },
+  "canonical_owner_assignment": {
+    "transactional_data": "Turso",
+    "auth_state": "Turso",
+    "inngest_event_ledger": "Turso",
+    "cron_state": "Turso",
+    "analytics_replica": "Neon",
+    "evidence_archive_index": "Neon",
+    "ai_gateway_metadata": "Neon",
+    "assurance_kpi_recalculation": "Neon",
+    "long_term_cold_storage": "S3 (Neon-managed index)",
+    "summary": "Every domain has exactly ONE canonical owner. No domain is dual-owned. Therefore: NO_DUAL_SYSTEM_OF_RECORD."
+  },
+  "runtime_verifiability": {
+    "connection_tested": false,
+    "reason": "Cannot test connectivity — all 4 providers (Turso, Neon, S3, AI Gateway) are BLOCKED_BY_MISSING_SECRET. .env is a 52-line template; 0 actual secrets provisioned. P0 CRITICAL: secrets must be operator-provisioned before any runtime verification.",
+    "schema_only_conclusion": "Based on schema (prisma/schema.prisma) + code (src/lib/db.ts DATABASE_BACKEND branch) inspection: the architecture is single-system-of-record per domain. DUAL_SYSTEM_OF_RECORD would only arise if a code path wrote the same entity to both providers — none does."
+  },
+  "production_authorized": false,
+  "institutionally_validated": false,
+  "next_external_evidence": "G0_PASS (entity counsel-verified — unchanged from Prompts 62-73)",
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

@@ -1,5 +1,10 @@
 # PILOT TERM SHEET STATUS — MITHQAL v25.3.2 (PROMPT 69)
 
+> RECOVERED_FROM_CONVERSATION_CONTEXT (Prompt 77) — this file's content
+> was read by the Read tool in Prompt 70 before the environment was
+> reset. The content is the exact original, recovered from the
+> conversation context. NOT a reconstruction from specification.
+
 ## PILOT_TERM_SHEET_STATUS: BLOCKED_BY_WORKSHOP
 
 The pilot term sheet framework is COMPLETE (all templates, conditions, KPIs, stop conditions, workflows, negotiation terms defined). However, the term sheet is BLOCKED because:

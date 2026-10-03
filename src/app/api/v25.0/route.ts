@@ -1,24 +1,3 @@
-// ============================================================================
-// ⚠ VERSIONED API ROUTE — v25.3.2 remediation layer (2026-09-29)
-// ============================================================================
-// This is a versioned API route (/api/v25.0). Per the v25.3.2 authority hierarchy:
-//   - Versioned routes are HISTORICAL — they implement API versioning for
-//     backward compatibility
-//   - The current normative API is the unversioned /api/* endpoints
-//   - This route is PRESERVED (not deleted) because it is referenced by
-//     other modules and external integrations
-//
-// All versioned API routes respond with header:
-//   X-Mithqal-API-Version: v25.0 (historical; current normative layer = v25.3.2)
-//
-// HISTORICAL VERSIONS RETAIN TRACEABILITY ONLY.
-// ============================================================================
-
-// === v25.3.2 STATUS MARKER ===
-// This versioned API route is HISTORICAL — see VERSIONED API ROUTE banner above.
-export const ROUTE_STATUS: "ACTIVE" | "SUPERSEDED" | "HISTORICAL" | "PENDING_VALIDATION" = "HISTORICAL";
-export const CURRENT_NORMATIVE_API = "(see /api/mtq-* family)";
-
 import { NextResponse } from "next/server";
 import { computeLiveNav } from "@/lib/nav-compute";
 import {
@@ -362,23 +341,6 @@ export async function GET() {
         checkGeoFence: { path: "/api/v25.0/geo-fence", method: "GET", status: "IMPLEMENTED (SIMULATED)", description: "Check jurisdictional geo-fence (e.g. CN)" },
         processSettlement: { path: "/api/v25.0/settle", method: "POST", status: "IMPLEMENTED (SIMULATED)", description: "Process a settlement instruction" },
         checkCBDC: { path: "/api/v25.0/cbdc-interop", method: "GET", status: "IMPLEMENTED (SIMULATED)", description: "Check CBDC interoperability status" },
-      },
-
-      // K2 (trace 1a0ede068b9def31) — canonical PAR definition pointer.
-      // PAR = 1.00 is described here as an accounting/denomination reference
-      // ONLY (NOT a USD peg, NOT a market price, NOT a redemption guarantee).
-      // The single canonical source for MTQ's economic identity — including
-      // the full PAR definition — lives at:
-      //   GET /api/mtq-economic-definition
-      // Any divergence between this route's PAR wording and the canonical
-      // source is a CONTRADICTION and must be resolved in favor of the
-      // canonical source.
-      _meta: {
-        parDefinition:
-          "PAR = 1.00 is an accounting/denomination reference only. See /api/mtq-economic-definition for the canonical definition.",
-        mtqEconomicDefinitionSource: "src/lib/mtq-economic-definition.ts",
-        canonicalEndpoint: "/api/mtq-economic-definition",
-        kDirectiveTrace: "1a0ede068b9def31",
       },
     });
   } catch (err) {

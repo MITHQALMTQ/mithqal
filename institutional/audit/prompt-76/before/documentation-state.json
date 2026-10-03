@@ -1,0 +1,8 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "audit_id": "FA76-PA-001",
+  "institutional_files": 173,
+  "institutional_directories": ["assurance/ (42 files, RECOVERED in P75)", "audit/prompt-74/ (38 files)", "audit/prompt-76/ (this audit)", "execution/ (26 files)", "outcome/ (37 files)", "recovery/ (new)", "release/prompt-76/ (new)", "remediation/prompt-75/ (30 files)"],
+  "worklog_lines": 9113,
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

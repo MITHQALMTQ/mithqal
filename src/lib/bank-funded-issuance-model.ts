@@ -1986,10 +1986,6 @@ export const VERSION_CONTROL = {
   wholesaleB2BModel: "PRESERVED (DNM-01: no retail MTQ)",
 } as const;
 
-// v25.3.2 Remediation Layer marker — controls over v25.3 parent spec where it explicitly supersedes.
-// Per MITHQAL-V25.3.2-REMEDIATION-LAYER.md (2026-09-29).
-export const REMEDIATION_LAYER = "v25.3.2";
-
 // ---- Section 26: Final Acceptance Criteria (18 items) ----
 
 export interface AcceptanceCriterion {

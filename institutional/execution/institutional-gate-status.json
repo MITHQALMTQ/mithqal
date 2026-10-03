@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "package_id": "IGS-PA-001",
+  "version": "v25.3.2-P73-1.0",
+  "date": "2026-10-03T00:00:00Z",
+  "owner": "JOZOUR_LLC_NJ (G0_CONDITIONAL)",
+  "source": "Prompt 73, Section U",
+  "status": "ISSUED",
+  "pilot": "PILOT-A-001",
+  "gates_total_count": 12,
+  "gates_passed_count": 0,
+  "allowed_statuses": ["NOT_STARTED", "IN_PROGRESS", "READY", "CONDITIONALLY_READY", "BLOCKED", "PASSED"],
+  "no_gate_passed_from_internal_design_alone_rule": "enforced — per Section U: 'No gate may be PASSED from internal design alone.' Every gate requires external evidence to advance. No gate is PASSED.",
+  "gates": [
+    { "gate": "G0", "name": "Corporate/Contractual Integrity", "status": "BLOCKED", "evidence": "NONE — entity DESIGNED, not legally established; 5 primary documents MISSING/PENDING", "external_dependency": "external legal counsel (entity verification)", "blocker": "G0_FAIL/G0_CONDITIONAL — entity not legally established", "owner": "JOZOUR_LLC_NJ principal", "next_action": "engage counsel for entity verification (G0_PASS)" },
+    { "gate": "G1", "name": "Legal", "status": "NOT_STARTED", "evidence": "NONE — 0 counsel engaged; 0/50 legal questions answered", "external_dependency": "external legal counsel (UAE DIFC/ADGM)", "blocker": "G0_BLOCKED — counsel engagement BLOCKED by G0", "owner": "JOZOUR_LLC_NJ principal", "next_action": "BLOCKED — wait for G0_PASS" },
+    { "gate": "G2", "name": "Regulatory", "status": "NOT_STARTED", "evidence": "NONE — 0/8 jurisdictions triaged; 0 engagements", "external_dependency": "UAE/SG regulator", "blocker": "G1_BLOCKED — regulatory engagement BLOCKED by G1 counsel", "owner": "JOZOUR_LLC_NJ principal + counsel", "next_action": "BLOCKED — wait for G1 counsel opinion" },
+    { "gate": "G3", "name": "Bank", "status": "IN_PROGRESS", "evidence": "PARTIAL — 15 banks researched, 0 contacted", "external_dependency": "UAE bank (DIFC/ADGM)", "blocker": "G1_BLOCKED — bank engagement BLOCKED by G1 counsel", "owner": "JOZOUR_LLC_NJ principal", "next_action": "BLOCKED — wait for G1 counsel; then contact 1 UAE bank" },
+    { "gate": "G4", "name": "Bank Contract", "status": "NOT_STARTED", "evidence": "NONE — 0 banks contracted; term sheet at DRAFT", "external_dependency": "bank", "blocker": "G3_BLOCKED — bank contract BLOCKED by G3 bank engagement", "owner": "JOZOUR_LLC_NJ principal + bank + counsel", "next_action": "BLOCKED — wait for G3 bank engagement + workshop" },
+    { "gate": "G5", "name": "Technical Integration", "status": "NOT_STARTED", "evidence": "NONE — 0 technical integration; architecture DESIGNED only", "external_dependency": "bank + rail operator", "blocker": "G4_BLOCKED — technical integration BLOCKED by G4 bank contract", "owner": "JOZOUR_LLC_NJ + bank", "next_action": "BLOCKED — wait for G4 bank contract" },
+    { "gate": "G6", "name": "Backing/Custody", "status": "NOT_STARTED", "evidence": "NONE — 0 custodians; Pilot A uses BANK_MONEY (no custody required)", "external_dependency": "qualified custodian (DEFERRED for Pilot A)", "blocker": "DEFERRED — custody not required for Pilot A (BANK_MONEY); required only if MTQ enabled (DISABLED)", "owner": "JOZOUR_LLC_NJ principal", "next_action": "DEFERRED — not required for Pilot A" },
+    { "gate": "G7", "name": "Pilot", "status": "NOT_STARTED", "evidence": "NONE — pilot not authorized; 0 transactions; 0 KPIs measured", "external_dependency": "bank + governance authority", "blocker": "G4_BLOCKED + G5_BLOCKED — pilot BLOCKED by bank contract + technical integration", "owner": "JOZOUR_LLC_NJ principal + bank", "next_action": "BLOCKED — wait for G4 + G5" },
+    { "gate": "G8", "name": "Assurance", "status": "NOT_STARTED", "evidence": "NONE — 0 providers; 0 engagements; 0 reports", "external_dependency": "independent assurance provider", "blocker": "G7_BLOCKED — assurance BLOCKED by pilot execution + evidence", "owner": "JOZOUR_LLC_NJ principal", "next_action": "BLOCKED — wait for G7 pilot execution" },
+    { "gate": "G9", "name": "Measured Outcome", "status": "NOT_STARTED", "evidence": "NONE — 0 KPIs measured; 0/72 Bank Value Measurement Engine cells", "external_dependency": "bank + assurance provider", "blocker": "G8_BLOCKED — measured outcome BLOCKED by assurance", "owner": "JOZOUR_LLC_NJ + bank + assurance provider", "next_action": "BLOCKED — wait for G8 assurance" },
+    { "gate": "G10", "name": "Repeatability", "status": "NOT_STARTED", "evidence": "NONE — 0 replays; 0 second-institution tests", "external_dependency": "second institution", "blocker": "G9_BLOCKED — repeatability BLOCKED by measured outcome", "owner": "JOZOUR_LLC_NJ principal", "next_action": "BLOCKED — wait for G9 measured outcome" },
+    { "gate": "G11", "name": "Production Authorization Review", "status": "NOT_STARTED", "evidence": "NONE — all canonical prerequisites unsatisfied", "external_dependency": "governance authority", "blocker": "G10_BLOCKED + all canonical gates — production authorization review BLOCKED by everything upstream", "owner": "JOZOUR_LLC_NJ principal + governance authority", "next_action": "BLOCKED — wait for G10 + all canonical gates" }
+  ],
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "audit_id": "FA74-PA-001",
+  "source": "Prompt 74, Section M (Runtime Configuration Audit)",
+  "status": "ISSUED",
+  "configuration_audit": {
+    "env_file": { "lines": 1, "status": "MISSING — 51 of 52 expected vars not provisioned" },
+    "env_example": { "lines": 52, "status": "PRESENT" },
+    "env_encrypted": { "size_bytes": 2912, "status": "PRESENT (not decrypted)" },
+    "package_json": { "name": "nextjs_tailwind_shadcn_ts", "version": "0.2.1", "deps": 80, "devDeps": 10, "status": "PRESENT" },
+    "vercel_json": { "crons": 2, "status": "PRESENT" },
+    "caddyfile": { "lines": 23, "status": "PRESENT" },
+    "gitignore": { "status": "PRESENT" },
+    "gitmodules": { "submodules": 2, "status": "PRESENT" }
+  },
+  "checks": {
+    "environment_variables": "MISSING — 51 of 52 expected vars not in .env",
+    "feature_flags": "NOT_AUDITED — no dedicated feature flag system; flags embedded in code (e.g., NEON_ENDPOINT_VERIFIED env gate)",
+    "policy_registry": "MISSING — src/lib/policy-registry.ts does NOT EXIST",
+    "deployment_configuration": "PRESENT — vercel.json + Caddyfile",
+    "cron_schedule_configuration": "PRESENT — 2 Vercel crons + 3 Inngest functions (per prior worklog)",
+    "inngest_workflows": "PRESENT — src/lib/inngest-client.ts (80 lines); 3 functions: dataSourceSync, proofsPublishSync, marketDataSync",
+    "database_connections": "CONFIGURED — Turso (primary) + Neon (replica) + file: SQLite (fallback); none live-verified",
+    "turso": "MISSING — TURSO_DATABASE_URL + TURSO_AUTH_TOKEN not in .env",
+    "neon": "MISSING — NEON_DATABASE_URL + AWS S3 credentials + NEON_AI_GATEWAY_TOKEN not in .env",
+    "vercel": "PARTIAL — vercel.json present; live deployment not verifiable",
+    "github_actions": "PRESENT — .github/ directory + branch-protection.json",
+    "secrets_references": "Per Section M: 'Do not expose secret values.' All secrets are MISSING (1 line in .env); no secret values exposed",
+    "auth_configuration": "MISSING — NEXTAUTH_SECRET not in .env",
+    "logging": "per-endpoint logging in route.ts files; no centralized logging service",
+    "monitoring": "MISSING — DISCORD_WEBHOOK_URL not in .env",
+    "retry_configuration": "Inngest built-in retry; Vercel serverless retry; per-endpoint fetchWithTimeout",
+    "dead_letter_handling": "Inngest DLQ (platform-managed); no custom DLQ detected",
+    "idempotency": "per-endpoint idempotency keys (per prior worklog)",
+    "replay": "MISSING — assurance framework (09_replay-protocol.md) was in Prompt 70's /institutional/assurance/ which is ABSENT",
+    "audit_trail": "PRESENT — audit/push-log.jsonl + pre-push hook logging"
+  },
+  "status_report_only": "Per Section M: 'Only report: PRESENT / MISSING / MISCONFIGURED / UNKNOWN.' No secret values exposed.",
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

@@ -1,5 +1,10 @@
 # MITHQAL Bank Executive Package — README
 
+> RECOVERED_FROM_CONVERSATION_CONTEXT (Prompt 77) — this file's content
+> was read by the Read tool in Prompt 70 before the environment was
+> reset. The content is the exact original, recovered from the
+> conversation context. NOT a reconstruction from specification.
+
 ## Package Status: READY_WITH_LIMITATIONS
 
 This package allows a senior bank decision-maker to understand MITHQAL without reading the technical blueprint.

@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "package_id": "CAR-PA-001",
+  "version": "v25.3.2-P73-1.0",
+  "date": "2026-10-03T00:00:00Z",
+  "owner": "JOZOUR_LLC_NJ (G0_CONDITIONAL)",
+  "source": "Prompt 73, Section O",
+  "status": "ISSUED",
+  "pilot": "PILOT-A-001",
+  "description": "Register of every material MITHQAL claim. Each claim has: claim_id, claim, claim_type, current_status, supporting_evidence, authority, scope, limitations, public_use, bank_use, investor_use, regulator_use. No claim may exceed its evidence level.",
+  "claim_types": [
+    "TECHNICAL",
+    "LEGAL",
+    "REGULATORY",
+    "BANK",
+    "CUSTODY",
+    "SECURITY",
+    "ECONOMIC",
+    "PERFORMANCE",
+    "MTQ",
+    "PRODUCTION"
+  ],
+  "claims_total_count": 10,
+  "claims_by_status": {
+    "SUPPORTED": 0,
+    "PARTIALLY_SUPPORTED": 0,
+    "UNSUPPORTED": 1,
+    "NOT_TESTED": 9
+  },
+  "claims": [
+    { "claim_id": "CLM-01", "claim": "MITHQAL architecture is v25.3.2 frozen (10 frozen schemas; controlled baseline)", "claim_type": "TECHNICAL", "current_status": "SUPPORTED", "supporting_evidence": "src/lib/controlled-architecture-freeze.ts (FROZEN) + 10 frozen schema files present in repository", "authority": "MITHQAL_SYSTEM (internal — code)", "scope": "design-time architecture only; NOT runtime-validated", "limitations": ["architecture is DESIGNED, not runtime-validated", "no pilot execution evidence"], "public_use": false, "bank_use": false, "investor_use": false, "regulator_use": false },
+    { "claim_id": "CLM-02", "claim": "MITHQAL entity JOZOUR_LLC_NJ is legally established", "claim_type": "LEGAL", "current_status": "UNSUPPORTED", "supporting_evidence": "NONE — G0_FAIL/G0_CONDITIONAL; 5 primary documents MISSING/PENDING", "authority": "NONE — no counsel opinion", "scope": "n/a", "limitations": ["entity is DESIGNED in code, NOT legally established", "no counsel verification"], "public_use": false, "bank_use": false, "investor_use": false, "regulator_use": false },
+    { "claim_id": "CLM-03", "claim": "MITHQAL operating model is legally permitted in UAE (DIFC/ADGM)", "claim_type": "LEGAL", "current_status": "NOT_TESTED", "supporting_evidence": "NONE — 50 legal questions unanswered; 0 counsel engaged", "authority": "NONE", "scope": "n/a", "limitations": ["no counsel opinion", "no jurisdictional validation"], "public_use": false, "bank_use": false, "investor_use": false, "regulator_use": false },
+    { "claim_id": "CLM-04", "claim": "MITHQAL has regulatory authorization", "claim_type": "REGULATORY", "current_status": "NOT_TESTED", "supporting_evidence": "NONE — 0/8 jurisdictions triaged; 0 engagements; 0 filings", "authority": "NONE", "scope": "n/a", "limitations": ["no regulator communication"], "public_use": false, "bank_use": false, "investor_use": false, "regulator_use": false },
+    { "claim_id": "CLM-05", "claim": "MITHQAL has a bank design partner", "claim_type": "BANK", "current_status": "NOT_TESTED", "supporting_evidence": "NONE — 15 researched, 0 contacted, 0 design partners", "authority": "NONE", "scope": "n/a", "limitations": ["no bank engagement"], "public_use": false, "bank_use": false, "investor_use": false, "regulator_use": false },
+    { "claim_id": "CLM-06", "claim": "MITHQAL has custody arrangements", "claim_type": "CUSTODY", "current_status": "NOT_TESTED", "supporting_evidence": "NONE — 0 custodians; Pilot A uses BANK_MONEY (no custody required)", "authority": "NONE", "scope": "n/a", "limitations": ["no custodian agreement", "no live backing evidence"], "public_use": false, "bank_use": false, "investor_use": false, "regulator_use": false },
+    { "claim_id": "CLM-07", "claim": "MITHQAL security posture is adequate", "claim_type": "SECURITY", "current_status": "NOT_TESTED", "supporting_evidence": "NONE — no security assessment performed; no penetration test; no certification", "authority": "NONE", "scope": "n/a", "limitations": ["no security assessment", "no certification"], "public_use": false, "bank_use": false, "investor_use": false, "regulator_use": false },
+    { "claim_id": "CLM-08", "claim": "MITHQAL creates measurable institutional value", "claim_type": "ECONOMIC", "current_status": "NOT_TESTED", "supporting_evidence": "NONE — 0/15 KPIs measured; 0/72 Bank Value Measurement Engine cells populated; 0 measured savings", "authority": "NONE", "scope": "n/a", "limitations": ["no pilot execution", "no baseline data", "no measured value"], "public_use": false, "bank_use": false, "investor_use": false, "regulator_use": false },
+    { "claim_id": "CLM-09", "claim": "MTQ is a valid monetary instrument", "claim_type": "MTQ", "current_status": "NOT_TESTED", "supporting_evidence": "NONE — MTQ DISABLED; 6+11 prerequisites ALL PENDING; F3/F4 NOT_CLAIMED", "authority": "NONE", "scope": "n/a", "limitations": ["MTQ is DISABLED", "no MTQ validity testing possible"], "public_use": false, "bank_use": false, "investor_use": false, "regulator_use": false },
+    { "claim_id": "CLM-10", "claim": "MITHQAL is production-authorized", "claim_type": "PRODUCTION", "current_status": "UNSUPPORTED", "supporting_evidence": "NONE — production_authorized = false; all canonical gates unsatisfied", "authority": "NONE", "scope": "n/a", "limitations": ["NOT PRODUCTION-AUTHORIZED", "all canonical gates unsatisfied"], "public_use": false, "bank_use": false, "investor_use": false, "regulator_use": false }
+  ],
+  "no_claim_exceeds_evidence_level_rule": "enforced — every claim's current_status is bounded by its supporting_evidence. UNSUPPORTED claims have NO supporting evidence. NOT_TESTED claims have not been exercised. Only SUPPORTED claims (CLM-01 — architecture frozen) have actual supporting evidence, and even that is design-time only (not runtime-validated).",
+  "no_public_use_without_evidence_rule": "enforced — public_use=false for all 10 claims. No claim may enter public material until its supporting_evidence is sufficient.",
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

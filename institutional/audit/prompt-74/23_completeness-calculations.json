@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "audit_id": "FA74-PA-001",
+  "source": "Prompt 74, Section AG (Completeness Calculation)",
+  "status": "ISSUED",
+  "description": "5 independently generated completeness metrics. Per Section AG: 'Do NOT collapse these into one misleading percentage.'",
+  "metrics": [
+    {
+      "metric_id": "PROMPT_IMPLEMENTATION_COMPLETENESS",
+      "formula": "verified complete requirements / total auditable requirements",
+      "value": 0.014,
+      "numerator": 1,
+      "denominator": 73,
+      "numerator_detail": "1 prompt VERIFIED_IMPLEMENTED (Prompt 72)",
+      "denominator_detail": "73 total prompts (1-73)",
+      "interpretation": "Only 1 of 73 prompts is verifiably complete. 61 prompts are UNVERIFIABLE (no prompt texts). 10 prompts are MISSING (artifacts never committed or never produced). 1 prompt (Prompt 73) is VERIFIED_PARTIAL (present but references missing prerequisites).",
+      "note": "If we count Prompt 73 as VERIFIED_PARTIAL, the figure is 2/73 = 0.027. The conservative 0.014 counts only fully-verified-internal-implementation."
+    },
+    {
+      "metric_id": "PROMPT_EVIDENCE_COMPLETENESS",
+      "formula": "requirements with sufficient evidence / total auditable requirements",
+      "value": 0.014,
+      "numerator": 1,
+      "denominator": 73,
+      "numerator_detail": "1 prompt with sufficient evidence (Prompt 72 — 37 files with all JSON valid + honest-state preserved)",
+      "denominator_detail": "73 total prompts",
+      "interpretation": "Only 1 of 73 prompts has sufficient evidence. The other 72 either have no evidence (Prompts 1-61 — worklog only), missing evidence (Prompts 62-71 — artifacts never committed/produced), or partial evidence (Prompt 73 — present but references missing prerequisites)."
+    },
+    {
+      "metric_id": "PROMPT_RUNTIME_COMPLETENESS",
+      "formula": "requirements with runtime evidence where applicable / runtime-applicable requirements",
+      "value": 0.000,
+      "numerator": 0,
+      "denominator": "runtime-applicable requirements (all Pilot A execution requirements + all assurance test requirements)",
+      "numerator_detail": "0 runtime evidence — Pilot A never executed; 0 transactions; 0 KPIs; 0 replays; 0 assurance tests executed",
+      "denominator_detail": "all runtime-applicable requirements (94 assurance tests + 19 BM steps × 16 scenarios + 15 KPI measurements + 15 failure scenarios + reconciliation events + finality events)",
+      "interpretation": "0% runtime completeness. No runtime evidence exists. Pilot A was never executed."
+    },
+    {
+      "metric_id": "PROMPT_REGRESSION_FREE_RATE",
+      "formula": "requirements without confirmed regression / total tested requirements",
+      "value": 1.000,
+      "numerator": 0,
+      "denominator": 0,
+      "numerator_detail": "0 confirmed regressions",
+      "denominator_detail": "0 tested requirements (nothing was tested — no runtime, no test execution)",
+      "interpretation": "1.000 regression-free rate is TECHNICALLY CORRECT but MISLEADING. It does NOT mean the program is healthy. It means there is nothing to regress from — the missing files were never present, so they cannot have regressed. This metric should NOT be used to claim program health.",
+      "warning": "Do NOT interpret 1.000 as 'no regressions therefore healthy'. The correct interpretation is 'no prior implementation to regress from'."
+    },
+    {
+      "metric_id": "PROMPT_DURABILITY_COMPLETENESS",
+      "formula": "requirements with durable artifact/implementation evidence / total auditable requirements",
+      "value": 0.027,
+      "numerator": 2,
+      "denominator": 73,
+      "numerator_detail": "2 prompts with durable committed artifacts (Prompt 72 — 37 files committed in c7dafc6; Prompt 73 — 26 files committed in c7dafc6)",
+      "denominator_detail": "73 total prompts",
+      "interpretation": "Only 2 of 73 prompts have durable artifacts committed to git. The other 71 either have no durable artifact (Prompts 1-61 — worklog Task IDs only, not full artifacts) or had artifacts that were never committed (Prompts 62-71 — developed in prior sessions but never persisted to git).",
+      "note": "The 2 durable prompts (72, 73) are both from the current conversation session. The prior session work (62-71) was not persisted."
+    }
+  ],
+  "do_not_collapse_rule": "Per Section AG: 'Do NOT collapse these into one misleading percentage.' The 5 metrics are reported independently. They tell different stories: implementation completeness (1.4%), evidence completeness (1.4%), runtime completeness (0%), regression-free rate (100% but misleading), durability completeness (2.7%). No single percentage captures the full picture.",
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

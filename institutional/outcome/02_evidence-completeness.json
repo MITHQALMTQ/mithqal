@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "package_id": "EC-PA-001",
+  "version": "v25.3.2-P72-1.0",
+  "date": "2026-10-03T00:00:00Z",
+  "owner": "JOZOUR_LLC_NJ (G0_CONDITIONAL)",
+  "source": "Prompt 72, Section E",
+  "status": "ISSUED",
+  "pilot": "PILOT-A-001",
+  "pilot_executed": false,
+  "executed_transactions_count": 0,
+  "planned_transactions_count": 16,
+  "evidence_completeness_summary": {
+    "EVIDENCE_COMPLETE_count": 0,
+    "EVIDENCE_PARTIAL_count": 0,
+    "EVIDENCE_MISSING_count": 0,
+    "NOT_APPLICABLE_count": 16,
+    "note": "All 16 planned scenarios are NOT_APPLICABLE for evidence-completeness assessment because none executed. Evidence-completeness can only be calculated over a defined EXECUTED population; the executed population is 0."
+  },
+  "evidence_slots_per_transaction": [
+    "instruction_evidence",
+    "authorization_evidence",
+    "policy_evidence",
+    "compliance_evidence",
+    "funding_evidence",
+    "routing_evidence",
+    "settlement_evidence",
+    "finality_evidence",
+    "reconciliation_evidence",
+    "exception_evidence",
+    "closure_evidence"
+  ],
+  "evidence_slot_population": {
+    "instruction_evidence": 0,
+    "authorization_evidence": 0,
+    "policy_evidence": 0,
+    "compliance_evidence": 0,
+    "funding_evidence": 0,
+    "routing_evidence": 0,
+    "settlement_evidence": 0,
+    "finality_evidence": 0,
+    "reconciliation_evidence": 0,
+    "exception_evidence": 0,
+    "closure_evidence": 0
+  },
+  "per_transaction_assessment": [],
+  "note": "The per_transaction_assessment array is empty because no transactions executed. Evidence completeness is calculated only over a defined EXECUTED population (Section E). The executed population is 0; therefore no per-transaction assessment is possible. The 16 planned scenarios are recorded as NOT_APPLICABLE for evidence-completeness (not EVIDENCE_MISSING) because they did not execute — EVIDENCE_MISSING would presuppose an execution that failed to produce evidence, which is not the case here.",
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

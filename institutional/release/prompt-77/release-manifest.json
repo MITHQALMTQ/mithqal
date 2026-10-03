@@ -1,0 +1,20 @@
+{"$schema": "https://json-schema.org/draft-07/schema#",
+ "audit_id": "FA77-PA-001",
+ "release_title": "Prompt 77 Release Manifest",
+ "release_prompt": 77,
+ "release_timestamp": "2026-10-03T13:05:00Z",
+ "build_mode": "FROZEN",
+ "production_authorized": false,
+ "release_status": "RELEASE_BLOCKED",
+ "components": {
+   "github": "VERIFIED",
+   "vercel": "UNVERIFIABLE",
+   "inngest": "BLOCKED",
+   "turso": "BLOCKED",
+   "neon": "BLOCKED",
+   "application": "PARTIALLY_FUNCTIONAL"
+ },
+ "application_partial_functional_explanation": "dev server HTTP 200; lint clean; missing secrets prevent runtime verification of external-service-dependent routes",
+ "release_blockers": 5,
+ "release_blockers_list": ["secrets_not_provisioned", "vercel_unverifiable", "inngest_blocked", "turso_blocked", "neon_blocked"],
+ "NOT_PRODUCTION_AUTHORIZED": true}

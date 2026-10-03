@@ -1,0 +1,131 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "audit_id": "FA74-PA-001",
+  "audit_timestamp": "2026-10-03T05:12:00Z",
+  "repository_commit": "c7dafc6",
+  "audit_branch": "audit/prompt-1-73-forensic",
+  "canonical_version": "v25.3.2 (CLAIMED in Prompts 70-73; NOT VERIFIED as a git tag — latest tag is v25.6)",
+  "version_authority_note": "The 'v25.3.2 controlled baseline' referenced across Prompts 70-73 is a referential construct. No git tag 'v25.3.2' exists. The latest version tags are v25.6, v25.5.1, v25.5, v25.4-final, v25.3-final-v2, v25.3-final. The 10 'frozen schemas' referenced as the v25.3.2 baseline are 9 of 10 ABSENT from this repository.",
+  "program_verdict": "E. LOSS_DETECTED",
+  "program_verdict_detail": "Material implementation/artifacts were deleted or cannot be accounted for. 9 of 10 frozen schemas never existed in this repository. Prompt 70's 42-file assurance framework was never committed. Prompts 62-69's institutional directories were never committed. This is NOT A (FULLY_IMPLEMENTED_AND_PRESERVED), NOT B (FULLY_IMPLEMENTED_WITH_NONCRITICAL_GAPS — gaps are P0_CRITICAL), NOT C (PARTIALLY_IMPLEMENTED — the issue is loss, not partial implementation), NOT D (REGRESSED — no prior implementation to regress from), NOT F (CONFLICTED — no canonical/implementation disagreement because the canonical files don't exist), NOT G (BLOCKED_BY_EXTERNAL_EVIDENCE — the issue is internal loss, not external blocking). It is E (LOSS_DETECTED).",
+  "preservation_status": "LOSS_DETECTED",
+  "preservation_status_detail": "The forensic evidence does NOT support 'Nothing was lost.' Instead, the evidence establishes that significant material was lost or never persisted: 9 of 10 frozen schemas never in this repository; Prompt 70 assurance framework never committed; Prompts 62-69 institutional directories never committed.",
+  "build_mode": "FROZEN",
+  "prompts_total": 73,
+  "prompts_verified_complete": 0,
+  "prompts_partial": 0,
+  "prompts_unverified": 61,
+  "prompts_missing": 10,
+  "prompts_lost": 0,
+  "prompts_regressed": 0,
+  "prompts_conflicted": 0,
+  "prompts_external_dependency": 2,
+  "prompts_breakdown": {
+    "PROMPTS_1_61": { "count": 61, "status": "UNVERIFIABLE", "reason": "prompt texts not available in this audit environment; only worklog Task IDs available; cannot verify requirements without prompt texts" },
+    "PROMPT_62_G0": { "count": 1, "status": "MISSING", "reason": "/institutional/g1/ (G0 status files) never committed to git" },
+    "PROMPT_63_G1": { "count": 1, "status": "MISSING", "reason": "/institutional/g1/ (G1 legal pack) never committed" },
+    "PROMPT_64_corridor": { "count": 1, "status": "MISSING", "reason": "/institutional/corridors/ never committed" },
+    "PROMPT_65_bank_pipeline": { "count": 1, "status": "MISSING", "reason": "/institutional/banks/ never committed" },
+    "PROMPT_66_counsel": { "count": 1, "status": "MISSING", "reason": "/institutional/legal/ never committed" },
+    "PROMPT_67_executive": { "count": 1, "status": "MISSING", "reason": "/institutional/banks/executive-package/ never committed" },
+    "PROMPT_68_workshop": { "count": 1, "status": "MISSING", "reason": "/institutional/bank-workshop/ never committed" },
+    "PROMPT_69_term_sheet": { "count": 1, "status": "MISSING", "reason": "/institutional/pilot/ never committed" },
+    "PROMPT_70_assurance": { "count": 1, "status": "MISSING", "reason": "/institutional/assurance/ (42 files) never committed" },
+    "PROMPT_71_pilot_execution": { "count": 1, "status": "MISSING", "reason": "Pilot A never executed; no execution evidence package exists" },
+    "PROMPT_72_post_pilot_outcome": { "count": 1, "status": "VERIFIED_IMPLEMENTED", "reason": "/institutional/outcome/ (37 files) present + committed in c7dafc6 + all JSON valid + honest-state preserved" },
+    "PROMPT_73_execution_gate": { "count": 1, "status": "VERIFIED_IMPLEMENTED", "reason": "/institutional/execution/ (26 files) present + committed in c7dafc6 + all JSON valid + honest-state preserved" }
+  },
+  "implementation_completeness": 0.014,
+  "implementation_completeness_detail": "1 of 73 prompts VERIFIED_IMPLEMENTED (Prompt 72). 0.014 = 1/73. Note: Prompt 73 is also VERIFIED_IMPLEMENTED but represents external-dependency state, not internal implementation completeness. If we count both 72+73, it's 2/73 = 0.027. The conservative figure (0.014) counts only Prompt 72 as fully internal-implementation-verified.",
+  "evidence_completeness": 0.014,
+  "evidence_completeness_detail": "1 of 73 prompts with sufficient evidence (Prompt 72). Most prompts have NO evidence because their artifacts were never committed.",
+  "runtime_completeness": 0.000,
+  "runtime_completeness_detail": "0 runtime evidence. Pilot A never executed. 0 transactions, 0 KPIs measured, 0 replays. The runtime_completeness denominator is the set of runtime-applicable requirements — all of which have 0 runtime evidence.",
+  "regression_free_rate": 1.000,
+  "regression_free_rate_detail": "0 confirmed regressions. This is because there is no prior implementation to regress from — the missing files were never present, so they cannot have regressed. The regression_free_rate of 1.000 is technically correct but misleading: it does NOT mean the program is healthy; it means there is nothing to regress.",
+  "durability_completeness": 0.027,
+  "durability_completeness_detail": "2 of 73 prompts with durable artifact/implementation evidence (Prompts 72 + 73, both committed in c7dafc6). The other 71 prompts either have no durable artifact (Prompts 1-61 — worklog only) or had artifacts that were never committed (Prompts 62-71).",
+  "critical_findings": [
+    {
+      "finding_id": "FA74-CF-01",
+      "severity": "P0_CRITICAL",
+      "description": "9 of 10 'frozen schema' files referenced in Prompts 70-73 DO NOT EXIST in this repository — not in filesystem, not in any git branch, not in any tag, not in any dangling commit. The files were NEVER committed. Similar-named files exist in src/lib/ (111 .ts files) but are NOT the same artifacts. Only 1 of 10 (final-pilot-activation-gate.ts) exists.",
+      "files_missing": ["controlled-architecture-freeze.ts", "institutional-evidence-fabric.ts", "settlement-workflow-canonical.ts", "canonical-finality-model.ts", "policy-registry.ts", "reserve-domains.ts", "institutional-settlement-obligation-registry.ts", "pilot-gate-framework.ts", "mtq-economic-definition.ts"],
+      "recovery": "NOT_RECOVERABLE from this repository — re-create from prior session context OR correct institutional record to reference actual file names"
+    },
+    {
+      "finding_id": "FA74-CF-02",
+      "severity": "P0_CRITICAL",
+      "description": "Prompt 70 assurance framework (/institutional/assurance/ — 42 files, 20 criteria, 25 controls, 94 tests) was NEVER committed to git. Developed in a prior session but never persisted. Not recoverable from git.",
+      "recovery": "NOT_RECOVERABLE from git — re-create from prior session conversation context (the conversation history contains the full content of all 42 files)"
+    },
+    {
+      "finding_id": "FA74-CF-03",
+      "severity": "P0_CRITICAL",
+      "description": "Prompts 62-69 institutional directories ALL never committed: /institutional/g1/ (62-63), /institutional/corridors/ (64), /institutional/banks/ (65+67), /institutional/legal/ (66), /institutional/bank-workshop/ (68), /institutional/pilot/ (69). Prompts 72-73 referenced these by path but the paths are dangling references — the files don't exist.",
+      "recovery": "NOT_RECOVERABLE from git — re-create from prior session conversation context"
+    },
+    {
+      "finding_id": "FA74-CF-04",
+      "severity": "P1_HIGH",
+      "description": ".env has only 1 line (51 of 52 expected environment variables MISSING). All credentials absent. No runtime can be verified. Turso, Neon, Inngest, Brain providers, CRON_SECRET, NEXTAUTH_SECRET, Discord webhook all not provisioned.",
+      "recovery": "RECONSTRUCTABLE — re-provision from .env.example (operator must supply actual secrets)"
+    },
+    {
+      "finding_id": "FA74-CF-05",
+      "severity": "P1_HIGH",
+      "description": "node_modules/ absent. bun run lint fails (eslint not found). No dev server can run. Dependencies not installed.",
+      "recovery": "RECONSTRUCTABLE — run bun install"
+    },
+    {
+      "finding_id": "FA74-CF-06",
+      "severity": "P2_MEDIUM",
+      "description": "prisma/migrations/ directory does not exist. Schema managed via db:push (not migrations). Migration history not available for audit. Migration reproducibility not verifiable.",
+      "recovery": "RECONSTRUCTABLE — generate migrations from current schema if desired"
+    },
+    {
+      "finding_id": "FA74-CF-07",
+      "severity": "P2_MEDIUM",
+      "description": "Canonical version v25.3.2 referenced in Prompts 70-73 but NO git tag v25.3.2 exists. Latest tags: v25.6, v25.5.1, v25.5, v25.4-final, v25.3-final-v2, v25.3-final. Version drift between claimed (v25.3.2) and tagged (v25.6).",
+      "recovery": "RECONSTRUCTABLE — either tag v25.3.2 OR correct references to v25.6"
+    }
+  ],
+  "critical_loss": [
+    "9 of 10 frozen schemas (controlled-architecture-freeze.ts, institutional-evidence-fabric.ts, settlement-workflow-canonical.ts, canonical-finality-model.ts, policy-registry.ts, reserve-domains.ts, institutional-settlement-obligation-registry.ts, pilot-gate-framework.ts, mtq-economic-definition.ts) — NEVER in this repository",
+    "Prompt 70 assurance framework (/institutional/assurance/ — 42 files) — NEVER committed",
+    "Prompts 62-69 institutional directories (/institutional/{g1,corridors,banks,legal,bank-workshop,pilot}/) — NEVER committed"
+  ],
+  "critical_regressions": [],
+  "critical_regressions_detail": "0 regressions. No prior implementation to regress from. The missing files were never present in this repository, so they cannot have regressed. This does NOT mean the program is healthy — it means there is nothing to regress.",
+  "critical_unknowns": [
+    "Prompts 1-61 requirements (prompt texts not available in this audit environment)",
+    "Whether the similar-named files in src/lib/ (finality-before-mint.ts, legal-obligation-register.ts, reserve-policy-spec.ts, pilot-operational-readiness.ts, mtq-final-reserve-spec.ts) implement the same concepts as the missing frozen schemas",
+    "Whether the prior session work (Prompts 62-71) was ever persisted to any environment (it was not persisted to this git repository)",
+    "Whether the .env.encrypted (2912 bytes) contains the actual encrypted secrets (not decrypted in this audit)",
+    "Whether the live Vercel/Inngest/Turso/Neon integrations are functional (no API access; credentials absent)"
+  ],
+  "recovery_required": true,
+  "remediation_required": true,
+  "production_authorized": false,
+  "institutionally_validated": false,
+  "architecture_change_allowed": "NO",
+  "architecture_change_allowed_detail": "Per Section AU: NO unless a separate approved remediation process identifies a justified change. The audit did NOT authorize any architecture change. BUILD_MODE = FROZEN. The 1 existing frozen schema (final-pilot-activation-gate.ts) is untouched. No new architecture was added. No MTQ economics changed. No reserve policy changed.",
+  "next_action": "Review this audit; authorize a separate remediation phase; re-create the 9 missing frozen schemas OR correct the institutional record to reference actual file names; restore/re-create Prompt 70 assurance framework (42 files) + Prompts 62-69 institutional directories from prior session conversation context; re-provision .env from .env.example; run bun install",
+  "next_external_evidence": "G0_PASS (entity counsel-verified — unchanged from Prompts 62-73)",
+  "management_decision": {
+    "FORENSIC_AUDIT_STATUS": "LOSS_DETECTED",
+    "ARE_PROMPTS_1_TO_73_FULLY_IMPLEMENTED": "NO",
+    "WAS_ANYTHING_LOST_OR_DELETED": "YES",
+    "ARE_THERE_ANY_MATERIAL_REGRESSIONS": "NO",
+    "MOST_CRITICAL_FINDING": "9 of 10 'frozen schemas' referenced in Prompts 70-73 DO NOT EXIST in this repository",
+    "MOST_CRITICAL_LOSS_OR_DELETION": "/institutional/assurance/ (42 files from Prompt 70) — never committed; not recoverable from git",
+    "MOST_CRITICAL_REGRESSION": "none (no prior implementation to regress from)",
+    "RECOVERY_REQUIRED": "YES",
+    "REMEDIATION_REQUIRED": "YES",
+    "ARCHITECTURE_CHANGE_ALLOWED": "NO",
+    "NEXT_ACTION": "Review this audit; authorize remediation phase; re-create missing artifacts",
+    "NEXT_EXTERNAL_EVIDENCE": "G0_PASS (entity counsel-verified)"
+  },
+  "frozen_schemas_modified": "ZERO — the 1 existing frozen schema (final-pilot-activation-gate.ts) is untouched. The other 9 do not exist. No frozen schema was modified by this audit.",
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

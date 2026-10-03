@@ -1,28 +1,22 @@
 {
   "g0Status": "G0_FAIL",
-  "g0Decision": "G0_FAIL",
-  "unresolvedIssues": 16,
-  "primaryDocumentConflicts": [
-    "JOZOUR_LLC_NJ — PRIMARY_DOCUMENT_MISSING",
-    "JOZOUR Amendment §1.6 — PRIMARY_DOCUMENT_MISSING",
-    "Articles of Incorporation — PRIMARY_DOCUMENT_MISSING",
-    "Operating Agreement — PRIMARY_DOCUMENT_MISSING"
+  "g1Status": "READY_FOR_COUNSEL",
+  "candidateJurisdictions": ["AE", "SG", "SA", "IN", "CN", "US", "GB", "EU"],
+  "externalEvidenceCount": 0,
+  "primarySourceCount": 0,
+  "legalQuestionsCount": 50,
+  "criticalOpenIssues": 16,
+  "primaryDocumentDependencies": [
+    "Articles of Incorporation (PRIMARY_DOCUMENT_MISSING)",
+    "Operating Agreement (PRIMARY_DOCUMENT_MISSING)",
+    "JOZOUR Amendment §1.6 (PRIMARY_DOCUMENT_MISSING)",
+    "Board Resolution (PENDING_PRIMARY_DOCUMENT)",
+    "Shareholder Agreement (PENDING_PRIMARY_DOCUMENT)"
   ],
-  "inheritedLegalQuestions": [
-    "Does the entity legally exist?",
-    "Who has authority to contract?",
-    "What are the ownership/control boundaries?",
-    "What is the IP ownership structure?",
-    "What are the related-party disclosures?"
-  ],
-  "controllingEntity": "JOZOUR_LLC_NJ (DESIGNED, NOT VERIFIED)",
-  "ownershipStructure": "UNKNOWN — no shareholder agreement",
-  "authorityMatrix": "PENDING_PRIMARY_DOCUMENT — no board resolution",
-  "mtqObligorRole": "INTERNAL_DESIGN — no executed obligor agreement",
-  "redemptionRole": "INTERNAL_DESIGN — no executed redemption framework",
-  "reserveOwnership": "INTERNAL_DESIGN — no qualified custodian",
-  "liabilityBoundaries": "INTERNAL_DESIGN — 17 contract sections ALL DRAFT",
-  "ipOwnership": "UNKNOWN — no IP assignment agreement",
-  "dataOwnership": "INTERNAL_DESIGN — no DPA",
-  "contractualAuthority": "PENDING_PRIMARY_DOCUMENT — no board resolution"
+  "counselRequired": true,
+  "regulatorEngagementRequired": true,
+  "bankDependency": true,
+  "productionAuthorized": false,
+  "institutionallyValidated": false,
+  "nextExternalEvidence": "Engage external legal counsel for UAE jurisdiction to answer 50 legal questions + 18 counsel deliverables. BLOCKED BY G0_FAIL — entity must be legally established first."
 }

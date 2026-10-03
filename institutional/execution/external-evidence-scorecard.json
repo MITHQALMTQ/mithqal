@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "package_id": "EES-PA-001",
+  "version": "v25.3.2-P73-1.0",
+  "date": "2026-10-03T00:00:00Z",
+  "owner": "JOZOUR_LLC_NJ (G0_CONDITIONAL)",
+  "source": "Prompt 73, Section T",
+  "status": "ISSUED",
+  "pilot": "PILOT-A-001",
+  "description": "External evidence scorecard. NOT a ranking — only counts. Per Section T: 'Do NOT create a ranking. Instead report counts.'",
+  "legal_external_evidence_count": 0,
+  "regulatory_external_evidence_count": 0,
+  "bank_external_evidence_count": 0,
+  "custody_external_evidence_count": 0,
+  "assurance_external_evidence_count": 0,
+  "pilot_external_evidence_count": 0,
+  "total_external_evidence_obtained": 0,
+  "CRITICAL_EXTERNAL_EVIDENCE_MISSING": [
+    "G0_PASS (entity counsel-verified)",
+    "signed counsel opinion (50 legal questions answered + 22 deliverables produced)",
+    "regulator communication (UAE DIFC FSA / ADGM FSRA + Singapore MAS)",
+    "bank-confirmed requirement (UAE bank DIFC/ADGM)",
+    "executed bank agreement (term sheet DRAFT → EXECUTED + 18 conditions precedent satisfied)",
+    "executed pilot authorization (governance authority)",
+    "pilot execution evidence (16 scenarios + 19 BM steps + 15 KPIs measured + reconciliation + finality + failure/recovery + replay)",
+    "independent assurance report (94 tests executed + findings + remediation + retest + report issued)"
+  ],
+  "CRITICAL_EXTERNAL_EVIDENCE_OBTAINED": [],
+  "total_critical_external_evidence_missing": 8,
+  "total_critical_external_evidence_obtained": 0,
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

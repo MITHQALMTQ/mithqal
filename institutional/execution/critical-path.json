@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "package_id": "CP-PA-001",
+  "version": "v25.3.2-P73-1.0",
+  "date": "2026-10-03T00:00:00Z",
+  "owner": "JOZOUR_LLC_NJ (G0_CONDITIONAL)",
+  "source": "Prompt 73, Section V",
+  "status": "ISSUED",
+  "pilot": "PILOT-A-001",
+  "description": "The actual critical path from G0 to G11. Where parallel work is possible, marked as parallel. Principal project KPI: NEXT_EXTERNAL_EVIDENCE_ACHIEVED (NOT lines of code, feature count, document count, or test count).",
+  "principal_project_KPI": "NEXT_EXTERNAL_EVIDENCE_ACHIEVED",
+  "principal_project_KPI_NOT": ["LINES_OF_CODE", "FEATURE_COUNT", "DOCUMENT_COUNT", "TEST_COUNT"],
+  "critical_path_steps_count": 12,
+  "critical_path": [
+    { "CRITICAL_PATH_STEP": "G0", "DEPENDENCY": "none (root)", "OWNER": "JOZOUR_LLC_NJ principal", "EXTERNAL_PARTY": "external legal counsel (UAE DIFC/ADGM)", "EVIDENCE_REQUIRED": "G0_PASS — counsel-verified entity status", "PARALLEL": false, "current_status": "BLOCKED" },
+    { "CRITICAL_PATH_STEP": "G1", "DEPENDENCY": "G0", "OWNER": "JOZOUR_LLC_NJ principal + counsel", "EXTERNAL_PARTY": "external legal counsel", "EVIDENCE_REQUIRED": "signed counsel opinion answering 50 legal questions + 22 deliverables", "PARALLEL": false, "current_status": "NOT_STARTED" },
+    { "CRITICAL_PATH_STEP": "G2 || G3", "DEPENDENCY": "G1", "OWNER": "JOZOUR_LLC_NJ principal + counsel || JOZOUR_LLC_NJ principal", "EXTERNAL_PARTY": "UAE/SG regulator || UAE bank (DIFC/ADGM)", "EVIDENCE_REQUIRED": "regulator communication + authorization path || bank-confirmed requirement + NDA + DPA + baseline data", "PARALLEL": true, "current_status": "NOT_STARTED || IN_PROGRESS (RESEARCHED)" },
+    { "CRITICAL_PATH_STEP": "G4", "DEPENDENCY": "G2 + G3", "OWNER": "JOZOUR_LLC_NJ principal + bank + counsel", "EXTERNAL_PARTY": "bank", "EVIDENCE_REQUIRED": "executed bank agreement (term sheet EXECUTED + 18 conditions precedent satisfied)", "PARALLEL": false, "current_status": "NOT_STARTED" },
+    { "CRITICAL_PATH_STEP": "G5 || G6", "DEPENDENCY": "G4 (for G5) || G1 (for G6 — custody requires legal structure, not bank contract)", "OWNER": "JOZOUR_LLC_NJ + bank || JOZOUR_LLC_NJ principal", "EXTERNAL_PARTY": "bank + rail || qualified custodian (DEFERRED for Pilot A)", "EVIDENCE_REQUIRED": "technical integration evidence || executed custodian agreement + live backing evidence", "PARALLEL": true, "current_status": "NOT_STARTED || NOT_STARTED (DEFERRED — BANK_MONEY)" },
+    { "CRITICAL_PATH_STEP": "G7", "DEPENDENCY": "G5 + G6 (G6 deferred for Pilot A)", "OWNER": "JOZOUR_LLC_NJ principal + bank", "EXTERNAL_PARTY": "bank + governance authority", "EVIDENCE_REQUIRED": "executed pilot authorization + 16 scenarios executed + transaction evidence + KPI measurements", "PARALLEL": false, "current_status": "NOT_STARTED" },
+    { "CRITICAL_PATH_STEP": "G8", "DEPENDENCY": "G7", "OWNER": "JOZOUR_LLC_NJ principal + assurance provider", "EXTERNAL_PARTY": "independent assurance provider", "EVIDENCE_REQUIRED": "independent assurance report (94 tests executed + findings + remediation + retest + report)", "PARALLEL": false, "current_status": "NOT_STARTED" },
+    { "CRITICAL_PATH_STEP": "G9", "DEPENDENCY": "G8", "OWNER": "JOZOUR_LLC_NJ + bank + assurance provider", "EXTERNAL_PARTY": "bank + assurance provider", "EVIDENCE_REQUIRED": "measured outcome (KPIs + reconciliation + finality + failure/recovery + replay)", "PARALLEL": false, "current_status": "NOT_STARTED" },
+    { "CRITICAL_PATH_STEP": "G10", "DEPENDENCY": "G9", "OWNER": "JOZOUR_LLC_NJ principal", "EXTERNAL_PARTY": "second institution", "EVIDENCE_REQUIRED": "repeatability evidence (second-institution test — only if first pilot warrants)", "PARALLEL": false, "current_status": "NOT_STARTED" },
+    { "CRITICAL_PATH_STEP": "G11", "DEPENDENCY": "G10 + all canonical gates", "OWNER": "JOZOUR_LLC_NJ principal + governance authority", "EXTERNAL_PARTY": "governance authority", "EVIDENCE_REQUIRED": "production authorization review (all prerequisites satisfied)", "PARALLEL": false, "current_status": "NOT_STARTED" }
+  ],
+  "current_position": "G0 (BLOCKED)",
+  "next_step": "G0_PASS (engage counsel to verify entity)",
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

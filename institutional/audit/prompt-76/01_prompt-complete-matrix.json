@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "audit_id": "FA76-PA-001",
+  "description": "Complete requirement matrix for EVERY prompt 1-75 per Section D. Statuses: VERIFIED_COMPLETE, VERIFIED_COMPLETE_RUNTIME, PARTIAL, IMPLEMENTED_NOT_VERIFIED, MISSING, DELETED, RECOVERABLE, RECOVERED, REGRESSED, CONFLICTED, ORPHANED, BLOCKED_EXTERNAL, NOT_APPLICABLE.",
+  "latest_prompt_found": 76,
+  "latest_prompt_audited": 75,
+  "auto_detect_latest_prompt": true,
+  "total_prompts": 75,
+  "prompt_groups": [
+    { "group": "PROMPTS 1-24", "title": "Architectural remediation and canonicalization", "count": 24, "status": "UNVERIFIABLE", "detail": "prompt texts not available in this audit environment; worklog has Task IDs but not full prompt texts" },
+    { "group": "PROMPTS 25-47", "title": "Institutionalization foundations", "count": 23, "status": "UNVERIFIABLE" },
+    { "group": "PROMPTS 48-58", "title": "Operating-phase institutionalization", "count": 11, "status": "UNVERIFIABLE" },
+    { "group": "PROMPTS 59-61", "title": "Evidence dossier / demonstration / first-bank evaluation", "count": 3, "status": "UNVERIFIABLE" },
+    { "group": "PROMPT 62-69", "title": "G0/G1/corridor/bank/counsel/executive/workshop/term-sheet", "count": 8, "status": "MISSING", "detail": "institutional directories never committed to git; NOT_RECOVERABLE from current conversation context" },
+    { "group": "PROMPT 70", "title": "Independent Assurance Scope & Evidence Audit Design", "count": 1, "status": "RECOVERED", "detail": "42 files RECOVERED in Prompt 75 (RECONSTRUCTED_FROM_EVIDENCE); all present; all JSON valid" },
+    { "group": "PROMPT 71", "title": "Controlled Pilot A Execution & Evidence Capture", "count": 1, "status": "MISSING", "detail": "Pilot A never executed; no execution evidence package exists" },
+    { "group": "PROMPT 72", "title": "Independent Review, Measured Outcome & Institutional Validation Decision", "count": 1, "status": "PARTIAL", "detail": "/institutional/outcome/ (37 files) present + committed; internally consistent; cross-references to P62-71 are dangling" },
+    { "group": "PROMPT 73", "title": "External Institutional Execution Gate & No-More-Build Control", "count": 1, "status": "PARTIAL", "detail": "/institutional/execution/ (26 files) present + committed; BUILD_MODE=FROZEN; cross-references to P70/P62-69 corrected in P75" },
+    { "group": "PROMPT 74", "title": "Forensic Full Implementation Audit of Prompts 1-73", "count": 1, "status": "VERIFIED_COMPLETE", "detail": "/institutional/audit/prompt-74/ (38 files) present + committed; all JSON valid; honest-state preserved" },
+    { "group": "PROMPT 75", "title": "Controlled Forensic Remediation, Recovery & Regression-Proofing", "count": 1, "status": "PARTIAL", "detail": "/institutional/remediation/prompt-75/ (30 files) present; assurance framework recovered (42 files); node_modules installed; .env template created; BUT Prompts 62-69 still NOT_RECOVERABLE; secrets not provisioned" }
+  ],
+  "status_counts": {
+    "VERIFIED_COMPLETE": 1,
+    "VERIFIED_COMPLETE_RUNTIME": 0,
+    "PARTIAL": 3,
+    "IMPLEMENTED_NOT_VERIFIED": 0,
+    "MISSING": 9,
+    "DELETED": 0,
+    "RECOVERABLE": 0,
+    "RECOVERED": 1,
+    "REGRESSED": 0,
+    "CONFLICTED": 0,
+    "ORPHANED": 0,
+    "BLOCKED_EXTERNAL": 0,
+    "NOT_APPLICABLE": 0,
+    "UNVERIFIABLE": 61
+  },
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

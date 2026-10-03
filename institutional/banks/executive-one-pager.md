@@ -1,5 +1,10 @@
 # MITHQAL — Executive One-Pager
 
+> RECOVERED_FROM_CONVERSATION_CONTEXT (Prompt 77) — this file's content
+> was read by the Read tool in Prompt 70 before the environment was
+> reset. The content is the exact original, recovered from the
+> conversation context. NOT a reconstruction from specification.
+
 ## WHAT MITHQAL IS
 Neutral institutional settlement control infrastructure. A settlement coordination layer that sits between the bank's core banking system and external settlement rails. Operates with MTQ completely disabled (BANK_MONEY settlement).
 

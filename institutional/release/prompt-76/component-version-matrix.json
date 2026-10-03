@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "audit_id": "FA76-PA-001",
+  "matrix": [
+    { "component": "GitHub repo", "version": "v25.6 tag; commit 455f9d3", "status": "VERIFIED" },
+    { "component": "package.json", "version": "0.2.1", "status": "VERIFIED" },
+    { "component": "Next.js", "version": "16 (App Router)", "status": "PRESENT (per prior worklog)" },
+    { "component": "Prisma schema", "version": "69 lines", "status": "PRESENT" },
+    { "component": "Vercel config", "version": "vercel.json (2 crons)", "status": "PRESENT" },
+    { "component": "Inngest client", "version": "80 lines (3 functions)", "status": "PRESENT" },
+    { "component": "Vercel deployment", "version": "UNKNOWN", "status": "UNVERIFIABLE" },
+    { "component": "Inngest deployment", "version": "UNKNOWN", "status": "BLOCKED" },
+    { "component": "Turso schema (live)", "version": "UNKNOWN", "status": "BLOCKED" },
+    { "component": "Neon schema (live)", "version": "UNKNOWN", "status": "BLOCKED" },
+    { "component": "Policy registry", "version": "REFERENCED_BUT_ABSENT", "status": "MISSING" },
+    { "component": "MTQ economic definition", "version": "REFERENCED_BUT_ABSENT", "status": "MISSING; MTQ DISABLED" }
+  ],
+  "version_mismatch_detected": true,
+  "version_mismatch_detail": "v25.3.2 claimed in P70-73 documentation but v25.6 is the latest git tag (PARTIALLY_CLOSED in P75)",
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

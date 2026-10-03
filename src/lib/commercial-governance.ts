@@ -1,10 +1,3 @@
-// v25.3.7 — M-directive refactor: banks see ONE external contractual counterparty
-// (bankFacingCounterpartyEntityId). See src/lib/institutional-operating-model.ts
-// for the canonical source. The 4-entity PLANNED structure below is PRESERVED for
-// traceability (it documents the TARGET institutional architecture); the
-// bank-facing counterparty banks actually contract with is exposed canonically
-// via BANK_FACING_COUNTERPARTY_ENTITY in src/lib/institutional-operating-model.ts.
-
 /**
  * MITHQAL Constitutional Commercial Governance & Institutional Stewardship Engine
  *
@@ -45,7 +38,6 @@
  */
 
 import { createHmac } from "crypto";
-import { BANK_FACING_COUNTERPARTY_ENTITY, getBankFacingCounterpartyEntityId } from "./institutional-operating-model";
 
 // ============================================================
 // §XX.1 — CONSTITUTIONAL LEGAL ENTITIES
@@ -805,21 +797,3 @@ export function getCommercialGovernanceState(
     lastUpdated: new Date().toISOString(),
   };
 }
-
-// ============================================================
-// v25.3.7 — Bank-Facing Counterparty (canonical re-export)
-// ============================================================
-// Per M-directive (trace 1a0ee14af343a085): "Banks must see exactly ONE
-// external contractual counterparty for MITHQAL services." The canonical
-// source is src/lib/institutional-operating-model.ts. The 4-entity PLANNED
-// structure preserved above documents the TARGET institutional architecture
-// (Foundation / Holding / Operations / Markets) — banks do NOT contract
-// with those entities directly. Banks contract with the single
-// bankFacingCounterpartyEntityId exported below.
-//
-// Re-exports are additive (no behaviour change); existing consumers of this
-// module continue to work unchanged.
-
-export const BANK_FACING_COUNTERPARTY = BANK_FACING_COUNTERPARTY_ENTITY;
-export { getBankFacingCounterpartyEntityId };
-

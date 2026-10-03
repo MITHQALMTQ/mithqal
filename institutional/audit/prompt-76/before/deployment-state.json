@@ -1,0 +1,9 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "audit_id": "FA76-PA-001",
+  "vercel_config": "present (vercel.json, 2 crons)",
+  "vercel_deployment": "UNKNOWN — no Vercel API access; deployment not verifiable in this audit",
+  "github_actions": "present (.github/ directory)",
+  "caddyfile": "present (23 lines)",
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

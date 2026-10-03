@@ -1,24 +1,3 @@
-// ============================================================================
-// ⚠ HISTORICAL/SUPERSEDED — v25.3.2 remediation layer (2026-09-29)
-// ============================================================================
-// This file is part of the v23/v24 historical implementation. Per the v25.3
-// master blueprint authority hierarchy:
-//   v25.3.2 (current normative) > v25.3 (parent) > Constitution v19.0 (canonical) > historical
-//
-// HISTORICAL VERSIONS RETAIN TRACEABILITY ONLY. They cannot override the
-// current normative layer.
-//
-// This file is PRESERVED (not deleted) because it is still imported by other
-// modules. It is marked HISTORICAL for honest-state discipline per §74.
-//
-// Importers should migrate to the v25.x equivalents where available. See
-// CHANGE-LOG-v25.3.2.md for the migration map.
-// ============================================================================
-
-// === v25.3.2 STATUS MARKER ===
-// This entire module is HISTORICAL — see HISTORICAL/SUPERSEDED banner above.
-export const MODULE_STATUS: "ACTIVE" | "SUPERSEDED" | "HISTORICAL" | "PENDING_VALIDATION" = "HISTORICAL";
-export const SUPERSEDED_BY = "v25.3.2 policy-registry (see src/lib/policy-registry.ts)";
 // v24.2 §16-20 — Currency Structural Weight + Effective USD Exposure
 // =================================================================
 // New structural weight formula:
@@ -255,16 +234,8 @@ export function computeEffectiveUsdExposure(
   const directUsd = usdCashPct + usdSovereignPct;
   const usdStablecoins = usdcPct + usdpPct;
   const usdTokenized = buidlPct;
-  // NOTE: AED and SAR are fiat currencies officially pegged to USD by their
-  // respective central banks (AED = 3.6725 USD, SAR = 3.75 USD). This refers
-  // to the AED and SAR CURRENCIES being USD-pegged — NOT to MTQ being
-  // USD-pegged. MTQ itself is NOT USD-pegged; it is a permissioned,
-  // institutional, closed-loop settlement unit (per
-  // src/lib/mtq-economic-definition.ts). The "USD-equivalent" treatment
-  // here is a USD-exposure accounting convention for the reserve portfolio
-  // (counting AED/SAR exposure as USD-adjacent for the EffectiveUSD ceiling).
-  const peggedAed = aedPct * 1.0;  // AED currency pegged to USD at 3.6725 (currency fact, not MTQ peg)
-  const peggedSar = sarPct * 1.0;  // SAR currency pegged to USD at 3.75    (currency fact, not MTQ peg)
+  const peggedAed = aedPct * 1.0;  // 100% USD-equivalent (pegged at 3.6725)
+  const peggedSar = sarPct * 1.0;  // 100% USD-equivalent (pegged at 3.75)
 
   const totalExposure = directUsd + usdStablecoins + usdTokenized + peggedAed + peggedSar;
 

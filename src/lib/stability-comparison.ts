@@ -722,7 +722,7 @@ function main(): void {
       `MTQ survives all 5 crisis scenarios with redemption ALWAYS available (§36.3); ` +
       `minting pauses only when the §4 reserve ratio falls below 100% (e.g., 2008 GFC). ` +
       `As a medium of exchange MTQ is ${moeOk ? "suitable" : "marginal"} (vol < 5%), as a unit of account ${uoaOk ? "suitable" : "marginal"} (vol < 3%), and as a store of value ${sovOk ? "sound" : "marginal"} (positive real return, low MaxDD). ` +
-      `MTQ is a permissioned, institutional, closed-loop settlement unit (per src/lib/mtq-economic-definition.ts). It is NOT comparable to USD-pegged stablecoins — MTQ is gold-anchored (Constitution v19.0 §22), not USD-pegged. Its purchasing power is asset-agnostic across 7 supported settlement asset types.`
+      `MTQ occupies a unique niche: more stable than fiat or gold, less stable than USD-pegged stablecoins, but — unlike stablecoins — it is numeraire-independent and tracks gold (§1).`
   );
   console.log();
 

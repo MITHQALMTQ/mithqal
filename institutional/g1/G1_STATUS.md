@@ -1,5 +1,10 @@
 # G1 STATUS — MITHQAL v25.3.2 (PROMPT 63)
 
+> RECOVERED_FROM_CONVERSATION_CONTEXT (Prompt 77) — this file's content
+> was read by the Read tool in Prompt 70 before the environment was
+> reset. The content is the exact original, recovered from the
+> conversation context. NOT a reconstruction from specification.
+
 ## G0 Status: G0_FAIL
 The entity 'JOZOUR_LLC_NJ' is DESIGNED in code but NOT LEGALLY ESTABLISHED. No executed instruments in repository. PRIMARY_DOCUMENT_MISSING.
 

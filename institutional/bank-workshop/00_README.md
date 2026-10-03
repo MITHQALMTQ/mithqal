@@ -1,5 +1,10 @@
 # MITHQAL Bank Workshop Framework — README
 
+> RECOVERED_FROM_CONVERSATION_CONTEXT (Prompt 77) — this file's content
+> was read by the Read tool in Prompt 70 before the environment was
+> reset. The content is the exact original, recovered from the
+> conversation context. NOT a reconstruction from specification.
+
 ## Workshop Status: NOT_READY
 
 The workshop framework is COMPLETE (all templates, categories, processes, and decision gates defined). However, the workshop is NOT_READY because:

@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { Twitter } from "lucide-react";
 import { Logo } from "@/components/logo";
 
 /**
@@ -55,12 +54,6 @@ export function SiteFooter() {
             <Link href="/legal/cookies" className="text-[12px] text-fg-muted transition hover:text-foreground">
               Cookie Policy
             </Link>
-            <Link href="/legal/institutional-trust" className="text-[12px] text-fg-muted transition hover:text-foreground">
-              Institutional Trust (§1.4)
-            </Link>
-            <Link href="/legal/indemnification" className="text-[12px] text-fg-muted transition hover:text-foreground">
-              Manager Indemnification (§1.5)
-            </Link>
             <Link href="/legal/jozour-llc-nj-certificate.pdf" className="text-[12px] text-fg-muted transition hover:text-foreground" target="_blank" rel="noopener noreferrer">
               Entity Certificate (PDF)
             </Link>
@@ -78,19 +71,9 @@ export function SiteFooter() {
               href="https://github.com/MITHQALMTQ/mithqal"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-[12px] text-fg-muted transition hover:text-foreground"
+              className="text-[12px] text-fg-muted transition hover:text-foreground"
             >
               GitHub (public)
-            </a>
-            <a
-              href="https://x.com/MithqalMTQ"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-[12px] text-fg-muted transition hover:text-foreground"
-              aria-label="MITHQAL on X (Twitter) — @MithqalMTQ"
-            >
-              <Twitter className="h-3.5 w-3.5" />
-              X / Twitter (@MithqalMTQ)
             </a>
             <a
               href="https://testnet.monadscan.com/address/0x9e6EdC15DAc420931508d8Ddf9BC817651A253aD"

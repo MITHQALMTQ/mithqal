@@ -61,8 +61,6 @@ export default function OSPage() {
   const sim = useFetch("/api/reserve-simulator");
   const corridor = useFetch("/api/corridor");
   const token = useFetch("/api/tokenization");
-  // v25.3.6 — Pilot 1 reserve config (gold=0%, digital=0%, AVAILABLE_FOR_FUTURE_VALIDATED_CONFIGURATION)
-  const pilot1 = useFetch<any>("/api/pilot-1-config");
 
   return (
     <div className="flex min-h-screen flex-col bg-[#0a0a0b] text-gray-200">
@@ -81,12 +79,12 @@ export default function OSPage() {
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
             <h1 className="font-display text-3xl font-bold text-white">MTQ Operating System</h1>
             <p className="mt-2 text-sm text-gray-500">Complete institutional operating layer — bank integration, issuance pipeline, reserve simulation, cross-border corridor, and tokenization</p>
-            <div className="mt-3 flex flex-wrap gap-2"><Badge variant="gold">§V25.3</Badge><Badge variant="emerald">7/7 Finality</Badge><Badge variant="amber">130% Strategic Target (example)</Badge><Badge variant="red">0/13 Gates</Badge></div>
+            <div className="mt-3 flex flex-wrap gap-2"><Badge variant="gold">§V25.3</Badge><Badge variant="emerald">7/7 Finality</Badge><Badge variant="amber">130% Target</Badge><Badge variant="red">0/13 Gates</Badge></div>
           </motion.div>
 
           {/* ISSUANCE PIPELINE */}
           <section>
-            <div className="mb-4 flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-xl border border-gold/20 bg-gold/5"><Layers className="h-5 w-5 text-gold" /></div><div><h2 className="font-display text-xl font-bold text-white">§10 Settlement Pipeline</h2><p className="text-[11px] text-gray-500">17-step BM-01 → BM-16B · Bank requests, MITHQAL authorizes, MTQ module executes (if settlement asset = MTQ)</p></div></div>
+            <div className="mb-4 flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-xl border border-gold/20 bg-gold/5"><Layers className="h-5 w-5 text-gold" /></div><div><h2 className="font-display text-xl font-bold text-white">§10 Issuance Pipeline</h2><p className="text-[11px] text-gray-500">16-step BM-01 → BM-16 · Bank requests, MITHQAL authorizes, Technical system executes</p></div></div>
             {!mtqos.data ? <GlassCard className="flex items-center gap-2 p-4"><RefreshCw className="h-4 w-4 animate-spin text-gold" /><span className="text-xs text-gray-400">Loading…</span></GlassCard> : (
               <GlassCard className="p-5"><div className="flex flex-wrap gap-1.5">
                 {Arr(mtqos.data.issuanceSteps).map((s: any, i: number) => (
@@ -141,49 +139,20 @@ export default function OSPage() {
                 <GlassCard className="p-4"><div className="text-[10px] text-gray-500">Base RR</div><div className="mt-1 font-display text-xl font-bold text-gold">{(N(sim.data.baseSimulation?.RR) * 100).toFixed(2)}%</div></GlassCard>
                 <GlassCard className="p-4"><div className="text-[10px] text-gray-500">Base FSCR</div><div className="mt-1 font-display text-xl font-bold text-emerald-400">{(N(sim.data.baseSimulation?.FSCR) * 100).toFixed(2)}%</div></GlassCard>
                 <GlassCard className="p-4"><div className="text-[10px] text-gray-500">MC P(RR&lt;100%)</div><div className="mt-1 font-display text-xl font-bold text-red-400">{(N(sim.data.monteCarlo?.probRRBelow100) * 100).toFixed(2)}%</div></GlassCard>
-                <GlassCard className="p-4"><div className="text-[10px] text-gray-500">MC P(RR&lt;130% strategic target)</div><div className="mt-1 font-display text-xl font-bold text-amber">{(N(sim.data.monteCarlo?.probRRBelow130) * 100).toFixed(2)}%</div></GlassCard>
+                <GlassCard className="p-4"><div className="text-[10px] text-gray-500">MC P(RR&lt;130%)</div><div className="mt-1 font-display text-xl font-bold text-amber">{(N(sim.data.monteCarlo?.probRRBelow130) * 100).toFixed(2)}%</div></GlassCard>
               </div>
             )}
           </section>
 
           {/* CORRIDOR */}
           <section>
-            <div className="mb-4 flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-xl border border-gold/20 bg-gold/5"><Globe className="h-5 w-5 text-gold" /></div><div><h2 className="font-display text-xl font-bold text-white">Cross-Border Corridor — AED ↔ SGD</h2><p className="text-[11px] text-gray-500">FX discovery · compliance · finality-coordinated settlement (UAE ↔ Singapore span separate legal finality domains)</p></div></div>
+            <div className="mb-4 flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-xl border border-gold/20 bg-gold/5"><Globe className="h-5 w-5 text-gold" /></div><div><h2 className="font-display text-xl font-bold text-white">Cross-Border Corridor — AED ↔ SGD</h2><p className="text-[11px] text-gray-500">FX discovery · compliance · atomic settlement</p></div></div>
             {!corridor.data ? <GlassCard className="p-4"><span className="text-xs text-gray-400">Loading…</span></GlassCard> : (
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                 <GlassCard glow className="p-4"><div className="flex items-center justify-between"><Cpu className="h-4 w-4 text-gold" /><Badge variant="gold">FX</Badge></div><div className="mt-2 font-mono text-lg text-gold">{S(corridor.data.sampleRunSummary?.fxRoute)}</div></GlassCard>
                 <GlassCard glow className="p-4"><div className="flex items-center justify-between"><Shield className="h-4 w-4 text-emerald-400" /><Badge variant="emerald">Compliance</Badge></div><div className="mt-2 font-mono text-lg text-emerald-400">{corridor.data.sampleRunSummary?.compliancePassed ? "PASSED" : "FAILED"}</div></GlassCard>
                 <GlassCard glow className="p-4"><div className="flex items-center justify-between"><ArrowRight className="h-4 w-4 text-amber" /><Badge variant="amber">Settlement</Badge></div><div className="mt-2 font-mono text-lg text-amber">{S(corridor.data.sampleRunSummary?.settlementStatus)}</div></GlassCard>
               </div>
-            )}
-          </section>
-
-          {/* PILOT 1 RESERVE CONFIG (v25.3.6) */}
-          <section>
-            <div className="mb-4 flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-xl border border-gold/20 bg-gold/5"><Shield className="h-5 w-5 text-gold" /></div><div><h2 className="font-display text-xl font-bold text-white">Pilot 1 Reserve Configuration</h2><p className="text-[11px] text-gray-500">Per L-directive (trace 1a0edf8e1d339851) · gold = 0% · digital = 0% · AVAILABLE_FOR_FUTURE_VALIDATED_CONFIGURATION (NOT deleted)</p></div></div>
-            {!pilot1.data ? <GlassCard className="p-4"><span className="text-xs text-gray-400">Loading…</span></GlassCard> : (
-              <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
-                <GlassCard className="p-4"><div className="text-[10px] text-gray-500">Active Total Weight</div><div className="mt-1 font-display text-xl font-bold text-emerald-400">{(N(pilot1.data.summary?.activeSettlementAssetsTotalWeight) * 100).toFixed(0)}%</div><div className="text-[9px] text-gray-500">legally supportable settlement assets</div></GlassCard>
-                <GlassCard className="p-4"><div className="text-[10px] text-gray-500">Future-Validated Weight</div><div className="mt-1 font-display text-xl font-bold text-amber">{(N(pilot1.data.summary?.futureValidatedCapabilitiesTotalWeight) * 100).toFixed(0)}%</div><div className="text-[9px] text-gray-500">gold + digital — capability preserved</div></GlassCard>
-                <GlassCard className="p-4"><div className="text-[10px] text-gray-500">Gold Weight</div><div className="mt-1 font-display text-xl font-bold text-gray-400">{(N(pilot1.data.details?.goldWeight ?? (pilot1.data.config?.find((a: any) => a.assetClass === "GOLD")?.weight ?? 0)) * 100).toFixed(0)}%</div><div className="text-[9px] text-amber">AVAILABLE_FOR_FUTURE_VALIDATED_CONFIGURATION</div></GlassCard>
-                <GlassCard className="p-4"><div className="text-[10px] text-gray-500">Stablecoin (Digital) Weight</div><div className="mt-1 font-display text-xl font-bold text-gray-400">{(N(pilot1.data.config?.find((a: any) => a.assetClass === "STABLECOIN")?.weight ?? 0) * 100).toFixed(0)}%</div><div className="text-[9px] text-amber">AVAILABLE_FOR_FUTURE_VALIDATED_CONFIGURATION</div></GlassCard>
-              </div>
-            )}
-            {pilot1.data && (
-              <GlassCard className="mt-3 p-4"><div className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-gray-500">Pilot 1 ACTIVE Settlement Assets ({Arr(pilot1.data.activeAssets).length})</div>
-                <div className="flex flex-wrap gap-2">
-                  {Arr(pilot1.data.activeAssets).map((a: any, i: number) => (
-                    <div key={i} className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-3 py-1.5"><span className="font-mono text-[10px] font-bold text-emerald-400">{(N(a.weight) * 100).toFixed(0)}%</span> <span className="text-[10px] text-gray-300">{S(a.assetClass)}</span></div>
-                  ))}
-                </div>
-                <div className="mt-3 mb-2 text-[10px] font-semibold uppercase tracking-wider text-amber">AVAILABLE_FOR_FUTURE_VALIDATED_CONFIGURATION ({Arr(pilot1.data.futureValidatedCapabilities).length})</div>
-                <div className="flex flex-wrap gap-2">
-                  {Arr(pilot1.data.futureValidatedCapabilities).map((a: any, i: number) => (
-                    <div key={i} className="rounded-lg border border-amber-500/20 bg-amber-500/5 px-3 py-1.5"><span className="font-mono text-[10px] font-bold text-amber">{(N(a.weight) * 100).toFixed(0)}%</span> <span className="text-[10px] text-gray-300">{S(a.assetClass)}</span></div>
-                  ))}
-                </div>
-                <div className="mt-3 text-[10px] text-gray-500">Canonical source: <span className="font-mono text-gold">{S(pilot1.data._meta?.configSource)}</span> · version <span className="font-mono text-gold">{S(pilot1.data._meta?.configVersion)}</span> · see <Link href="/" className="text-gold underline">dashboard</Link> for full breakdown.</div>
-              </GlassCard>
             )}
           </section>
 

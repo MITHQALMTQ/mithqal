@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "audit_id": "FA74-PA-001",
+  "source": "Prompt 74, Section AF (Performance / Runtime Regression)",
+  "status": "ISSUED",
+  "runtime_regression": {
+    "workflow_execution": { "status": "NOT_VERIFIED — no runtime", "evidence": "NONE" },
+    "event_processing": { "status": "NOT_VERIFIED", "evidence": "NONE" },
+    "retry_behavior": { "status": "NOT_VERIFIED", "evidence": "NONE" },
+    "idempotency": { "status": "NOT_VERIFIED", "evidence": "NONE" },
+    "dlq_behavior": { "status": "NOT_VERIFIED", "evidence": "NONE" },
+    "replay": { "status": "NOT_VERIFIED — assurance framework (replay protocol) MISSING from filesystem", "evidence": "NONE" },
+    "reconciliation": { "status": "NOT_VERIFIED", "evidence": "NONE" },
+    "audit_logging": { "status": "PARTIAL — audit/push-log.jsonl present + pre-push hook; but runtime audit logging not verified", "evidence": "audit/push-log.jsonl" },
+    "policy_evaluation": { "status": "NOT_VERIFIED — policy-registry.ts MISSING", "evidence": "NONE" },
+    "authorization": { "status": "NOT_VERIFIED", "evidence": "NONE" },
+    "safe_halt": { "status": "NOT_VERIFIED", "evidence": "NONE" }
+  },
+  "items_verified": 0,
+  "items_total": 11,
+  "items_not_verified": 11,
+  "rule": "Per Section AF: 'Do not fabricate production-performance results.' No performance results fabricated. All runtime regression items are NOT_VERIFIED because no runtime exists.",
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

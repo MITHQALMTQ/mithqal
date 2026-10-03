@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "package_id": "SIE-PA-001",
+  "version": "v25.3.2-P72-1.0",
+  "date": "2026-10-03T00:00:00Z",
+  "owner": "JOZOUR_LLC_NJ (G0_CONDITIONAL)",
+  "source": "Prompt 72, Section AN",
+  "status": "DESIGNED (template — NOT activated)",
+  "pilot": "PILOT-A-001",
+  "second_institution_required": "UNKNOWN",
+  "second_institution_required_detail": "Per Section AD: the question is premature because no first-institution evidence exists. The honest answer is UNKNOWN — cannot be determined until a first institution engages and produces evidence.",
+  "activation_conditions": [
+    "First Pilot A executed and produced evidence",
+    "First Pilot A evidence independently assured",
+    "Repeatability analysis indicates second institution required",
+    "SECOND_INSTITUTION_REQUIRED = YES supported by evidence"
+  ],
+  "activation_conditions_met": false,
+  "comparison_framework": {
+    "same_metrics": [
+      "15 KPI definitions + formulas + inclusion/exclusion rules + timestamp basis",
+      "19 BM step definitions",
+      "Tolerance classes",
+      "15 failure scenarios",
+      "12 stop conditions",
+      "18 conditions precedent",
+      "Evidence schema (FROZEN EvidencePackage)",
+      "Access levels (PUBLIC / INSTITUTIONAL / AUDIT)"
+    ],
+    "different_metrics": [
+      "bank baseline (different bank → different baseline)",
+      "bank system landscape",
+      "bank operational context",
+      "bank compliance requirements (potentially)",
+      "corridor (if different per Section AN)",
+      "rail (if different per Section AN)",
+      "workflow (if different per Section AN)"
+    ],
+    "comparison_methodology": [
+      "Record first-pilot value",
+      "Record second-pilot value",
+      "Compute variance",
+      "Classify: MATCH / MISMATCH / INSUFFICIENT_EVIDENCE",
+      "If MISMATCH: investigate cause (bank-specific? workflow-specific? corridor-specific?)",
+      "Determine generalizability per 21_repeatability-analysis.md"
+    ]
+  },
+  "first_pilot_evidence_available": false,
+  "first_pilot_evidence_summary": "NONE — Pilot A not executed; 0 transactions; 0 KPIs measured; 0 evidence collected.",
+  "second_pilot_evidence_available": false,
+  "second_pilot_evidence_summary": "NONE — second pilot not activated.",
+  "variance_count": 0,
+  "generalizability_assessment": "UNKNOWN — no evidence to assess generalizability.",
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

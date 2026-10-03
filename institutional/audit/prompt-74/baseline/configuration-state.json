@@ -1,0 +1,111 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "audit_id": "FA74-PA-001",
+  "version": "v25.3.2-P74-1.0",
+  "date": "2026-10-03T05:12:00Z",
+  "owner": "JOZOUR_LLC_NJ (G0_CONDITIONAL)",
+  "source": "Prompt 74, Sections B + M",
+  "status": "IMMUTABLE_SNAPSHOT",
+  "configuration_state": {
+    "env_file": {
+      "path": ".env",
+      "present": true,
+      "lines": 1,
+      "hash": "be8e1a92feff8f6cb699a9a70cc7d76a183538ab8c68a45e7d40f0d32bf20b94",
+      "status": "NEAR_EMPTY — only 1 line (secrets not provisioned in this environment; prior worklog documented many env vars expected but only 1 line present)"
+    },
+    "env_example_file": {
+      "path": ".env.example",
+      "present": true,
+      "lines": 52,
+      "hash": "aa47a79cbeb93fc94e6d217c6748707dd86adf308cdec98dc16e090ce01f96f0",
+      "status": "PRESENT — 52 lines documenting expected environment variables"
+    },
+    "env_encrypted": {
+      "path": ".env.encrypted",
+      "present": true,
+      "size": "2912 bytes (per earlier ls)",
+      "status": "PRESENT — encrypted env file (not decrypted in this audit)"
+    },
+    "package_json": {
+      "path": "package.json",
+      "present": true,
+      "lines": 113,
+      "hash": "7956f1a7dacdc022bb55df5a449f39e9d44625412f3cd9c2f8f84df8b8d0e618",
+      "name": "nextjs_tailwind_shadcn_ts",
+      "version": "0.2.1",
+      "dependencies_count": 80,
+      "devDependencies_count": 10
+    },
+    "bun_lock": {
+      "path": "bun.lock",
+      "present": true,
+      "status": "PRESENT — lockfile"
+    },
+    "vercel_json": {
+      "path": "vercel.json",
+      "present": true,
+      "lines": 6,
+      "crons_count": 2
+    },
+    "caddyfile": {
+      "path": "Caddyfile",
+      "present": true,
+      "lines": 23
+    },
+    "gitignore": {
+      "path": ".gitignore",
+      "present": true,
+      "status": "PRESENT — excludes node_modules, .env (but .env is tracked! — see CRITICAL_FINDING below)"
+    },
+    "gitmodules": {
+      "path": ".gitmodules",
+      "present": true,
+      "status": "PRESENT — 2 submodules (foundry/lib/forge-std, foundry/lib/openzeppelin-contracts)"
+    }
+  },
+  "environment_variables_audit": {
+    "expected_count_per_env_example": 52,
+    "actual_count_in_env": 1,
+    "status": "MISSING — 51 of 52 expected environment variables are NOT provisioned in .env",
+    "note": "Per Section M: 'Do not expose secret values.' This audit does not read or expose any secret values. It only reports PRESENT/MISSING/MISCONFIGURED/UNKNOWN counts.",
+    "critical_missing": [
+      "TURSO_DATABASE_URL (MISSING — primary database)",
+      "TURSO_AUTH_TOKEN (MISSING)",
+      "NEON_DATABASE_URL (MISSING — analytics replica)",
+      "AWS_ENDPOINT_URL_S3 (MISSING — evidence archive)",
+      "AWS_ACCESS_KEY_ID (MISSING)",
+      "AWS_SECRET_ACCESS_KEY (MISSING)",
+      "NEON_AI_GATEWAY_TOKEN (MISSING — Brain 6th provider)",
+      "CRON_SECRET (MISSING — cron authentication)",
+      "GEMINI_KEY (MISSING — Brain provider)",
+      "HUGGINGFACE_KEY / HF_KEY (MISSING — Brain provider)",
+      "GROQ_KEY (MISSING — Brain provider)",
+      "OPENROUTER_KEY (MISSING — Brain provider)",
+      "NVIDIA_KEY (MISSING — Brain provider)",
+      "NEXTAUTH_SECRET (MISSING — auth)",
+      "DISCORD_WEBHOOK_URL (MISSING — monitoring)"
+    ]
+  },
+  "feature_flags": "NOT_AUDITED — no dedicated feature flag system detected; feature flags embedded in code (e.g., NEON_ENDPOINT_VERIFIED env gate per prior worklog)",
+  "policy_registry": "MISSING — src/lib/policy-registry.ts does NOT EXIST in this repository (frozen schema absent)",
+  "deployment_configuration": "vercel.json present (2 crons); Caddyfile present (23 lines)",
+  "cron_schedule_configuration": {
+    "vercel_crons": 2,
+    "inngest_crons": "dataSourceSync + proofsPublishSync + marketDataSync (per prior worklog — 3 functions registered)",
+    "mutual_exclusion_note": "Per prior worklog: Vercel Cron for /api/proofs/publish should be disabled once Inngest is the active scheduler (mutual exclusion — NOT both schedules at once)"
+  },
+  "inngest_workflows": "src/lib/inngest-client.ts present (80 lines); 3 functions: dataSourceSync, proofsPublishSync, marketDataSync",
+  "database_connections": "Turso (primary) + Neon (replica) + file: SQLite (fallback) — all configured in code; none live-verified (credentials absent)",
+  "secrets_references": "Per Section M: 'Do not expose secret values.' This audit reports only PRESENT/MISSING status. All secrets are MISSING (1 line in .env; 51 of 52 expected vars absent).",
+  "auth_configuration": "NextAuth.js v4 available per prior worklog; NEXTAUTH_SECRET MISSING",
+  "logging": "per-endpoint logging in route.ts files; no centralized logging service detected",
+  "monitoring": "Discord webhook (DISCORD_WEBHOOK_URL MISSING); no other monitoring service detected",
+  "retry_configuration": "Inngest built-in retry; Vercel serverless platform retry; per-endpoint fetchWithTimeout",
+  "dead_letter_handling": "Inngest DLQ (platform-managed); no custom DLQ detected",
+  "idempotency": "per-endpoint idempotency keys (per prior worklog — idempotency key on each instruction)",
+  "replay": "per Prompt 70 design (09_replay-protocol.md) — BUT the assurance framework (including replay protocol) is MISSING from the repository (never committed)",
+  "audit_trail": "audit/push-log.jsonl present (modified in working tree); pre-push hook logging",
+  "CRITICAL_FINDING": ".env is tracked in git (hash be8e1a92... committed in c7dafc6) but .gitignore likely excludes it — this means the .env was committed despite .gitignore. The 1-line .env does not contain actual secrets (per prior verification — '1 line'). The env.encrypted (2912 bytes) may contain the actual encrypted secrets. No secret values are exposed in this audit.",
+  "NOT_PRODUCTION_AUTHORIZED": true
+}
