@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "package_id": "EER-PA-001",
+  "version": "v25.3.2-P73-1.0",
+  "date": "2026-10-03T00:00:00Z",
+  "owner": "JOZOUR_LLC_NJ (G0_CONDITIONAL)",
+  "source": "Prompt 73, Section N",
+  "status": "ISSUED",
+  "pilot": "PILOT-A-001",
+  "description": "Register of all external evidence obtained. Each record has: evidence_id, evidence_type, external_party, date, document, claim_supported, scope, authority, status, owner, verification, expiry, limitations. Currently EMPTY — no external evidence has been obtained.",
+  "evidence_types": [
+    "COUNSEL_OPINION",
+    "REGULATOR_COMMUNICATION",
+    "BANK_CONFIRMATION",
+    "EXECUTED_AGREEMENT",
+    "CUSTODIAN_CONFIRMATION",
+    "ASSURANCE_REPORT",
+    "EXTERNAL_RAIL_CONFIRMATION",
+    "BANK_MEASUREMENT",
+    "PILOT_RECORD",
+    "OTHER_EXTERNAL"
+  ],
+  "evidence_records_count": 0,
+  "evidence_records": [],
+  "note": "The evidence_records array is EMPTY. Zero external evidence has been obtained. Per Section E (external-evidence firewall), no internal artifact may satisfy an external-evidence requirement. Therefore no internal artifact appears in this register. Every entry in this register (when any appear) must be an actual external-evidence document — signed counsel opinion, regulator communication, bank confirmation, executed agreement, custodian confirmation, assurance report, external rail confirmation, bank measurement, or pilot record.",
+  "evidence_obtained_by_type": {
+    "COUNSEL_OPINION": 0,
+    "REGULATOR_COMMUNICATION": 0,
+    "BANK_CONFIRMATION": 0,
+    "EXECUTED_AGREEMENT": 0,
+    "CUSTODIAN_CONFIRMATION": 0,
+    "ASSURANCE_REPORT": 0,
+    "EXTERNAL_RAIL_CONFIRMATION": 0,
+    "BANK_MEASUREMENT": 0,
+    "PILOT_RECORD": 0,
+    "OTHER_EXTERNAL": 0
+  },
+  "no_internal_artifact_as_external_evidence_rule": "enforced — per Section E, no internal artifact (code, tests, simulations, architecture, documentation, internal controls, internal replay) may satisfy an external-evidence requirement. This register accepts only actual external-evidence documents.",
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

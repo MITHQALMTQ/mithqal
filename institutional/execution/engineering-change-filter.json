@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "package_id": "ECF-PA-001",
+  "version": "v25.3.2-P73-1.0",
+  "date": "2026-10-03T00:00:00Z",
+  "owner": "JOZOUR_LLC_NJ (G0_CONDITIONAL)",
+  "source": "Prompt 73, Section S",
+  "status": "ISSUED",
+  "pilot": "PILOT-A-001",
+  "build_mode": "FROZEN",
+  "description": "Engineering change filter. Any new engineering request must be classified. Only the first 6 categories may enter the controlled pilot change queue automatically. Everything else requires management review.",
+  "classification_categories": [
+    { "category": "CRITICAL_PILOT_FIX", "enters_pilot_change_queue_automatically": true, "requires_management_review": false, "requires_external_evidence": true, "description": "a fix required to keep the pilot running (e.g., a control that fails mid-pilot)" },
+    { "category": "LEGAL_REQUIRED_CHANGE", "enters_pilot_change_queue_automatically": true, "requires_management_review": false, "requires_external_evidence": true, "description": "a change required by counsel (e.g., structural change to satisfy legal opinion)" },
+    { "category": "SECURITY_REQUIRED_CHANGE", "enters_pilot_change_queue_automatically": true, "requires_management_review": false, "requires_external_evidence": true, "description": "a change required by security review (e.g., pilot-blocking control gap)" },
+    { "category": "BANK_REQUIRED_FOR_PILOT", "enters_pilot_change_queue_automatically": true, "requires_management_review": false, "requires_external_evidence": true, "description": "a change required by the bank for pilot participation (e.g., pilot-blocking requirement)" },
+    { "category": "REGULATORY_REQUIRED", "enters_pilot_change_queue_automatically": true, "requires_management_review": false, "requires_external_evidence": true, "description": "a change required by the regulator (e.g., to satisfy authorization conditions)" },
+    { "category": "GENERALIZABLE_PRODUCT_REQUIREMENT", "enters_pilot_change_queue_automatically": true, "requires_management_review": false, "requires_external_evidence": true, "description": "a requirement justified by independently measured evidence that generalizes beyond one bank/corridor" },
+    { "category": "BANK_SPECIFIC_REQUEST", "enters_pilot_change_queue_automatically": false, "requires_management_review": true, "requires_external_evidence": true, "description": "a request specific to one bank (not generalizable); requires management review" },
+    { "category": "OPTIONAL", "enters_pilot_change_queue_automatically": false, "requires_management_review": true, "requires_external_evidence": false, "description": "an optional enhancement; requires management review; low priority" },
+    { "category": "UNJUSTIFIED", "enters_pilot_change_queue_automatically": false, "requires_management_review": true, "requires_external_evidence": false, "description": "a request without external evidence or justification; rejected by default" }
+  ],
+  "every_proposed_change_requires": [
+    "external_trigger",
+    "evidence",
+    "problem",
+    "impact",
+    "scope",
+    "generalizability",
+    "legal_review",
+    "security_review",
+    "change_request"
+  ],
+  "request_without_evidence_status": "REQUEST_ONLY",
+  "current_change_requests_count": 0,
+  "current_change_requests": [],
+  "note": "The current_change_requests array is EMPTY. No engineering change requests exist. Per Section R (no-more-build rule): BUILD_MODE = FROZEN unless one of 7 external-evidence triggers occurs (legal counsel structural change; bank pilot-blocking requirement; security pilot-blocking gap; assurance material deficiency; regulator required change; actual pilot evidence material defect; independently measured generalizable requirement). None of these triggers has occurred. No change requests are pending.",
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

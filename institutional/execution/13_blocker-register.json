@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "package_id": "BR-PA-001",
+  "version": "v25.3.2-P73-1.0",
+  "date": "2026-10-03T00:00:00Z",
+  "owner": "JOZOUR_LLC_NJ (G0_CONDITIONAL)",
+  "source": "Prompt 73, Section F #13",
+  "status": "ISSUED",
+  "pilot": "PILOT-A-001",
+  "description": "Register of all blockers preventing MITHQAL institutional advancement. Each blocker has: blocker_id, description, blocking, impact, owner, required_action, status.",
+  "blockers_total_count": 6,
+  "blockers_blocking_count": 6,
+  "blockers_resolved_count": 0,
+  "blockers": [
+    {
+      "blocker_id": "BLK-01",
+      "description": "G0_FAIL/G0_CONDITIONAL — entity JOZOUR_LLC_NJ is DESIGNED in code but NOT LEGALLY ESTABLISHED. 5 primary documents MISSING/PENDING. No authority may be exercised. No counsel may opine. No bank may be approached.",
+      "blocking": true,
+      "impact": "blocks all downstream gates (G1, G2, G3, G4, G5, G6, G7, G8, G9, G10, G11)",
+      "owner": "JOZOUR_LLC_NJ principal",
+      "required_action": "Engage qualified external legal counsel for UAE (DIFC/ADGM); deposit 5 primary documents; obtain G0_PASS",
+      "status": "OPEN"
+    },
+    {
+      "blocker_id": "BLK-02",
+      "description": "Institutional record continuity gap — artifacts from Prompts 62-71 (G0/G1 baseline, corridor decision, bank pipeline, counsel package, executive package, bank workshop, pilot term sheet, assurance framework) are NOT present on the current filesystem due to environment reset. The Prompt 70 worklog append (which brought the worklog to 12,242 lines) is absent. git HEAD = 0e21d44. The Prompt 70 work was uncommitted and was lost when the environment was reset.",
+      "blocking": true,
+      "impact": "cannot reference prior artifacts; must restore or re-create before any institutional decision can rely on the repository as a continuous record",
+      "owner": "JOZOUR_LLC_NJ principal",
+      "required_action": "Restore the prior institutional artifacts from any available backup, OR re-create them from the conversation history of prior sessions. The /institutional/assurance/ directory (42 files from Prompt 70) and the /institutional/{g1,corridors,banks,legal,bank-workshop,pilot}/ directories from Prompts 62-69 must be present on the filesystem.",
+      "status": "OPEN"
+    },
+    {
+      "blocker_id": "BLK-03",
+      "description": "0 banks contacted (15 researched). No bank engagement. No NDA. No DPA. No baseline data. No design partner.",
+      "blocking": true,
+      "impact": "no bank-validated problem; no bank baseline; no KPI measurement possible; no pilot",
+      "owner": "JOZOUR_LLC_NJ principal",
+      "required_action": "G0_PASS → G1 counsel → contact 1 UAE bank (DIFC/ADGM) → execute NDA → conduct workshop",
+      "status": "OPEN"
+    },
+    {
+      "blocker_id": "BLK-04",
+      "description": "0 counsel engaged. 50 legal questions unanswered. 22 counsel deliverables unproduced. 3 blocking legal contradictions unresolved.",
+      "blocking": true,
+      "impact": "no legal opinion; no jurisdictional validation; no regulatory engagement; no bank engagement",
+      "owner": "JOZOUR_LLC_NJ principal",
+      "required_action": "G0_PASS → engage qualified external counsel for UAE (DIFC/ADGM)",
+      "status": "OPEN"
+    },
+    {
+      "blocker_id": "BLK-05",
+      "description": "Pilot A NOT_EXECUTED. Pilot term sheet at DRAFT (not negotiated). 0/18 conditions precedent satisfied. 0/15 KPI baselines available. 0 transactions. 0 evidence.",
+      "blocking": true,
+      "impact": "no evidence; no assurance; no measured outcome; no repeatability; INSTITUTIONAL_OUTCOME = NOT_YET_DETERMINED",
+      "owner": "JOZOUR_LLC_NJ principal + bank",
+      "required_action": "G0 → G1 → G3 (bank) → G4 (term sheet EXECUTED) → G7 (pilot authorization + execution)",
+      "status": "OPEN"
+    },
+    {
+      "blocker_id": "BLK-06",
+      "description": "0 independent assurance providers engaged. 0 engagements signed. 0 fieldwork. 0 findings. 0 reports. Assurance framework DESIGNED but not executed (and framework artifacts not on filesystem).",
+      "blocking": true,
+      "impact": "no INDEPENDENTLY_ASSURED state; no independent verification; no assurance report",
+      "owner": "JOZOUR_LLC_NJ principal",
+      "required_action": "G7 (pilot execution + evidence) → select provider via evaluation framework → engagement → fieldwork → report",
+      "status": "OPEN"
+    }
+  ],
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "package_id": "EDR2-PA-001",
+  "version": "v25.3.2-P73-1.0",
+  "date": "2026-10-03T00:00:00Z",
+  "owner": "JOZOUR_LLC_NJ (G0_CONDITIONAL)",
+  "source": "Prompt 73, Section Q",
+  "status": "ISSUED",
+  "pilot": "PILOT-A-001",
+  "description": "Register of actual decisions from bank, counsel, regulator, custodian, assurance provider. Each record has: decision_id, party, decision, date, scope, source, conditions, implications, next_action. Do not convert discussion into a decision.",
+  "decisions_total_count": 0,
+  "decisions_by_party": {
+    "bank": 0,
+    "counsel": 0,
+    "regulator": 0,
+    "custodian": 0,
+    "assurance_provider": 0
+  },
+  "decisions": [],
+  "note": "The decisions array is EMPTY. Zero external decisions have been made. Per Section Q: 'Do not convert discussion into a decision.' A decision requires actual decision evidence (signed decision document, formal letter, board resolution, or equivalent). A discussion (even a positive one) is NOT a decision.",
+  "no_discussion_as_decision_rule": "enforced — a discussion (meeting, email thread, verbal exchange) is NOT a decision. A decision requires formal decision evidence. This register accepts only actual decisions with documentary evidence.",
+  "party_values": ["bank", "counsel", "regulator", "custodian", "assurance_provider"],
+  "NOT_PRODUCTION_AUTHORIZED": true
+}
