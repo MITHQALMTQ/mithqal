@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "remediation_id": "FR75-PA-001",
+  "source": "Prompt 75, Section (07_code-remediation)",
+  "status": "ISSUED",
+  "findings_addressed": "see 01_remediation-register.json",
+  "remediation_executed": "per change register (03_change-register.json)",
+  "no_architecture_change": true,
+  "no_new_defects_introduced": true,
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

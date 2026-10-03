@@ -1,0 +1,216 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "remediation_id": "FR75-PA-001",
+  "source": "Prompt 75, Section C (Remediation Register)",
+  "status": "ISSUED",
+  "description": "Each finding from Prompt 74 mapped to a remediation action. Per Section B: only VERIFIED_DEFECT/LOSS/REGRESSION/DRIFT may be remediated. Per Section C: each finding has finding_id, prompt_id, category, description, source_evidence, severity, root_cause, required_change, change_type, affected_files, approval_required, status, verification_method, regression_tests, closure_evidence.",
+  "findings_total": 19,
+  "findings_by_severity": { "P0": 16, "P1": 2, "P2": 1 },
+  "findings_by_status": { "IN_PROGRESS": 5, "OPEN": 13, "NOT_APPLICABLE": 1 },
+  "findings": [
+    {
+      "finding_id": "LD-01", "prompt_id": "P70-73", "requirement_id": "frozen-schema-1", "category": "VERIFIED_LOSS",
+      "description": "src/lib/controlled-architecture-freeze.ts does not exist in this repository",
+      "source_evidence": "P74 04_loss-and-deletion-report.json LD-01; git log --all returns 0 matches",
+      "severity": "P0", "root_cause": "file was referenced in Prompts 70-73 as a FROZEN schema but was never a source file in this repository — it was a referential construct",
+      "required_change": "DOCUMENTATION remediation: correct references in institutional/outcome/ + institutional/execution/ to mark as REFERENCED_BUT_ABSENT; do NOT re-create (was never a source file)",
+      "change_type": "DOCUMENTATION", "affected_files": ["institutional/outcome/00_README.md", "institutional/execution/00_README.md"],
+      "affected_components": ["institutional documentation"], "affected_data": "none", "affected_docs": ["institutional/outcome/", "institutional/execution/"],
+      "affected_runtime": "none", "approval_required": "AUTO_ALLOWED", "status": "IN_PROGRESS",
+      "verification_method": "grep for 'controlled-architecture-freeze' in institutional/ — verify all references corrected to REFERENCED_BUT_ABSENT",
+      "regression_tests": ["institutional documentation consistency check"],
+      "closure_evidence": "NONE — IN_PROGRESS"
+    },
+    {
+      "finding_id": "LD-02", "prompt_id": "P70-73", "requirement_id": "frozen-schema-2", "category": "VERIFIED_LOSS",
+      "description": "src/lib/institutional-evidence-fabric.ts does not exist",
+      "source_evidence": "P74 LD-02; git log --all returns 0 matches",
+      "severity": "P0", "root_cause": "referential construct — never a source file in this repo",
+      "required_change": "DOCUMENTATION: mark as REFERENCED_BUT_ABSENT",
+      "change_type": "DOCUMENTATION", "affected_files": ["institutional/outcome/", "institutional/execution/"],
+      "affected_components": ["institutional documentation"], "affected_data": "none", "affected_docs": ["institutional/"], "affected_runtime": "none",
+      "approval_required": "AUTO_ALLOWED", "status": "IN_PROGRESS",
+      "verification_method": "grep for 'institutional-evidence-fabric' in institutional/", "regression_tests": ["documentation consistency"], "closure_evidence": "NONE — IN_PROGRESS"
+    },
+    {
+      "finding_id": "LD-03", "prompt_id": "P70-73", "requirement_id": "frozen-schema-3", "category": "VERIFIED_LOSS",
+      "description": "src/lib/settlement-workflow-canonical.ts does not exist",
+      "source_evidence": "P74 LD-03", "severity": "P0", "root_cause": "referential construct",
+      "required_change": "DOCUMENTATION: mark as REFERENCED_BUT_ABSENT", "change_type": "DOCUMENTATION",
+      "affected_files": ["institutional/outcome/", "institutional/execution/"], "affected_components": ["institutional documentation"],
+      "affected_data": "none", "affected_docs": ["institutional/"], "affected_runtime": "none",
+      "approval_required": "AUTO_ALLOWED", "status": "IN_PROGRESS",
+      "verification_method": "grep", "regression_tests": ["documentation consistency"], "closure_evidence": "NONE — IN_PROGRESS"
+    },
+    {
+      "finding_id": "LD-04", "prompt_id": "P70-73", "requirement_id": "frozen-schema-4", "category": "VERIFIED_LOSS",
+      "description": "src/lib/canonical-finality-model.ts does not exist (finality-before-mint.ts exists but is DIFFERENT)",
+      "source_evidence": "P74 LD-04", "severity": "P0", "root_cause": "referential construct; similar-named file exists but is NOT equivalent",
+      "required_change": "DOCUMENTATION: mark as REFERENCED_BUT_ABSENT; note finality-before-mint.ts as POTENTIAL_EQUIVALENT requiring verification",
+      "change_type": "DOCUMENTATION", "affected_files": ["institutional/outcome/", "institutional/execution/"],
+      "affected_components": ["institutional documentation"], "affected_data": "none", "affected_docs": ["institutional/"], "affected_runtime": "none",
+      "approval_required": "AUTO_ALLOWED", "status": "IN_PROGRESS",
+      "verification_method": "grep", "regression_tests": ["documentation consistency"], "closure_evidence": "NONE — IN_PROGRESS"
+    },
+    {
+      "finding_id": "LD-05", "prompt_id": "P70-73", "requirement_id": "frozen-schema-5", "category": "VERIFIED_LOSS",
+      "description": "src/lib/policy-registry.ts does not exist", "source_evidence": "P74 LD-05", "severity": "P0",
+      "root_cause": "referential construct", "required_change": "DOCUMENTATION: mark as REFERENCED_BUT_ABSENT",
+      "change_type": "DOCUMENTATION", "affected_files": ["institutional/outcome/", "institutional/execution/"],
+      "affected_components": ["institutional documentation"], "affected_data": "none", "affected_docs": ["institutional/"], "affected_runtime": "none",
+      "approval_required": "AUTO_ALLOWED", "status": "IN_PROGRESS",
+      "verification_method": "grep", "regression_tests": ["documentation consistency"], "closure_evidence": "NONE — IN_PROGRESS"
+    },
+    {
+      "finding_id": "LD-06", "prompt_id": "P70-73", "requirement_id": "frozen-schema-6", "category": "VERIFIED_LOSS",
+      "description": "src/lib/reserve-domains.ts does not exist (reserve-policy-spec.ts etc. exist but are DIFFERENT)",
+      "source_evidence": "P74 LD-06", "severity": "P0", "root_cause": "referential construct",
+      "required_change": "DOCUMENTATION: mark as REFERENCED_BUT_ABSENT", "change_type": "DOCUMENTATION",
+      "affected_files": ["institutional/outcome/", "institutional/execution/"], "affected_components": ["institutional documentation"],
+      "affected_data": "none", "affected_docs": ["institutional/"], "affected_runtime": "none",
+      "approval_required": "AUTO_ALLOWED", "status": "IN_PROGRESS",
+      "verification_method": "grep", "regression_tests": ["documentation consistency"], "closure_evidence": "NONE — IN_PROGRESS"
+    },
+    {
+      "finding_id": "LD-07", "prompt_id": "P70-73", "requirement_id": "frozen-schema-7", "category": "VERIFIED_LOSS",
+      "description": "src/lib/institutional-settlement-obligation-registry.ts does not exist (legal-obligation-register.ts exists but is DIFFERENT)",
+      "source_evidence": "P74 LD-07", "severity": "P0", "root_cause": "referential construct",
+      "required_change": "DOCUMENTATION: mark as REFERENCED_BUT_ABSENT", "change_type": "DOCUMENTATION",
+      "affected_files": ["institutional/outcome/", "institutional/execution/"], "affected_components": ["institutional documentation"],
+      "affected_data": "none", "affected_docs": ["institutional/"], "affected_runtime": "none",
+      "approval_required": "AUTO_ALLOWED", "status": "IN_PROGRESS",
+      "verification_method": "grep", "regression_tests": ["documentation consistency"], "closure_evidence": "NONE — IN_PROGRESS"
+    },
+    {
+      "finding_id": "LD-08", "prompt_id": "P70-73", "requirement_id": "frozen-schema-8", "category": "VERIFIED_LOSS",
+      "description": "src/lib/pilot-gate-framework.ts does not exist (pilot-operational-readiness.ts exists but is DIFFERENT)",
+      "source_evidence": "P74 LD-08", "severity": "P0", "root_cause": "referential construct",
+      "required_change": "DOCUMENTATION: mark as REFERENCED_BUT_ABSENT", "change_type": "DOCUMENTATION",
+      "affected_files": ["institutional/outcome/", "institutional/execution/"], "affected_components": ["institutional documentation"],
+      "affected_data": "none", "affected_docs": ["institutional/"], "affected_runtime": "none",
+      "approval_required": "AUTO_ALLOWED", "status": "IN_PROGRESS",
+      "verification_method": "grep", "regression_tests": ["documentation consistency"], "closure_evidence": "NONE — IN_PROGRESS"
+    },
+    {
+      "finding_id": "LD-09", "prompt_id": "P70-73", "requirement_id": "frozen-schema-9", "category": "VERIFIED_LOSS",
+      "description": "src/lib/mtq-economic-definition.ts does not exist (mtq-final-reserve-spec.ts exists but is DIFFERENT)",
+      "source_evidence": "P74 LD-09", "severity": "P0", "root_cause": "referential construct",
+      "required_change": "DOCUMENTATION: mark as REFERENCED_BUT_ABSENT", "change_type": "DOCUMENTATION",
+      "affected_files": ["institutional/outcome/", "institutional/execution/"], "affected_components": ["institutional documentation"],
+      "affected_data": "none", "affected_docs": ["institutional/"], "affected_runtime": "none",
+      "approval_required": "AUTO_ALLOWED", "status": "IN_PROGRESS",
+      "verification_method": "grep", "regression_tests": ["documentation consistency"], "closure_evidence": "NONE — IN_PROGRESS"
+    },
+    {
+      "finding_id": "LD-10", "prompt_id": "P70", "requirement_id": "assurance-framework", "category": "VERIFIED_LOSS",
+      "description": "/institutional/assurance/ (42 files — Prompt 70 assurance framework) was NEVER committed to git",
+      "source_evidence": "P74 LD-10; git log --all -- institutional/assurance/ returns 0 matches",
+      "severity": "P0", "root_cause": "the 42 files were written as Write tool calls in the Prompt 70 conversation session but were never persisted to git; the environment was reset between sessions, losing the uncommitted files",
+      "required_change": "RECOVERY: re-create all 42 files in /institutional/assurance/ from the Prompt 70 conversation context (the Write tool call contents are in the conversation history of this session)",
+      "change_type": "RECOVERY", "affected_files": ["institutional/assurance/ (42 files)"],
+      "affected_components": ["assurance framework"], "affected_data": "none", "affected_docs": ["institutional/assurance/"],
+      "affected_runtime": "none", "approval_required": "AUTO_ALLOWED",
+      "status": "IN_PROGRESS",
+      "verification_method": "file existence check (ls institutional/assurance/); JSON validation (python3 json.load); hash comparison with conversation context",
+      "regression_tests": ["assurance framework consistency check", "all JSON files validate", "NOT PRODUCTION-AUTHORIZED marker present"],
+      "closure_evidence": "NONE — IN_PROGRESS; recovery classification = RECONSTRUCTED_FROM_EVIDENCE (per Section G: do NOT call reconstructed artifact 'preserved')"
+    },
+    {
+      "finding_id": "LD-11", "prompt_id": "P62-63", "requirement_id": "g1-baseline", "category": "VERIFIED_LOSS",
+      "description": "/institutional/g1/ (3 files — Prompts 62-63 G0/G1 status) never committed",
+      "source_evidence": "P74 LD-11", "severity": "P0", "root_cause": "files were in a prior conversation that ran out of context; not persisted to git",
+      "required_change": "NOT_RECOVERABLE from current conversation context — the content was in the prior (truncated) conversation; recovery would require the prior conversation log",
+      "change_type": "RECOVERY", "affected_files": ["institutional/g1/"], "affected_components": ["G0/G1 institutional baseline"],
+      "affected_data": "none", "affected_docs": ["institutional/g1/"], "affected_runtime": "none",
+      "approval_required": "MANAGEMENT_APPROVAL", "status": "OPEN",
+      "verification_method": "n/a — NOT_RECOVERABLE", "regression_tests": ["n/a"], "closure_evidence": "NONE — OPEN; NOT_RECOVERABLE from current context"
+    },
+    {
+      "finding_id": "LD-12", "prompt_id": "P64", "requirement_id": "corridor-decision", "category": "VERIFIED_LOSS",
+      "description": "/institutional/corridors/ (2 files) never committed", "source_evidence": "P74 LD-12", "severity": "P0",
+      "root_cause": "prior truncated conversation", "required_change": "NOT_RECOVERABLE from current context",
+      "change_type": "RECOVERY", "affected_files": ["institutional/corridors/"], "affected_components": ["corridor decision"], "affected_data": "none",
+      "affected_docs": ["institutional/corridors/"], "affected_runtime": "none", "approval_required": "MANAGEMENT_APPROVAL", "status": "OPEN",
+      "verification_method": "n/a", "regression_tests": ["n/a"], "closure_evidence": "NONE — OPEN; NOT_RECOVERABLE"
+    },
+    {
+      "finding_id": "LD-13", "prompt_id": "P65-67", "requirement_id": "bank-pipeline", "category": "VERIFIED_LOSS",
+      "description": "/institutional/banks/ (3+ files) never committed", "source_evidence": "P74 LD-13", "severity": "P0",
+      "root_cause": "prior truncated conversation", "required_change": "NOT_RECOVERABLE",
+      "change_type": "RECOVERY", "affected_files": ["institutional/banks/"], "affected_components": ["bank pipeline"], "affected_data": "none",
+      "affected_docs": ["institutional/banks/"], "affected_runtime": "none", "approval_required": "MANAGEMENT_APPROVAL", "status": "OPEN",
+      "verification_method": "n/a", "regression_tests": ["n/a"], "closure_evidence": "NONE — OPEN; NOT_RECOVERABLE"
+    },
+    {
+      "finding_id": "LD-14", "prompt_id": "P66", "requirement_id": "counsel-package", "category": "VERIFIED_LOSS",
+      "description": "/institutional/legal/ (2 files) never committed", "source_evidence": "P74 LD-14", "severity": "P0",
+      "root_cause": "prior truncated conversation", "required_change": "NOT_RECOVERABLE",
+      "change_type": "RECOVERY", "affected_files": ["institutional/legal/"], "affected_components": ["counsel package"], "affected_data": "none",
+      "affected_docs": ["institutional/legal/"], "affected_runtime": "none", "approval_required": "MANAGEMENT_APPROVAL", "status": "OPEN",
+      "verification_method": "n/a", "regression_tests": ["n/a"], "closure_evidence": "NONE — OPEN; NOT_RECOVERABLE"
+    },
+    {
+      "finding_id": "LD-15", "prompt_id": "P68", "requirement_id": "bank-workshop", "category": "VERIFIED_LOSS",
+      "description": "/institutional/bank-workshop/ (2 files) never committed", "source_evidence": "P74 LD-15", "severity": "P0",
+      "root_cause": "prior truncated conversation", "required_change": "NOT_RECOVERABLE",
+      "change_type": "RECOVERY", "affected_files": ["institutional/bank-workshop/"], "affected_components": ["bank workshop"], "affected_data": "none",
+      "affected_docs": ["institutional/bank-workshop/"], "affected_runtime": "none", "approval_required": "MANAGEMENT_APPROVAL", "status": "OPEN",
+      "verification_method": "n/a", "regression_tests": ["n/a"], "closure_evidence": "NONE — OPEN; NOT_RECOVERABLE"
+    },
+    {
+      "finding_id": "LD-16", "prompt_id": "P69", "requirement_id": "pilot-term-sheet", "category": "VERIFIED_LOSS",
+      "description": "/institutional/pilot/ (2 files) never committed", "source_evidence": "P74 LD-16", "severity": "P0",
+      "root_cause": "prior truncated conversation", "required_change": "NOT_RECOVERABLE",
+      "change_type": "RECOVERY", "affected_files": ["institutional/pilot/"], "affected_components": ["pilot term sheet"], "affected_data": "none",
+      "affected_docs": ["institutional/pilot/"], "affected_runtime": "none", "approval_required": "MANAGEMENT_APPROVAL", "status": "OPEN",
+      "verification_method": "n/a", "regression_tests": ["n/a"], "closure_evidence": "NONE — OPEN; NOT_RECOVERABLE"
+    },
+    {
+      "finding_id": "LD-17", "prompt_id": "all", "requirement_id": "migrations", "category": "UNKNOWN",
+      "description": "prisma/migrations/ does not exist; schema managed via db:push", "source_evidence": "P74 LD-17",
+      "severity": "P2", "root_cause": "intentional design choice (db:push not migrations) or absence; UNKNOWN — not a verified defect",
+      "required_change": "NO_ACTION — per Section B: do NOT repair UNKNOWN without evidence; db:push is a valid schema management method",
+      "change_type": "NO_ACTION", "affected_files": [], "affected_components": [], "affected_data": "none", "affected_docs": [],
+      "affected_runtime": "none", "approval_required": "AUTO_ALLOWED", "status": "NOT_APPLICABLE",
+      "verification_method": "n/a", "regression_tests": ["n/a"], "closure_evidence": "NONE — NOT_APPLICABLE"
+    },
+    {
+      "finding_id": "LD-18", "prompt_id": "all", "requirement_id": "env-provisioning", "category": "VERIFIED_DRIFT",
+      "description": ".env has 1 line (51 of 52 expected vars MISSING)", "source_evidence": "P74 LD-18; baseline/configuration-state.json",
+      "severity": "P1", "root_cause": "environment was reset; .env not re-provisioned with actual secrets",
+      "required_change": "RECONSTRUCT .env from .env.example (template; operator must supply actual secrets)",
+      "change_type": "CONFIGURATION", "affected_files": [".env"], "affected_components": ["environment configuration"],
+      "affected_data": "none (no data; only env vars)", "affected_docs": [], "affected_runtime": "all integrations (Turso, Neon, Inngest, Brain, Vercel)",
+      "approval_required": "MANAGEMENT_APPROVAL (operator must supply actual secrets)",
+      "status": "IN_PROGRESS",
+      "verification_method": "wc -l .env (should be ~52 lines after template copy); grep for expected vars",
+      "regression_tests": ["env var presence check"],
+      "closure_evidence": "NONE — IN_PROGRESS; template created but secrets not provisioned (operator responsibility)"
+    },
+    {
+      "finding_id": "LD-19", "prompt_id": "all", "requirement_id": "node-modules", "category": "VERIFIED_DRIFT",
+      "description": "node_modules/ absent; bun run lint fails (exit 127)", "source_evidence": "P74 LD-19",
+      "severity": "P1", "root_cause": "environment was reset; bun install not re-run",
+      "required_change": "RECONSTRUCT via bun install",
+      "change_type": "CONFIGURATION", "affected_files": ["node_modules/"], "affected_components": ["dependencies"],
+      "affected_data": "none", "affected_docs": [], "affected_runtime": "dev server, lint, all Node.js functionality",
+      "approval_required": "AUTO_ALLOWED", "status": "IN_PROGRESS",
+      "verification_method": "ls node_modules/.bin/next (should exist after bun install); bun run lint (should exit 0)",
+      "regression_tests": ["bun run lint exit 0"],
+      "closure_evidence": "NONE — IN_PROGRESS"
+    }
+  ],
+  "version_drift_finding": {
+    "finding_id": "GAP-07", "prompt_id": "P70-73", "requirement_id": "version-authority", "category": "VERIFIED_DRIFT",
+    "description": "v25.3.2 CLAIMED in Prompts 70-73 but no git tag v25.3.2 exists; latest tag v25.6",
+    "source_evidence": "P74 05_version-authority-audit.json; P74 24_critical-gap-register.json GAP-07",
+    "severity": "P2", "root_cause": "version drift — Prompts 70-73 referenced v25.3.2 (possibly the version at prior session time); repository advanced to v25.6",
+    "required_change": "DOCUMENTATION remediation: correct CURRENT references in institutional/outcome/ + institutional/execution/ from v25.3.2 to v25.6; preserve historical references as historical",
+    "change_type": "DOCUMENTATION", "affected_files": ["institutional/outcome/", "institutional/execution/"],
+    "affected_components": ["institutional documentation"], "affected_data": "none", "affected_docs": ["institutional/"],
+    "affected_runtime": "none", "approval_required": "AUTO_ALLOWED", "status": "IN_PROGRESS",
+    "verification_method": "grep for 'v25.3.2' in institutional/ — verify CURRENT references corrected to v25.6",
+    "regression_tests": ["documentation version consistency check"], "closure_evidence": "NONE — IN_PROGRESS"
+  },
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

@@ -1,0 +1,217 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "NOT_PRODUCTION_AUTHORIZED": true,
+  "reconstruction_note": "RECONSTRUCTED_FROM_EVIDENCE (Prompt 75 remediation) — this file was re-created from the Prompt 70 specification. It is NOT labeled as 'preserved.' Original was never committed to git.",
+  "build_mode": "FROZEN",
+  "program_phase": "EXTERNAL_EXECUTION",
+  "next_external_evidence": "G0_PASS",
+  "status_id": "ARS-PA-001-FINAL",
+  "charter_reference": "AC-PA-001",
+  "source": "Prompt 70, Section AR (Readiness Status) + Prompt 75 Section G (Reconstruction classification)",
+  "report_date": "PROMPT_75_RECONSTRUCTION",
+  "room_path": "/home/z/my-project/institutional/assurance/",
+  "room_classification": "RECONSTRUCTED_FROM_EVIDENCE",
+  "prompt_74_finding": "LD-10",
+  "total_files": 42,
+  "markdown_files": 34,
+  "json_files": 8,
+  "all_files_at_state": "DESIGNED",
+  "honest_state_audit": {
+    "HS-01_every_md_carries_NOT_PRODUCTION_AUTHORIZED": true,
+    "HS-02_every_json_carries_NOT_PRODUCTION_AUTHORIZED": true,
+    "HS-03_every_control_at_state_DESIGNED": true,
+    "HS-04_every_test_at_status_DESIGNED": true,
+    "HS-05_findings_count": 0,
+    "HS-06_evidence_count": 0,
+    "HS-07_mtq_disabled_and_f3_f4_not_claimed": true,
+    "HS-08_zero_banks_zero_counsel_zero_pilot_execution": true,
+    "HS-09_build_mode_FROZEN": true,
+    "HS-10_claim_control_exceptions": 0,
+    "all_audits_TRUE": true
+  },
+  "gates": {
+    "gate_count": 14,
+    "gates_list": [
+      { "gate_id": "A0", "question": "Has the assurance charter been authorized?", "status": true, "evidence": "01_assurance-charter.md authored (AC-PA-001)" },
+      { "gate_id": "A1", "question": "Has scope been defined and bounded?", "status": true, "evidence": "02_scope-and-boundaries.md authored" },
+      { "gate_id": "A2", "question": "Have criteria, control objectives, controls, tests been DESIGNED?", "status": true, "evidence": "03_assurance-criteria.json, 04_control-objectives.json, 05_control-library.json, assurance-test-register.json authored" },
+      { "gate_id": "A3", "question": "Has evidence schema + 13-type taxonomy been defined?", "status": true, "evidence": "07_evidence-chain.md, 08_evidence-integrity.md, assurance-evidence-schema.json authored" },
+      { "gate_id": "A4", "question": "Has replay protocol been specified?", "status": true, "evidence": "09_replay-protocol.md, assurance-replay-specification.md authored" },
+      { "gate_id": "A5", "question": "Has sampling methodology been defined?", "status": true, "evidence": "22_sampling-methodology.md, assurance-sampling-plan.md authored" },
+      { "gate_id": "A6", "question": "Have finding classification + management response + remediation retest been specified?", "status": true, "evidence": "23_finding-classification.md, 24_management-response.md, 25_remediation-retest.md authored" },
+      { "gate_id": "A7", "question": "Has external report template been authored?", "status": true, "evidence": "26_external-report-template.md authored" },
+      { "gate_id": "A8", "question": "Have limitations, evidence index, open issues been published?", "status": true, "evidence": "27_assurance-limitations.md, 28_assurance-evidence-index.md, 29_open-issues.md authored" },
+      { "gate_id": "A9", "question": "Has an external independent assurance provider been retained?", "status": false, "evidence": "0 providers retained; SOW prepared at assurance-provider-sow.md" },
+      { "gate_id": "A10", "question": "Has the provider been evaluated against the framework?", "status": false, "evidence": "0 providers evaluated; framework at assurance-provider-evaluation-framework.md" },
+      { "gate_id": "A11", "question": "Has evidence been collected against tests?", "status": false, "evidence": "0 evidence collected" },
+      { "gate_id": "A12", "question": "Have findings been issued?", "status": false, "evidence": "0 findings issued" },
+      { "gate_id": "A13", "question": "Has remediation been closed?", "status": false, "evidence": "0 remediation cycles closed" }
+    ],
+    "specification_gates_A0_through_A8": "TRUE (9/9)",
+    "execution_gates_A9_through_A13": "FALSE (0/5)"
+  },
+  "management_gate": {
+    "ASSURANCE_READINESS": "READY_WITH_LIMITATIONS",
+    "rationale": "All specification gates (A0-A8) are TRUE; all execution gates (A9-A13) are FALSE. The framework is ready to be handed to an external provider, but execution has not begun.",
+    "limitations": [
+      "0 providers retained",
+      "0 evidence collected",
+      "0 findings issued",
+      "MTQ DISABLED; F3/F4 NOT_CLAIMED",
+      "0 banks; 0 counsel; 0 pilot execution",
+      "9 of 10 frozen schemas MISSING (Prompt 74 LD-01..LD-09)",
+      "Original P70 assurance framework was never committed (Prompt 74 LD-10); this is a RECONSTRUCTION, not preservation"
+    ]
+  },
+  "absolute_prohibitions_enforced": true,
+  "absolute_prohibitions": [
+    "No claim of execution (no assurance executed, no evidence collected, no findings issued, no remediation closed)",
+    "No manufactured evidence (no evidence record without actual external execution event)",
+    "No endorsement (no vendor, bank, counsel, regulator, or provider endorsed)",
+    "No hidden assumptions (every assumption visible in 27_assurance-limitations.md or 29_open-issues.md)",
+    "No merge of states (OBSERVED_RESULT, MODELED_RESULT, ASSUMPTION, UNKNOWN must NEVER merge)",
+    "No merge of finality types (F0-F5 finality states must NEVER merge; F3/F4 NOT_CLAIMED)",
+    "No severity manipulation (finding severity cannot be downgraded without management response)",
+    "No bypass of emergency path (safe-halt cannot be skipped in emergencies)",
+    "No MTQ claim (MTQ is DISABLED; F3/F4 NOT_CLAIMED)",
+    "No fabricated party (0 banks, 0 counsel, 0 pilot execution; do NOT invent a counterparty)"
+  ],
+  "frozen_schemas_modified": "ZERO",
+  "frozen_schemas_status": {
+    "total_frozen_schemas_referenced": 10,
+    "frozen_schemas_present": 1,
+    "frozen_schemas_missing": 9,
+    "missing_list": [
+      "src/lib/controlled-architecture-freeze.ts (LD-01)",
+      "src/lib/institutional-evidence-fabric.ts (LD-02)",
+      "src/lib/settlement-workflow-canonical.ts (LD-03)",
+      "src/lib/canonical-finality-model.ts (LD-04)",
+      "src/lib/policy-registry.ts (LD-05)",
+      "src/lib/reserve-domains.ts (LD-06)",
+      "src/lib/institutional-settlement-obligation-registry.ts (LD-07)",
+      "src/lib/pilot-gate-framework.ts (LD-08)",
+      "src/lib/mtq-economic-definition.ts (LD-09)"
+    ],
+    "present_list": [
+      "src/lib/final-pilot-activation-gate.ts (PRESENT; untouched)"
+    ],
+    "frozen_schemas_modified_count": 0,
+    "frozen_schemas_restored_count": 0
+  },
+  "controls_status": {
+    "total_controls": 25,
+    "controls_at_state_DESIGNED": 25,
+    "controls_executed": 0,
+    "controls_passed": 0,
+    "controls_failed": 0
+  },
+  "tests_status": {
+    "total_tests": 94,
+    "tests_at_status_DESIGNED": 94,
+    "tests_executed": 0,
+    "tests_passed": 0,
+    "tests_failed": 0
+  },
+  "criteria_status": {
+    "total_criteria": 20,
+    "criteria_at_status_DESIGNED": 20,
+    "criteria_executed": 0,
+    "criteria_passed": 0,
+    "criteria_failed": 0
+  },
+  "control_objectives_status": {
+    "total_objectives": 15,
+    "objectives_at_status_DESIGNED": 15,
+    "objectives_executed": 0,
+    "objectives_passed": 0,
+    "objectives_failed": 0
+  },
+  "evidence_status": {
+    "total_evidence_types": 13,
+    "evidence_records_collected": 0,
+    "evidence_stores_populated": 0,
+    "evidence_stores_total": 4,
+    "access_levels_granted": 0,
+    "access_levels_total": 3
+  },
+  "findings_status": {
+    "findings_issued": 0,
+    "critical_findings": 0,
+    "high_findings": 0,
+    "medium_findings": 0,
+    "low_findings": 0,
+    "observation_findings": 0
+  },
+  "remediation_status": {
+    "remediation_cycles_opened": 0,
+    "remediation_cycles_closed": 0,
+    "independent_retests_performed": 0
+  },
+  "kpi_status": {
+    "kpi_count_per_prompt_69": 15,
+    "kpi_baselines_populated": 0,
+    "kpi_independent_recalculations_performed": 0
+  },
+  "bank_value_measurement_engine_status": {
+    "rows": 12,
+    "columns": 6,
+    "total_cells": 72,
+    "cells_populated": 0,
+    "cells_at_class_UNKNOWN": 72,
+    "cells_at_class_OBSERVED_RESULT": 0,
+    "cells_at_class_MODELED_RESULT": 0,
+    "cells_at_class_ASSUMPTION": 0
+  },
+  "bank_validation_status": {
+    "banks_registered": 0,
+    "bank_attendances": 0,
+    "bank_validations": 0,
+    "bank_endorsements": 0,
+    "bank_pipeline_stage": "NOT_STARTED"
+  },
+  "pilot_status": {
+    "pilots_executed": 0
+  },
+  "mtq_status": {
+    "mtq_state": "DISABLED",
+    "f3_asset_backed_value": "NOT_CLAIMED",
+    "f4_gated_liquidity_value": "NOT_CLAIMED"
+  },
+  "external_party_status": {
+    "banks_engaged": 0,
+    "counsel_engaged": 0,
+    "regulators_engaged": 0,
+    "providers_retained": 0
+  },
+  "replay_status": {
+    "reproducibility_targets_total": 8,
+    "replays_executed": 0,
+    "match_outputs": 0,
+    "mismatch_outputs": 0,
+    "insufficient_evidence_outputs": 0
+  },
+  "security_status": {
+    "security_areas_total": 18,
+    "security_reviews_executed": 0,
+    "vulnerability_test_status": "NOT_CLAIMED",
+    "penetration_test_status": "NOT_CLAIMED"
+  },
+  "scope_status": {
+    "in_scope_domains": 23,
+    "out_of_scope_items": 15
+  },
+  "charter_status": {
+    "charter_id": "AC-PA-001",
+    "charter_state": "DESIGNED",
+    "independent_reviewer_retained": false,
+    "coi_questions_answered": 0,
+    "coi_questions_total": 10
+  },
+  "report_status": {
+    "report_id": "AER-PA-001",
+    "report_state": "NOT_ISSUED"
+  },
+  "next_external_evidence": "G0_PASS",
+  "next_action": "Engage an external independent assurance provider per assurance-provider-sow.md; evaluate providers per assurance-provider-evaluation-framework.md; retain one provider; begin execution (gates A9-A13).",
+  "final_rule": "Do not fake certainty. This room was reconstructed from the Prompt 70 specification after the original artifacts were lost because they were never committed to git. Reconstructed artifacts are NOT preserved artifacts. Every assertion of 'executed' or 'tested' or 'verified' in this room must be read as DESIGNED, never as EXECUTED. The next strategic decision is human-owned: engage a neutral external assurance provider to execute the framework specified here."
+}

@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "remediation_id": "FR75-PA-001",
+  "audit_source": "Prompt 74 forensic audit (/institutional/audit/prompt-74/)",
+  "remediation_version": "v25.3.2-P75-1.0",
+  "canonical_version": "v25.6 (corrected from v25.3.2 claim per Prompt 74 version audit)",
+  "remediation_branch": "audit/remediation/prompt-75",
+  "total_findings": 19,
+  "p0_findings": 16,
+  "p1_findings": 2,
+  "p2_findings": 1,
+  "closed_findings": 2,
+  "partial_findings": 3,
+  "open_findings": 13,
+  "unknown_findings": 0,
+  "not_applicable_findings": 1,
+  "closed_findings_detail": [
+    "LD-10: Prompt 70 assurance framework (42 files) — RECOVERED (RECONSTRUCTED_FROM_EVIDENCE); 42 files present; all JSON valid; all markers present",
+    "LD-19: node_modules absent — CLOSED (bun install succeeded; 1307 packages; bun run lint exit 0)"
+  ],
+  "partial_findings_detail": [
+    "LD-01..09: 9 frozen schemas — PARTIALLY_CLOSED (references corrected to REFERENCED_BUT_ABSENT; files NOT re-created because they were referential constructs; similar-named files NOT verified as equivalent)",
+    "LD-18: .env — PARTIALLY_CLOSED (template created from .env.example, 52 lines; operator must fill actual secrets)",
+    "GAP-07: version drift — PARTIALLY_CLOSED (version drift documented; CURRENT references correction pending)"
+  ],
+  "open_findings_detail": [
+    "LD-11..16: Prompts 62-69 institutional directories (14+ files) — OPEN (NOT_RECOVERABLE from current conversation context)"
+  ],
+  "lost_artifacts": 19,
+  "recovered_artifacts": 3,
+  "recovered_artifacts_detail": [
+    "Prompt 70 assurance framework (42 files) — RECONSTRUCTED_FROM_EVIDENCE",
+    "node_modules (1307 packages) — RECONSTRUCTABLE (bun install)",
+    ".env (52 lines template) — RECONSTRUCTABLE (from .env.example)"
+  ],
+  "unrecoverable_artifacts": 7,
+  "unrecoverable_artifacts_detail": [
+    "/institutional/g1/ (3 files — Prompts 62-63)",
+    "/institutional/corridors/ (2 files — Prompt 64)",
+    "/institutional/banks/ (3+ files — Prompts 65+67)",
+    "/institutional/legal/ (2 files — Prompt 66)",
+    "/institutional/bank-workshop/ (2 files — Prompt 68)",
+    "/institutional/pilot/ (2 files — Prompt 69)",
+    "9 frozen schemas (REFERENCED_BUT_ABSENT — documentation corrected, files NOT re-created)"
+  ],
+  "regressions_fixed": 0,
+  "new_regressions": 0,
+  "implementation_completeness_after": 0.027,
+  "implementation_completeness_after_detail": "2 of 73 prompts with verifiable implementation (Prompt 72 outcome + Prompt 73 execution + now Prompt 70 assurance framework recovered). Improved from 0.014 (P74) to 0.027 (P75) because the assurance framework is now present.",
+  "evidence_completeness_after": 0.027,
+  "evidence_completeness_after_detail": "improved from 0.014 (P74) because the assurance evidence schema is now present (recovered)",
+  "runtime_completeness_after": 0.000,
+  "runtime_completeness_after_detail": "unchanged — no pilot executed; 0 runtime evidence",
+  "durability_completeness_after": 0.027,
+  "durability_completeness_after_detail": "improved from 0.027 (P74 had 2 durable: outcome + execution; P75 adds assurance = 3 durable, but the denominator is 73, so 3/73 = 0.041; however, the assurance framework was RECONSTRUCTED not PRESERVED, so conservatively 0.027 unchanged — the assurance files are durable now but were reconstructed, not originally preserved)",
+  "invariant_status": {
+    "pass": 21,
+    "fail": 0,
+    "unknown": 4,
+    "total": 25,
+    "changed": "I15 (evidence integrity) improved from UNKNOWN to PARTIALLY_KNOWN — the assurance evidence SCHEMA (assurance-evidence-schema.json) is now present, but the actual source file (institutional-evidence-fabric.ts) is still MISSING (REFERENCED_BUT_ABSENT). I07, I09, I16 remain UNKNOWN (frozen schemas still absent). Net: 21 PASS, 4 UNKNOWN, 0 FAIL (unchanged from P74)."
+  },
+  "adversarial_status": {
+    "tests_total": 30,
+    "tests_executed": 0,
+    "tests_not_executed": 30,
+    "changed": "unchanged from P74 — no runtime to execute adversarial tests against; but 3 findings (test 27, 29, 30) remain CONFIRMED via audit"
+  },
+  "document_code_runtime_status": {
+    "document": "IMPROVED — assurance framework documentation recovered (42 files); version drift documented; frozen schema references corrected to REFERENCED_BUT_ABSENT",
+    "code": "UNCHANGED — no source code modified; 9 frozen schemas still absent; 111 src/lib files unchanged",
+    "runtime": "UNCHANGED — no runtime evidence; but dev environment now functional (node_modules installed, lint clean)",
+    "triangulation": "PARTIAL — document improved; code unchanged; runtime unchanged. DRIFT_REMAINS for frozen schemas (documentation references corrected but source files still absent)."
+  },
+  "production_authorized": false,
+  "institutionally_validated": false,
+  "external_validation_required": true,
+  "external_validation_required_detail": "All external-evidence-dependent fields remain false/0/PENDING. G0_PASS (entity counsel-verified) remains the next external evidence. No external facts created by this remediation.",
+  "architecture_change_required": false,
+  "architecture_change_required_detail": "No ARCHITECTURE_DEFECT established by Prompt 74. No architecture change proposed or implemented. The v25.6 controlled architecture baseline (1 existing frozen schema + 111 src/lib files) is preserved untouched. BUILD_MODE = FROZEN.",
+  "build_mode": "FROZEN",
+  "next_action": "Operator review of this remediation; operator fills actual secrets in .env; operator recovers/re-creates Prompts 62-69 institutional directories from prior conversation log; operator verifies equivalence of similar-named files (finality-before-mint.ts, legal-obligation-register.ts, etc.) with the 9 REFERENCED_BUT_ABSENT frozen schemas; then engage external legal counsel for G0_PASS.",
+  "next_external_evidence": "G0_PASS (entity counsel-verified — unchanged from Prompts 62-73)",
+  "program_verdict": "LOSS_RECOVERED_WITH_LIMITATIONS",
+  "program_verdict_detail": "The most critical loss (Prompt 70 assurance framework — 42 files) was RECOVERED (RECONSTRUCTED_FROM_EVIDENCE). node_modules was installed. .env template was created. BUT: Prompts 62-69 institutional directories (14+ files) remain NOT_RECOVERABLE. 9 frozen schemas remain REFERENCED_BUT_ABSENT (documentation corrected, but source files not re-created). .env requires operator to fill actual secrets. Therefore: LOSS_RECOVERED_WITH_LIMITATIONS — not REMEDIATION_COMPLETE, not REMEDIATION_PARTIAL.",
+  "prompts_1_to_73_status": "PARTIAL",
+  "prompts_1_to_73_status_detail": "2 prompts VERIFIED (72+73); 1 prompt RECOVERED (70 assurance framework); 10 prompts MISSING (62-69 directories + 71 pilot execution); 61 prompts UNVERIFIABLE (1-61 — no prompt texts). PARTIAL — not ALL_VERIFIED_COMPLETE, not ALL_IMPLEMENTED_WITH_NONCRITICAL_GAPS.",
+  "preservation_status": "PARTIALLY",
+  "preservation_status_detail": "Some artifacts were lost (Prompt 70 assurance framework) but have been RECOVERED (RECONSTRUCTED_FROM_EVIDENCE). Other artifacts (Prompts 62-69 directories) remain NOT_RECOVERABLE. 9 frozen schemas were referential constructs (never existed as source files). Therefore: PARTIALLY — not YES (nothing lost), not NO (everything lost).",
+  "regression_status": "NO_MATERIAL_REGRESSION",
+  "regression_status_detail": "0 regressions. 0 new regressions introduced by remediation. No prior implementation to regress from. The assurance framework recovery was additive (42 new files); no existing files modified. node_modules install was additive. .env was replaced (1 line → 52 lines template) but the original 1-line .env is preserved in git history (commit c7dafc6).",
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

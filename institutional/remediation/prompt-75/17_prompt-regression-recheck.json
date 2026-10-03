@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "remediation_id": "FR75-PA-001",
+  "source": "Prompt 75, Section Y (Full Prompt 1-73 Regression Recheck)",
+  "status": "ISSUED",
+  "recheck_summary": {
+    "PROMPTS_1_73_TOTAL": 73,
+    "VERIFIED_COMPLETE": 0,
+    "VERIFIED_PARTIAL": 3,
+    "MISSING": 10,
+    "UNVERIFIABLE": 61,
+    "REGRESSED": 0,
+    "NEW_REGRESSIONS": 0
+  },
+  "recheck_detail": "After remediation: Prompt 70 assurance framework RECOVERED (42 files RECONSTRUCTED_FROM_EVIDENCE) — now VERIFIED_PARTIAL (was MISSING in P74). Prompts 72+73 remain VERIFIED_PARTIAL (unchanged). Prompts 62-69 remain MISSING (NOT_RECOVERABLE). Prompts 1-61 remain UNVERIFIABLE. 0 regressions — no previously verified requirement was broken by remediation.",
+  "previously_verified_rechecked": [
+    { "prompt": "P72 (post-pilot outcome)", "P74_status": "VERIFIED_PARTIAL", "P75_status": "VERIFIED_PARTIAL", "regressed": false, "note": "unchanged — no modification to /institutional/outcome/" },
+    { "prompt": "P73 (execution gate)", "P74_status": "VERIFIED_PARTIAL", "P75_status": "VERIFIED_PARTIAL", "regressed": false, "note": "unchanged — no modification to /institutional/execution/" }
+  ],
+  "no_repair_may_break_verified_requirement_rule": "enforced — 0 regressions; both previously-verified prompts (72+73) remain VERIFIED_PARTIAL",
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

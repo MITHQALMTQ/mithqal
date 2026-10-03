@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "remediation_id": "FR75-PA-001",
+  "source": "Prompt 75, Section AG (Document/Code/Runtime Triangulation)",
+  "status": "ISSUED",
+  "triangulation": {
+    "DOCUMENT": "IMPROVED — assurance framework documentation recovered (42 files); version drift documented; frozen schema references corrected to REFERENCED_BUT_ABSENT in recovered assurance framework",
+    "CODE": "UNCHANGED — no source code modified; 9 frozen schemas still absent (REFERENCED_BUT_ABSENT); 111 src/lib files unchanged; final-pilot-activation-gate.ts (1 of 10 frozen schemas) untouched",
+    "RUNTIME": "IMPROVED (environment) / UNCHANGED (application) — node_modules installed (1307 packages); bun run lint exit 0; but no application runtime (no dev server, no API tests, no pilot execution)",
+    "TRIANGULATION_STATUS": "PARTIAL — document improved; code unchanged; runtime environment improved but application runtime unchanged. DRIFT_REMAINS for frozen schemas (documentation references corrected to REFERENCED_BUT_ABSENT but source files still absent)."
+  },
+  "drift_remains_items": [
+    "9 frozen schemas: DOCUMENTATION corrected (REFERENCED_BUT_ABSENT) but CODE absent — DRIFT_REMAINS",
+    "institutional-evidence-fabric.ts: assurance evidence SCHEMA present (document) but source file absent (code) — DRIFT_REMAINS"
+  ],
+  "rule": "Per Section AG: 'If they do not agree: DRIFT_REMAINS. Do not close the finding.' The frozen-schema drift REMAINS — documentation corrected but source files still absent. Finding LD-01..09 is PARTIALLY_CLOSED (not CLOSED) because DRIFT_REMAINS.",
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

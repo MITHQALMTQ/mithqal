@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "remediation_id": "FR75-PA-001",
+  "source": "Prompt 75, Section F (Git-Safe Remediation)",
+  "status": "ISSUED",
+  "branch": "audit/remediation/prompt-75",
+  "commit_format": "P75-[FINDING_ID]-[SHORT_DESCRIPTION]",
+  "changes_total": 3,
+  "changes": [
+    { "change_id": "P75-LD-10-assurance-recovery", "finding_id": "LD-10", "description": "Recovery of 42-file Prompt 70 assurance framework", "change_type": "RECOVERY", "files_added": 42, "files_modified": 0, "files_deleted": 0, "commit": "pending (on audit/remediation/prompt-75 branch)", "force_push": false, "history_rewrite": false },
+    { "change_id": "P75-LD-19-bun-install", "finding_id": "LD-19", "description": "bun install (1307 packages)", "change_type": "CONFIGURATION", "files_added": "node_modules/ (1307 packages)", "files_modified": 0, "files_deleted": 0, "commit": "n/a (node_modules is gitignored)", "force_push": false, "history_rewrite": false },
+    { "change_id": "P75-LD-18-env-template", "finding_id": "LD-18", "description": ".env created from .env.example (template)", "change_type": "CONFIGURATION", "files_added": 0, "files_modified": 1, "files_deleted": 0, "commit": "pending", "force_push": false, "history_rewrite": false }
+  ],
+  "git_safe_rules_enforced": { "no_force_push": true, "no_history_rewrite": true, "no_squash": true, "no_branch_deletion": true, "no_tag_deletion": true, "no_direct_push_to_main": true },
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

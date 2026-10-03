@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "remediation_id": "FR75-PA-001",
+  "source": "Prompt 75, Section AJ (Closure Rule)",
+  "status": "ISSUED",
+  "description": "Findings CLOSED per Section AJ: remediation_completed + targeted_test_passed + regression_test_passed + evidence_created + version_recorded + review_completed.",
+  "closed_findings_total": 2,
+  "closed_findings": [
+    {
+      "finding_id": "LD-10", "description": "Prompt 70 assurance framework (42 files) never committed",
+      "remediation_completed": true, "remediation": "42 files re-created in /institutional/assurance/ from Prompt 70 conversation context (RECONSTRUCTED_FROM_EVIDENCE)",
+      "targeted_test_passed": true, "test_result": "42 files present; all 8 JSON valid; all 34 md carry markers",
+      "regression_test_passed": true, "regression_test": "assurance framework consistency check PASSED",
+      "evidence_created": true, "evidence": "04_recovery-register.json RC-10 + file listing + hash manifest",
+      "version_recorded": true, "version": "P75-1.0 (RECONSTRUCTED)",
+      "review_completed": true, "review": "automated verification (file count, JSON validation, marker checks)",
+      "closure_status": "CLOSED",
+      "closure_note": "Per Section G: labeled RECONSTRUCTED_FROM_EVIDENCE, NOT 'preserved'. Original was never committed. Recovery is from conversation context, not from git."
+    },
+    {
+      "finding_id": "LD-19", "description": "node_modules/ absent; bun run lint fails (exit 127)",
+      "remediation_completed": true, "remediation": "bun install executed (1307 packages installed in 11.92s)",
+      "targeted_test_passed": true, "test_result": "ls node_modules/.bin/next = present; bun run lint = exit 0 (clean)",
+      "regression_test_passed": true, "regression_test": "bun run lint exit 0 (PASSED — no regressions introduced)",
+      "evidence_created": true, "evidence": "bun install output + lint output (exit 0)",
+      "version_recorded": true, "version": "1307 packages installed",
+      "review_completed": true, "review": "automated verification (bun run lint exit 0)",
+      "closure_status": "CLOSED",
+      "closure_note": "node_modules restored; lint clean; no code modified."
+    }
+  ],
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

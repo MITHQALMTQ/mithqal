@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "remediation_id": "FR75-PA-001",
+  "source": "Prompt 75, Section AB (Remediation Quality Gate) + Section AH (External-Evidence Firewall)",
+  "status": "ISSUED",
+  "quality_gate_answers": {
+    "DID_IT_FIX_THE_FINDING": "YES for LD-10 (assurance framework recovered) + LD-19 (node_modules installed); PARTIAL for LD-01..09 (references corrected, files not re-created) + LD-18 (.env template created, secrets not filled) + GAP-07 (version drift documented, references not yet corrected in all docs)",
+    "DID_IT_CREATE_A_NEW_RISK": "NO — no new risks introduced; 42 files added (additive); node_modules installed (additive); .env replaced (original preserved in git history); no source code modified",
+    "DID_IT_BREAK_AN_OLDER_REQUIREMENT": "NO — 0 regressions; previously verified prompts (72+73) remain VERIFIED_PARTIAL",
+    "DID_IT_CHANGE_CANONICAL_BEHAVIOR": "NO — no architecture change; no MTQ economics change; no reserve policy change; no frozen schema modified; BUILD_MODE = FROZEN",
+    "DID_IT_CHANGE_EXTERNAL_DEPENDENT_STATE": "NO — no external facts created; no legalOpinionsObtained, licensesObtained, validatedJurisdictions, banksContracted, custodiansContracted, regulatoryApproval, productionAuthorized modified",
+    "DID_IT_REQUIRE_NEW_EXTERNAL_VALIDATION": "NO — the remediation is internal (recovery + configuration + documentation); external validation (G0_PASS) was already required and remains required"
+  },
+  "EXTERNAL_VALIDATION_REQUIRED": true,
+  "external_validation_required_detail": "External validation was already required before remediation (G0_PASS per Prompts 62-73). The remediation did NOT create new external validation requirements. The remediation did NOT satisfy any external validation requirements. G0_PASS remains the next external evidence.",
+  "external_evidence_firewall": "Per Section AH: 'Remediation must NEVER create external facts.' No external-fact fields modified. All changes are internal.",
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

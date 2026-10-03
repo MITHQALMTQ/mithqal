@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "remediation_id": "FR75-PA-001",
+  "source": "Prompt 75, Section Z (Invariant Recheck)",
+  "status": "ISSUED",
+  "invariants_total": 25,
+  "invariants_pass": 21,
+  "invariants_fail": 0,
+  "invariants_unknown": 4,
+  "changes_from_P74": {
+    "I01_production_authorization_firewall": { "P74": "PASS", "P75": "PASS", "changed": false },
+    "I07_finality_before_mint": { "P74": "UNKNOWN", "P75": "UNKNOWN", "changed": false, "note": "canonical-finality-model.ts still MISSING (REFERENCED_BUT_ABSENT)" },
+    "I09_no_double_count": { "P74": "UNKNOWN", "P75": "UNKNOWN", "changed": false, "note": "reserve-domains.ts still MISSING" },
+    "I15_evidence_integrity": { "P74": "UNKNOWN", "P75": "PARTIALLY_KNOWN", "changed": true, "note": "assurance evidence SCHEMA (assurance-evidence-schema.json) now present in recovered framework; but institutional-evidence-fvidence.ts source file still MISSING (REFERENCED_BUT_ABSENT). Improved from UNKNOWN to PARTIALLY_KNOWN — the schema documentation is present, but the source implementation is absent." },
+    "I16_policy_versioning": { "P74": "UNKNOWN", "P75": "UNKNOWN", "changed": false, "note": "policy-registry.ts still MISSING" },
+    "I25_build_freeze": { "P74": "PASS", "P75": "PASS", "changed": false, "note": "BUILD_MODE = FROZEN maintained" }
+  },
+  "summary": "21 PASS (unchanged), 4 UNKNOWN (I07/I09/I16 unchanged; I15 improved to PARTIALLY_KNOWN but still not PASS because source file absent), 0 FAIL. No invariant regressed.",
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

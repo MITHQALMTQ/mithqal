@@ -1,0 +1,117 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "NOT_PRODUCTION_AUTHORIZED": true,
+  "reconstruction_note": "RECONSTRUCTED_FROM_EVIDENCE (Prompt 75 remediation) — this file was re-created from the Prompt 70 specification. It is NOT labeled as 'preserved.' Original was never committed to git.",
+  "build_mode": "FROZEN",
+  "program_phase": "EXTERNAL_EXECUTION",
+  "next_external_evidence": "G0_PASS",
+  "schema_id": "ES-PA-001",
+  "charter_reference": "AC-PA-001",
+  "source": "Prompt 70, Section I (Evidence Schema)",
+  "state": "DESIGNED",
+  "frozen_schema_import": {
+    "import_name": "EvidencePackage",
+    "source_file": "src/lib/institutional-evidence-fabric.ts",
+    "status": "REFERENCED_BUT_ABSENT (Prompt 74 finding LD-02 — file MISSING)",
+    "remediation_note": "When the frozen schema is restored under separate remediation, this schema will be re-validated against the restored EvidencePackage type."
+  },
+  "evidence_taxonomy": {
+    "type_count": 13,
+    "types": [
+      { "type_id": "ET-01", "name": "System log", "strength": "STRONG", "store": "Evidence Ledger", "description": "Immutable, hashed system log entry" },
+      { "type_id": "ET-02", "name": "Ledger entry", "strength": "STRONG", "store": "Evidence Ledger", "description": "Immutable, hashed ledger posting" },
+      { "type_id": "ET-03", "name": "Reconciliation output", "strength": "STRONG", "store": "Evidence Ledger", "description": "Immutable, hashed reconciliation result" },
+      { "type_id": "ET-04", "name": "Cryptographic receipt", "strength": "STRONG", "store": "Evidence Ledger", "description": "Counterparty-signed receipt for settlement events" },
+      { "type_id": "ET-05", "name": "Settlement workflow state transition", "strength": "STRONG", "store": "Evidence Ledger", "description": "Immutable workflow state transition record" },
+      { "type_id": "ET-06", "name": "Policy version record", "strength": "STRONG", "store": "Evidence Ledger", "description": "Immutable policy version with prior_version_ref chain" },
+      { "type_id": "ET-07", "name": "Finality state record", "strength": "STRONG", "store": "Evidence Ledger", "description": "Finality state record (F0/F1/F2/F5; F3/F4 NOT_CLAIMED — MTQ DISABLED)" },
+      { "type_id": "ET-08", "name": "Independent recalculation output", "strength": "STRONG", "store": "Evidence Ledger", "description": "Reviewer-generated recalculation output" },
+      { "type_id": "ET-09", "name": "Replay output", "strength": "STRONG", "store": "Evidence Ledger", "description": "Replay output (MATCH/MISMATCH/INSUFFICIENT_EVIDENCE)" },
+      { "type_id": "ET-10", "name": "System configuration snapshot", "strength": "MEDIUM", "store": "Configuration Snapshot Store", "description": "Frozen at engagement; configuration snapshot" },
+      { "type_id": "ET-11", "name": "Test execution output", "strength": "MEDIUM", "store": "Test Execution Store", "description": "Scripted, repeatable test execution output" },
+      { "type_id": "ET-12", "name": "Manual reviewer attestation", "strength": "WEAK", "store": "Attestation Store", "description": "Reviewer-signed attestation — WEAK; cannot substitute for STRONG" },
+      { "type_id": "ET-13", "name": "Management attestation", "strength": "WEAK", "store": "Attestation Store", "description": "Management-signed attestation — WEAK; cannot substitute for STRONG" }
+    ]
+  },
+  "assurance_data_models": {
+    "model_count": 7,
+    "models": [
+      { "model_id": "ADM-01", "name": "Transaction Trace Model", "description": "12-stage per-event trace model per 06_transaction-traceability.md", "status": "DESIGNED" },
+      { "model_id": "ADM-02", "name": "Evidence Chain Model", "description": "EVENT→CONTROL→EVIDENCE→KPI→CONCLUSION chain per 07_evidence-chain.md", "status": "DESIGNED" },
+      { "model_id": "ADM-03", "name": "Evidence Integrity Model", "description": "12 integrity controls K-01..K-12 per 08_evidence-integrity.md", "status": "DESIGNED" },
+      { "model_id": "ADM-04", "name": "Replay Protocol Model", "description": "8 reproducibility targets L-01..L-08 per 09_replay-protocol.md", "status": "DESIGNED" },
+      { "model_id": "ADM-05", "name": "Finality Model", "description": "F0-F7 layer mapping per 12_finality-assurance.md (F3/F4 NOT_CLAIMED — MTQ DISABLED)", "status": "DESIGNED" },
+      { "model_id": "ADM-06", "name": "Reconciliation Model", "description": "9-test surface Q-01..Q-09 + 9 edge conditions per 13_reconciliation-assurance.md", "status": "DESIGNED" },
+      { "model_id": "ADM-07", "name": "Bank Value Measurement Engine", "description": "12×6=72 cell matrix per 20_roi-value-assurance.md (all cells UNKNOWN)", "status": "DESIGNED" }
+    ]
+  },
+  "integrity_controls": {
+    "control_count": 12,
+    "controls": [
+      { "control_id": "K-01", "name": "Hash-on-create", "requirement": "Every evidence record gets a SHA-256 hash at creation; hash stored separately from the record body", "status": "DESIGNED" },
+      { "control_id": "K-02", "name": "Hash-on-modify", "requirement": "Any modification creates a new version with a new hash; old version retained", "status": "DESIGNED" },
+      { "control_id": "K-03", "name": "Hash-on-read", "requirement": "Every read verifies hash before returning record", "status": "DESIGNED" },
+      { "control_id": "K-04", "name": "Append-only ledger", "requirement": "The evidence store is append-only; no record is ever deleted", "status": "DESIGNED" },
+      { "control_id": "K-05", "name": "Separation of duties", "requirement": "The actor that creates a record must differ from the actor that approves its inclusion in a finding", "status": "DESIGNED" },
+      { "control_id": "K-06", "name": "Time-stamp authority", "requirement": "Timestamps from an external time-stamp authority (TSA) for non-repudiation", "status": "DESIGNED" },
+      { "control_id": "K-07", "name": "Cryptographic receipt", "requirement": "Counterparty-signed receipts for settlement events (ET-04)", "status": "DESIGNED" },
+      { "control_id": "K-08", "name": "Replay reproducibility", "requirement": "Evidence can be re-generated by replay; if not, marked NON_REPRODUCIBLE", "status": "DESIGNED" },
+      { "control_id": "K-09", "name": "Access-level enforcement", "requirement": "3 access levels (PUBLIC/INTERNAL/RESTRICTED) enforced; no escalation without audit", "status": "DESIGNED" },
+      { "control_id": "K-10", "name": "Modification log", "requirement": "Every modification recorded with actor, time, before/after hash", "status": "DESIGNED" },
+      { "control_id": "K-11", "name": "Retention policy", "requirement": "Records retained per 4-class schedule", "status": "DESIGNED" },
+      { "control_id": "K-12", "name": "Disposal prohibition", "requirement": "No record disposed before its retention class expires", "status": "DESIGNED" }
+    ]
+  },
+  "retention_schedule": {
+    "class_count": 4,
+    "classes": [
+      { "class_id": "RC-1", "name": "Transaction evidence", "retention_period": "7 years", "status": "PROPOSED — COUNSEL_REVIEW_REQUIRED" },
+      { "class_id": "RC-2", "name": "Counterparty-signed receipts (ET-04)", "retention_period": "10 years", "status": "PROPOSED — COUNSEL_REVIEW_REQUIRED" },
+      { "class_id": "RC-3", "name": "Policy version records (ET-06)", "retention_period": "10 years after policy superseded", "status": "PROPOSED — COUNSEL_REVIEW_REQUIRED" },
+      { "class_id": "RC-4", "name": "Manual attestation (ET-12, ET-13)", "retention_period": "5 years", "status": "PROPOSED — COUNSEL_REVIEW_REQUIRED" }
+    ]
+  },
+  "no_hidden_assumption_rule": {
+    "description": "Every assumption must be visible in 27_assurance-limitations.md or 29_open-issues.md. If an assumption is not visible, it does not exist for purposes of this framework.",
+    "assumption_classes": [
+      { "class_id": 1, "name": "Design assumption", "where_recorded": "27_assurance-limitations.md or 29_open-issues.md" },
+      { "class_id": 2, "name": "Operational assumption", "where_recorded": "27_assurance-limitations.md or 29_open-issues.md" },
+      { "class_id": 3, "name": "Evidence assumption", "where_recorded": "27_assurance-limitations.md or 28_assurance-evidence-index.md" },
+      { "class_id": 4, "name": "Sampling assumption", "where_recorded": "27_assurance-limitations.md or assurance-sampling-plan.md" },
+      { "class_id": 5, "name": "Replay/reproducibility assumption", "where_recorded": "27_assurance-limitations.md or 09_replay-protocol.md" }
+    ],
+    "status": "ENFORCED"
+  },
+  "manual_attestation_rule": {
+    "description": "Manual-attestation (ET-12 reviewer-signed, ET-13 management-signed) is WEAK. May NOT substitute for STRONG evidence (ET-01..ET-09). May NOT justify OBSERVED_RESULT conclusion. May NOT close a finding without independent retest. May NOT endorse value/capital/liquidity/reserve benefit.",
+    "weak_types": ["ET-12", "ET-13"],
+    "strong_types_that_may_not_be_substituted": ["ET-01", "ET-02", "ET-03", "ET-04", "ET-05", "ET-06", "ET-07", "ET-08", "ET-09"],
+    "prohibited_uses": [
+      "Substitute for STRONG evidence",
+      "Justify OBSERVED_RESULT conclusion",
+      "Close finding without independent retest",
+      "Endorse value/capital/liquidity/reserve benefit"
+    ],
+    "permitted_uses": [
+      "Document a limitation",
+      "Record a management response",
+      "Explain why stronger evidence type was not collectable"
+    ],
+    "conclusion_label_when_based_solely_on_weak": "CONCLUSION_BASED_ON_WEAK_EVIDENCE",
+    "status": "ENFORCED"
+  },
+  "honest_state": {
+    "evidence_records_collected": 0,
+    "integrity_controls_executed": 0,
+    "modifications_handled": 0,
+    "retention_disposals": 0,
+    "all_12_controls_at_state": "DESIGNED",
+    "all_4_retention_classes_at_state": "PROPOSED — COUNSEL_REVIEW_REQUIRED",
+    "frozen_schema_reference_status": "REFERENCED_BUT_ABSENT (Prompt 74 finding LD-02)",
+    "mtq_disabled": true,
+    "f3_f4_not_claimed": true,
+    "zero_banks": true,
+    "zero_counsel": true,
+    "zero_pilot_execution": true
+  }
+}
