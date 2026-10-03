@@ -1,0 +1,1958 @@
+MITHQAL — MASTER HOME PAGE IMPLEMENTATION
+REFERENCE-FAITHFUL / INSTITUTIONAL / FROZEN-ARCHITECTURE MODE
+
+ROLE
+You are the senior UI architect, frontend lead, product designer, design-system engineer and implementation lead for MITHQAL.
+
+Your job is to implement the MITHQAL homepage shown in the attached reference image with extremely high visual fidelity while remaining fully consistent with the established MITHQAL architecture, institutionalization program, security controls, evidence status, and production restrictions.
+
+IMPORTANT:
+The attached image is the visual source of truth for composition, lighting, spatial hierarchy, proportions, visual mood, navigation placement, typography scale, CTA treatment, hero composition and bottom capability rail.
+
+The image is NOT the source of truth for MITHQAL product claims.
+The existing MITHQAL architecture and prior program controls are the source of truth for wording, functionality and product claims.
+
+============================================================
+1. NON-NEGOTIABLE PROJECT CONTEXT
+============================================================
+
+MITHQAL is positioned as a neutral institutional settlement control plane.
+
+Core positioning:
+
+- settlement orchestration
+- policy control
+- routing
+- reconciliation
+- evidence
+- auditability
+- continuity
+- failure handling
+- multi-rail interoperability
+- institutional workflow coordination
+
+MTQ is OPTIONAL.
+
+MTQ must remain:
+- disabled by default
+- permissioned
+- closed-loop
+- institutionally controlled
+- not required for the core MITHQAL control-plane value proposition
+
+Do NOT reposition MITHQAL as:
+- a consumer fintech app
+- a retail investment platform
+- a DeFi application
+- a public token marketplace
+- a speculative asset platform
+- a wallet-first product
+- a cryptocurrency exchange
+- a guaranteed stablecoin product
+- a consumer custody product
+
+The homepage is a positioning and architecture communication surface.
+
+It must NOT imply that MITHQAL is already:
+- production-authorized
+- institutionally validated
+- licensed
+- bank contracted
+- legally approved in every relevant jurisdiction
+- backed by validated live reserves
+- live in production
+- connected to live settlement rails
+- supported by named banks/custodians unless such evidence exists and is already verified
+
+Current architecture status must remain respected:
+
+productionAuthorized = false
+institutionallyValidated = false
+releaseStatus = RELEASE_BLOCKED
+buildMode = FROZEN
+
+Do not change these states.
+
+Do not unlock production functionality through frontend implementation.
+
+============================================================
+2. ABSOLUTE IMPLEMENTATION RULE
+============================================================
+
+DO NOT redesign the MITHQAL architecture.
+
+DO NOT modify:
+- settlement logic
+- MTQ logic
+- ledger logic
+- policy engine
+- finality model
+- PBC model
+- entity model
+- compliance architecture
+- reconciliation architecture
+- evidence architecture
+- provider architecture
+- runtime stack
+- secrets architecture
+- database architecture
+- deployment architecture
+
+This is a FRONTEND/UI implementation task.
+
+The frontend must consume existing approved interfaces/components where available.
+
+Do not invent backend functionality merely to make the page appear more advanced.
+
+If an existing route/component/API does not exist, use a safe placeholder state or navigation destination rather than inventing a fake operational capability.
+
+============================================================
+3. SOURCE IMAGE
+============================================================
+
+Attached reference image:
+
+1536 × 1024
+
+Use the reference image as the primary visual source.
+
+The target composition is:
+
+------------------------------------------------------------
+HEADER
+------------------------------------------------------------
+
+Full-width dark navy/black header.
+
+Approximate height:
+76–80 px at 1536 px viewport width.
+
+Left:
+- MITHQAL geometric M logo
+- MITHQAL wordmark
+- gold logo
+- white/light wordmark
+- generous tracking
+
+Center:
+- Home
+- Features
+- Ecosystem
+- Roadmap
+- About
+
+Active Home:
+- white text
+- thin gold underline
+
+Right:
+- outlined pill CTA
+- gold border
+- light text
+- right arrow
+
+Header has:
+- subtle bottom border
+- transparent/dark glass-like appearance
+- no heavy shadows
+- premium institutional aesthetic
+
+------------------------------------------------------------
+HERO
+------------------------------------------------------------
+
+The hero must visually reproduce the reference:
+
+Full-screen cinematic environment containing:
+
+- dramatic dark mountain range
+- deep blue-black atmospheric foreground
+- reflective body of water
+- distant futuristic/institutional city
+- warm sunrise/sunset illumination
+- monumental black stone architectural portal
+- glowing gold rectangular portal frame
+- centered gold MITHQAL M emblem inside portal
+- distant celestial/planetary body above the landscape
+- cinematic volumetric lighting
+- high contrast between dark navy environment and warm metallic gold portal
+- premium, sophisticated, futuristic institutional atmosphere
+- no cartoon aesthetic
+- no generic SaaS illustrations
+- no stock-photo appearance
+- no excessive cyberpunk elements
+- no neon rainbow palette
+
+The portal is the visual focal point on the right side.
+
+The left side must retain sufficient dark negative space for HTML text.
+
+============================================================
+4. BACKGROUND ASSET RULE
+============================================================
+
+Do NOT place the entire screenshot itself behind the HTML content because the reference image already contains baked-in text and UI.
+
+Instead:
+
+1. Use the attached image as the visual reference.
+2. Create or prepare a CLEAN HERO BACKGROUND ASSET containing only the cinematic environment:
+   - mountains
+   - water
+   - city
+   - portal
+   - celestial background
+   - atmosphere
+3. Remove all:
+   - navigation text
+   - hero text
+   - CTA text
+   - feature rail text
+   - UI labels
+   - baked-in typography
+
+Preferred asset:
+public/assets/mithqal-hero-background.webp
+
+Also support:
+public/assets/mithqal-hero-background.avif
+
+Provide responsive versions where practical.
+
+The background image must remain an image asset, while all user-facing typography/buttons/navigation are real HTML DOM elements.
+
+If the clean asset cannot yet be created:
+- keep the attached reference image as a temporary internal visual reference only
+- do NOT duplicate its baked-in text
+- do NOT ship the screenshot as the final production background unless the baked UI is completely hidden
+- create a clearly documented placeholder asset path for later replacement
+
+============================================================
+5. COLOR SYSTEM
+============================================================
+
+Use a refined institutional palette based on the reference.
+
+Primary background:
+#000611
+
+Deep navy:
+#07111F
+
+Secondary navy:
+#0B1728
+
+Primary text:
+#F5F4F1
+
+Muted text:
+#C7CBD2
+
+Gold:
+#E7BA78
+
+Bright gold:
+#F1C978
+
+Gold border:
+rgba(231, 186, 120, 0.75)
+
+Gold glow:
+rgba(231, 186, 120, 0.28)
+
+White:
+#FFFFFF
+
+Use gold sparingly.
+
+Gold should communicate:
+- precision
+- value
+- authority
+- infrastructure
+- illumination
+
+Do not turn the entire interface gold.
+
+============================================================
+6. TYPOGRAPHY
+============================================================
+
+Use a premium modern sans-serif.
+
+Preferred stack:
+
+font-family:
+Inter, Manrope, "SF Pro Display", system-ui, -apple-system,
+BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+The headline must feel:
+- architectural
+- elegant
+- minimal
+- highly legible
+- premium
+- editorial
+
+Desktop headline target:
+approximately 68–76px
+font-weight:
+400–500
+line-height:
+0.98–1.06
+letter-spacing:
+-0.035em to -0.05em
+
+Hero eyebrow:
+approximately 12–14px
+font-weight:
+600
+letter-spacing:
+0.28em
+uppercase
+
+Body:
+approximately 18px
+line-height:
+1.65
+
+Navigation:
+approximately 14–15px
+
+Feature headings:
+approximately 16–18px
+
+Feature descriptions:
+approximately 13–14px
+
+Avoid:
+- overly bold marketing typography
+- huge heavy fonts
+- gradients inside text
+- excessive italics
+- futuristic sci-fi fonts that reduce institutional credibility
+
+============================================================
+7. BRAND MARK
+============================================================
+
+Reproduce the visual identity shown in the reference:
+
+Gold geometric MITHQAL emblem.
+
+The mark should visually resemble:
+- two angular M structures
+- symmetrical geometry
+- high-end architectural monogram
+- thin metallic/gold geometry
+
+Use inline SVG when possible rather than rasterizing the logo.
+
+Wordmark:
+M I T H Q A L
+
+Use generous letter spacing.
+
+Do not use a generic text "M" as the logo.
+
+If a canonical MITHQAL logo already exists in the repository:
+USE THE EXISTING CANONICAL LOGO.
+Do not create a replacement.
+
+============================================================
+8. NAVIGATION
+============================================================
+
+Desktop navigation:
+
+Logo on left.
+
+Menu centered:
+
+Home
+Features
+Ecosystem
+Roadmap
+About
+
+Active state:
+Home
+
+Active underline:
+gold
+1–2 px
+approximately 55–65 px
+
+Header layout:
+
+display: grid
+
+grid-template-columns:
+1fr auto 1fr
+
+Logo aligned left.
+Navigation centered.
+CTA aligned right.
+
+Header horizontal padding:
+approximately 5.8–6.2vw
+
+Desktop maximum content width:
+approximately 1360–1400px
+
+Header should stay visually balanced at 1536px width.
+
+On smaller screens:
+- preserve the same brand
+- collapse navigation into a mobile menu
+- do not let menu items wrap into an ugly multi-line header
+- maintain CTA or convert it into a compact menu action
+
+============================================================
+9. HERO COPY
+============================================================
+
+Do NOT copy the original consumer/Web3 wording from the reference.
+
+Reference wording such as:
+"Your Digital Capital"
+"DeFi & Finance"
+"Digital Ownership"
+"Build, earn, and grow"
+"Your assets. Your control"
+must NOT be used in the institutional MITHQAL implementation.
+
+Use the following compliant production copy:
+
+EYEBROW:
+
+THE INSTITUTIONAL SETTLEMENT CONTROL PLANE
+
+HEADLINE:
+
+Institutional Settlement.
+Unified. Observable.
+Controlled.
+
+Alternative single-line behavior at very wide widths is permitted,
+but preserve the three-line visual rhythm shown in the reference.
+
+BODY:
+
+MITHQAL coordinates settlement workflows, policy controls,
+reconciliation and audit-ready evidence across legally recognized
+financial rails — with institutional control, continuity and
+measurable operational visibility at the core.
+
+Do not add:
+- guaranteed outcomes
+- claims of licensing
+- bank partnerships
+- claims of live production
+- guaranteed settlement
+- guaranteed liquidity
+- guaranteed compliance
+
+============================================================
+10. HERO CTA
+============================================================
+
+The visual treatment MUST match the reference:
+
+Primary CTA:
+filled gold pill
+
+Secondary CTA:
+transparent/dark pill with thin gold outline
+
+However, do not create misleading operational actions.
+
+Use:
+
+PRIMARY:
+Explore the Platform →
+
+SECONDARY:
+View Institutional Architecture
+
+If an actual approved demo/sandbox route already exists,
+the primary CTA may point to that existing route.
+
+If no approved route exists:
+DO NOT fabricate one.
+
+Do not use "Launch App" unless an existing authorized application
+route has been verified.
+
+Do not make the CTA trigger:
+- payments
+- settlement
+- MTQ issuance
+- token purchase
+- custody
+- transfers
+- financial operations
+- account creation tied to real value
+
+============================================================
+11. HERO LAYOUT
+============================================================
+
+Main hero content should approximately occupy:
+
+left:
+50–54% of usable width
+
+right:
+46–50%
+
+Text begins around:
+7% viewport width
+
+Top hero content:
+approximately 18–20vh from hero top
+
+The visual portal should occupy approximately:
+30–38% viewport width
+
+Portal vertical position:
+roughly center-right
+
+The portal should feel physically embedded in the landscape,
+not like a floating UI card.
+
+The left text must remain readable over the dark environment.
+
+Apply a subtle dark directional gradient behind the left copy.
+
+Example:
+
+background:
+linear-gradient(
+    90deg,
+    rgba(0, 6, 17, 0.82) 0%,
+    rgba(0, 6, 17, 0.48) 40%,
+    rgba(0, 6, 17, 0.08) 68%,
+    rgba(0, 0, 0, 0.00) 100%
+);
+
+Do NOT create a flat dark box behind the copy.
+
+The copy should appear naturally integrated with the cinematic environment.
+
+============================================================
+12. BOTTOM CAPABILITY RAIL
+============================================================
+
+At the bottom of the hero recreate the five-column information rail
+shown in the reference.
+
+The visual layout:
+
+1. Settlement Orchestration
+2. Policy & Risk Controls
+3. Reconciliation & Evidence
+4. Multi-Rail Interoperability
+5. Continuity & Replay
+
+Each feature contains:
+
+- gold line icon
+- title
+- short description
+- subtle vertical divider
+- balanced spacing
+
+Use approximately the following copy:
+
+01
+SETTLEMENT ORCHESTRATION
+Coordinate settlement workflows across controlled institutional rails.
+
+02
+POLICY & RISK CONTROLS
+Apply deterministic policy, eligibility and risk controls to workflows.
+
+03
+RECONCILIATION & EVIDENCE
+Maintain reconciliation, traceability and audit-ready evidence.
+
+04
+MULTI-RAIL INTEROPERABILITY
+Coordinate workflows across distinct financial and settlement rails.
+
+05
+CONTINUITY & REPLAY
+Support controlled recovery, failure handling, replay and operational continuity.
+
+Do not use:
+- DeFi
+- digital ownership
+- investment
+- earn
+- trading
+- speculative assets
+
+============================================================
+13. ICONOGRAPHY
+============================================================
+
+Icons must match the reference style:
+
+thin-line
+gold
+minimal
+technical
+premium
+monoline
+
+Prefer inline SVG.
+
+Suggested symbolic families:
+
+Settlement:
+stacked layers / transaction pathways
+
+Policy:
+shield / rule geometry
+
+Evidence:
+document / verification / ledger
+
+Interoperability:
+connected nodes
+
+Continuity:
+lightning / cycle / recovery
+
+All icons should use:
+stroke="currentColor"
+fill="none"
+stroke-width around 1.5–2
+
+No emoji.
+No colorful icon libraries.
+No cartoon icons.
+
+============================================================
+14. HERO VISUAL TREATMENT
+============================================================
+
+The portal must have:
+
+- near-black stone structure
+- subtle rough/architectural texture
+- golden illuminated rectangular opening
+- warm internal volumetric glow
+- MITHQAL mark centered in portal
+- reflections in surrounding water
+- realistic atmospheric integration
+
+The portal must not be implemented as a normal HTML card.
+
+It belongs to the hero environmental artwork.
+
+The HTML controls should visually sit in front of the environment.
+
+============================================================
+15. MICRO-INTERACTIONS
+============================================================
+
+Use restrained motion.
+
+Allowed:
+
+Navigation underline:
+150–220ms ease
+
+CTA hover:
+slight brightness increase
+1–2px translateY
+subtle gold glow
+
+Feature icon:
+very subtle 2–4px motion
+
+Hero:
+optional extremely subtle parallax
+
+Do NOT add:
+- aggressive animations
+- spinning 3D cards
+- particle explosions
+- excessive glowing UI
+- blockchain-style matrix effects
+- continuous flashing
+- distracting motion
+
+The institutional brand must feel controlled.
+
+============================================================
+16. ACCESSIBILITY
+============================================================
+
+Everything must be real HTML.
+
+Use:
+<header>
+<nav>
+<main>
+<section>
+<h1>
+<p>
+<a>
+<button only where appropriate
+
+All images need meaningful alt text where informational.
+
+Decorative imagery:
+alt=""
+
+Navigation must be keyboard accessible.
+
+Visible focus states.
+
+Do not encode important textual content into the hero image.
+
+Maintain WCAG-conscious color contrast.
+
+Respect:
+prefers-reduced-motion
+
+============================================================
+17. PERFORMANCE
+============================================================
+
+Hero image is the heaviest asset.
+
+Optimize aggressively without materially degrading the visual.
+
+Preferred:
+
+AVIF
+WebP
+
+Use:
+<picture>
+srcset
+responsive sizes
+
+Use an appropriate loading strategy.
+
+Hero visual should not be unnecessarily downloaded multiple times.
+
+Do not install heavyweight libraries solely for this homepage.
+
+Do not introduce paid services.
+
+Do not add unnecessary analytics.
+
+Do not add tracking scripts.
+
+============================================================
+18. SECURITY / SECRETS
+============================================================
+
+ABSOLUTE RULE:
+
+Do not place credentials in:
+- HTML
+- CSS
+- client-side JS
+- source code
+- documentation
+- screenshots
+- prompts
+- comments
+
+Do not hard-code:
+- API keys
+- database URLs
+- passwords
+- tokens
+- access keys
+- signing keys
+- cloud credentials
+
+Do not ask the operator to paste secrets into the source.
+
+Deployment credentials must use provider-native secret/environment facilities.
+
+Never print secret values in logs.
+
+This page should not require any secret to render.
+
+============================================================
+19. EXISTING STACK INTEGRATION
+============================================================
+
+Preserve the existing project stack and repository architecture.
+
+Expected ecosystem:
+- GitHub
+- Vercel
+- Inngest
+- Turso
+- Neon
+
+Do not alter provider architecture for a visual homepage.
+
+Do not introduce:
+- Docker requirement
+- laptop-local deployment requirement
+- new paid infrastructure
+- unnecessary backend service
+- unnecessary database
+- unnecessary auth provider
+
+The homepage should function independently from provider credentials.
+
+If the current repository is already React/TypeScript/Next/Vite:
+use the existing framework.
+
+Do NOT replace the framework.
+
+Do NOT rewrite the application architecture.
+
+Do NOT move the project to a different framework simply to create this page.
+
+============================================================
+20. HTML REFERENCE STRUCTURE
+============================================================
+
+Use a structure equivalent to the following:
+
+<header class="site-header">
+  <div class="header-inner">
+
+    <a class="brand" href="/" aria-label="MITHQAL home">
+      <span class="brand-mark" aria-hidden="true">
+        <!-- canonical MITHQAL SVG -->
+      </span>
+      <span class="brand-wordmark">MITHQAL</span>
+    </a>
+
+    <nav class="primary-nav" aria-label="Primary navigation">
+      <a class="nav-link active" href="/">Home</a>
+      <a class="nav-link" href="/features">Features</a>
+      <a class="nav-link" href="/ecosystem">Ecosystem</a>
+      <a class="nav-link" href="/roadmap">Roadmap</a>
+      <a class="nav-link" href="/about">About</a>
+    </nav>
+
+    <a class="header-cta" href="/platform">
+      <span>Explore Platform</span>
+      <span aria-hidden="true">→</span>
+    </a>
+
+  </div>
+</header>
+
+
+<main>
+
+<section class="hero" aria-labelledby="hero-title">
+
+  <div class="hero-overlay" aria-hidden="true"></div>
+
+  <div class="hero-content">
+
+    <div class="hero-eyebrow">
+      <span class="eyebrow-line"></span>
+      <span>THE INSTITUTIONAL SETTLEMENT CONTROL PLANE</span>
+    </div>
+
+    <h1 id="hero-title">
+      Institutional Settlement.
+      <span>Unified. Observable.</span>
+      <span class="gold-text">Controlled.</span>
+    </h1>
+
+    <p class="hero-description">
+      MITHQAL coordinates settlement workflows, policy controls,
+      reconciliation and audit-ready evidence across legally recognized
+      financial rails — with institutional control, continuity and
+      measurable operational visibility at the core.
+    </p>
+
+    <div class="hero-actions">
+      <a class="btn btn-primary" href="/platform">
+        Explore the Platform
+        <span aria-hidden="true">→</span>
+      </a>
+
+      <a class="btn btn-secondary" href="/architecture">
+        View Institutional Architecture
+      </a>
+    </div>
+
+  </div>
+
+  <div class="capability-rail">
+
+    <article class="capability">
+      <div class="capability-icon">
+        <!-- SVG -->
+      </div>
+      <div>
+        <h2>Settlement Orchestration</h2>
+        <p>Coordinate settlement workflows across controlled institutional rails.</p>
+      </div>
+    </article>
+
+    <article class="capability">
+      <div class="capability-icon">
+        <!-- SVG -->
+      </div>
+      <div>
+        <h2>Policy &amp; Risk Controls</h2>
+        <p>Apply deterministic policy, eligibility and risk controls to workflows.</p>
+      </div>
+    </article>
+
+    <article class="capability">
+      <div class="capability-icon">
+        <!-- SVG -->
+      </div>
+      <div>
+        <h2>Reconciliation &amp; Evidence</h2>
+        <p>Maintain reconciliation, traceability and audit-ready evidence.</p>
+      </div>
+    </article>
+
+    <article class="capability">
+      <div class="capability-icon">
+        <!-- SVG -->
+      </div>
+      <div>
+        <h2>Multi-Rail Interoperability</h2>
+        <p>Coordinate workflows across distinct financial and settlement rails.</p>
+      </div>
+    </article>
+
+    <article class="capability">
+      <div class="capability-icon">
+        <!-- SVG -->
+      </div>
+      <div>
+        <h2>Continuity &amp; Replay</h2>
+        <p>Support controlled recovery, failure handling, replay and operational continuity.</p>
+      </div>
+    </article>
+
+  </div>
+
+</section>
+
+</main>
+
+<footer>
+  <!-- Use existing site footer if the repository already has one. -->
+</footer>
+
+============================================================
+21. CSS REFERENCE
+============================================================
+
+Use the following CSS principles as the baseline.
+Translate to the project's existing CSS/Tailwind/design-system conventions
+rather than introducing an unnecessary second styling system.
+
+:root {
+  --mithqal-black: #000611;
+  --mithqal-navy: #07111f;
+  --mithqal-navy-2: #0b1728;
+
+  --mithqal-white: #f5f4f1;
+  --mithqal-muted: #c7cbd2;
+
+  --mithqal-gold: #e7ba78;
+  --mithqal-gold-bright: #f1c978;
+
+  --header-height: 78px;
+  --content-width: 1380px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--mithqal-black);
+  color: var(--mithqal-white);
+  font-family:
+    Inter,
+    Manrope,
+    "SF Pro Display",
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.site-header {
+  position: absolute;
+  inset: 0 0 auto 0;
+  z-index: 20;
+  height: var(--header-height);
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  background: rgba(0, 6, 17, .68);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.header-inner {
+  width: min(
+    calc(100% - clamp(40px, 11.5vw, 176px)),
+    var(--content-width)
+  );
+  height: 100%;
+  margin: 0 auto;
+
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 24px;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 18px;
+  justify-self: start;
+}
+
+.brand-mark {
+  width: 41px;
+  height: 41px;
+  display: inline-grid;
+  place-items: center;
+  color: var(--mithqal-gold);
+}
+
+.brand-wordmark {
+  font-size: 27px;
+  font-weight: 400;
+  letter-spacing: .27em;
+  line-height: 1;
+}
+
+.primary-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 41px;
+}
+
+.nav-link {
+  position: relative;
+  padding: 30px 0 27px;
+  color: rgba(245,244,241,.86);
+  font-size: 14px;
+  font-weight: 400;
+  transition:
+    color 180ms ease,
+    opacity 180ms ease;
+}
+
+.nav-link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 18px;
+  height: 1px;
+  transform: scaleX(0);
+  transform-origin: center;
+  background: var(--mithqal-gold);
+  transition: transform 180ms ease;
+}
+
+.nav-link:hover,
+.nav-link.active {
+  color: var(--mithqal-white);
+}
+
+.nav-link.active::after {
+  transform: scaleX(1);
+}
+
+.header-cta {
+  justify-self: end;
+
+  min-width: 157px;
+  height: 38px;
+  padding: 0 20px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+
+  border: 1px solid rgba(231,186,120,.9);
+  border-radius: 999px;
+
+  font-size: 14px;
+  color: var(--mithqal-white);
+
+  transition:
+    background 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
+}
+
+.header-cta:hover {
+  background: rgba(231,186,120,.08);
+  box-shadow: 0 0 24px rgba(231,186,120,.10);
+  transform: translateY(-1px);
+}
+
+.hero {
+  position: relative;
+  min-height: 100svh;
+  overflow: hidden;
+
+  display: flex;
+  align-items: stretch;
+
+  background:
+    url("/assets/mithqal-hero-background.avif")
+    center center / cover
+    no-repeat;
+
+  isolation: isolate;
+}
+
+.hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+
+  background:
+    linear-gradient(
+      90deg,
+      rgba(0,6,17,.90) 0%,
+      rgba(0,6,17,.67) 28%,
+      rgba(0,6,17,.30) 51%,
+      rgba(0,6,17,.04) 74%,
+      rgba(0,0,0,0) 100%
+    );
+}
+
+.hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(0,6,17,.42) 0%,
+      rgba(0,6,17,0) 22%,
+      rgba(0,6,17,0) 70%,
+      rgba(0,6,17,.88) 100%
+    );
+}
+
+.hero-content {
+  position: relative;
+  z-index: 4;
+
+  width: min(
+    calc(100% - clamp(48px, 11.8vw, 182px)),
+    var(--content-width)
+  );
+
+  margin: 0 auto;
+
+  padding-top: clamp(170px, 18vh, 200px);
+  padding-bottom: 250px;
+}
+
+.hero-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 23px;
+
+  margin-bottom: 31px;
+
+  color: var(--mithqal-gold);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .30em;
+  text-transform: uppercase;
+}
+
+.eyebrow-line {
+  width: 3px;
+  height: 20px;
+  display: inline-block;
+  background: var(--mithqal-gold);
+}
+
+.hero h1 {
+  max-width: 700px;
+  margin: 0;
+
+  font-size: clamp(55px, 5vw, 78px);
+  font-weight: 400;
+  line-height: .98;
+  letter-spacing: -.045em;
+}
+
+.hero h1 span {
+  display: block;
+}
+
+.gold-text {
+  color: var(--mithqal-gold-bright);
+}
+
+.hero-description {
+  max-width: 585px;
+  margin: 41px 0 0;
+
+  color: rgba(245,244,241,.90);
+  font-size: clamp(16px, 1.18vw, 19px);
+  line-height: 1.62;
+  letter-spacing: -.01em;
+}
+
+.hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 19px;
+  margin-top: 31px;
+}
+
+.btn {
+  min-height: 46px;
+  padding: 0 29px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 11px;
+
+  border-radius: 999px;
+
+  font-size: 14px;
+  font-weight: 500;
+
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    background 180ms ease;
+}
+
+.btn-primary {
+  color: #0a0a0a;
+  background: var(--mithqal-gold);
+  box-shadow: 0 10px 35px rgba(231,186,120,.14);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  background: var(--mithqal-gold-bright);
+  box-shadow: 0 14px 42px rgba(231,186,120,.24);
+}
+
+.btn-secondary {
+  color: var(--mithqal-white);
+  border: 1px solid rgba(231,186,120,.80);
+  background: rgba(4,10,18,.25);
+  backdrop-filter: blur(7px);
+}
+
+.btn-secondary:hover {
+  transform: translateY(-2px);
+  background: rgba(231,186,120,.06);
+}
+
+.capability-rail {
+  position: absolute;
+  z-index: 6;
+
+  left: 50%;
+  bottom: 39px;
+  transform: translateX(-50%);
+
+  width: min(
+    calc(100% - 11.8vw),
+    var(--content-width)
+  );
+
+  display: grid;
+  grid-template-columns:
+    repeat(5, minmax(0, 1fr));
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(0,0,0,0) 0%,
+      rgba(0,0,0,.10) 100%
+    );
+}
+
+.capability {
+  min-height: 79px;
+  padding: 2px 32px 0;
+
+  display: grid;
+  grid-template-columns: 47px 1fr;
+  gap: 17px;
+
+  border-right: 1px solid rgba(255,255,255,.22);
+}
+
+.capability:first-child {
+  padding-left: 0;
+}
+
+.capability:last-child {
+  padding-right: 0;
+  border-right: none;
+}
+
+.capability-icon {
+  width: 42px;
+  height: 42px;
+
+  display: grid;
+  place-items: center;
+
+  color: var(--mithqal-gold);
+}
+
+.capability h2 {
+  margin: 2px 0 7px;
+
+  font-size: 16px;
+  line-height: 1.1;
+  font-weight: 500;
+  letter-spacing: -.01em;
+}
+
+.capability p {
+  max-width: 180px;
+  margin: 0;
+
+  color: rgba(245,244,241,.76);
+  font-size: 12.5px;
+  line-height: 1.55;
+}
+
+@media (max-width: 1200px) {
+  .header-inner,
+  .hero-content,
+  .capability-rail {
+    width: min(calc(100% - 72px), 1100px);
+  }
+
+  .primary-nav {
+    gap: 24px;
+  }
+
+  .hero h1 {
+    max-width: 620px;
+    font-size: clamp(50px, 6vw, 68px);
+  }
+
+  .capability {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+}
+
+@media (max-width: 900px) {
+
+  .site-header {
+    height: 70px;
+  }
+
+  .header-inner {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .primary-nav {
+    display: none;
+  }
+
+  .header-cta {
+    min-width: auto;
+    height: 36px;
+    padding: 0 15px;
+  }
+
+  .hero {
+    min-height: 920px;
+    background-position: 61% center;
+  }
+
+  .hero-content {
+    padding-top: 150px;
+    padding-bottom: 330px;
+  }
+
+  .hero h1 {
+    max-width: 650px;
+    font-size: clamp(45px, 8vw, 62px);
+  }
+
+  .hero-description {
+    max-width: 570px;
+  }
+
+  .capability-rail {
+    bottom: 27px;
+    grid-template-columns: repeat(2, minmax(0,1fr));
+    row-gap: 18px;
+  }
+
+  .capability {
+    border-right: none;
+  }
+
+  .capability:nth-child(odd) {
+    padding-left: 0;
+  }
+
+  .capability:nth-child(even) {
+    padding-right: 0;
+  }
+}
+
+@media (max-width: 620px) {
+
+  .header-inner,
+  .hero-content,
+  .capability-rail {
+    width: calc(100% - 36px);
+  }
+
+  .brand {
+    gap: 10px;
+  }
+
+  .brand-mark {
+    width: 33px;
+    height: 33px;
+  }
+
+  .brand-wordmark {
+    font-size: 18px;
+    letter-spacing: .21em;
+  }
+
+  .header-cta span:first-child {
+    display: none;
+  }
+
+  .header-cta {
+    min-width: 44px;
+    padding: 0 12px;
+  }
+
+  .hero {
+    min-height: 1060px;
+    background-position: 69% center;
+  }
+
+  .hero-content {
+    padding-top: 132px;
+    padding-bottom: 430px;
+  }
+
+  .hero-eyebrow {
+    gap: 13px;
+    margin-bottom: 24px;
+    font-size: 9px;
+    letter-spacing: .22em;
+  }
+
+  .hero h1 {
+    font-size: clamp(39px, 11vw, 54px);
+    line-height: .99;
+  }
+
+  .hero-description {
+    margin-top: 29px;
+    font-size: 16px;
+    line-height: 1.55;
+  }
+
+  .hero-actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .btn {
+    width: 100%;
+  }
+
+  .capability-rail {
+    grid-template-columns: 1fr;
+    row-gap: 13px;
+  }
+
+  .capability {
+    grid-template-columns: 41px 1fr;
+    min-height: auto;
+    padding: 11px 0 !important;
+    border-bottom: 1px solid rgba(255,255,255,.13);
+  }
+
+  .capability:last-child {
+    border-bottom: none;
+  }
+
+  .capability p {
+    max-width: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
+
+============================================================
+22. EXACT VISUAL CALIBRATION
+============================================================
+
+At a 1536 × 1024 viewport, compare implementation against the
+reference image pixel-for-pixel as closely as practical.
+
+The following visual characteristics must be preserved:
+
+HEADER:
+- approximately 78px tall
+- logo begins around x=90
+- logo/wordmark sits vertically centered
+- nav approximately centered
+- CTA at upper-right
+- thin bottom separator
+
+HERO:
+- left copy begins around x=90
+- eyebrow around y=190
+- headline around y=240
+- body around y=500
+- CTA around y=610
+- portal begins around x=1000
+- portal dominates right third
+- horizon and mountain geography remain visible
+- water reflection remains visible
+- bottom feature rail begins around y=870
+
+Do NOT allow:
+- hero text to collide with portal
+- portal to become too small
+- CTA to overlap the landscape focal point
+- capability rail to cover critical portal geometry
+- excessive blur
+- overly dark hero
+- washed-out gold
+- saturated cyberpunk colors
+
+============================================================
+23. VISUAL HIERARCHY
+============================================================
+
+Priority order:
+
+1. MITHQAL portal / architectural symbol
+2. Hero headline
+3. MITHQAL logo
+4. Hero supporting copy
+5. CTA
+6. Capability rail
+7. Navigation
+
+The eye should naturally travel:
+
+Logo
+→ eyebrow
+→ headline
+→ portal
+→ CTA
+→ capability rail
+
+============================================================
+24. MOBILE BEHAVIOR
+============================================================
+
+The desktop reference is the primary design target.
+
+Mobile must preserve the same brand language rather than becoming
+a generic responsive SaaS page.
+
+On mobile:
+
+- maintain cinematic background
+- position portal behind/right of the text
+- maintain dark copy area
+- preserve gold/white hierarchy
+- collapse desktop navigation
+- preserve CTA treatment
+- stack capability cards
+- never allow horizontal scrolling
+- never shrink text so far that it becomes unreadable
+
+============================================================
+25. NO MARKETING OVERCLAIMS
+============================================================
+
+The page must avoid unsupported claims.
+
+Do NOT use phrases such as:
+
+"fully compliant"
+
+"bank-grade"
+
+"licensed"
+
+"globally regulated"
+
+"guaranteed settlement"
+
+"guaranteed liquidity"
+
+"USD-backed"
+
+"100% reserve"
+
+"130% capital"
+
+"live bank network"
+
+"production ready"
+
+"live institutional network"
+
+"trusted by leading banks"
+
+"used by governments"
+
+"revolutionary financial infrastructure"
+
+unless each claim is independently verified and explicitly approved.
+
+Use factual architecture language instead.
+
+============================================================
+26. MTQ VISIBILITY
+============================================================
+
+Do not make MTQ the homepage's primary message.
+
+Do not create:
+- MTQ price
+- token ticker animation
+- token purchase button
+- exchange graphic
+- price chart
+- yield
+- APY
+- speculative language
+
+A future architecture page may explain MTQ as an optional
+permissioned institutional settlement primitive.
+
+The homepage should communicate that the core control plane
+stands independently of MTQ.
+
+============================================================
+27. INSTITUTIONAL STATUS BANNER RULE
+============================================================
+
+Do not create a prominent warning banner on the hero unless one already
+exists in the approved design system.
+
+Do not visually suggest production readiness through:
+- "LIVE"
+- green live-status lights
+- "Start Trading"
+- "Open Account"
+- "Deposit"
+- "Withdraw"
+- "Send"
+- "Receive"
+
+The homepage should feel highly advanced without pretending that
+external institutional gates have already been passed.
+
+============================================================
+28. CODE QUALITY
+============================================================
+
+Implement using reusable components.
+
+Suggested component structure:
+
+MithqalHome
+ ├── SiteHeader
+ ├── HeroSection
+ │    ├── HeroEyebrow
+ │    ├── HeroHeadline
+ │    ├── HeroDescription
+ │    └── HeroActions
+ ├── CapabilityRail
+ │    └── CapabilityItem × 5
+ └── ExistingFooter
+
+Avoid a single 1000-line component.
+
+Use constants/data arrays for navigation and capability items where
+appropriate.
+
+Keep visual content separate from logic.
+
+============================================================
+29. NO FAKE BACKEND
+============================================================
+
+This homepage is not an excuse to create fake APIs.
+
+Do not create:
+- fake database records
+- fake bank connections
+- fake settlement transactions
+- fake compliance status
+- fake institutional partners
+- fake production telemetry
+
+Purely visual UI data can be static.
+
+Operational data must come from verified existing sources.
+
+============================================================
+30. TESTING
+============================================================
+
+After implementation:
+
+1. Run existing project lint.
+2. Run existing type checks.
+3. Run the project's existing test suite where available.
+4. Verify desktop at:
+   - 1536 × 1024
+   - 1440 × 900
+   - 1280 × 800
+5. Verify tablet:
+   - 1024 × 768
+   - 820 × 1180
+6. Verify mobile:
+   - 390 × 844
+   - 430 × 932
+
+Check:
+- no horizontal overflow
+- no console errors
+- no broken links
+- no missing images
+- no broken SVG
+- no inaccessible text
+- no secret exposure
+- no fake operational functionality
+
+============================================================
+31. PIXEL-LEVEL QA
+============================================================
+
+Perform a visual comparison against the attached reference.
+
+Evaluate:
+
+- logo position
+- header height
+- navigation spacing
+- CTA dimensions
+- hero copy position
+- headline line breaks
+- headline size
+- eyebrow letter spacing
+- paragraph width
+- CTA spacing
+- portal scale
+- portal horizontal position
+- portal vertical position
+- mountain visibility
+- water horizon
+- background darkness
+- gold intensity
+- feature rail spacing
+- vertical dividers
+- icon size
+- typography hierarchy
+
+Do not settle for "similar."
+
+Iterate until the layout is visually extremely close.
+
+The objective is reference-faithful reproduction of the design language,
+not generic interpretation.
+
+============================================================
+32. GIT / CHANGE CONTROL
+============================================================
+
+Before changing code:
+
+- inspect existing repository structure
+- identify current homepage entry point
+- identify current design system
+- identify existing routes
+- identify existing canonical MITHQAL branding assets
+- identify whether a hero/background asset already exists
+
+Do not delete historical work.
+
+Do not rewrite unrelated architecture.
+
+Do not modify backend behavior.
+
+Do not change production authorization flags.
+
+Do not introduce secrets.
+
+Create a focused frontend change.
+
+Use a dedicated commit such as:
+
+MITHQAL-HOME-REFERENCE-FAITHFUL-UI
+
+The implementation must be reversible.
+
+============================================================
+33. ACCEPTANCE CRITERIA
+============================================================
+
+The implementation passes only when all of these are true:
+
+[ ] Desktop page closely matches the attached 1536×1024 reference.
+
+[ ] MITHQAL logo and wordmark are correctly positioned.
+
+[ ] Header has same overall visual hierarchy.
+
+[ ] Hero background reproduces the cinematic mountain/water/portal scene.
+
+[ ] Portal is the dominant right-side visual.
+
+[ ] Hero copy occupies the left visual field.
+
+[ ] Gold/white/navy palette is preserved.
+
+[ ] CTA geometry closely matches reference.
+
+[ ] Bottom capability rail matches the same structural concept.
+
+[ ] All production text is institutional rather than consumer/Web3.
+
+[ ] No unsupported legal, regulatory, banking or production claims.
+
+[ ] MTQ remains optional and is not presented as the reason to use MITHQAL.
+
+[ ] No fake live financial actions exist.
+
+[ ] No credentials are placed in source code.
+
+[ ] No provider architecture is changed.
+
+[ ] No Docker requirement is added.
+
+[ ] No paid service is introduced.
+
+[ ] Existing GitHub/Vercel/Inngest/Turso/Neon architecture is left intact.
+
+[ ] productionAuthorized remains false.
+
+[ ] institutionallyValidated remains false.
+
+[ ] release remains blocked unless already externally authorized.
+
+[ ] Lint passes.
+
+[ ] Type checking passes.
+
+[ ] Existing tests pass where applicable.
+
+[ ] No horizontal scrolling on mobile.
+
+[ ] Keyboard navigation works.
+
+[ ] Reduced-motion behavior is respected.
+
+============================================================
+34. FINAL DEVELOPER REPORT
+============================================================
+
+When finished, report only verified facts.
+
+Return:
+
+IMPLEMENTATION STATUS
+- implemented / blocked
+
+VISUAL QA
+- desktop reference comparison
+- responsive status
+
+FILES CHANGED
+- exact paths
+
+ASSETS ADDED
+- exact paths
+
+TESTS
+- exact commands
+- exact results
+
+ROUTES
+- exact routes used by CTAs
+
+ARCHITECTURE IMPACT
+- explicitly state whether backend/architecture was untouched
+
+SECURITY
+- confirm no secrets added or exposed
+
+MITHQAL STATUS FLAGS
+- productionAuthorized
+- institutionallyValidated
+- releaseStatus
+
+Do not claim "production ready."
+
+Do not claim "institutionally validated."
+
+Do not claim visual pixel-perfect fidelity unless it was actually tested.

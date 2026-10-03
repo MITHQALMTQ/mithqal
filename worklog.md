@@ -9345,3 +9345,143 @@ Stage Summary:
 - Per Section BD (Final COO Rule): Do NOT create Prompt 78 automatically. After Prompt 77, the project enters: EXTERNAL_EXECUTION (operator must rotate credentials + provision secrets + verify providers) or REMEDIATION_REQUIRED (credential rotation + worklog cleanup) or BLOCKED_BY_EXTERNAL_DEPENDENCY (G0_PASS required for institutional advancement).
 
 NOT PRODUCTION-AUTHORIZED. BUILD_MODE = FROZEN. Credential quarantine complete. Prompts 62-69 recovered (15 files from conversation context). Dev server running (HTTP 200). BUT: 5 credentials require rotation (operator must rotate); 52 secrets not provisioned (template only); Vercel/Inngest/Turso/Neon connectivity BLOCKED; end-to-end stack test BLOCKED; 4 of 5 providers blocked. Next: operator credential rotation + secret provisioning + provider verification + external engagement (G0_PASS).
+
+---
+
+## Prompt 78 — HOME-PAGE-IMPL — MITHQAL master homepage (reference-faithful UI)
+
+**Task ID:** HOME-PAGE-IMPL
+**Agent:** mithqal-home-page-builder
+**Branch:** main
+**BUILD_MODE:** FROZEN (no backend / architecture / schema changes)
+**productionAuthorized:** false | **institutionallyValidated:** false
+
+### Objective
+Implement the new MITHQAL master homepage at `src/app/page.tsx` — a
+reference-faithful, institutional, cinematic marketing surface — while
+preserving the existing Institutional Command Center dashboard beneath a
+new hero + site-header + capability-rail surface.
+
+### Step 1 — Preserved the existing dashboard
+- Read `src/app/page.tsx` (1554 lines; client component with recharts,
+  lucide-react, framer-motion; "Institutional Command Center").
+- Copied verbatim to `src/components/institutional-dashboard.tsx`.
+- Single `sed` substitution renamed `export default function Page()` →
+  `export function InstitutionalDashboard()`. All internal logic,
+  hooks (`useFetch`), and styling preserved untouched.
+
+### Step 2 — New home components (`src/components/home/`)
+- **`mithqal-icons.tsx`** — 5 thin-line monoline SVG icon components
+  (Settlement / Policy / Evidence / Interoperability / Continuity),
+  each `viewBox="0 0 24 24"`, `fill="none"`, `stroke="currentColor"`,
+  `strokeWidth=1.6`, `aria-hidden`, decorative.
+- **`site-header.tsx`** (server component) — absolute dark glass header
+  (78px, z-20), `rgba(0,6,17,0.68)` + `backdrop-filter:blur(12px)`, 1px
+  hairline bottom border. 3-column grid `1fr auto 1fr`: Logo (client
+  island, 36×36) + wordmark "MITHQAL" (27px / 0.27em) | primary nav
+  (Home active w/ gold underline, Features, Ecosystem, Roadmap, About;
+  14px, 41px gap) | outlined gold pill CTA "Explore Platform →"
+  (999px radius, 38px height, gold border `rgba(231,186,120,0.9)`).
+  Responsive: nav hidden <900px; CTA label hidden <620px (arrow only).
+  Keyboard-accessible (`:focus-visible`, `aria-current`).
+- **`hero-section.tsx`** (server component) — full-screen hero
+  (`min-height:100svh`) over `/assets/mithqal-hero-background.png` with
+  a left→right dark gradient overlay. Left ~54% width: eyebrow (gold
+  vertical rule + "The Institutional Settlement Control Plane"; CSS
+  `text-transform:uppercase` → 12px/600/0.30em/gold); 3-line headline
+  "Institutional Settlement. / Unified. Observable. / Controlled."
+  (last word bright gold `#F1C978`; `clamp(55px,5vw,78px)`, weight 400,
+  line-height 0.98, letter-spacing -0.045em); the exact institutional
+  description copy (max-width 585px, 18px, line-height 1.62); dual CTAs
+  (primary filled gold pill "Explore the Platform →" + secondary
+  outlined "View Institutional Architecture"). Accepts `children` so
+  the CapabilityRail composes in. Responsive at 1200/900/620px.
+- **`capability-rail.tsx`** (server component) — 5-column grid anchored
+  to hero bottom (absolute, `bottom:39px`) with hairline vertical
+  dividers. Each cell: gold icon + 16px title + 12.5px description; the
+  5 capabilities use the exact institutional copy from the spec.
+  Responsive: 2 columns <900px (in-flow), 1 column <620px.
+
+### Step 3 — New `src/app/page.tsx`
+- Server component (no `"use client"`).
+- Composition: `<SiteHeader/>` → `<main>` →
+  `<HeroSection><CapabilityRail/></HeroSection>` →
+  `<section id="platform"><InstitutionalDashboard/></section>` →
+  `</main>` → `<SiteFooter/>`.
+- Both "Explore the Platform →" CTAs (header + hero primary) link to
+  `#platform`, scrolling to the dashboard anchor.
+- Semantic HTML: `header` / `nav` / `main` / `section` / `h1` / `p` /
+  `a`. Footer pinned to viewport bottom on short content via the existing
+  `flex min-h-screen flex-col` wrapper in `layout.tsx`.
+
+### Step 4 — CSS appended to `src/app/globals.css`
+- Appended (did NOT overwrite) a new `:root` block with the MITHQAL
+  color tokens (`--mithqal-black #000611`, `--mithqal-navy #07111f`,
+  `--mithqal-navy-2 #0b1728`, `--mithqal-white #f5f4f1`,
+  `--mithqal-muted #c7cbd2`, `--mithqal-gold #e7ba78`,
+  `--mithqal-gold-bright #f1c978`, gold border/glow tokens,
+  `--header-height 78px`, `--content-width 1380px`, institutional font
+  stack) and scoped `.mithqal-*` classes for header, hero, capability
+  rail, platform section, all responsive breakpoints, and reduced-motion
+  guards. No existing tokens overridden.
+
+### Step 5 — Lint
+- `bun install` (node_modules was empty) → `bun run lint` → exit 0
+  (clean).
+
+### Step 6 — Runtime verification
+- `next dev -p 3000` (Next.js 16.1.3 Turbopack). `GET / 200` in ~120ms
+  (render 116ms). HTML payload 160866 bytes.
+- Content grep confirms: "MITHQAL", "Institutional Settlement",
+  "Unified. Observable.", "Controlled.", "The Institutional Settlement
+  Control Plane" (CSS uppercases for display), all 5 capability titles,
+  "Explore the Platform", "Explore Platform", `mithqal-hero`,
+  `mithqal-capability-rail`, `id="platform"` all present. Hero
+  background image served from `/assets/mithqal-hero-background.png`
+  (138KB, 1344×768, on disk).
+
+### Files
+- **New:** `src/components/home/mithqal-icons.tsx`,
+  `src/components/home/site-header.tsx`,
+  `src/components/home/hero-section.tsx`,
+  `src/components/home/capability-rail.tsx`,
+  `src/components/institutional-dashboard.tsx` (saved dashboard),
+  `public/assets/mithqal-hero-background.png` (hero background),
+  `agent-ctx/HOME-PAGE-IMPL-mithqal-home-page-builder.md` (this record).
+- **Modified:** `src/app/page.tsx` (new homepage server component),
+  `src/app/globals.css` (appended MITHQAL surface styles).
+- **Unchanged:** all backend logic, MTQ, settlement, policy, prisma
+  schema, API routes, layout.tsx, existing components.
+
+### Constraints honored
+- BUILD_MODE = FROZEN — no backend / architecture / schema changes.
+- No secrets in source. No fake APIs or fake operational functionality.
+- Institutional language only (no "DeFi", "digital ownership",
+  "investment", "earn", "trading").
+- MTQ not the primary message; MTQ remains disabled/optional.
+- No marketing overclaims ("licensed", "bank-grade", "guaranteed
+  settlement", "production ready" — none used).
+- productionAuthorized = false; institutionallyValidated = false.
+- Homepage functions independently from provider credentials.
+- `prefers-reduced-motion` honored (transitions + smooth-scroll off).
+- Decorative images `aria-hidden` / bg via `role="img"` + descriptive
+  `aria-label`; Logo `<img alt="Mithqal">`.
+- Navigation keyboard accessible (`:focus-visible`, `aria-current`).
+
+### Stage Summary
+- Files created: 7 NEW (4 home components + 1 saved dashboard + 1 hero
+  background image + 1 agent-ctx work record).
+- Files modified: 2 (page.tsx, globals.css — appended only).
+- Lint: exit 0 (clean).
+- Dev server: HTTP 200 confirmed (160866 bytes HTML).
+- No backend logic modified; no frozen schema modified; no secrets
+  printed; no credential values touched.
+- BUILD_MODE: FROZEN; PRODUCTION_AUTHORIZED: false;
+  INSTITUTIONALLY_VALIDATED: false; MTQ: DISABLED.
+- Commit: `MITHQAL-HOME-REFERENCE-FAITHFUL-UI`.
+
+NOT PRODUCTION-AUTHORIZED. BUILD_MODE = FROZEN. Master homepage live at
+`/` (hero + capability rail) with the preserved Institutional Command
+Center dashboard reachable via the `#platform` anchor. Next: operator
+credential rotation + secret provisioning + provider verification +
+external engagement (G0_PASS) — unchanged from Prompt 77.
