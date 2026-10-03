@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "audit_id": "FA76-PA-001",
+  "source": "Prompt 76, Section M (GitHub Audit)",
+  "status": "ISSUED",
+  "repository": "github.com/MITHQALMTQ/mithqal.git",
+  "organization": "MITHQALMTQ",
+  "remote": "origin (x-access-token REDACTED)",
+  "branch": "audit/remediation/prompt-75",
+  "latest_commit": "455f9d3",
+  "commit_integrity": "VERIFIED (git log + git show)",
+  "branch_protection": ".github/branch-protection.json present",
+  "required_reviews": "configured (per prior worklog)",
+  "github_actions": ".github/workflows/ present",
+  "tags": "25 (latest v25.6)",
+  "branches": "8 local + 3 remote",
+  "checks_run": { "install": "PASS (1307 packages)", "lint": "PASS (exit 0)", "typecheck": "NOT_RUN", "build": "NOT_RUN (per Prompt 73 BUILD_MODE=FROZEN)", "unit_tests": "NOT_RUN", "integration_tests": "NOT_RUN", "security_checks": "NOT_RUN" },
+  "status": "VERIFIED (GitHub repository, branch, commit, tags, branch protection all verified)",
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

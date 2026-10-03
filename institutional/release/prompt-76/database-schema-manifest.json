@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "audit_id": "FA76-PA-001",
+  "prisma_schema": "present (69 lines, hash 1a028567...)",
+  "turso_schema": "UNKNOWN — live schema not verifiable (TURSO_DATABASE_URL not provisioned)",
+  "neon_schema": "UNKNOWN — live schema not verifiable (NEON_DATABASE_URL not provisioned)",
+  "migrations": "NONE — prisma/migrations/ does not exist; schema via db:push",
+  "tables_expected": "19 (per prior worklog)",
+  "tables_verified": "UNKNOWN — no live DB access",
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

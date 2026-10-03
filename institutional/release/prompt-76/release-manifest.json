@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "audit_id": "FA76-PA-001",
+  "release_id": "R76-PA-001",
+  "release_timestamp": "2026-10-03T10:30:00Z",
+  "release_status": "RELEASE_BLOCKED",
+  "release_blocked_reason": "secrets not provisioned (52 of 52 template-only); Vercel/Inngest/Turso/Neon connectivity not verified; end-to-end stack test not executed; Prompts 62-69 directories not recovered",
+  "components": [
+    { "component": "GitHub", "version": "v25.6 (tag)", "commit": "455f9d3", "hash": "455f9d3 (short)", "environment": "audit/remediation/prompt-75 branch", "status": "VERIFIED", "dependency": "source control" },
+    { "component": "Vercel", "version": "UNKNOWN", "commit": "UNKNOWN", "hash": "n/a", "environment": "production (presumed)", "status": "UNVERIFIABLE", "dependency": "GitHub main branch auto-deploy" },
+    { "component": "Inngest", "version": "v25.6 era (code)", "commit": "455f9d3", "hash": "318e2890 (inngest-client.ts)", "environment": "code present; key MISSING", "status": "BLOCKED_BY_MISSING_SECRET", "dependency": "INNGEST_EVENT_KEY" },
+    { "component": "Turso", "version": "v25.6 era (schema)", "commit": "455f9d3", "hash": "1a028567 (schema.prisma)", "environment": "schema present; connection BLOCKED", "status": "BLOCKED_BY_MISSING_SECRET", "dependency": "TURSO_DATABASE_URL + TURSO_AUTH_TOKEN" },
+    { "component": "Neon", "version": "v25.6 era (code)", "commit": "455f9d3", "hash": "multiple (turso-neon-sync.ts + evidence-archive.ts)", "environment": "code present; connection BLOCKED", "status": "BLOCKED_BY_MISSING_SECRET", "dependency": "NEON_DATABASE_URL + AWS credentials" },
+    { "component": "Application", "version": "0.2.1 (package.json)", "commit": "455f9d3", "hash": "7956f1a7 (package.json)", "environment": "dev (node_modules installed, lint clean)", "status": "VERIFIED (build environment)", "dependency": "all providers" }
+  ],
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

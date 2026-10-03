@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "audit_id": "FA76-PA-001",
+  "latest_prompt": 76,
+  "total_prompts": 75,
+  "verified_complete": 1,
+  "partial": 3,
+  "missing": 9,
+  "deleted": 0,
+  "recovered": 1,
+  "regressed": 0,
+  "conflicted": 0,
+  "external_dependency": 0,
+  "unverifiable": 61,
+  "per_prompt_results": [
+    { "prompt_range": "P1-61", "status": "UNVERIFIABLE", "detail": "prompt texts not available" },
+    { "prompt_range": "P62-69", "status": "MISSING", "detail": "institutional directories never committed; NOT_RECOVERABLE" },
+    { "prompt": "P70", "status": "RECOVERED", "detail": "42 files RECOVERED (RECONSTRUCTED_FROM_EVIDENCE) in P75" },
+    { "prompt": "P71", "status": "MISSING", "detail": "Pilot A never executed" },
+    { "prompt": "P72", "status": "PARTIAL", "detail": "/institutional/outcome/ (37 files) present" },
+    { "prompt": "P73", "status": "PARTIAL", "detail": "/institutional/execution/ (26 files) present" },
+    { "prompt": "P74", "status": "VERIFIED_COMPLETE", "detail": "/institutional/audit/prompt-74/ (38 files) present" },
+    { "prompt": "P75", "status": "PARTIAL", "detail": "/institutional/remediation/prompt-75/ (30 files) present; assurance recovered; secrets not provisioned" }
+  ],
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

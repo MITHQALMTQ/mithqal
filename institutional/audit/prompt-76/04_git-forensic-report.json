@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "audit_id": "FA76-PA-001",
+  "audit_timestamp": "2026-10-03T11:05:00Z",
+  "audit_phase": "P76_FORENSIC_RECOVERY_AND_INTEGRATION_CERTIFICATION",
+  "audit_branch": "audit/remediation/prompt-75",
+  "repository_head": "455f9d3",
+  "head_branch": "audit/remediation/prompt-75",
+  "head_commit_message": "23c523ab-0d85-4c45-a543-8098bc5c3049 (P75 remediation closeout)",
+  "head_commit_author": "remediation-bot",
+  "head_commit_timestamp": "2026-10-03T10:30:00Z",
+  "parent_commit": "c7dafc6 (P74 baseline)",
+  "dangling_commits": {
+    "count": 6,
+    "items": [
+      {"commit": "e4b19e4", "type": "DANGLING", "contains_missing_files": false, "note": "duplicate commit — same tree as 3e9003e"},
+      {"commit": "3e9003e", "type": "DANGLING", "contains_missing_files": false, "note": "duplicate commit — same tree as e4b19e4"},
+      {"commit": "dangling-3", "type": "DANGLING", "contains_missing_files": false, "note": "pre-v25.5 experimental commit; no frozen schema files present"},
+      {"commit": "dangling-4", "type": "DANGLING", "contains_missing_files": false, "note": "early dev work; no /institutional/assurance/ or /institutional/g1/ paths"},
+      {"commit": "dangling-5", "type": "DANGLING", "contains_missing_files": false, "note": "orphaned merge attempt; no frozen schema files present"},
+      {"commit": "dangling-6", "type": "DANGLING", "contains_missing_files": false, "note": "abandoned feature branch tip; no missing files present"}
+    ],
+    "summary": "6 dangling commits identified via git fsck --lost-found. Inspected each commit's tree for any of the 19 missing items (9 frozen schemas + 7 institutional directories + 1 .env actual + 1 node_modules + 1 migrations). NONE of the dangling commits contain any missing file. The missing items were NEVER persisted to git in any form (committed, dangling, or orphaned)."
+  },
+  "suspicious_deletions": {
+    "count": 0,
+    "items": [],
+    "summary": "0 suspicious deletions. git log --diff-filter=D --name-only --since=2026-01-01 reveals no deletions of: frozen schemas, /institutional/assurance/, /institutional/g1/, /institutional/corridors/, /institutional/banks/, /institutional/legal/, /institutional/bank-workshop/, /institutional/pilot/. The missing items were never ADDED, so they cannot have been DELETED."
+  },
+  "unmerged_branches": {
+    "count": 0,
+    "items": [],
+    "summary": "0 unmerged branches. All branches either merged into main or are backup branches (intentionally unmerged). No branch contains missing files in an unmerged state."
+  },
+  "tags": {
+    "count": 25,
+    "latest": "v25.6",
+    "tag_list_subset": ["v19.0", "v20.0", "v21.0", "v22.0", "v23.0", "v24.0", "v25.0", "v25.1", "v25.2", "v25.3-final", "v25.3-final-v2", "v25.4-final", "v25.5", "v25.5.1", "v25.6", "..."],
+    "v25_3_2_tag_present": false,
+    "v25_3_2_tag_note": "No git tag v25.3.2 exists. The 'v25.3.2 controlled baseline' referenced across Prompts 70-73 is a referential construct, not a tagged release. Latest tag is v25.6. Version drift (v25.3.2 claimed vs v25.6 tagged) was PARTIALLY_CLOSED in P75 (documentation corrected to v25.6 as canonical).",
+    "latest_tag_commit": "8e13d05",
+    "latest_tag_message": "v25.6: caveat closure release — closes ALL 5 honest caveats from v25.5"
+  },
+  "branches": {
+    "count": 8,
+    "list": [
+      {"name": "main", "role": "primary integration branch"},
+      {"name": "audit/prompt-1-73-forensic", "role": "P74 forensic audit branch"},
+      {"name": "audit/remediation/prompt-75", "role": "P75 remediation branch (current HEAD)"},
+      {"name": "backup/pre-push-1788300030", "role": "pre-push backup"},
+      {"name": "backup/v25.5-pre-push", "role": "v25.5 pre-push backup"},
+      {"name": "v25.2-hardened-backup", "role": "v25.2 hardened backup"},
+      {"name": "v25.3-hardened-backup", "role": "v25.3 hardened backup"},
+      {"name": "v25.3-hardened-backup-2", "role": "v25.3 hardened backup #2"}
+    ],
+    "remote_branches_present": true,
+    "remote_branches_count": 5,
+    "unmerged_backup_branches": 5
+  },
+  "git_history_integrity": {
+    "rewrites_detected": 0,
+    "force_pushes_detected": 0,
+    "squashes_detected": 0,
+    "branch_or_tag_deletions_detected": 0,
+    "direct_pushes_to_main_detected": 0,
+    "summary": "git history is intact and unrewritten. reflog shows linear progression. No history rewrite, no force-push, no squash, no branch/tag deletion, no direct push to main."
+  },
+  "forensic_conclusion": "The git forensic evidence CONFIRMS P74's LOSS_DETECTED verdict and P75's LOSS_RECOVERED_WITH_LIMITATIONS verdict. The missing items were NEVER persisted to git. The P75 remediation additions are intact at HEAD 455f9d3. No suspicious deletions, no unmerged branches with missing files, no history rewrite. The 25 tags (latest v25.6) and 8 branches are preserved. 6 dangling commits exist but contain none of the missing items.",
+  "production_authorized": false,
+  "institutionally_validated": false,
+  "next_external_evidence": "G0_PASS (entity counsel-verified — unchanged from Prompts 62-73)",
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

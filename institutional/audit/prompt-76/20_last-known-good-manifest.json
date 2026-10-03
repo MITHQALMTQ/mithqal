@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "audit_id": "FA76-PA-001",
+  "audit_timestamp": "2026-10-03T11:45:00Z",
+  "audit_phase": "P76_FORENSIC_RECOVERY_AND_INTEGRATION_CERTIFICATION",
+  "audit_branch": "audit/remediation/prompt-75",
+  "manifest_purpose": "Identify the LAST_KNOWN_GOOD state to which the repository could be restored if a future regression is introduced.",
+  "last_known_good": {
+    "git_commit": "455f9d3",
+    "git_commit_full": "455f9d3 (23c523ab-0d85-4c45-a543-8098bc5c3049)",
+    "git_branch": "audit/remediation/prompt-75",
+    "git_branch_role": "P75 remediation closeout branch (current HEAD at P76 audit start)",
+    "parent_commit": "c7dafc6 (P74 baseline)",
+    "commit_timestamp": "2026-10-03T10:30:00Z",
+    "commit_message": "P75 remediation closeout: assurance framework recovered, node_modules installed, .env template created, 30 remediation files",
+    "is_tagged": false,
+    "tag_for_lkg": "v25.6 (latest tag, commit 8e13d05) — note: 455f9d3 is post-v25.6 (post-caveat-closure). LKG is the branch tip, not the tag."
+  },
+  "lkg_environment": {
+    "node_modules_installed": true,
+    "node_modules_package_count": 1307,
+    "node_modules_install_method": "bun install (performed in P75)",
+    "node_modules_install_duration": "11.92s",
+    "node_modules_install_exit_code": 0,
+    "lint_status": "exit 0 (clean — bun run lint)",
+    "lint_exit_code": 0,
+    "lint_performed_at": "P75 verification step",
+    "lint_clean": true,
+    "dev_server_runnable": false,
+    "dev_server_blocker": "Missing actual secrets in .env (template-only); dev server would boot but immediately fail at runtime DB connection",
+    "build_runnable": true,
+    "build_tested_in_this_audit": false
+  },
+  "lkg_filesystem": {
+    "institutional_tree_files_total": 173,
+    "institutional_tree_breakdown": {
+      "audit_files": 38,
+      "remediation_files": 30,
+      "assurance_files": 42,
+      "outcome_files": 37,
+      "execution_files": 26
+    },
+    "institutional_tree_unchanged_from_p75": true,
+    "src_lib_files_total": 111,
+    "src_lib_files_unchanged": true,
+    "prisma_schema_files_total": 1,
+    "prisma_schema_line_count": 69,
+    "prisma_schema_unchanged": true,
+    "frozen_schemas_present": 1,
+    "frozen_schemas_referenced_but_absent": 9
+  },
+  "lkg_secrets": {
+    "status": "NOT_LAST_KNOWN_GOOD_FOR_SECRETS",
+    "reason": "Secrets were NEVER provisioned in this environment. The .env is a 52-line template (verbatim copy of .env.example). There is no 'last known good' for secrets because secrets never existed here. Operator must provision actual secrets from .env.example before any runtime can be exercised.",
+    "env_template_lines": 52,
+    "env_actual_secret_values": 0,
+    "env_encrypted_present": true,
+    "env_encrypted_byte_size": 2912,
+    "env_encrypted_decrypted_in_audit": false,
+    "env_encrypted_note": ".env.encrypted may contain encrypted secrets from a prior session; undecryptable without key in this environment. NOT relied upon as LKG for secrets."
+  },
+  "lkg_restoration_plan": {
+    "if_future_regression_detected": [
+      "1. git checkout audit/remediation/prompt-75 (or git reset --hard 455f9d3 if on detached HEAD)",
+      "2. bun install (restore 1307 packages; takes ~12s)",
+      "3. cp .env.example .env (restore 52-line template)",
+      "4. Operator provisions actual secrets in .env (NOT automated — operator responsibility)",
+      "5. bun run lint (verify exit 0)",
+      "6. Verify institutional/ tree has 173 files (audit 38 + remediation 30 + assurance 42 + outcome 37 + execution 26)"
+    ],
+    "restoration_risks": [
+      "Restoration does NOT recover Prompts 62-69 directories (NOT_RECOVERABLE)",
+      "Restoration does NOT recover 9 frozen schemas (REFERENCED_BUT_ABSENT — referential constructs)",
+      "Restoration does NOT create runtime evidence (no Pilot A executed)",
+      "Restoration does NOT provide actual secrets (operator must provision)"
+    ]
+  },
+  "lkg_verdict": "LAST_KNOWN_GOOD = git commit 455f9d3 on branch audit/remediation/prompt-75. Environment is partially functional (lint clean, node_modules installed) but NOT runtime-functional (secrets not provisioned). NOT production-authorized. NOT institutionally-validated.",
+  "production_authorized": false,
+  "institutionally_validated": false,
+  "next_external_evidence": "G0_PASS (entity counsel-verified — unchanged from Prompts 62-73)",
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

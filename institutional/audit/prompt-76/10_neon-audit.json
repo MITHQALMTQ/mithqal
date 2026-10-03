@@ -1,0 +1,8 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "audit_id": "FA76-PA-001",
+  "source": "Prompt 76",
+  "status": "ISSUED",
+  "finding": "see 25_final-integrity-report.json for canonical status",
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

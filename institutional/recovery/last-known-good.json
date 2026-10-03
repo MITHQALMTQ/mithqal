@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "audit_id": "FA76-PA-001",
+  "description": "Last-known-good manifest per Section AC.",
+  "components": [
+    { "component": "GitHub", "last_known_good_commit": "455f9d3", "last_known_good_deployment": "n/a (source control)", "last_known_good_schema": "n/a", "last_known_good_configuration_reference": "vercel.json + Caddyfile + .env.example", "evidence": "git log + git show + git tag", "date": "2026-10-03", "verification": "VERIFIED" },
+    { "component": "Vercel", "last_known_good_commit": "UNKNOWN", "last_known_good_deployment": "UNKNOWN (per prior worklog: https://mithqal.vercel.app)", "evidence": "prior worklog reference only; not verifiable in this audit", "date": "UNKNOWN", "verification": "UNVERIFIABLE" },
+    { "component": "Inngest", "last_known_good_commit": "455f9d3 (code present)", "last_known_good_deployment": "UNKNOWN", "evidence": "src/lib/inngest-client.ts (80 lines, 3 functions)", "date": "2026-10-03", "verification": "CODE_PRESENT; NOT_DEPLOYED" },
+    { "component": "Turso", "last_known_good_commit": "455f9d3 (schema present)", "last_known_good_schema": "prisma/schema.prisma (69 lines)", "last_known_good_deployment": "n/a (database)", "evidence": "prisma/schema.prisma hash 1a028567...", "date": "2026-10-03", "verification": "SCHEMA_PRESENT; CONNECTION_UNKNOWN" },
+    { "component": "Neon", "last_known_good_commit": "455f9d3 (code present)", "last_known_good_deployment": "UNKNOWN", "evidence": "turso-neon-sync.ts + evidence-archive.ts code present", "date": "2026-10-03", "verification": "CODE_PRESENT; CONNECTION_UNKNOWN" },
+    { "component": "Application", "last_known_good_commit": "455f9d3", "last_known_good_schema": "prisma/schema.prisma", "last_known_good_configuration_reference": ".env.example (52 lines) + package.json (0.2.1) + bun.lock", "evidence": "1307 packages installed; bun run lint exit 0", "date": "2026-10-03", "verification": "VERIFIED (build environment; lint clean)" }
+  ],
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "audit_id": "FA76-PA-001",
+  "audit_timestamp": "2026-10-03T11:25:00Z",
+  "audit_phase": "P76_FORENSIC_RECOVERY_AND_INTEGRATION_CERTIFICATION",
+  "audit_branch": "audit/remediation/prompt-75",
+  "repository_commit": "455f9d3",
+  "audit_question": "Is the institutional evidence chain testable end-to-end?",
+  "audit_answer": "NO — the evidence chain is NOT testable without runtime. The assurance evidence SCHEMA is present (recovered in P75), but the evidence-fabric source file (institutional-evidence-fabric.ts) is REFERENCED_BUT_ABSENT. 0 evidence records exist.",
+  "evidence_records_count": 0,
+  "evidence_records_detail": "0 evidence records in this repository. No Pilot A was executed (P71 MISSING). No transactions recorded. No KPI measurements recorded. No replays recorded. The evidence-room is a schema-only construct.",
+  "assurance_evidence_schema": {
+    "present": true,
+    "recovery_status": "RECOVERED_IN_P75 (RECONSTRUCTED_FROM_EVIDENCE)",
+    "file_path": "/institutional/assurance/assurance-evidence-schema.json",
+    "json_valid": true,
+    "schema_fields_present": [
+      "evidence_id",
+      "evidence_type",
+      "evidence_timestamp",
+      "evidence_provenance",
+      "evidence_hash",
+      "evidence_chain_parent",
+      "evidence_chain_signature",
+      "evidence_room_index"
+    ],
+    "schema_marker": "NOT_PRODUCTION_AUTHORIZED"
+  },
+  "evidence_room_index": {
+    "present": true,
+    "recovery_status": "RECOVERED_IN_P75 (RECONSTRUCTED_FROM_EVIDENCE)",
+    "file_path": "/institutional/assurance/assurance-evidence-room-index.json",
+    "json_valid": true,
+    "records_indexed": 0,
+    "note": "Index is a schema-only construct; 0 records because no runtime produced evidence."
+  },
+  "evidence_fabric_source": {
+    "present": false,
+    "status": "REFERENCED_BUT_ABSENT",
+    "expected_path": "src/lib/institutional-evidence-fabric.ts (or similar — exact path was a referential construct in Prompts 70-73)",
+    "recovery_status": "NOT_RECOVERED — P75 corrected documentation to REFERENCED_BUT_ABSENT but did NOT re-create the source file (because it was a referential construct that never existed as a source file in this repository)",
+    "blocking_runtime_test": true,
+    "blocking_runtime_test_detail": "Without institutional-evidence-fabric.ts, no runtime can construct evidence records. Even with secrets provisioned, the evidence chain would be unimplementable until this file is created (or equivalence verified for similar-named src/lib files)."
+  },
+  "similar_named_files_check": {
+    "checked": true,
+    "candidates_inspected": [
+      "src/lib/finality-before-mint.ts",
+      "src/lib/legal-obligation-register.ts",
+      "src/lib/reserve-policy-spec.ts",
+      "src/lib/pilot-operational-readiness.ts",
+      "src/lib/mtq-final-reserve-spec.ts"
+    ],
+    "equivalence_verified": false,
+    "equivalence_note": "P74 could not verify equivalence between the 5 similar-named src/lib files and the 9 missing frozen schemas. P75 did NOT close this gap (deferred to operator verification). The evidence-fabric behavior is therefore UNVERIFIED."
+  },
+  "evidence_chain_testability": {
+    "testable_without_runtime": false,
+    "testable_with_runtime_but_missing_fabric": false,
+    "testable_with_runtime_and_fabric_recreated": true,
+    "blockers": [
+      "BLOCKER-1: No runtime (.env template-only; 0 secrets)",
+      "BLOCKER-2: institutional-evidence-fabric.ts MISSING (REFERENCED_BUT_ABSENT) — evidence records cannot be constructed even if runtime were available",
+      "BLOCKER-3: Pilot A never executed (P71 MISSING) — no evidence would exist even if fabric were present"
+    ],
+    "verdict": "NOT_TESTABLE — evidence chain is a schema-only construct. The schema is present (recovered) but the fabric implementation is absent and no runtime evidence exists."
+  },
+  "invariant_I15_status": {
+    "invariant_id": "I15",
+    "name": "evidence_integrity",
+    "p74_status": "UNKNOWN",
+    "p75_status": "PARTIALLY_KNOWN",
+    "p76_status": "PARTIALLY_KNOWN",
+    "improvement": "P75 improved I15 from UNKNOWN to PARTIALLY_KNOWN because the assurance evidence SCHEMA (assurance-evidence-schema.json) was recovered. P76 confirms PARTIALLY_KNOWN — schema present, fabric absent, 0 records. Cannot reach PASS until fabric is created AND runtime produces evidence AND external G0_PASS validates the chain."
+  },
+  "production_authorized": false,
+  "institutionally_validated": false,
+  "next_external_evidence": "G0_PASS (entity counsel-verified — unchanged from Prompts 62-73)",
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

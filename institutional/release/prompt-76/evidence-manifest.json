@@ -1,0 +1,10 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "audit_id": "FA76-PA-001",
+  "evidence_schema": "present (assurance-evidence-schema.json — recovered in P75)",
+  "evidence_source_file": "MISSING (institutional-evidence-fabric.ts — REFERENCED_BUT_ABSENT)",
+  "evidence_archive": "code present (evidence-archive.ts); Neon S3 connection BLOCKED",
+  "evidence_records": 0,
+  "evidence_chain_testable": false,
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

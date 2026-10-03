@@ -1,0 +1,10 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "audit_id": "FA76-PA-001",
+  "source": "Prompt 76, Section F (Deletion Forensics)",
+  "status": "ISSUED",
+  "deletion_findings": [],
+  "deletion_findings_count": 0,
+  "note": "Per Section F: inspected git log --diff-filter=D, renames, reverts, branch divergence, unmerged commits, orphaned commits, deployment rollback history, migration deletion, configuration replacement, workflow deletion, environment-variable disappearance, database object disappearance. 0 suspicious deletions detected. The missing files (9 frozen schemas, Prompt 70 assurance framework, Prompts 62-69 directories) were NEVER in this repository — they cannot have been deleted because they were never committed. This is a 'never persisted' finding, not a 'deleted' finding.",
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

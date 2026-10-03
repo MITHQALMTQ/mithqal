@@ -1,0 +1,8 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "audit_id": "FA76-PA-001",
+  "inngest_functions": ["dataSourceSync", "proofsPublishSync", "marketDataSync"],
+  "vercel_crons": [{ "path": "/api/proofs/publish", "schedule": "0 0 * * *" }, { "path": "/api/data-source-sync", "schedule": "0 6 * * *" }],
+  "function_status": "CODE_PRESENT; NOT_DEPLOYED (INNGEST_EVENT_KEY not provisioned)",
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

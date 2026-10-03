@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "audit_id": "FA76-PA-001",
+  "env_file_lines": 52,
+  "env_source": ".env.example (template copied in Prompt 75)",
+  "env_vars_total_expected": 52,
+  "env_vars_actual_present": 52,
+  "env_vars_with_actual_secrets": 0,
+  "env_vars_template_only": 52,
+  "note": "All 52 env vars are TEMPLATE values from .env.example. Operator must fill actual secrets. Per Section A: NEVER print secret values.",
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

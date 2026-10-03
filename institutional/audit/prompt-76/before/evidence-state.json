@@ -1,0 +1,9 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "audit_id": "FA76-PA-001",
+  "evidence_files_count": 0,
+  "evidence_population": 0,
+  "assurance_evidence_schema": "present (recovered in P75 — assurance-evidence-schema.json)",
+  "evidence_fabric_source": "MISSING — institutional-evidence-fabric.ts is REFERENCED_BUT_ABSENT (never existed as source file in this repository)",
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

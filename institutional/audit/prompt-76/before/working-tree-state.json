@@ -1,0 +1,10 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "audit_id": "FA76-PA-001",
+  "modified_files_count": 2,
+  "modified_files": ["foundry/lib/forge-std (submodule)", "foundry/lib/openzeppelin-contracts (submodule)"],
+  "untracked_files_count": 0,
+  "deleted_files_count": 0,
+  "renamed_files_count": 0,
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

@@ -1,0 +1,8 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "audit_id": "FA76-PA-001",
+  "current_branch": "audit/remediation/prompt-75",
+  "all_branches": ["audit/prompt-1-73-forensic", "audit/remediation/prompt-75", "main", "backup/pre-push-1788300030", "backup/v25.5-pre-push", "v25.2-hardened-backup", "v25.3-hardened-backup", "v25.3-hardened-backup-2"],
+  "backup_branches_present": true,
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

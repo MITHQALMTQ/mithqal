@@ -1,0 +1,9 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "audit_id": "FA76-PA-001",
+  "inngest_client": "present (src/lib/inngest-client.ts, 80 lines)",
+  "inngest_functions": ["dataSourceSync", "proofsPublishSync", "marketDataSync"],
+  "vercel_crons": [{"path": "/api/proofs/publish", "schedule": "0 0 * * *"}, {"path": "/api/data-source-sync", "schedule": "0 6 * * *"}],
+  "inngest_event_key": "MISSING — not in .env (template only)",
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

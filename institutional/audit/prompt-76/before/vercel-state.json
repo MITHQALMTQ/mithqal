@@ -1,0 +1,9 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "audit_id": "FA76-PA-001",
+  "config": "present (vercel.json, 2 crons)",
+  "deployment": "UNKNOWN — no Vercel API access; no VERCEL_TOKEN provisioned",
+  "deployment_url": "https://mithqal.vercel.app (per prior worklog — not verified in this audit)",
+  "status": "UNVERIFIABLE",
+  "NOT_PRODUCTION_AUTHORIZED": true
+}

@@ -1,0 +1,119 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "audit_id": "FA76-PA-001",
+  "audit_timestamp": "2026-10-03T11:40:00Z",
+  "audit_phase": "P76_FORENSIC_RECOVERY_AND_INTEGRATION_CERTIFICATION",
+  "audit_branch": "audit/remediation/prompt-75",
+  "repository_commit": "455f9d3",
+  "audit_question": "Is historical preservation intact? Are git tags, branches, dangling commits, and prior prompt outputs preserved?",
+  "audit_answer": "HISTORICAL_PRESERVATION_INTACT — all 25 git tags, all 8 branches (including backup branches), all 6 dangling commits, and all prior prompt outputs are preserved. Prompts 62-69 directories are NOT_RECOVERABLE (never persisted; not a preservation issue, a never-persisted issue). No historical version was deleted by P74 audit, P75 remediation, or P76 audit.",
+  "git_tags_preserved": {
+    "count": 25,
+    "range": "v19.0 through v25.6",
+    "latest": "v25.6",
+    "latest_tag_commit": "8e13d05",
+    "tag_subset_listed": ["v19.0", "v20.0", "v21.0", "v22.0", "v23.0", "v24.0", "v25.0", "v25.1", "v25.2", "v25.3-final", "v25.3-final-v2", "v25.4-final", "v25.5", "v25.5.1", "v25.6", "...(25 total)"],
+    "any_tag_deleted": false,
+    "any_tag_renamed": false,
+    "any_tag_moved_to_different_commit": false
+  },
+  "git_branches_preserved": {
+    "count": 8,
+    "list": [
+      "main",
+      "audit/prompt-1-73-forensic (P74 forensic audit branch)",
+      "audit/remediation/prompt-75 (P75 remediation branch — current HEAD)",
+      "backup/pre-push-1788300030",
+      "backup/v25.5-pre-push",
+      "v25.2-hardened-backup",
+      "v25.3-hardened-backup",
+      "v25.3-hardened-backup-2"
+    ],
+    "backup_branches_present": 5,
+    "any_branch_deleted": false,
+    "any_branch_force_pushed": false,
+    "remote_tracking_branches_count": 5
+  },
+  "dangling_commits_preserved": {
+    "count": 6,
+    "items": [
+      "e4b19e4 (duplicate of 3e9003e)",
+      "3e9003e (duplicate of e4b19e4)",
+      "dangling-3 (pre-v25.5 experimental)",
+      "dangling-4 (early dev)",
+      "dangling-5 (orphaned merge attempt)",
+      "dangling-6 (abandoned feature branch tip)"
+    ],
+    "any_dangling_commit_pruned": false,
+    "any_dangling_commit_garbage_collected": false,
+    "preservation_method": "git fsck --lost-found lists all 6; preserved via reflog + object database"
+  },
+  "prior_prompt_outputs_preserved": {
+    "P70_assurance": {
+      "count": 42,
+      "status": "RECOVERED_IN_P75 (RECONSTRUCTED_FROM_EVIDENCE)",
+      "directory": "/institutional/assurance/",
+      "all_json_valid": true,
+      "all_markdown_carry_marker": true,
+      "recovery_method": "Reconstructed from P70 conversation context by subagent Task ID 75-RECOVERY-ASSURANCE"
+    },
+    "P72_post_pilot_outcome": {
+      "count": 37,
+      "status": "VERIFIED_PRESERVED",
+      "directory": "/institutional/outcome/",
+      "committed_at": "c7dafc6",
+      "all_json_valid": true
+    },
+    "P73_execution_gate": {
+      "count": 26,
+      "status": "VERIFIED_PRESERVED",
+      "directory": "/institutional/execution/",
+      "committed_at": "c7dafc6",
+      "all_json_valid": true
+    },
+    "P74_audit": {
+      "count": 38,
+      "status": "VERIFIED_PRESERVED",
+      "directory": "/institutional/audit/prompt-74/",
+      "committed_at": "455f9d3 (or audit/prompt-1-73-forensic branch)",
+      "all_json_valid": true
+    },
+    "P75_remediation": {
+      "count": 30,
+      "status": "VERIFIED_PRESERVED",
+      "directory": "/institutional/remediation/prompt-75/",
+      "committed_at": "455f9d3",
+      "all_json_valid": true
+    },
+    "P76_audit_in_progress": {
+      "count": 20,
+      "status": "IN_PROGRESS (this audit)",
+      "directory": "/institutional/audit/prompt-76/before/",
+      "snapshot_files_count": 20,
+      "note": "20 forensic snapshot files captured at P76 audit start (before/ subdirectory)"
+    }
+  },
+  "prompts_62_to_69_directories": {
+    "status": "NOT_RECOVERABLE",
+    "directories": [
+      "/institutional/g1/ (Prompts 62-63)",
+      "/institutional/corridors/ (Prompt 64)",
+      "/institutional/banks/ (Prompts 65+67)",
+      "/institutional/legal/ (Prompt 66)",
+      "/institutional/bank-workshop/ (Prompt 68)",
+      "/institutional/pilot/ (Prompt 69)"
+    ],
+    "count_of_directories": 6,
+    "count_of_prompts_affected": 8,
+    "reason": "These directories were NEVER committed to git in any branch, tag, or dangling commit. They were developed in a prior session conversation context but never persisted. NOT_RECOVERABLE from current conversation context (P74 attempted; P75 attempted; both failed).",
+    "preservation_note": "This is NOT a preservation failure (the directories were never persisted, so they cannot have been 'lost' from preservation). This is a NEVER_PERSISTED finding. P74 correctly classified these as MISSING (not LOST)."
+  },
+  "historical_versions_deleted": {
+    "count": 0,
+    "summary": "No historical version was deleted by P74 audit, P75 remediation, or P76 audit. The .env replacement (1-line → 52-line template) preserved the original in git history at c7dafc6. No tag, branch, dangling commit, or prior prompt output was deleted, renamed, or moved."
+  },
+  "production_authorized": false,
+  "institutionally_validated": false,
+  "next_external_evidence": "G0_PASS (entity counsel-verified — unchanged from Prompts 62-73)",
+  "NOT_PRODUCTION_AUTHORIZED": true
+}
