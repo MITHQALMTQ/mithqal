@@ -5,29 +5,30 @@ import { Inngest } from "inngest";
  *
  * Inngest is the reliability layer for the Mithqal Brain data-source sync
  * pipeline and other long-running background jobs (oracle refresh,
- * reserve reconciliation, anomaly sweeps). The Turso database layer
- * (src/lib/db.ts) is the system of record for live state; Inngest
- * owns the *schedule* and *retry semantics* for jobs that fan out
+ * reserve reconciliation, anomaly sweeps, Turso→Neon CDC sync). The Turso
+ * database layer (src/lib/db.ts) is the system of record for live state;
+ * Inngest owns the *schedule* and *retry semantics* for jobs that fan out
  * from that state.
  *
- * Configuration (Vercel project env vars):
- *   INNGEST_EVENT_KEY    — signed event-send key (Inngest dashboard).
- *   INNGEST_SIGNING_KEY   — webhook signing key for /api/inngest.
+ * Architecture (HARMONY MODEL):
+ *   GitHub (push) → Vercel (deploy) → Application
+ *                                        ↓
+ *                                  Turso (primary DB — fast writes)
+ *                                        ↓ (Inngest CDC sync event)
+ *                                  Neon (analytics replica + evidence archive)
  *
- * Both env vars are optional at module-load time — Inngest will surface
- * a warning and refuse to send events until they are set, but the
- * client itself constructs fine without them (so `bunx next build`
- * does not fail when the dashboard hasn't been provisioned yet).
- *
- * The route handler at `src/app/api/inngest/route.ts` re-exports
- * `serve()` with this client. Inngest Cloud polls that route to
- * discover registered functions and to invoke them on event.
+ * Inngest orchestrates:
+ *   1. dataSourceSync    — refresh market data snapshot (daily)
+ *   2. tursoNeonSync     — CDC sync from Turso to Neon (hourly)
+ *   3. proofsPublishSync — publish cryptographic proofs (daily)
+ *   4. marketDataSync    — sync market data from external sources (daily 06:00)
  *
  * Constitutional compliance:
  *   - Inngest functions are READ-ONLY with respect to monetary state.
- *     They refresh oracle data, run reconciliation reports, and emit
- *     advisory signals — they NEVER mint, weight, or alter NAV.
+ *   - They NEVER mint, weight, or alter NAV.
  *   - The deterministic v19 monetary engine remains the sole writer.
+ *
+ * BUILD_MODE = FROZEN — this is an integration layer, NOT new architecture.
  */
 
 export const inngest = new Inngest({
@@ -37,28 +38,8 @@ export const inngest = new Inngest({
 });
 
 /**
- * Data-source sync function — refreshes the real-market-data snapshot.
- *
- * Triggered by the `sync/data-sources` event, which is emitted on a
- * fixed schedule (configured in the Inngest dashboard, or via an
- * external cron POSTing to /api/inngest). The single step,
- * `fetch-market-data`, delegates to `fetchRealMarketData()` from
- * `src/lib/real-market-feeds.ts` and returns the headline metrics
- * (VIX, gold spot, timestamp) so they are visible in the Inngest
- * run dashboard.
- *
- * Failures are automatically retried by Inngest with exponential
- * backoff (default policy) — no explicit retry config needed here.
- *
- * NOTE on API shape: Inngest v4 (`inngest@^4.21.0`, the version
- * installed here) consolidated the legacy 3-argument
- * `createFunction(options, trigger, handler)` shape into a single
- * 2-argument `createFunction(options, handler)` shape where the
- * trigger is part of the `options` object (as `triggers`). The
- * original task spec wrote the call in the legacy 3-arg form — this
- * file uses the modern 2-arg form so it passes typecheck against the
- * installed package. Behaviour is identical: trigger on
- * `sync/data-sources`, run `fetch-market-data` step.
+ * 1. Data Source Sync — refreshes real-market-data snapshot.
+ * Triggered by `sync/data-sources` event (daily via Vercel cron or Inngest schedule).
  */
 export const dataSourceSync = inngest.createFunction(
   {
@@ -78,3 +59,85 @@ export const dataSourceSync = inngest.createFunction(
     });
   }
 );
+
+/**
+ * 2. Turso → Neon CDC Sync — keeps Neon analytics replica in sync with Turso primary.
+ * Triggered by `sync/turso-neon` event (hourly recommended).
+ *
+ * This is the key HARMONY function:
+ *   - Turso (primary, edge-deployed) → fast writes/reads
+ *   - Neon (analytics replica) → heavy queries offloaded + durable archive
+ */
+export const tursoNeonSync = inngest.createFunction(
+  {
+    id: "turso-neon-sync",
+    name: "Turso → Neon CDC Sync",
+    triggers: [{ event: "sync/turso-neon" }, { cron: "0 * * * *" }],
+  },
+  async ({ event, step }) => {
+    const result = await step.run("sync-tables", async () => {
+      const { syncAllTablesToNeon } = await import("@/lib/turso-neon-sync");
+      return await syncAllTablesToNeon();
+    });
+    return result;
+  }
+);
+
+/**
+ * 3. Proofs Publish Sync — publishes cryptographic proofs.
+ * Triggered by `sync/proofs-publish` event (daily at 00:00 UTC).
+ */
+export const proofsPublishSync = inngest.createFunction(
+  {
+    id: "proofs-publish-sync",
+    name: "Proofs Publish Sync",
+    triggers: [{ event: "sync/proofs-publish" }, { cron: "0 0 * * *" }],
+  },
+  async ({ event, step }) => {
+    const result = await step.run("publish-proofs", async () => {
+      // Delegate to the proofs endpoint
+      const siteUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || "http://localhost:3000";
+      const cronSecret = process.env.CRON_SECRET;
+      if (!cronSecret) {
+        return { ok: false, reason: "CRON_SECRET not set" };
+      }
+      const response = await fetch(`${siteUrl}/api/proofs/publish`, {
+        method: "POST",
+        headers: { "x-cron-secret": cronSecret },
+      });
+      return { ok: response.ok, status: response.status };
+    });
+    return result;
+  }
+);
+
+/**
+ * 4. Market Data Sync — syncs market data from external sources (FRED, etc.).
+ * Triggered by `sync/market-data` event (daily at 06:00 UTC).
+ */
+export const marketDataSync = inngest.createFunction(
+  {
+    id: "market-data-sync",
+    name: "Market Data Sync",
+    triggers: [{ event: "sync/market-data" }, { cron: "0 6 * * *" }],
+  },
+  async ({ event, step }) => {
+    const result = await step.run("fetch-market-data", async () => {
+      const { fetchRealMarketData } = await import("@/lib/real-market-feeds");
+      const data = await fetchRealMarketData();
+      return {
+        vix: data.vix,
+        gold: data.goldUsd,
+        silver: data.silverUsd,
+        creditSpreadBaaAaa: data.creditSpreadBaaAaa,
+        treasury10yr: data.treasury10yr,
+        timestamp: data.timestamp,
+        sources: data.sources,
+      };
+    });
+    return result;
+  }
+);
+
+/** All registered Inngest functions (for the route handler to serve). */
+export const allFunctions = [dataSourceSync, tursoNeonSync, proofsPublishSync, marketDataSync];

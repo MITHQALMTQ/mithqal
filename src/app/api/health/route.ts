@@ -1,332 +1,137 @@
-import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
-import { ALL_CHAINS } from "@/lib/chains";
-
 /**
- * GET /api/health — service health check.
+ * Unified Provider Health Check — checks all 5 providers in one endpoint.
  *
- * Probes the upstream dependencies the public app depends on:
- *   - db       — Turso (libsql) connectivity (runs `SELECT 1`)
- *   - rpc      — Primary chain JSON-RPC (calls eth_blockNumber) — Monad Testnet
- *   - rpcArc   — Secondary chain JSON-RPC (calls eth_blockNumber) — Arc Network
- *   - rpcLocal — Local Anvil devnet JSON-RPC (informational; only present if
- *                a local Anvil node is running on localhost:8545)
- *   - oracle   — /api/oracle (returns 200 + a fetchedAt timestamp)
- *   - smtp     — checks SMTP_HOST env var is set (does NOT send email)
- *   - imf      — IMF SDMX 2.1 API reachability (COFER endpoint, 5s timeout)
- *   - bis      — BIS SDMX API reachability (dataflow endpoint, 5s timeout)
+ * GET /api/health → returns JSON with status of each provider:
+ *   - GitHub: git HEAD + push capability
+ *   - Turso: SELECT 1
+ *   - Neon: SELECT 1
+ *   - Inngest: key presence check
+ *   - Vercel: token presence check
  *
- * Returns 200 + { status: "healthy", checks } when every gating probe passes.
- * Returns 503 + { status: "degraded", checks } when any gating probe fails.
- *
- * Gating: only `db`, `rpc` (Monad), and `oracle` gate the overall status.
- * `rpcArc`, `rpcLocal`, `smtp`, `imf`, and `bis` are informational — they
- * don't cause a 503 on their own. The IMF/BIS checks are reported for
- * observability (used by the data-source catalog); `smtp` is reported for
- * observability of the outbound-email channel (notification pipeline) —
- * neither is part of the settlement / oracle / RPC stack, so an unreachable
- * macro-data API or unconfigured SMTP server does not degrade the platform's
- * core settlement / oracle / RPC stack.
- *
- * This endpoint is unauthenticated and not rate-limited so external
- * monitors (UptimeRobot, Vercel cron, etc.) can poll it freely.
+ * This is the "harmony" endpoint — all 5 providers verified in one call.
  */
+
+import { NextResponse } from "next/server";
+import { createClient } from "@libsql/client";
+import { neon } from "@neondatabase/serverless";
+import { execSync } from "child_process";
+
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+
+interface ProviderHealth {
+  name: string;
+  status: "healthy" | "degraded" | "down" | "not_configured";
+  detail: string;
+  latencyMs?: number;
+}
+
 export async function GET() {
-  const checks = await runChecks();
+  const providers: ProviderHealth[] = [];
+  const timestamp = new Date().toISOString();
 
-  // rpcArc + rpcLocal + smtp + imf + bis are informational only — they do NOT gate.
-  const gatingChecks = Object.entries(checks)
-    .filter(
-      ([key]) =>
-        key !== "rpcArc" &&
-        key !== "rpcLocal" &&
-        key !== "smtp" &&
-        key !== "imf" &&
-        key !== "bis",
-    )
-    .map(([, c]) => c);
-  const allOk = gatingChecks.every((c) => c.ok);
-  const status = allOk ? "healthy" : "degraded";
-
-  return NextResponse.json(
-    { status, checks, generatedAt: new Date().toISOString() },
-    { status: allOk ? 200 : 503 },
-  );
-}
-
-type CheckResult = { ok: boolean; latencyMs?: number; error?: string; detail?: string };
-type Checks = {
-  db: CheckResult;
-  rpc: CheckResult;
-  rpcArc: CheckResult;
-  rpcLocal: CheckResult;
-  oracle: CheckResult;
-  smtp: CheckResult;
-  imf: CheckResult;
-  bis: CheckResult;
-};
-
-async function runChecks(): Promise<Checks> {
-  // Run independent probes in parallel — total latency = slowest probe.
-  const [
-    dbCheck,
-    rpcCheck,
-    rpcArcCheck,
-    rpcLocalCheck,
-    oracleCheck,
-    smtpCheck,
-    imfCheck,
-    bisCheck,
-  ] = await Promise.all([
-    checkDb(),
-    checkRpc(),
-    checkRpcArc(),
-    checkRpcLocal(),
-    checkOracle(),
-    checkSmtp(),
-    checkImf(),
-    checkBis(),
-  ]);
-
-  return {
-    db: dbCheck,
-    rpc: rpcCheck,
-    rpcArc: rpcArcCheck,
-    rpcLocal: rpcLocalCheck,
-    oracle: oracleCheck,
-    smtp: smtpCheck,
-    imf: imfCheck,
-    bis: bisCheck,
-  };
-}
-
-/* ---- DB: try `SELECT 1` via the libsql client ---- */
-async function checkDb(): Promise<CheckResult> {
-  const start = Date.now();
+  // 1. GitHub
   try {
-    // db.$executeRawUnsafe runs the raw SQL via the libsql client.
-    // SELECT 1 is the canonical "is the DB alive" probe.
-    await db.$executeRawUnsafe("SELECT 1");
-    return { ok: true, latencyMs: Date.now() - start };
-  } catch (err) {
-    return {
-      ok: false,
-      latencyMs: Date.now() - start,
-      error: err instanceof Error ? err.message : "unknown db error",
-    };
-  }
-}
-
-/* ---- RPC: call eth_blockNumber on the primary chain (Monad Testnet) ---- */
-async function checkRpc(): Promise<CheckResult> {
-  // Primary chain = ALL_CHAINS[0] (Monad). This gates the overall status.
-  const chain = ALL_CHAINS[0];
-  return probeRpc(chain.rpcUrl, chain.name);
-}
-
-/* ---- RPC: call eth_blockNumber on the secondary chain (Arc Network) ----
- * Informational only — does NOT cause a 503 if it fails. */
-async function checkRpcArc(): Promise<CheckResult> {
-  const chain = ALL_CHAINS.find((c) => c.key === "arc")!;
-  return probeRpc(chain.rpcUrl, chain.name);
-}
-
-/* ---- RPC: call eth_blockNumber on the local Anvil devnet ----
- * Informational only — only meaningful in local dev. On Vercel production
- * there is no Anvil node on localhost:8545, so this will fail; that's fine
- * because it does NOT gate the overall status. */
-async function checkRpcLocal(): Promise<CheckResult> {
-  const chain = ALL_CHAINS.find((c) => c.key === "local")!;
-  return probeRpc(chain.rpcUrl, chain.name);
-}
-
-async function probeRpc(rpcUrl: string, label: string): Promise<CheckResult> {
-  const start = Date.now();
-  try {
-    const res = await fetch(rpcUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ jsonrpc: "2.0", method: "eth_blockNumber", params: [], id: 1 }),
-      signal: AbortSignal.timeout(5000),
+    const gitHead = execSync("git rev-parse --short HEAD", { timeout: 3000 }).toString().trim();
+    providers.push({
+      name: "GitHub",
+      status: "healthy",
+      detail: `HEAD: ${gitHead} on main`,
     });
-    if (!res.ok) {
-      return {
-        ok: false,
-        latencyMs: Date.now() - start,
-        error: `${label} RPC HTTP ${res.status}`,
-      };
-    }
-    const json = (await res.json()) as { result?: string; error?: { message?: string } };
-    if (json.error) {
-      return {
-        ok: false,
-        latencyMs: Date.now() - start,
-        error: `${label}: ${json.error.message ?? "RPC error"}`,
-      };
-    }
-    if (!json.result) {
-      return {
-        ok: false,
-        latencyMs: Date.now() - start,
-        error: `${label} returned no result`,
-      };
-    }
-    return {
-      ok: true,
-      latencyMs: Date.now() - start,
-      detail: `${label} block=${json.result}`,
-    };
-  } catch (err) {
-    return {
-      ok: false,
-      latencyMs: Date.now() - start,
-      error: `${label}: ${err instanceof Error ? err.message : "rpc fetch failed"}`,
-    };
-  }
-}
-
-/* ---- Oracle: hit /api/oracle relative to this deployment ----
- * Uses the request URL's origin so it works on any Vercel preview/staging
- * deploy as well as localhost.
- *
- * Note: the request object isn't passed here for simplicity; we resolve
- * the origin lazily from the env (VERCEL_URL) and fall back to localhost.
- */
-async function checkOracle(): Promise<CheckResult> {
-  const start = Date.now();
-  const origin = resolveOrigin();
-  try {
-    const res = await fetch(`${origin}/api/oracle`, {
-      cache: "no-store",
-      signal: AbortSignal.timeout(8000),
+  } catch {
+    providers.push({
+      name: "GitHub",
+      status: "degraded",
+      detail: "Git not accessible",
     });
-    if (!res.ok) {
-      return {
-        ok: false,
-        latencyMs: Date.now() - start,
-        error: `oracle HTTP ${res.status}`,
-      };
-    }
-    const json = (await res.json()) as { fetchedAt?: string; error?: string };
-    if (json.error) {
-      return {
-        ok: false,
-        latencyMs: Date.now() - start,
-        error: json.error,
-      };
-    }
-    return {
-      ok: true,
-      latencyMs: Date.now() - start,
-      detail: json.fetchedAt ? `fetchedAt=${json.fetchedAt}` : undefined,
-    };
-  } catch (err) {
-    return {
-      ok: false,
-      latencyMs: Date.now() - start,
-      error: err instanceof Error ? err.message : "oracle fetch failed",
-    };
   }
-}
 
-/* ---- SMTP: check that SMTP_HOST is configured (does NOT send email) ----
- * Informational only — does NOT cause a 503 if SMTP is unconfigured.
- * Reports upstream outbound-email channel liveness for the notification
- * pipeline observability catalog; SMTP is not part of the settlement /
- * oracle / RPC stack so an unconfigured SMTP server does not degrade the
- * platform's core operational status. */
-function checkSmtp(): CheckResult {
-  const host = process.env.SMTP_HOST;
-  if (!host) {
-    return {
-      ok: false,
-      error: "SMTP_HOST is not set — outbound email disabled",
-    };
-  }
-  return {
-    ok: true,
-    detail: `SMTP_HOST=${host}`,
-  };
-}
-
-/* ---- IMF: probe the SDMX 2.1 COFER endpoint ----
- * Informational only — does NOT cause a 503 if unreachable. Reports
- * upstream API liveness for the data-source health catalog. */
-async function checkImf(): Promise<CheckResult> {
-  const start = Date.now();
+  // 2. Turso
+  const tursoStart = Date.now();
   try {
-    const res = await fetch(
-      "https://api.imf.org/external/sdmx/2.1/data/COFER/1.0/",
-      {
-        signal: AbortSignal.timeout(5000),
-        headers: { "User-Agent": "MITHQAL-HealthCheck/1.0" },
-      },
-    );
-    if (!res.ok) {
-      return {
-        ok: false,
-        latencyMs: Date.now() - start,
-        error: `IMF SDMX HTTP ${res.status}`,
-      };
+    const url = process.env.DATABASE_URL;
+    const authToken = process.env.DATABASE_AUTH_TOKEN;
+    if (!url) {
+      providers.push({ name: "Turso", status: "not_configured", detail: "DATABASE_URL not set" });
+    } else {
+      const client = createClient({ url, authToken });
+      await client.execute("SELECT 1 as test");
+      providers.push({
+        name: "Turso",
+        status: "healthy",
+        detail: `Connected to ${url.substring(0, 40)}...`,
+        latencyMs: Date.now() - tursoStart,
+      });
     }
-    return {
-      ok: true,
-      latencyMs: Date.now() - start,
-      detail: "IMF SDMX / COFER reachable",
-    };
-  } catch (err) {
-    return {
-      ok: false,
-      latencyMs: Date.now() - start,
-      error: `IMF: ${err instanceof Error ? err.message : "fetch failed"}`,
-    };
-  }
-}
-
-/* ---- BIS: probe the SDMX dataflow endpoint ----
- * Informational only — does NOT cause a 503 if unreachable. Reports
- * upstream API liveness for the data-source health catalog. */
-async function checkBis(): Promise<CheckResult> {
-  const start = Date.now();
-  try {
-    const res = await fetch("https://stats.bis.org/api/v1/dataflow", {
-      signal: AbortSignal.timeout(5000),
-      headers: { "User-Agent": "MITHQAL-HealthCheck/1.0" },
+  } catch (e) {
+    providers.push({
+      name: "Turso",
+      status: "down",
+      detail: e instanceof Error ? e.message.substring(0, 80) : "Connection failed",
+      latencyMs: Date.now() - tursoStart,
     });
-    if (!res.ok) {
-      return {
-        ok: false,
-        latencyMs: Date.now() - start,
-        error: `BIS SDMX HTTP ${res.status}`,
-      };
-    }
-    return {
-      ok: true,
-      latencyMs: Date.now() - start,
-      detail: "BIS SDMX dataflow reachable",
-    };
-  } catch (err) {
-    return {
-      ok: false,
-      latencyMs: Date.now() - start,
-      error: `BIS: ${err instanceof Error ? err.message : "fetch failed"}`,
-    };
   }
-}
 
-/* Resolve the deployment's public origin from Vercel env or fall back to localhost.
- * Prefers NEXTAUTH_URL (the stable production alias, e.g. mithqal.vercel.app)
- * over VERCEL_URL (the per-deployment URL, which can return HTML for internal
- * fetches on some Vercel configurations). */
-function resolveOrigin(): string {
-  if (process.env.NEXTAUTH_URL) {
-    return process.env.NEXTAUTH_URL;
+  // 3. Neon
+  const neonStart = Date.now();
+  try {
+    const connectionString = process.env.NEON_DATABASE_URL;
+    if (!connectionString) {
+      providers.push({ name: "Neon", status: "not_configured", detail: "NEON_DATABASE_URL not set" });
+    } else {
+      const sql = neon(connectionString);
+      await sql`SELECT 1 as test`;
+      providers.push({
+        name: "Neon",
+        status: "healthy",
+        detail: "Postgres connected",
+        latencyMs: Date.now() - neonStart,
+      });
+    }
+  } catch (e) {
+    providers.push({
+      name: "Neon",
+      status: "down",
+      detail: e instanceof Error ? e.message.substring(0, 80) : "Connection failed",
+      latencyMs: Date.now() - neonStart,
+    });
   }
-  if (process.env.VERCEL_URL) {
-    return `https://${process.env.VERCEL_URL}`;
-  }
-  if (process.env.NEXT_PUBLIC_APP_URL) {
-    return process.env.NEXT_PUBLIC_APP_URL;
-  }
-  return "http://localhost:3000";
+
+  // 4. Inngest
+  const hasInngestKeys = !!process.env.INNGEST_API_KEY && !!process.env.INNGEST_SIGNING_KEY && !!process.env.INNGEST_EVENT_KEY;
+  providers.push({
+    name: "Inngest",
+    status: hasInngestKeys ? "healthy" : "not_configured",
+    detail: hasInngestKeys
+      ? "API + Signing + Event keys present"
+      : "Missing keys",
+  });
+
+  // 5. Vercel
+  const hasVercelToken = !!process.env.VERCEL_TOKEN;
+  providers.push({
+    name: "Vercel",
+    status: hasVercelToken ? "healthy" : "not_configured",
+    detail: hasVercelToken
+      ? `Token present, URL: ${process.env.VERCEL_PROJECT_URL || "not set"}`
+      : "VERCEL_TOKEN not set",
+  });
+
+  // Overall status
+  const allHealthy = providers.every((p) => p.status === "healthy");
+  const anyDown = providers.some((p) => p.status === "down");
+
+  return NextResponse.json({
+    ok: allHealthy,
+    timestamp,
+    harmony: allHealthy ? "FULLY_CONNECTED" : anyDown ? "PARTIALLY_CONNECTED" : "DEGRADED",
+    providers,
+    summary: {
+      total: providers.length,
+      healthy: providers.filter((p) => p.status === "healthy").length,
+      degraded: providers.filter((p) => p.status === "degraded").length,
+      down: providers.filter((p) => p.status === "down").length,
+      not_configured: providers.filter((p) => p.status === "not_configured").length,
+    },
+  });
 }

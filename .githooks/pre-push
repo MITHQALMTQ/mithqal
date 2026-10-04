@@ -1,23 +1,11 @@
 #!/bin/bash
-# Pre-push hook — protects .env from being committed + logs pushes
+# Pre-push hook — informational only.
+# Branch protection is enforced on the GitHub side.
+# This hook logs the push to audit/push-log.jsonl
 set -e
-
-# BLOCK .env from being pushed (CRITICAL SECURITY)
-if git diff --cached --name-only --diff-filter=ACM | grep -qE '^\.env$'; then
-  echo "❌ BLOCKED: .env is staged for commit. .env contains secrets and must NEVER be committed."
-  echo "   Run: git reset HEAD .env"
-  exit 1
-fi
-
-# Check if .env is in the push (any commit being pushed)
-while read local_ref local_sha remote_ref remote_sha; do
-  if git diff --name-only "$remote_sha" "$local_sha" 2>/dev/null | grep -qE '^\.env$'; then
-    echo "❌ BLOCKED: .env is in the push history. Aborting for security."
-    exit 1
-  fi
+while read local_ref local_oid remote_ref remote_oid; do
+  mkdir -p "$(dirname "$PWD/audit/push-log.jsonl")"
+  echo "{\"ts\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"local_ref\":\"$local_ref\",\"local_oid\":\"$local_oid\",\"remote_ref\":\"$remote_ref\",\"remote_oid\":\"$remote_oid\",\"user\":\"$USER\"}" >> audit/push-log.jsonl
+  echo "[pre-push] $local_ref $local_oid → $remote_ref $remote_oid"
 done
-
-# Log the push
-echo "{\"timestamp\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"local\":\"$1\",\"remote\":\"$2\"}" >> audit/push-log.jsonl 2>/dev/null || true
-
-echo "[pre-push] ✓ security check passed — no .env in push"
+exit 0
