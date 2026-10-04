@@ -12,3 +12,5 @@
 {"ts":"2026-09-28T22:01:32Z","local_ref":"refs/heads/main","local_oid":"8e13d0524af7aca6a423280936559c593c8b93b0","remote_ref":"refs/heads/main","remote_oid":"86fd1a946119ff2f680213aaeb361ecc47258e1f","user":"z"}
 {"ts":"2026-09-28T22:01:37Z","local_ref":"refs/tags/v25.6","local_oid":"68b2f221bf7d9fb2da877c116dc7c361527ec8af","remote_ref":"refs/tags/v25.6","remote_oid":"0000000000000000000000000000000000000000","user":"z"}
 {"ts":"2026-10-04T22:05:12Z","local_ref":"refs/heads/main","local_oid":"8fa67b59dd27a86706365ad8c855c8cb94ef3a6e","remote_ref":"refs/heads/main","remote_oid":"1c96e9df10887172e3ea9e8bb935a5b3217b648e","user":"z"}
+{"ts":"2026-10-04T22:09:07Z","local_ref":"refs/heads/main","local_oid":"06a5b497ca62968b27f1d3455b9965b45f2a3517","remote_ref":"refs/heads/main","remote_oid":"1c96e9df10887172e3ea9e8bb935a5b3217b648e","user":"z"}
+{"ts":"2026-10-04T22:09:09Z","local_ref":"refs/tags/v25.9-final","local_oid":"06a5b497ca62968b27f1d3455b9965b45f2a3517","remote_ref":"refs/tags/v25.9-final","remote_oid":"0000000000000000000000000000000000000000","user":"z"}
