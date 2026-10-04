@@ -1,26 +1,30 @@
 import { serve } from "inngest/next";
-import { inngest, dataSourceSync, tursoNeonSync, proofsPublishSync, marketDataSync } from "@/lib/inngest-client";
+import { inngest, dataSourceSync } from "@/lib/inngest-client";
 
 export const dynamic = "force-dynamic";
-export const maxDuration = 60;
 
 /**
  * Inngest route — the public endpoint Inngest Cloud polls to discover
  * registered functions and to invoke them on event.
  *
- * HARMONY MODEL — 4 functions registered:
- *   1. data-source-sync    — refresh market data snapshot
- *   2. turso-neon-sync     — CDC sync Turso → Neon (the key integration)
- *   3. proofs-publish-sync — publish cryptographic proofs
- *   4. market-data-sync    — sync external market data sources
+ *   GET  → register functions (Inngest Cloud calls this on deploy + on
+ *          every sync cycle to learn what this app can run).
+ *   POST → invoke a specific function for a given event/run.
+ *   PUT  → update a running function (used by Inngest Cloud to push
+ *          step transitions).
+ *
+ * The `dynamic = "force-dynamic"` export is required: the route is
+ * stateful and per-request signed, so it must never be cached by the
+ * Next.js static-asset pipeline.
+ *
+ * Registered functions:
+ *   - dataSourceSync — refreshes the real-market-data snapshot.
+ *
+ * To add more functions, import them from `@/lib/inngest-client` and
+ * append them to the `functions` array below. Do NOT register the
+ * same function twice — Inngest Cloud will reject the sync.
  */
-const handler = serve(inngest, [
-  dataSourceSync,
-  tursoNeonSync,
-  proofsPublishSync,
-  marketDataSync,
-]);
-
-export const GET = handler.GET;
-export const POST = handler.POST;
-export const PUT = handler.PUT;
+export const { GET, POST, PUT } = serve({
+  client: inngest,
+  functions: [dataSourceSync],
+});
