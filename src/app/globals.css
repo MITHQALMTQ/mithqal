@@ -817,7 +817,8 @@ button:active {
   --glass-border: oklch(0.30 0.02 150 / 0.40);
 }
 .cyber body {
-  background: radial-gradient(ellipse at top, color-mix(in oklch, var(--gold) 5%, var(--ink)) 0%, var(--ink) 60%);
+  background-color: var(--background);
+  background-image: radial-gradient(ellipse at top, color-mix(in oklch, var(--gold) 5%, var(--ink)) 0%, var(--ink) 60%);
   background-attachment: fixed;
   font-family: var(--font-geist-mono), monospace;
 }
