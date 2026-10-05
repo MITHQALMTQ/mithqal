@@ -8,6 +8,8 @@
  * productionAuthorized = false | institutionallyValidated = false
  */
 
+import "./about.css";
+
 const MithqalLogo = () => (
   <svg width="39" height="39" viewBox="0 0 39 39" fill="none" aria-hidden="true">
     <path d="M19.5 3L34 11.5v16L19.5 36L5 27.5v-16L19.5 3Z" stroke="#E8B96F" strokeWidth="2" fill="none" />
@@ -39,112 +41,6 @@ const JURISDICTIONS = ["Jurisdiction A", "Jurisdiction B", "Jurisdiction C", "Ju
 export default function AboutPage() {
   return (
     <>
-      <style>{`
-        * { box-sizing: border-box; }
-        html, body { margin: 0; min-height: 100%; }
-        body { background: #000611; color: #f5f5f4; font-family: Inter, Manrope, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
-        a { color: inherit; text-decoration: none; }
-
-        .site-header { position: fixed; inset: 0 0 auto 0; z-index: 50; height: 78px; border-bottom: 1px solid rgba(255,255,255,0.08); background: rgba(0,6,17,0.68); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
-        .header-inner { height: 100%; max-width: 1380px; margin: 0 auto; padding: 0 6vw; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 24px; }
-        .brand { display: inline-flex; align-items: center; gap: 18px; justify-self: start; }
-        .brand-wordmark { font-size: 27px; font-weight: 400; letter-spacing: 0.27em; line-height: 1; color: #f5f5f4; }
-        .primary-nav { display: flex; align-items: center; justify-content: center; gap: 41px; }
-        .nav-link { position: relative; padding: 30px 0 27px; color: rgba(245,245,244,0.86); font-size: 14px; font-weight: 400; transition: color 180ms ease; }
-        .nav-link::after { content: ""; position: absolute; left: 0; right: 0; bottom: 18px; height: 1px; transform: scaleX(0); transform-origin: center; background: #E8B96F; transition: transform 180ms ease; }
-        .nav-link:hover, .nav-link.active { color: #f5f5f4; }
-        .nav-link.active::after { transform: scaleX(1); }
-        .launch-btn { justify-self: end; min-width: 157px; height: 38px; padding: 0 20px; display: inline-flex; align-items: center; justify-content: center; gap: 10px; border: 1px solid rgba(232,185,111,0.9); border-radius: 9999px; font-size: 14px; color: #f5f5f4; transition: background 180ms ease, box-shadow 180ms ease, transform 180ms ease; background: transparent; }
-        .launch-btn:hover { background: rgba(232,185,111,0.08); box-shadow: 0 0 24px rgba(232,185,111,0.10); transform: translateY(-1px); }
-
-        .section { max-width: 1380px; margin: 0 auto; padding: 100px 6vw; }
-        .eyebrow { display: flex; align-items: center; gap: 14px; color: #E8B96F; font-size: 12px; font-weight: 600; letter-spacing: 0.28em; text-transform: uppercase; margin-bottom: 20px; }
-        .eyebrow-line { width: 3px; height: 18px; background: #E8B96F; display: inline-block; }
-        h1, h2, h3 { margin: 0; }
-        .hero-title { font-size: clamp(44px, 5vw, 72px); font-weight: 400; line-height: 1.0; letter-spacing: -0.043em; color: #f5f5f4; max-width: 700px; }
-        .gold-text { color: #F3C879; }
-        .body-text { color: rgba(245,245,244,0.80); font-size: 18px; line-height: 1.62; max-width: 560px; margin-top: 28px; }
-        .section-title { font-size: clamp(36px, 4vw, 56px); font-weight: 400; line-height: 1.05; letter-spacing: -0.04em; color: #f5f5f4; }
-        .section-sub { color: rgba(245,245,244,0.70); font-size: 17px; line-height: 1.6; max-width: 620px; margin-top: 20px; }
-        .btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; height: 46px; padding: 0 29px; border-radius: 9999px; font-size: 14px; cursor: pointer; transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease; text-decoration: none; }
-        .btn-primary { background: #E8B96F; color: #06080c; font-weight: 500; }
-        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 14px 42px rgba(232,185,111,0.24); }
-        .btn-secondary { border: 1px solid #E8B96F; color: #f5f5f4; background: rgba(0,0,0,0.18); }
-        .btn-secondary:hover { transform: translateY(-2px); background: rgba(232,185,111,0.06); }
-
-        .hero-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center; min-height: calc(100vh - 78px); padding-top: 78px; }
-        .hero-visual { position: relative; width: 100%; min-height: 500px; background: url("/assets/mithqal-about-hero.png") center center / cover no-repeat; opacity: 0.92; }
-
-        .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: start; }
-
-        .not-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; border: 1px solid rgba(255,255,255,0.10); background: rgba(7,17,31,0.40); }
-        .not-item { padding: 20px 16px; border-right: 1px solid rgba(255,255,255,0.08); border-bottom: 1px solid rgba(255,255,255,0.08); text-align: center; color: rgba(245,245,244,0.40); font-size: 13px; text-decoration: line-through; text-decoration-color: rgba(232,185,111,0.30); }
-        .not-item:nth-child(4n) { border-right: none; }
-        .not-item:nth-last-child(-n+4) { border-bottom: none; }
-
-        .commitments-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 0; border: 1px solid rgba(255,255,255,0.10); background: rgba(7,17,31,0.30); }
-        .commitment { padding: 28px 16px; border-right: 1px solid rgba(255,255,255,0.08); text-align: center; }
-        .commitment:last-child { border-right: none; }
-        .commitment-num { color: #E8B96F; font-size: 20px; font-weight: 400; margin-bottom: 12px; }
-        .commitment-title { color: #f5f5f4; font-size: 13px; font-weight: 500; letter-spacing: 0.05em; margin-bottom: 10px; }
-        .commitment-desc { color: rgba(245,245,244,0.55); font-size: 11px; line-height: 1.5; }
-
-        .bridge { display: flex; align-items: center; justify-content: center; gap: 40px; margin-top: 40px; flex-wrap: wrap; }
-        .bridge-side { border: 1px solid rgba(255,255,255,0.10); padding: 28px; text-align: center; background: rgba(7,17,31,0.30); min-width: 200px; }
-        .bridge-label { color: rgba(245,245,244,0.70); font-size: 14px; font-weight: 500; }
-        .bridge-center { border: 1px solid rgba(232,185,111,0.3); padding: 36px; text-align: center; background: rgba(232,185,111,0.06); }
-        .bridge-center-label { color: #F3C879; font-size: 20px; font-weight: 500; }
-        .bridge-sub { color: rgba(232,185,111,0.60); font-size: 11px; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; margin-top: 8px; }
-        .bridge-arrow { color: rgba(232,185,111,0.40); font-size: 24px; }
-
-        .layers { display: flex; flex-direction: column; gap: 0; max-width: 500px; margin: 40px auto 0; }
-        .layer { padding: 16px 24px; border: 1px solid rgba(255,255,255,0.10); border-bottom: none; background: rgba(7,17,31,0.30); text-align: center; color: #f5f5f4; font-size: 14px; font-weight: 500; }
-        .layer:last-child { border-bottom: 1px solid rgba(255,255,255,0.10); }
-        .layer.gold { border-color: rgba(232,185,111,0.3); background: rgba(232,185,111,0.06); color: #F3C879; }
-        .layer.muted { color: rgba(245,245,244,0.50); }
-        .layer-arrow { text-align: center; color: rgba(232,185,111,0.40); font-size: 18px; padding: 2px 0; }
-
-        .trace-flow { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 32px; }
-        .trace-node { border: 1px solid rgba(232,185,111,0.25); border-radius: 9999px; padding: 8px 16px; color: rgba(245,245,244,0.75); font-size: 12px; background: rgba(7,17,31,0.30); }
-        .trace-arrow { color: rgba(232,185,111,0.40); font-size: 14px; }
-
-        .jur-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 32px; }
-        .jur-card { border: 1px solid rgba(255,255,255,0.10); padding: 20px; text-align: center; background: rgba(7,17,31,0.30); }
-        .jur-title { color: #f5f5f4; font-size: 14px; font-weight: 500; margin-bottom: 4px; }
-        .jur-desc { color: rgba(245,245,244,0.50); font-size: 11px; }
-
-        .btv-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 40px; }
-        .btv-col { border: 1px solid rgba(255,255,255,0.10); padding: 32px; background: rgba(7,17,31,0.30); text-align: center; }
-        .btv-label { color: #E8B96F; font-size: 16px; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 12px; }
-        .btv-desc { color: rgba(245,245,244,0.60); font-size: 13px; line-height: 1.5; }
-        .btv-center { text-align: center; margin: 32px 0; font-size: 24px; font-weight: 400; color: #F3C879; }
-
-        .status-panel { border: 1px solid rgba(232,185,111,0.2); padding: 28px; background: rgba(232,185,111,0.04); max-width: 600px; margin: 40px auto 0; text-align: center; }
-        .status-label { color: #E8B96F; font-size: 12px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 12px; }
-        .status-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.06); }
-        .status-row:last-child { border-bottom: none; }
-        .status-key { color: rgba(245,245,244,0.70); font-size: 14px; }
-        .status-val { color: rgba(245,245,244,0.50); font-size: 14px; font-weight: 500; }
-
-        .mtq-box { border: 1px solid rgba(255,255,255,0.10); padding: 40px; text-align: center; background: rgba(7,17,31,0.30); max-width: 700px; margin: 0 auto; }
-        .mtq-label { color: #E8B96F; font-size: 12px; font-weight: 600; letter-spacing: 0.28em; text-transform: uppercase; margin-bottom: 16px; }
-        .mtq-title { font-size: 28px; font-weight: 400; color: #f5f5f4; margin-bottom: 20px; }
-        .mtq-desc { color: rgba(245,245,244,0.70); font-size: 16px; line-height: 1.6; }
-
-        .cta-bg { position: relative; min-height: 500px; background: url("/assets/mithqal-about-hero.png") center center / cover no-repeat; display: flex; align-items: center; }
-        .cta-bg::before { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(0,6,17,0.88) 0%, rgba(0,6,17,0.50) 50%, rgba(0,6,17,0.30) 100%); }
-        .cta-content { position: relative; z-index: 1; max-width: 1380px; margin: 0 auto; padding: 80px 6vw; width: 100%; }
-        .divider { border: none; border-top: 1px solid rgba(255,255,255,0.06); margin: 0; }
-        .site-footer { border-top: 1px solid rgba(255,255,255,0.08); background: #000611; padding: 32px 6vw; text-align: center; color: rgba(245,245,244,0.40); font-size: 12px; }
-        .footer-inner { max-width: 1380px; margin: 0 auto; }
-        .footer-state { margin-top: 4px; color: rgba(232,185,111,0.40); }
-
-        @media (max-width: 1200px) { .not-grid { grid-template-columns: repeat(3, 1fr); } .not-item:nth-child(4n) { border-right: 1px solid rgba(255,255,255,0.08); } .not-item:nth-child(3n) { border-right: none; } .commitments-grid { grid-template-columns: repeat(4, 1fr); } .commitment:nth-child(7n) { border-right: 1px solid rgba(255,255,255,0.08); } .jur-grid { grid-template-columns: repeat(2, 1fr); } }
-        @media (max-width: 900px) { .site-header { height: 70px; } .header-inner { display: flex; justify-content: space-between; } .primary-nav { display: none; } .launch-btn { min-width: auto; height: 36px; padding: 0 15px; } .hero-grid { grid-template-columns: 1fr; } .hero-visual { min-height: 300px; } .two-col { grid-template-columns: 1fr; } .not-grid { grid-template-columns: repeat(2, 1fr); } .commitments-grid { grid-template-columns: repeat(2, 1fr); } .btv-grid { grid-template-columns: 1fr; } .jur-grid { grid-template-columns: 1fr; } .bridge { flex-direction: column; } }
-        @media (max-width: 620px) { .launch-btn span:first-child { display: none; } .launch-btn { min-width: 44px; padding: 0 12px; } .not-grid { grid-template-columns: 1fr; } .commitments-grid { grid-template-columns: 1fr; } .trace-flow { flex-direction: column; } }
-        @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }
-      `}</style>
-
       <header className="site-header">
         <div className="header-inner">
           <a className="brand" href="/" aria-label="MITHQAL home"><MithqalLogo /><span className="brand-wordmark">MITHQAL</span></a>
