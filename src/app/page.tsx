@@ -127,7 +127,7 @@ function SliderRow({ label, value, set, min, max, step, unit }: { label: string;
   return (
     <div>
       <div className="flex justify-between text-[10px]"><span className="text-gray-400">{label}</span><span className="font-mono text-gold">{value}{unit}</span></div>
-      <input type="range" min={min} max={max} step={step} value={value} onChange={(e) => set(Number(e.target.value))} className="mt-1 w-full accent-[#d4af37]" />
+      <input type="range" min={min} max={max} step={step} value={value} onChange={(e) => set(Number(e.target.value))} className="mt-1 w-full accent-gold" />
     </div>
   );
 }
@@ -202,14 +202,14 @@ function DynamicReserveSimulator() {
           <div className="grid grid-cols-2 gap-3">
             <div>
               <div className="text-[10px] text-gray-400 mb-1">Shock Currency</div>
-              <select value={shockCurrency} onChange={(e) => setShockCurrency(e.target.value)} className="w-full rounded-lg border border-white/10 bg-[#16161a] px-3 py-1.5 text-xs text-white">
+              <select value={shockCurrency} onChange={(e) => setShockCurrency(e.target.value)} className="w-full rounded-lg border border-white/10 bg-card px-3 py-1.5 text-xs text-white">
                 {SIM_CURRENCIES.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
             <SliderRow label="Shock Decline" value={shockPct} set={setShockPct} min={0} max={50} step={5} unit="%" />
           </div>
         </div>
-        <button onClick={runSimulation} className="mt-4 w-full rounded-lg bg-gradient-to-r from-[#d4af37] to-[#c9a227] px-4 py-2 text-sm font-bold text-black transition hover:opacity-90">
+        <button onClick={runSimulation} className="mt-4 w-full rounded-lg bg-gradient-to-r from-gold to-gold-deep px-4 py-2 text-sm font-bold text-black transition hover:opacity-90">
           ▶ Run Simulation
         </button>
       </GlassCard>
@@ -330,28 +330,28 @@ function DynamicCorridorSimulator() {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <div>
             <div className="text-[10px] text-gray-400 mb-1">From Currency</div>
-            <select value={fromCcy} onChange={(e) => setFromCcy(e.target.value)} className="w-full rounded-lg border border-white/10 bg-[#16161a] px-3 py-1.5 text-xs text-white">
+            <select value={fromCcy} onChange={(e) => setFromCcy(e.target.value)} className="w-full rounded-lg border border-white/10 bg-card px-3 py-1.5 text-xs text-white">
               {CORRIDOR_CURRENCIES.map(c => <option key={c} value={c}>{c}</option>)}
             </select>
           </div>
           <div>
             <div className="text-[10px] text-gray-400 mb-1">To Currency</div>
-            <select value={toCcy} onChange={(e) => setToCcy(e.target.value)} className="w-full rounded-lg border border-white/10 bg-[#16161a] px-3 py-1.5 text-xs text-white">
+            <select value={toCcy} onChange={(e) => setToCcy(e.target.value)} className="w-full rounded-lg border border-white/10 bg-card px-3 py-1.5 text-xs text-white">
               {CORRIDOR_CURRENCIES.map(c => <option key={c} value={c}>{c}</option>)}
             </select>
           </div>
           <div>
             <div className="text-[10px] text-gray-400 mb-1">Amount</div>
-            <input type="number" value={amount} onChange={(e) => setAmount(Number(e.target.value))} className="w-full rounded-lg border border-white/10 bg-[#16161a] px-3 py-1.5 text-xs text-white" />
+            <input type="number" value={amount} onChange={(e) => setAmount(Number(e.target.value))} className="w-full rounded-lg border border-white/10 bg-card px-3 py-1.5 text-xs text-white" />
           </div>
           <div>
             <div className="text-[10px] text-gray-400 mb-1">Settlement Rail</div>
-            <select value={rail} onChange={(e) => setRail(e.target.value)} className="w-full rounded-lg border border-white/10 bg-[#16161a] px-3 py-1.5 text-xs text-white">
+            <select value={rail} onChange={(e) => setRail(e.target.value)} className="w-full rounded-lg border border-white/10 bg-card px-3 py-1.5 text-xs text-white">
               {CORRIDOR_RAILS.map(r => <option key={r} value={r}>{r}</option>)}
             </select>
           </div>
         </div>
-        <button onClick={runSimulation} className="mt-4 w-full rounded-lg bg-gradient-to-r from-[#d4af37] to-[#c9a227] px-4 py-2 text-sm font-bold text-black transition hover:opacity-90">
+        <button onClick={runSimulation} className="mt-4 w-full rounded-lg bg-gradient-to-r from-gold to-gold-deep px-4 py-2 text-sm font-bold text-black transition hover:opacity-90">
           ▶ Simulate Corridor
         </button>
       </GlassCard>
@@ -667,12 +667,12 @@ export default function Page() {
   }, []);
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#0a0a0b] text-gray-200">
+    <div className="flex min-h-screen flex-col bg-background text-foreground">
       {/* ─── HEADER (upgraded: prominent, institutional) ─── */}
-      <header className="sticky top-0 z-50 border-b border-gold/10 bg-[#0a0a0b]/95 backdrop-blur-xl">
+      <header className="sticky top-0 z-50 border-b border-gold/10 bg-background/95 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[#d4af37] to-[#c9a227] shadow-lg shadow-gold/20">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-gold to-gold-deep shadow-lg shadow-gold/20">
               <Landmark className="h-5 w-5 text-black" />
             </div>
             <div>
@@ -738,7 +738,7 @@ export default function Page() {
         </nav>
 
         {/* ─── MOBILE NAV BAR (horizontal scroll for tablet/mobile) ─── */}
-        <nav role="navigation" aria-label="Section navigation" className="sticky top-[61px] z-40 w-full border-b border-white/5 bg-[#0a0a0b]/95 backdrop-blur-xl lg:hidden">
+        <nav role="navigation" aria-label="Section navigation" className="sticky top-[61px] z-40 w-full border-b border-white/5 bg-background/95 backdrop-blur-xl lg:hidden">
           <div className="flex gap-1 overflow-x-auto px-4 py-2">
             {NAV_ITEMS.map((item) => (
               <button key={item.id} onClick={() => scrollTo(item.id)} aria-label={`Navigate to ${item.label} section`} className="flex shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[10px] font-medium text-gray-500 transition hover:bg-gold/5 hover:text-gold">
@@ -1508,13 +1508,13 @@ export default function Page() {
       </div>
 
       {/* ─── FOOTER (upgraded: institutional, multi-column) ─── */}
-      <footer className="mt-auto border-t border-gold/10 bg-[#080809]">
+      <footer className="mt-auto border-t border-gold/10 bg-card">
         <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
           <div className="grid gap-6 md:grid-cols-3">
             {/* Brand */}
             <div>
               <div className="flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#d4af37] to-[#c9a227]">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-gold to-gold-deep">
                   <Landmark className="h-4 w-4 text-black" />
                 </div>
                 <span className="font-display text-sm font-bold text-white">MITHQAL</span>

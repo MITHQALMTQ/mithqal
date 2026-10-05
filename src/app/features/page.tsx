@@ -224,7 +224,7 @@ export default function FeaturesPage() {
               <div className="arch-layer">Participants</div>
               <div className="arch-arrow">↓</div>
               <div className="arch-layer gold">MITHQAL Control Plane</div>
-              <div style={{ fontSize: "13px", color: "rgba(245,245,244,0.60); padding: 8px 0; text-align: center;" }}>Policy · Risk · Authorization · Routing · Finality · Reconciliation</div>
+              <div style={{ fontSize: "13px", color: "color-mix(in srgb, var(--foreground) 60%, transparent)", padding: "8px 0", textAlign: "center" }}>Policy · Risk · Authorization · Routing · Finality · Reconciliation</div>
               <div className="arch-arrow">↓</div>
               <div className="arch-layer">Approved Settlement Rails</div>
               <div className="arch-arrow">↓</div>
