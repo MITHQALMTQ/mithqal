@@ -649,9 +649,9 @@ html {
  * them the light-mode :root palette would leak through.
  */
 .cyber {
-  --ink: oklch(0.05 0 0 150);
-  --ink-soft: oklch(0.08 0 0 150);
-  --ink-card: oklch(0.11 0 0 150);
+  --ink: oklch(0.05 0 0);
+  --ink-soft: oklch(0.08 0 0);
+  --ink-card: oklch(0.11 0 0);
   --line: oklch(0.22 0.04 150);
   --gold: oklch(0.72 0.18 150);
   --gold-soft: oklch(0.80 0.14 150);
@@ -659,20 +659,20 @@ html {
   --reserve: oklch(0.72 0.18 150);
   --reserve-soft: oklch(0.85 0.10 150);
   --fg-muted: oklch(0.65 0.08 150);
-  --glass-bg: oklch(0.08 0 0 150 / 0.65);
+  --glass-bg: oklch(0.08 0 0 / 0.65);
   --glass-border: oklch(0.30 0.06 150 / 0.45);
 
   /* shadcn primitives — keep them dark so popovers/dialogs/buttons render
      correctly (without `class="dark"`, the :root light palette would
      otherwise paint them white). */
-  --background: oklch(0.05 0 0 150);
+  --background: oklch(0.05 0 0);
   --foreground: oklch(0.85 0.12 150);
-  --card: oklch(0.09 0 0 150);
+  --card: oklch(0.09 0 0);
   --card-foreground: oklch(0.85 0.12 150);
-  --popover: oklch(0.09 0 0 150);
+  --popover: oklch(0.09 0 0);
   --popover-foreground: oklch(0.85 0.12 150);
   --primary: oklch(0.72 0.18 150);
-  --primary-foreground: oklch(0.05 0 0 150);
+  --primary-foreground: oklch(0.05 0 0);
   --secondary: oklch(0.15 0.04 150);
   --secondary-foreground: oklch(0.85 0.12 150);
   --muted: oklch(0.15 0.04 150);
