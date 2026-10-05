@@ -710,9 +710,13 @@ html {
 
 /* ===== UI AUDIT FIXES — State-of-the-Art Polish ===== */
 
-/* 1. Radial gradient background for depth (not flat black) */
+/* 1. Radial gradient background for depth (not flat black).
+ * v25.12 hardening: also set background-color so getComputedStyle().backgroundColor
+ * reports the themed value (not transparent) — future-proofs automated
+ * regression tests that check the page actually recolored per theme. */
 .dark body, .cyber body {
-  background: radial-gradient(ellipse at top, color-mix(in oklch, var(--gold) 4%, var(--ink)) 0%, var(--ink) 60%);
+  background-color: var(--background);
+  background-image: radial-gradient(ellipse at top, color-mix(in oklch, var(--gold) 4%, var(--ink)) 0%, var(--ink) 60%);
   background-attachment: fixed;
 }
 
@@ -790,7 +794,8 @@ button:active {
   --glass-border: oklch(0.70 0.008 70 / 0.40);
 }
 .light body {
-  background: radial-gradient(ellipse at top, color-mix(in oklch, var(--gold) 3%, var(--ink)) 0%, var(--ink) 60%);
+  background-color: var(--background);
+  background-image: radial-gradient(ellipse at top, color-mix(in oklch, var(--gold) 3%, var(--ink)) 0%, var(--ink) 60%);
   background-attachment: fixed;
 }
 .light section {
