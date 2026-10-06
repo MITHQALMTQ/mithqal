@@ -13,10 +13,10 @@
 import "./features.css";
 // ─── Shared Header (same as home) ──────────────────────────────────
 const MithqalLogo = () => (
-  <svg width="39" height="39" viewBox="0 0 39 39" fill="none" aria-hidden="true">
-    <path d="M19.5 3L34 11.5v16L19.5 36L5 27.5v-16L19.5 3Z" stroke="#E8B96F" strokeWidth="2" fill="none" />
-    <path d="M19.5 10L27 14.5v10L19.5 29L12 24.5v-10L19.5 10Z" fill="#E8B96F" />
-    <path d="M19.5 3V10M34 11.5L27 14.5M5 11.5L12 14.5M19.5 36V29" stroke="#E8B96F" strokeWidth="1.5" />
+  <svg width="32" height="32" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+    <path d="M16 2L29 9.5v13L16 30L3 22.5v-13L16 2Z" stroke="var(--gold)" strokeWidth="1.5" fill="none" />
+    <path d="M9 22V11L16 17L23 11V22" stroke="var(--gold)" strokeWidth="2" fill="none" strokeLinejoin="miter" />
+    <path d="M16 17V22" stroke="var(--gold)" strokeWidth="2" />
   </svg>
 );
 
