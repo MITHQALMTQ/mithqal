@@ -1,0 +1,62 @@
+Based on a pixel-by-pixel comparison of the **Reference Design (Image 1)** and the **Current Implementation (Image 2)**, here are the specific, actionable fixes required to achieve visual parity:
+
+### **1. Hero Section & Layout Structure**
+*   **Layout Shift:** The Reference uses a **side-by-side layout** (Text Left / Graphic Right) for the hero section. The Current implementation has collapsed this into a **stacked vertical layout** (Text Top / Graphic Bottom).
+    *   *Fix:* Restore the flex-row or grid layout. The text block should occupy ~50% width on the left, and the 3D "Control Plane" graphic should occupy ~50% on the right.
+*   **Hero Graphic Replacement:** The Reference features a complex 3D isometric graphic with a central glowing "M" logo, surrounded by floating cards labeled "Policy", "Settlement", "Finality", etc. The Current implementation displays a static 2D image of a golden cube with network nodes.
+    *   *Fix:* Replace the static cube image with the original 3D isometric composition and floating UI elements.
+*   **Background Depth:** The Reference has a subtle dark grid/tech background visible behind the hero content. The Current implementation has a flat black background.
+    *   *Fix:* Apply the dark tech-grid background image or CSS pattern to the hero section container.
+
+### **2. Typography & Text Content**
+*   **Headline Coloring:** In the Reference, the words "**Institutional Settlement.**" are colored in **Gold (#D4A853 approx)**. In the Current version, the entire headline is white.
+    *   *Fix:* Apply the gold color class specifically to the last two words of the H1 headline.
+*   **Truncation:** The body text in the Current implementation appears truncated or wrapped differently compared to the full sentences in the Reference.
+    *   *Fix:* Ensure the paragraph text matches the Reference exactly: *"MITHQAL brings settlement orchestration, policy control, finality, reconciliation, multi-rail interoperability and audit-ready evidence into one coordinated institutional control plane."*
+*   **Section Descriptions:** The descriptive text under "Built as One Control System" is significantly shortened in the Current version.
+    *   *Fix:* Restore the full text: *"Each MITHQAL capability is designed to operate as part r one coordinated institutional architecture rotiner than as an isolated product feature."*
+
+### **3. Core Capabilities (Card Grid)**
+*   **Card Density & Size:**
+    *   **Reference:** Displays **5 large, detailed cards** in a single row (or tight grid). Each card contains a large custom diagram/illustration (e.g., the pyramid for Policy, the timeline for Settlement).
+    *   **Current:** Displays **5 small, compact cards** that look like a mobile view or a condensed summary. The internal diagrams are missing or replaced by tiny icons.
+    *   *Fix:* Increase the card height and width. Reinstate the specific vector diagrams inside each card (Pyramid, Timeline, Icon Grid, Book Stack, Layer Stack).
+*   **Iconography:**
+    *   Card 05 (Evidence): The Reference shows a **Layer Stack Diagram** (Identity, Provenance, etc.). The Current version shows a generic **Lightning Bolt icon**.
+    *   *Fix:* Replace the lightning bolt with the layered evidence stack graphic.
+
+### **4. Orchestration Workflow (Timeline)**
+*   **Visual Style:**
+    *   **Reference:** Uses **large circular icons** with detailed line-art inside (Document, Checkmark, Shield, Target, Database, Nodes, Document). Connected by lines with arrows.
+    *   **Current:** Uses **small solid circles** with single letters inside (R, V, A, F, S, R, E).
+    *   *Fix:* Replace the letter-circles with the original outlined icon set. Increase the size of the nodes and ensure connecting arrows are visible.
+
+### **5. Missing Sections (Critical)**
+The Current implementation includes several sections that appear to be **extra** or reorganized, but relative to the Reference provided, the following sections visible in Image 2 should be checked against the design intent (assuming Image 1 is the strict target for this viewport):
+*   **"Control Before Execution" Section:** Present in Image 2, not in Image 1.
+*   **"Three-Layer Finality Control" Section:** Present in Image 2, not in Image 1.
+*   **"Multi-Rail Interoperability" (Detailed):** Present in Image 2, not in Image 1.
+*   **"Reconciliation" (Detailed):** Present in Image 2, not in Image 1.
+*   **"Evidence Is a Control Layer":** Present in Image 2, not in Image 1.
+*   **"Designed for Failure...":** Present in Image 2, not in Image 1.
+*   **"Architecture Overview" (Tree Diagram):** Present in Image 2, not in Image 1.
+*   **"Optional Settlement Primitive":** Present in Image 2, not in Image 1.
+*   **Footer CTA ("See the Architecture..."):** Present in Image 2, not in Image 1.
+
+### **6. Navigation Bar**
+*   **Button Style:** The "Launch App" button in the Reference has a **pill shape** with a distinct border and an arrow icon. The Current button looks like a standard, smaller, less styled button.
+    *   *Fix:* Update `border-radius` to 50px (pill), add padding (~12px 24px), and ensure the arrow icon `→` is present.
+*   **Active State:** The "Features" link in the nav has a gold underline in the Reference. Verify this is implemented in the Current version (it appears faint or missing).
+
+### **7. Color Palette Specifics**
+*   **Primary Gold:** Ensure the hex code matches. Reference looks like **#D4A853** or **#C5A059**. Current looks slightly more yellow or muted.
+*   **Backgrounds:** The Reference uses a very dark blue-black (`#0B0F19` approx). The Current implementation looks pure black (`#000000`).
+    *   *Fix:* Update background color to the deep navy/black from the reference.
+
+### **Summary of Priority Fixes**
+1.  **Layout:** Switch Hero section back to **Row (Side-by-Side)**.
+2.  **Assets:** Swap the **Cube Image** for the **Isometric Control Plane Graphic**.
+3.  **Components:** Expand **Core Capabilities Cards** to show diagrams, not just icons.
+4.  **Typography:** Color **"Institutional Settlement"** in Gold.
+5.  **Icons:** Swap **Workflow Letters** (R, V, A...) for **Circular Icons**.
+6.  **Content:** Restore **truncated text** to full sentences.

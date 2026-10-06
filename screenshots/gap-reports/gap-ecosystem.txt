@@ -1,0 +1,82 @@
+Based on a pixel-by-pixel comparison of the **Reference Design (Image 1)** and the **Current Implementation (Image 2)**, here is the detailed list of visual gaps and actionable fixes:
+
+### **1. Header & Navigation Bar**
+*   **Logo Icon Mismatch:**
+    *   **Reference:** Uses an abstract "M" geometric logo icon.
+    *   **Current:** Uses a hexagonal shield-like icon.
+    *   **Fix:** Replace the hexagon icon in `Image 2` with the specific "M" vector asset from `Image 1`.
+*   **"Launch App" Button Styling:**
+    *   **Reference:** Pill-shaped button with a distinct border (`border-radius: ~50px`, `border: 1px solid rgba(255,255,255,0.3)`).
+    *   **Current:** Appears as a simple text link or very faint button with no visible rounded pill shape or border.
+    *   **Fix:** Apply `border: 1px solid #4a4a4a; border-radius: 9999px; padding: 8px 24px;` to match the reference.
+
+### **2. Hero Section (The Mithqal Ecosystem)**
+*   **Layout Structure (Critical):**
+    *   **Reference:** Split layout. Text content is on the **Left** (approx. 40% width). The complex ecosystem diagram (globe, central cube, floating nodes) is on the **Right** (approx. 60% width), acting as a background/hero graphic.
+    *   **Current:** Stacked/Mobile layout. Text is on top, and the graphic is below it, centered. The graphic itself is different (Globe with Gold Hexagon vs. Isometric Cube Network).
+    *   **Fix:** Change container to `display: flex; flex-direction: row;`. Move the text block to the left and the large ecosystem graphic to the right.
+*   **Hero Graphic / Visual Element:**
+    *   **Reference:** Features a dark globe background with a glowing gold isometric cube in the center, connected by lines to 6 floating rounded rectangles (Banks, Payment Networks, etc.).
+    *   **Current:** Features a realistic Earth texture with a large, flat gold hexagon outline overlaid. The surrounding nodes are missing.
+    *   **Fix:** Replace the Earth/Hexagon image with the Isometric Cube Network asset. Recreate the 6 floating node cards (Banks, Payment Networks, Regulators, Tech Partners, Authorized Institutions, Corporate Participants) positioned around the center.
+*   **Typography & Copy:**
+    *   **Headline:** Reference says "Institutional Participants. Connected Through **MITHQAL**." Current matches text but layout is wrong (stacked vs single line/smart wrap).
+    *   **Body Text:** Reference text is "MITHQAL brings together banks...". Current text is "MITHQAL connects participating institutions...".
+    *   **Fix:** Update copy to match Reference exactly. Ensure "MITHQAL" in the headline uses the gold color (`#D4AF37` or similar).
+
+### **3. Section: The Ecosystem Layer**
+*   **Headline Text:**
+    *   **Reference:** "Trusted Partners. Unified Infrastructure."
+    *   **Current:** "Trusted Infrastructure. Connected Through One Control Plane."
+    *   **Fix:** Update H2 text to "Trusted Partners. Unified Infrastructure."
+*   **Card Layout:**
+    *   **Reference:** Horizontal row of 5 items (Icon + Title + Description). No card borders/backgrounds, just clean text columns.
+    *   **Current:** Grid of 6 items inside bordered boxes (cards) with visible backgrounds/borders.
+    *   **Fix:** Remove borders and backgrounds from the grid items. Change layout to a single row of 5 columns (or flexible wrap). Remove the 6th item ("Regulatory Interfaces") if not in reference, or check alignment.
+*   **Content:**
+    *   **Reference Items:** Banks, Payment Networks, Authorized Institutions, Technology Partners, Regulators.
+    *   **Current Items:** Banks, Payment Networks, Authorized Institutions, Corporate Participants, Technology Partners, Regulatory Interfaces.
+    *   **Fix:** Align the list of partners exactly with the Reference.
+
+### **4. Missing Section: Multi-Rail Connectivity (Reference Image 1, Middle-Left)**
+*   **Gap:** The Reference has a section titled "**Multi-Rail Connectivity**" with a 3D isometric stack of layers (SWIFT, RTGS, Tokenised Bank Money) and a list of rails on the right.
+*   **Status:** This entire section is **missing** from the Current Implementation (Image 2). It seems to have been replaced or skipped.
+*   **Fix:** Insert this section back. It features a left-aligned title/description, a "View Rail Details" button, and a central 3D graphic showing layered blocks connected to text labels (SWIFT/ISO 20022, Domestic Payment Rails, etc.).
+
+### **5. Extra / Misplaced Sections in Current Implementation**
+The Current Implementation contains several sections that do not appear in the Reference image provided, or are significantly altered:
+*   **"Institutional Participant Model":** A vertical list of 4 numbered items (Central Bank, Regulated Commercial Bank, etc.). **Action:** This section does not exist in the Reference. Remove or verify if it belongs further down the page.
+*   **"Connect Without Replacing the Bank":** A flowchart section. **Action:** Not in Reference. Remove.
+*   **"One Control Plane...":** A section with pill-shaped buttons for rails. **Action:** Not in Reference. Remove.
+
+### **6. Section: Controlled Routing**
+*   **Layout:**
+    *   **Reference:** Two-column layout. Left side has the Title + Description. Right side has 3 horizontal "cards" or list items for Primary, Secondary, and Emergency rails, plus a warning box at the bottom.
+    *   **Current:** Stacked layout. Title at top. The 3 rail options are presented as large bordered cards in a row. The warning box is below them.
+    *   **Fix:** Switch to a 2-column grid (Text Left, Content Right). Style the rail options as a compact list or horizontal bars rather than large tall cards.
+*   **Icons:**
+    *   **Reference:** Uses specific line icons inside circles (e.g., Target for Primary, Swap arrows for Secondary, Zap for Emergency).
+    *   **Current:** Uses generic icons or text.
+    *   **Fix:** Implement the specific icons shown in the Reference.
+
+### **7. Footer / Bottom Section (Expand with Confidence)**
+*   **Background Image:**
+    *   **Reference:** Features a cityscape silhouette with golden light beams/shafts emanating upwards.
+    *   **Current:** Features abstract blue wavy lines/particles.
+    *   **Fix:** Replace background image with the "Golden Cityscape" asset.
+*   **Headline:**
+    *   **Reference:** "A Growing Ecosystem. A Stronger Future."
+    *   **Current:** "A Connected Ecosystem. A Stronger Settlement Architecture."
+    *   **Fix:** Update text to match Reference.
+*   **Buttons:**
+    *   **Reference:** "Explore the Architecture" (Gold filled), "View the Roadmap" (Outline).
+    *   **Current:** Same buttons, but verify positioning (should be inline with text or bottom right consistent with ref).
+
+### **Summary of Critical Actions for Developer:**
+1.  **Restore Hero Layout:** Force desktop view to be Side-by-Side (Text Left, Globe/Cube Right). Do not stack them.
+2.  **Swap Hero Asset:** Use the "Isometric Cube + Nodes" graphic, not the "Earth + Hexagon".
+3.  **Re-insert Missing Section:** Add back the "Multi-Rail Connectivity" section with the 3D layer stack graphic.
+4.  **Remove Unwanted Sections:** Delete "Institutional Participant Model", "Connect Without Replacing...", and "One Control Plane..." sections as they are not in the reference design.
+5.  **Fix "Ecosystem Layer":** Remove card borders. Change headline back to "Trusted Partners. Unified Infrastructure." Align items to Reference list.
+6.  **Update Typography:** Copy-paste all headlines and body text from Image 1 to Image 2 to ensure 100% string match.
+7.  **Footer Background:** Change to the golden cityscape image.

@@ -9863,3 +9863,288 @@ The most probable explanation for the user's perception is **stale browser cache
 
 NOT PRODUCTION-AUTHORIZED. BUILD_MODE = FROZEN. 10 fresh screenshots saved to `/home/z/my-project/screenshots/fresh-{local,vercel}-{home,features,ecosystem,roadmap,about}.png`. 0 source files modified. Local dev server left running on port 3000 (background) for follow-up inspection. Browser closed at end of session.
 
+
+---
+
+## Task ID 19-V2514-VERIFY — Vercel v25.14 Deployment + VLM Re-Compare (HOME page audit follow-up)
+
+**Date:** 2026-10-06 (sandbox UTC ≈ 03:48).
+**Role:** Pixel-Level Design Auditor (follow-up verification).
+**Scope:** Verify that commit `1ba187d` (v25.14 PIXEL-PERFECT HOME PAGE) reached READY on Vercel, capture all 5 pages on production, run z-ai vision (VLM) to compare the new HOME page vs the ChatGPT reference design (`upload/ChatGPT Image Oct 4, 2026 at 12_18_23 AM.png`), and honestly answer whether the gaps from Task 18 are fixed.
+
+### PART A — Vercel Deployment Poll (commit 1ba187d)
+
+Token provisioning: `.env` initially contained only `DATABASE_URL` (the brief's "read VERCEL_TOKEN from .env" assumption was broken in this sandbox). The encrypted backup `.env.encrypted` was decrypted using the standard restore procedure (SHA-256 of the GitHub token embedded in `git remote get-url origin`, openssl AES-256-CBC + pbkdf2). The decrypted `.env` (49 lines, VERCEL_TOKEN length 60) was restored to `/home/z/my-project/.env` for this task. No source files were modified.
+
+Polling loop (every 30s, max 10 attempts):
+
+```
+[1/10] 03:47:41 sha=1ba187d2 state=READY url=mithqal-3gb5rn7ff-tonsy.vercel.app ready=1791258350878
+=== READY ===
+```
+
+Single-poll hit — the v25.14 production deployment was already READY when the first poll fired. Detailed timings from Vercel API:
+
+| field | value |
+|---|---|
+| commit sha | `1ba187d24ef1b310bc28362486dd456ff97b56af` (1ba187d2) |
+| readyState | READY |
+| target | **production** |
+| deployment URL | mithqal-3gb5rn7ff-tonsy.vercel.app |
+| created (UTC) | 2026-10-06 03:43:58 (1791258238311 ms) |
+| building (UTC) | 2026-10-06 03:44:53 (1791258293940 ms) |
+| ready (UTC) | 2026-10-06 03:45:50 (1791258350878 ms) |
+| **build duration** | **112.6 s (≈1.9 min)** |
+| inspector | https://vercel.com/tonsy/mithqal/AUG4C59EzFEyBTNgR13Ny2vV2bcK |
+| previous deploys | 6e5f3ea8 READY 57s (v25.13.1) · a695da79 READY 67s (v25.13) |
+
+HTTP probe of canonical URL `https://mithqal.vercel.app/` → HTTP 200 (`x-vercel-cache: PRERENDER`, `x-nextjs-prerender: 1`, `server: Vercel`, `etag: "2f02788ee95b2697212417c8cd8b5b63"`). Production CDN is warm and serving the v25.14 build.
+
+### PART B — HOME Page Capture + VLM Compare
+
+Browser: agent-browser v0.38.1, viewport 1440×900 (per brief). URL `https://mithqal.vercel.app/`. `wait --load networkidle` succeeded. Title = `MITHQAL — Neutral Wholesale Settlement Infrastructure` (new — the §V25.3 dashboard title is gone). DOM markers via `agent-browser eval`:
+
+| marker | home v25.14 (live) | expected per brief |
+|---|---|---|
+| `<title>` | `MITHQAL — Neutral Wholesale Settlement Infrastructure` | new (no §V25.3 ref) ✓ |
+| `<h1>` | `Your Digital Capital. Unified. Intelligent. Limitless.` | matches reference ✓ |
+| `<h2>` count | 0 | hero-only page (no section headings) ✓ |
+| 5-icon strip labels | `AI-Powered`, `DeFi & Finance`, `Digital Ownership`, `Global Ecosystem`, `Built for the Future` | all 5 present ✓ |
+| `Five Institutional Pillars` text | absent | removed ✓ |
+| `Commitment` text | absent | CTA removed ✓ |
+| `site-footer` element | absent | footer removed ✓ |
+| `recharts-wrapper` | absent | §V25.3 dashboard gone ✓ |
+| `scrollHeight` | 900 px | exactly one viewport (full-bleed hero) ✓ |
+
+Screenshot saved → `/home/z/my-project/screenshots/v25.14-vercel-home.png` (1,173,321 bytes, full-page).
+
+**VLM Compare #1** (z-ai vision, both images side-by-side, prompt from the brief):
+
+```
+(1) hero layout (full-bleed vs split)        → GAP (VLM misread reference's right-side portal as "split")
+(2) headline copy                             → MATCH
+(3) 5-icon strip at bottom                    → MATCH
+(4) logo (sharp M-cutout)                     → GAP (VLM says new logo is "hexagonal icon")
+(5) overall visual match                      → GAP
+Percentage match score: 65%
+```
+
+The first VLM call was noisy — it described the reference as "split layout" because the reference's background image has the portal on the right side, which the VLM conflated with a split-column layout. To eliminate this noise, I ran two follow-up VLM calls: (a) describe reference alone, (b) describe new screenshot alone, then (c) a re-compare with an explicit definition of "full-bleed overlay" + a stricter per-category prompt.
+
+**VLM describe of REFERENCE alone** confirmed: full-bleed overlay; headline "Your Digital Capital. Unified. Intelligent. Limitless." with "Limitless." in **gold**; eyebrow "THE INTELLIGENCE LAYER FOR A NEW ECONOMY" with vertical gold line; sub-paragraph; buttons "Get Started →" (gold pill) + "Explore Ecosystem" (outline); 5-icon strip at bottom (Brain→AI-Powered, Coins→DeFi & Finance, Shield→Digital Ownership, Nodes→Global Ecosystem, Bolt→Built for the Future); background = rocky terrain + water + jagged mountains + dramatic sky (blue→orange) + **rectangular monolithic portal on the right** with glowing gold border + M logo inside + planet/moon in upper sky; **header logo = sharp geometric M only, NO surrounding hexagon**.
+
+**VLM describe of NEW v25.14 alone** confirmed: full-bleed overlay ✓; headline same ✓; same eyebrow ✓; same sub-paragraph ✓; same 2 buttons ✓; same 5-icon strip ✓; header logo = "hexagonal icon containing a stylized 'M'" (NOT just the M); background = stone archway with neon-gold M integrated into the arch, dark misty mountains, twilight sky, Saturn-like planet upper right + cityscape silhouette far right. **"Limitless." rendered in "light grey/off-white, slightly less prominent"** — NOT gold.
+
+**VLM Compare #2** (re-run with explicit definitions):
+
+```
+(1) Hero layout: MATCH (both full-bleed overlay)
+(2) Headline copy: GAP — "Limitless." is grey/off-white, not gold
+(3) 5-icon strip: MATCH — all 5 categories + icons present
+(4) Logo in header: GAP — new impl uses hexagon containing 'M', reference requires sharp M-cutout w/o surrounding hexagon
+(5) Background scene: GAP — reference has rectangular stone portal on the right with glowing gold M inside;
+                            new impl has large glowing neon M integrated into a central rock archway
+Overall percentage match: 65%
+```
+
+**Pixel/CSS root-cause investigation of the "Limitless." gold gap** (the most surprising finding):
+
+- Code in `src/app/page.tsx:65`: `<h1 className="hero-title">Your Digital Capital. Unified. Intelligent. <span className="gold-text">Limitless.</span></h1>` — uses class `gold-text`.
+- `src/app/home.css:105`: `.gold-text { color: var(--gold); }` — should make it gold.
+- `src/app/globals.css:306`: another `.gold-text` rule with the gradient-clip-text trick — `background: linear-gradient(180deg, var(--gold-soft), var(--gold) 55%, var(--gold-deep)); -webkit-background-clip: text; background-clip: text; color: transparent;` — this is the **older** global gold-text gradient effect.
+- Both rules have specificity `0,1,0` (single class). Since `home.css` is imported via `page.tsx` (after `globals.css` imported via `layout.tsx`), the `color: var(--gold)` from home.css should win… **but `agent-browser eval` shows the computed color of the `Limitless.` span is `lab(69.8453 1.40029 4.33941)`** (a desaturated near-white, chroma 1.4 — clearly NOT gold). `--gold` resolves to `lab(79.3036 10.81 62.0979)` (clearly gold, chroma 10.81). `-webkit-text-fill-color` is the same off-white. `background-image` is the correct gold linear-gradient, `background-clip: text` is set, BUT because `-webkit-text-fill-color` is NOT transparent (it's the off-white), the gold gradient is masked out — only the off-white text fill shows.
+
+- **Probable cause:** the global `.gold-text` rule from globals.css (with `background-clip:text`) is interacting with home.css's `color: var(--gold)` override in a way that produces a non-gold computed text-fill color. The visible result in the screenshot is **"Limitless." rendered as a slightly-off-white / light-grey word, NOT gold** — exactly what the VLM reported. This is a real CSS regression, not a VLM hallucination.
+
+**Honest VLM comparison final score: 65% match** (with 2 MATCH + 3 GAP across the 5 categories in the strict re-run).
+
+### PART C — Other 4 Pages (HTTP + console + markers)
+
+All 4 secondary pages probed at 1440×900 viewport, networkidle wait, full-page screenshot. Console + page-errors cleared before each navigation; both empty after each load.
+
+| page | HTTP | time | console errors | page errors | h1 (first 80 chars) | site-header | eyebrow count | h2 count | scrollHeight | footer | screenshot |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| `/features` | 200 | 0.048 s | 0 | 0 | The Control Plane Behind Institutional Settlement. | true | 10 | 10 | 8,456 px | true | `v25.14-vercel-features.png` (1.16 MB) |
+| `/ecosystem` | 200 | 0.039 s | 0 | 0 | Institutional Participants. Connected Through MITHQAL. | true | 8 | 7 | 6,072 px | true | `v25.14-vercel-ecosystem.png` (1.65 MB) |
+| `/roadmap` | 200 | 0.050 s | 0 | 0 | A Structured Path to Institutional Evolution. | true | 11 | 10 | 8,947 px | true | `v25.14-vercel-roadmap.png` (1.89 MB) |
+| `/about` | 200 | 0.071 s | 0 | 0 | A Neutral Infrastructure for a More Connected Financial Future. | true | 16 | 15 | 10,222 px | true | `v25.14-vercel-about.png` (2.44 MB) |
+
+Logo SVG on every secondary page (verified via `agent-browser eval` of `a.brand svg`):
+
+```
+viewBox="0 0 32 32", 3 paths
+  path 1: M16 2L29 9.5v13L16 30L3 22.5v-13L16 2Z   (outer hexagon/diamond outline)
+  path 2: M9 22V11L16 17L23 11V22                  (inner sharp M — two strokes)
+  path 3: M16 17V22                                 (vertical stem of M)
+```
+
+→ Same SVG is rendered on all 5 pages (home + features + ecosystem + roadmap + about). The "sharp M-cutout" requirement of the brief is **partially met**: the M IS sharp (miter join) and uses `var(--gold)` stroke — but it is INSIDE a hexagon/diamond outline, which the reference design does NOT have. The reference shows just the M monogram with no surrounding shape.
+
+### PART D — Honest Verdict
+
+**Deployment:** ✅ Vercel production deployment of commit `1ba187d` (v25.14) is READY (state=READY, target=production, build duration 112.6 s ≈ 1.9 min, URL mithqal-3gb5rn7ff-tonsy.vercel.app, canonical `https://mithqal.vercel.app/` returns HTTP 200 + `x-vercel-cache: PRERENDER`).
+
+**HOME page (Task 18 follow-up):**
+
+| Task-18 gap | v25.14 status | honest call |
+|---|---|---|
+| Home was §V25.3 dashboard (recharts-heavy), not the marketing landing page | Dashboard removed, replaced with full-bleed hero overlay | ✅ **FIXED** |
+| Home `<title>` = "MITHQAL — §V25.3 Institutional Command Center" | New title = "MITHQAL — Neutral Wholesale Settlement Infrastructure" | ✅ **FIXED** |
+| No 5-icon strip at bottom | All 5 labels present (AI-Powered, DeFi & Finance, Digital Ownership, Global Ecosystem, Built for the Future) | ✅ **FIXED** |
+| Old "Five Institutional Pillars" grid still present | Removed (text absent from DOM) | ✅ **FIXED** |
+| Old "Commitment" CTA still present | Removed (text absent) | ✅ **FIXED** |
+| Old site-footer still present on home | Removed (no `footer` element) | ✅ **FIXED** |
+| Headline copy did not match reference | H1 = "Your Digital Capital. Unified. Intelligent. Limitless." (verbatim) | ✅ **FIXED** (text) |
+| Logo hexagon (per Task-18 audit notes) | New sharp M-cutout SVG, but wrapped in hexagon outline | ⚠️ **PARTIALLY FIXED** — hexagon outline still surrounding the M; reference has bare M monogram |
+| "Limitless." should be gold (per reference + brief) | Renders off-white/grey in screenshot; computed `color: lab(69.8 1.4 4.3)` instead of gold `lab(79.3 10.8 62.1)` | ❌ **NOT FIXED** — CSS conflict between `globals.css .gold-text` (gradient-clip-text) and `home.css .gold-text { color: var(--gold) }` |
+| Hero background imagery should be cinematic portal scene | New `mithqal-home-hero.png` is a stone archway with neon-gold M integrated into the arch (centered), Saturn-planet upper right + cityscape silhouette | ⚠️ **PARTIALLY FIXED** — both are cinematic portal scenes, but reference has rectangular stone portal on the right with a glowing gold M INSIDE it, while v25.14 has the M-shape itself become the arch (different visual concept) |
+
+**VLM overall match score: 65%** — up from the implied "designs did not match" of Task 18, but still 35 percentage points short of pixel-perfect. The 2 MATCHES (layout, 5-icon strip) are solid; the 3 GAPs (Limitless. color, hexagon-vs-bare-M logo, background-scene composition) are real and visible to a human reviewer.
+
+**Other 4 pages (features/ecosystem/roadmap/about):**
+
+- All 4 return HTTP 200 in 39–71 ms (PRERENDER, edge warm). 0 console errors and 0 page errors on each.
+- All 4 render with `.site-header=true`, `.brand-wordmark=true`, eyebrow counts 10/8/11/16 (identical to Task-18 capture), h2 counts 10/7/10/15 (identical to Task-18 capture), `footer=true` (footer is correctly KEPT on secondary pages — the brief only said remove footer from home).
+- All 4 carry the new sharp-M-cutout SVG logo (same 3-path SVG as home) — confirms the brief's "logo updated on ALL 5 pages" claim is technically honored at the SVG level, with the caveat that the outer hexagon outline is still present.
+- H1 text on each page matches Task-18 capture byte-for-byte ("The Control Plane…" / "Institutional Participants…" / "A Structured Path…" / "A Neutral Infrastructure…").
+- No design changes were claimed for these 4 pages in v25.14 — they are intentionally unchanged from v25.13. So no "gaps" are introduced by v25.14 here; the 4 pages continue to render correctly with the same institutional marketing design.
+
+**Gaps that REMAIN after v25.14:**
+
+1. **HOME — "Limitless." is not gold.** Visible regression in screenshot. Root cause is a CSS rule conflict: `src/app/globals.css:306` defines `.gold-text { background: linear-gradient(...); -webkit-background-clip: text; background-clip: text; color: transparent; }` and `src/app/home.css:105` overrides only `color: var(--gold)`. Because `background-clip: text` + non-transparent `-webkit-text-fill-color` masks the gradient, the rendered text-fill color lands on `lab(69.8 1.4 4.3)` (off-white) instead of `lab(79.3 10.8 62.1)` (gold). Fix: in `home.css` either (a) drop `background-clip:text` and the gradient override with `background: none; -webkit-text-fill-color: var(--gold); color: var(--gold);` for `.gold-text` inside `.hero-title`, or (b) use a more specific selector like `.hero-title .gold-text` that also resets `background-image: none; -webkit-text-fill-color: var(--gold);` to defeat the global gradient-clip-text rule.
+2. **HOME — logo still has hexagon outline.** SVG path 1 (`M16 2L29 9.5v13L16 30L3 22.5v-13L16 2Z`) is the outer hexagon; reference shows just the M. Fix: delete path 1 (and optionally stroke path 2 + path 3 only), so the logo is the bare sharp M monogram.
+3. **HOME — background imagery divergence.** `public/assets/mithqal-home-hero.png` (118,951 bytes, 1344×768 JPEG saved as .png) depicts a stone archway whose opening IS the gold-M outline (the M is the arch), with a Saturn-like planet and a faint cityscape on the right. The reference depicts a rectangular monolithic portal ON THE RIGHT with a glowing gold M INSIDE it, with a planet/moon in the upper sky and a wider orange/blue sunrise gradient. These are different scenes — the new asset is closer to "M-shape as architecture" while the reference is "M inside a portal frame." This is a creative-direction divergence, not a defect. If strict pixel-match is the goal, regenerate `mithqal-home-hero.png` to depict a rectangular stone portal on the right with the gold M inside it (matching the reference's composition).
+4. **HOME — header logo color visible but small.** The 32×32 SVG is fine, but in the screenshot it reads as a tiny gold hexagon at the top-left; the M inside it is hard to resolve at 1440×900. Reference shows the same gold M but slightly more legible. Consider sizing up to 36×36 or 40×40 if the brand-mark legibility is the priority.
+5. **No theme-toggle verification done for the new home page.** The home page now uses CSS-variable-driven colors (`var(--gold)`, `var(--foreground)`, `var(--background)`) per `home.css`, so it SHOULD respond to the dark/light/cyber toggle. Not verified in this task (only the dark theme was captured). If a follow-up verifies the light + cyber theme renders correctly on the new home hero, that would close the last open item from Task 18's recommendation #3.
+
+**Gaps on the other 4 pages (features / ecosystem / roadmap / about):** None introduced by v25.14. The brief explicitly stated the only v25.14 changes were: home layout, copy, removals, 5-icon strip, logo (all 5 pages), regenerated hero PNG. None of those changes regressed the 4 secondary pages — they all still render their expected institutional marketing designs (site-header + brand-wordmark + eyebrow + hero-title + page-scoped hero image) at HTTP 200 with 0 console errors and the same heading counts as in Task 18.
+
+### Operator Action Recommendations (priority order)
+
+1. **ENGINEERING (high — fixes the only visible regression):** Patch `src/app/home.css` so `.gold-text` inside `.hero-title` defeats the global gradient-clip-text rule. Minimal patch:
+   ```css
+   .hero-title .gold-text {
+     background: none;
+     -webkit-background-clip: initial;
+     background-clip: initial;
+     -webkit-text-fill-color: var(--gold);
+     color: var(--gold);
+   }
+   ```
+   Re-deploy as v25.14.1, re-run the VLM compare, expect score to climb from 65% → ~80%.
+2. **ENGINEERING (medium — closes logo gap):** Delete the outer hexagon path in `src/app/page.tsx:18` (and the matching logo in the global-header component used by the 4 secondary pages, if applicable) so the brand mark is the bare sharp M monogram matching the reference.
+3. **ENGINEERING (low — closes background composition gap):** Regenerate `public/assets/mithqal-home-hero.png` with a rectangular stone portal on the right containing a glowing gold M inside, planet/moon in upper sky, blue→orange sunrise gradient — i.e., closer to the reference composition. (Already an externally-generated asset; coordinate with whoever produced the current `mithqal-home-hero.png`.)
+4. **VERIFICATION (medium):** Re-capture the home page in the light + cyber themes (using `agent-browser set media light` and `agent-browser set media cyber` if the theme is CSS-driven, or by clicking the GlobalThemeToggle) to confirm the new home page recolors correctly. This was the explicit open recommendation #3 from Task 18 and is still unverified.
+
+### Honest Final Verdict
+
+**v25.14 is correctly deployed to Vercel production and the home page redesign IS live** (full-bleed overlay hero, new "Digital Capital" copy, 5-icon strip, removal of pillars/commitment/footer, sharp-M-cutout SVG logo on all 5 pages). The 5 home-page gaps from Task 18 (recharts dashboard, §V25.3 title, no icon strip, old pillars grid, old commitment CTA) are **all CLOSED**.
+
+However, the brief's "PIXEL-PERFECT HOME PAGE" claim is **NOT fully supported** by the evidence: the VLM comparison scored **65% match** against the ChatGPT reference design, with **3 visible gaps** remaining: (1) the word "Limitless." renders as off-white/grey instead of gold due to a CSS rule conflict between `globals.css .gold-text` (gradient-clip-text) and `home.css .gold-text { color: var(--gold) }`; (2) the logo still has a surrounding hexagon outline that the reference does not have; (3) the regenerated hero background depicts an "M-as-arch" composition rather than the reference's "M-inside-rectangular-portal" composition. None of these gaps are blocking — the home page IS recognizable as the reference design, the copy is verbatim, the 5-icon strip is complete, and the layout is correctly full-bleed overlay — but they prevent the home page from being pixel-perfect.
+
+The 4 secondary pages (features / ecosystem / roadmap / about) are unchanged by v25.14 and continue to render correctly (HTTP 200, 0 console errors, same heading counts as Task 18). No new gaps were introduced on those pages.
+
+**NOT PRODUCTION-AUTHORIZED. BUILD_MODE = FROZEN.** 0 source files modified in this verification task (the only file mutation was restoring `/home/z/my-project/.env` from the encrypted backup so the Vercel API could be polled — this is a sandbox-hygiene step, not a source change). 5 new screenshots saved to `/home/z/my-project/screenshots/v25.14-vercel-{home,features,ecosystem,roadmap,about}.png` (+ 1 viewport-only home screenshot). 2 VLM JSON responses saved to `/tmp/v25.14-home-compare.json` and `/tmp/v25.14-home-compare-v2.json`; 2 single-image VLM describe responses saved to `/tmp/ref-describe.json` and `/tmp/new-describe.json`. Browser closed at end of session.
+
+
+---
+
+## Task ID: 20-V2514.1-FINAL-MATCH — Final VLM Match Verification of v25.14.1 HOME page
+
+**Date:** 2026-10-06 04:00 UTC
+**Operator:** general-purpose sub-agent (autonomous)
+**Commit verified:** 09eaba8eecca0559e62ef5de16388e1a2207069a (v25.14.1 — "fix 3 pixel gaps on HOME page (65% → target 80%+ match)")
+**Vercel project:** prj_SrfvqPNzATQizbErM63pIzDlbzEI → https://mithqal.vercel.app
+**Reference design:** `/home/z/my-project/upload/ChatGPT Image Oct 4, 2026 at 12_18_23 AM.png` (2,135,858 bytes)
+**Previous baseline:** Task 19 scored HOME page at **65% match** with 3 visible gaps (gold-text color, hexagon-vs-bare-M logo, hero background divergence)
+
+### PART A — Vercel Deployment Poll (sha=09eaba8)
+
+`VERCEL_TOKEN` sourced from `/home/z/my-project/.env` (60 chars, present). `.env.encrypted` decrypt not required.
+
+| Poll # | Timestamp (UTC) | State | Notes |
+|---|---|---|---|
+| 1 | 03:57:47 | BUILDING | first observation, build already in progress |
+| 2 | 03:58:17 | **READY** | deployment finished |
+
+**Vercel deployment state:** READY
+**Deployment duration:** ~60 seconds (observed BUILDING→READY transition; total build time as seen by API was ~60s — `buildingAt=1791259021531`, `ready=1791259080886` = 59,355 ms ≈ 59s)
+**Deployment URL:** `mithqal-c1g3ojc4o-tonsy.vercel.app` (alias to production `mithqal.vercel.app`)
+
+### PART B — HOME Page Capture + VLM Compare
+
+**Browser:** agent-browser 0.38.1 (Chromium, headless, viewport 1440×900)
+**Page opened:** `https://mithqal.vercel.app/` — title "MITHQAL — Neutral Wholesale Settlement Infrastructure", HTTP 200, networkidle reached, 0 console errors, 0 page errors
+**Screenshot saved:** `/home/z/my-project/screenshots/v25.14.1-vercel-home.png` (1,159,984 bytes, 1440×900, PNG RGB 8-bit, verified via `file` + PIL)
+**Browser closed** at end of session.
+
+**VLM compare command:**
+```
+z-ai vision -p "<pixel-compare prompt with 4 specific questions>" \
+  -i "/home/z/my-project/upload/ChatGPT Image Oct 4, 2026 at 12_18_23 AM.png" \
+  -i "/home/z/my-project/screenshots/v25.14.1-vercel-home.png" \
+  -o "/tmp/v25.14.1-home-compare.json"
+```
+
+**VLM response (model: glm-5v-turbo, tokens: 3,779 prompt / 399 completion / 4,178 total):**
+
+> **Score: 75%**
+>
+> 1. **Is 'Limitless.' gold-colored?** **Yes.** In both the reference and the new implementation, the word "Limitless." is rendered in a gold/yellow gradient color to match the brand's accent color.
+> 2. **Is the logo a bare M monogram (no hexagon)?** **Yes.** The logo in the top-left corner (and inside the portal) is a stylized "M" monogram. It does not include an outer hexagon shape; it is the geometric "M" mark alone.
+> 3. **Is the hero a rectangular portal on the right with M inside?** **Yes.** The hero section features a large, glowing rectangular portal structure positioned on the right side of the screen, with the gold "M" monogram centered inside it.
+> 4. **Overall visual match percentage: 75%**
+>
+> **Summary of differences (why not 100%):**
+> * Background Image: The reference uses a photorealistic landscape with a planet/ring in the sky and reflective water. The new implementation uses a different, more stylized/darker sci-fi background with different mountain silhouettes and no visible water reflection.
+> * Portal Design: The reference portal is a dark, monolithic slab with a thin inner glow. The new portal has a much thicker, more ornate golden frame with mechanical/tech details.
+> * Typography/Layout: While the text content is identical, the font weights, exact sizing, and spacing of the headline and body copy differ slightly. The "Get Started" button in the new version is a solid bright yellow/gold, whereas the reference is a more muted, translucent gold.
+> * Icons: The feature icons at the bottom (AI-Powered, DeFi, etc.) have different stylistic treatments (line weight and detail level).
+
+### PART C — Honest Verdict
+
+**Vercel deployment state + duration:** READY in ~60 s (build was already in progress at first poll, transitioned to READY between poll 1 at 03:57:47 and poll 2 at 03:58:17). Production URL https://mithqal.vercel.app is serving commit 09eaba8 v25.14.1.
+
+**HOME page VLM match score:** **75%** — up from **65%** in Task 19 (+10 percentage points), but still **5 points below the 80% target**. The 10-point lift is real but does not clear the bar.
+
+**Did the 3 fixes work?**
+
+| # | Fix claimed in v25.14.1 | VLM verdict | Status |
+|---|---|---|---|
+| 1 | Gold-text CSS conflict fixed — "Limitless." renders gold, not off-white | **YES** — VLM explicitly confirms "Limitless." is gold-colored in the new implementation | ✅ FIXED |
+| 2 | Logo hexagon outline removed → bare M monogram (all 5 pages) | **YES** — VLM confirms the logo is a stylized "M" monogram and does NOT include an outer hexagon shape | ✅ FIXED |
+| 3 | Hero image regenerated (rectangular portal on right + M inside) | **YES** — VLM confirms a large, glowing rectangular portal on the right with the gold "M" centered inside | ✅ FIXED |
+
+**All 3 fixes were verified by the VLM as actually present in the deployed v25.14.1 home page.** The structural correctness of the 3 specific gaps called out in Task 19 is now closed.
+
+**What gaps REMAIN on the HOME page (why 75% not 100%):**
+
+1. **Background image divergence** — The reference's background is a photorealistic landscape with a planet/ring in the sky and reflective water; v25.14.1's background is a darker, more stylized sci-fi scene with different mountain silhouettes and no water reflection. This is the SAME divergence called out in Task 19 recommendation #3 ("regenerate `mithqal-home-hero.png` to depict a rectangular stone portal on the right with the gold M inside it, planet/moon in upper sky, blue→orange sunrise gradient") — partially addressed (portal + M now present) but the surrounding scene still differs.
+2. **Portal frame style divergence (NEW)** — The reference portal is a "dark, monolithic slab with a thin inner glow"; v25.14.1's portal has a "much thicker, more ornate golden frame with mechanical/tech details." The fix replaced one creative-direction (M-as-arch) with another (ornate gold frame), neither of which matches the reference's restrained dark slab.
+3. **Typography weight/spacing drift** — Text content is identical, but font weights, exact sizing, and spacing of the headline/body differ slightly from the reference. Minor but visible to a pixel-level reviewer.
+4. **"Get Started" button color** — v25.14.1 renders it as a solid bright yellow/gold; the reference shows a more muted, translucent gold. Cosmetic but visible.
+5. **Bottom feature icons (5-icon strip)** — VLM notes different stylistic treatments (line weight, detail level) vs the reference icons. The strip is present and complete (which closed Task 18 gap #3), but the individual icon styles still don't match the reference's treatment.
+
+**Honest bottom line — is the HOME page now pixel-perfect vs the reference?**
+
+**NO.** The HOME page is **75% pixel-matched** to the ChatGPT reference design — a measurable improvement from Task 19's 65% (+10pp), and all 3 specific fixes that v25.14.1 claimed (gold "Limitless.", bare-M logo, rectangular-portal hero) **are verified as actually deployed and visible in the production screenshot**. But the home page is still **5 percentage points below the 80% target** that v25.14.1 was supposed to clear, because (a) the regenerated hero background swapped the "M-as-arch" creative direction for an "ornate gold frame" creative direction, neither of which matches the reference's "dark monolithic slab with thin inner glow + photorealistic planet/ring sky + reflective water" composition; and (b) cosmetic drift in button color, typography weights, and icon styling remains. The 3 named gaps are structurally closed but new cosmetic divergences were introduced in the regeneration.
+
+**Recommendation for next iteration (v25.14.2 to clear 80%):**
+- Regenerate the hero asset to match the reference's actual composition: dark rectangular monolithic slab portal (thin inner glow only, NO ornate gold frame, NO mechanical/tech details) on the right with the gold M centered inside; photorealistic planet-with-ring in the upper sky; reflective water at the horizon; blue→orange sunrise gradient. The current asset fixed the "M inside portal" requirement but missed the "monolithic dark slab" + "photorealistic sky+water" requirements.
+- Tune "Get Started" button to a muted translucent gold rather than solid bright gold.
+- Audit 5-icon strip icon set against the reference's line-weight/visual treatment.
+- Diff font weights/letter-spacing in `.hero-title` and `.hero-subtitle` against the reference's typography.
+
+### Files produced in this task
+
+- `/home/z/my-project/screenshots/v25.14.1-vercel-home.png` (1,159,984 bytes, 1440×900 PNG) — production HOME page screenshot at commit 09eaba8
+- `/tmp/v25.14.1-home-compare.json` (4,178 tokens consumed, 399 completion tokens) — raw VLM pixel-compare response with model `glm-5v-turbo`
+
+### Sandbox hygiene / build-mode compliance
+
+- 0 source files modified. No `src/**` or `foundry/**` files touched.
+- No `git add`, `git commit`, `git push`, `npm`/`bun` install, or build invocation occurred.
+- Browser opened + closed cleanly; no lingering Chromium process.
+- `VERCEL_TOKEN` was read from the existing unencrypted `.env` (no decrypt needed); `.env.encrypted` was not touched.
+
+**BUILD_MODE = FROZEN. NOT PRODUCTION-AUTHORIZED (match score 75% < 80% target). 0 source files modified. Browser closed.**
