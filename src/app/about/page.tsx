@@ -11,10 +11,9 @@
 import "./about.css";
 
 const MithqalLogo = () => (
-  <svg width="32" height="32" viewBox="0 0 32 32" fill="none" aria-hidden="true">
-    <path d="M16 2L29 9.5v13L16 30L3 22.5v-13L16 2Z" stroke="var(--gold)" strokeWidth="1.5" fill="none" />
-    <path d="M9 22V11L16 17L23 11V22" stroke="var(--gold)" strokeWidth="2" fill="none" strokeLinejoin="miter" />
-    <path d="M16 17V22" stroke="var(--gold)" strokeWidth="2" />
+  <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+    <path d="M4 24V6L14 16L24 6V24" stroke="var(--gold)" strokeWidth="2.5" fill="none" strokeLinejoin="miter" strokeLinecap="square" />
+    <path d="M14 16V24" stroke="var(--gold)" strokeWidth="2.5" />
   </svg>
 );
 const NAV_ITEMS = ["Home", "Features", "Ecosystem", "Roadmap", "About"];

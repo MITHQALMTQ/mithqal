@@ -102,7 +102,13 @@ h1 { margin: 0; }
   font-size: clamp(40px, 5.5vw, 68px); font-weight: 600; line-height: 1.05;
   letter-spacing: -0.03em; color: var(--foreground); max-width: 900px;
 }
-.gold-text { color: var(--gold); }
+.gold-text {
+  background: none !important;
+  -webkit-background-clip: initial !important;
+  background-clip: initial !important;
+  -webkit-text-fill-color: var(--gold) !important;
+  color: var(--gold) !important;
+}
 .hero-sub {
   color: color-mix(in srgb, var(--foreground) 78%, transparent);
   font-size: 18px; line-height: 1.6; max-width: 580px; margin-top: 24px;
