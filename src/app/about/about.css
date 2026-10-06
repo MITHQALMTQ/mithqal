@@ -31,7 +31,7 @@
         .btn-secondary:hover { transform: translateY(-2px); background: color-mix(in srgb, var(--gold) 06%, transparent); }
 
         .hero-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center; min-height: calc(100vh - 78px); padding-top: 78px; }
-        .hero-visual { position: relative; width: 100%; min-min-height: 600px; background: url("/assets/mithqal-about-hero.png") center center / contain no-repeat; opacity: 1; }
+        .hero-visual { position: relative; width: 100%; min-height: 600px; background: url("/assets/mithqal-about-hero.png") center center / cover no-repeat; opacity: 1; }
 
         .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: start; }
 
