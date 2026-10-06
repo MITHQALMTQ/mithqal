@@ -123,9 +123,12 @@ h1 { margin: 0; }
   cursor: pointer; transition: all 180ms ease; text-decoration: none;
 }
 .btn-primary {
-  background: var(--gold); color: var(--background); border: 1px solid var(--gold);
+  background: color-mix(in srgb, var(--gold) 75%, transparent);
+  color: var(--background); border: 1px solid color-mix(in srgb, var(--gold) 60%, transparent);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
 }
 .btn-primary:hover {
+  background: color-mix(in srgb, var(--gold) 85%, transparent);
   transform: translateY(-2px);
   box-shadow: 0 12px 36px color-mix(in srgb, var(--gold) 30%, transparent);
 }
