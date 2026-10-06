@@ -4,11 +4,14 @@
  *
  * HOME = Vision | FEATURES = Control System | ECOSYSTEM = Network | ROADMAP = Controlled Evolution
  *
- * BUILD_MODE = FROZEN — no backend changes.
- * productionAuthorized = false | institutionallyValidated = false
+ * Rewrite (Task 22-ROADMAP-REWRITE): aligned to reference design (image 5).
+ * Split hero + horizontal 5-step timeline + platform architecture (3-col) + CTA banner.
+ * Removed 9 legacy sections (stages grid, pilot flow, gates grid, status panel,
+ * critical path, BTV, foundation grid, validation flow, future grid, MTQ box).
  */
 
 import "./roadmap.css";
+import type { ReactNode } from "react";
 
 const MithqalLogo = () => (
   <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
@@ -16,78 +19,136 @@ const MithqalLogo = () => (
     <path d="M14 16V24" stroke="var(--gold)" strokeWidth="2.5" />
   </svg>
 );
+
 const NAV_ITEMS = ["Home", "Features", "Ecosystem", "Roadmap", "About"];
-const NAV_HREFS = ["/", "/features", "/ecosystem", "/roadmap", "/#about"];
+const NAV_HREFS = ["/", "/features", "/ecosystem", "/roadmap", "/about"];
 
-const STAGES = [
-  { num: "01", title: "FOUNDATION", status: "FOUNDATIONAL", desc: "Core architecture, security, control framework, policy, finality, reconciliation and evidence model.", items: ["Core Architecture", "Security", "Control Framework", "Policy", "Finality", "Reconciliation", "Evidence Model"] },
-  { num: "02", title: "CONTROLLED TESTING", status: "CONTROLLED TESTING", desc: "Test the architecture against adversarial conditions and constitutional invariants.", items: ["Adversarial Tests", "Failure Scenarios", "Finality Tests", "Reconciliation Tests", "Contradiction Controls"] },
-  { num: "03", title: "LEGAL & INSTITUTIONAL VALIDATION", status: "EXTERNAL VALIDATION", desc: "Obtain independent legal, regulatory and institutional evidence.", items: ["Legal Classification", "Licensing", "Bank Contract", "Liability Framework", "Jurisdictional Validation"] },
-  { num: "04", title: "CONTROLLED PILOT", status: "GATED", desc: "Advance only after upstream gates and agreements are satisfied.", items: ["Authorized Sponsor", "Single Jurisdiction", "Defined Corridor", "Controlled Environment", "Approved Participant Scope"] },
-  { num: "05", title: "MULTI-RAIL EXPANSION", status: "FUTURE / CONDITIONAL", desc: "Expand only after evidence-backed progression through earlier gates.", items: ["Additional Rails", "Institutional Interoperability", "Routing", "Resilience", "Operational Scale"] },
-  { num: "06", title: "INSTITUTIONAL SCALE", status: "FUTURE / CONDITIONAL", desc: "Long-term expansion remains conditional on all applicable approvals.", items: ["Multiple Institutions", "Multiple Jurisdictions", "Broader Interoperability", "Operational Maturity"] },
+type TimelineStep = { num: string; title: string; desc: string; icon: ReactNode };
+
+const TIMELINE_STEPS: TimelineStep[] = [
+  {
+    num: "01",
+    title: "Foundation",
+    desc: "Core architecture, security, control framework and evidence model — the base layer beneath every subsequent stage.",
+    icon: (
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 2L2 7l10 5 10-5-10-5z" />
+        <path d="M2 17l10 5 10-5" />
+        <path d="M2 12l10 5 10-5" />
+      </svg>
+    ),
+  },
+  {
+    num: "02",
+    title: "Pilots",
+    desc: "Limited participants, narrow jurisdictions and defined corridors — proof under live settlement conditions.",
+    icon: (
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M3 21h18M3 10h18M5 6l7-4 7 4M4 10v11M20 10v11M8 14v3M12 14v3M16 14v3" />
+      </svg>
+    ),
+  },
+  {
+    num: "03",
+    title: "Expansion",
+    desc: "Additional rails, broader interoperability and routing — only after pilot evidence supports the next layer.",
+    icon: (
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="5" r="2" />
+        <circle cx="5" cy="19" r="2" />
+        <circle cx="19" cy="19" r="2" />
+        <path d="M12 7v4M7 17l3-4M17 17l-3-4" />
+      </svg>
+    ),
+  },
+  {
+    num: "04",
+    title: "Scale",
+    desc: "Operational maturity across multiple institutions and jurisdictions — secured by adversarial and assurance gates.",
+    icon: (
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 2L4 6v6c0 5 3.5 9 8 10 4.5-1 8-5 8-10V6l-8-4z" />
+      </svg>
+    ),
+  },
+  {
+    num: "05",
+    title: "Global Readiness",
+    desc: "Neutral wholesale settlement infrastructure available to authorized institutions across jurisdictions.",
+    icon: (
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="10" />
+        <path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20" />
+      </svg>
+    ),
+  },
 ];
 
-const PILOTS = [
-  { num: "0", title: "Legal + Architecture Validation", desc: "Validate architecture, boundaries, legal classification and institutional requirements before real-value movement." },
-  { num: "1", title: "One Regulated Institution", desc: "A narrowly scoped institutional flow through one regulated sponsor, one jurisdiction and one approved corridor." },
-  { num: "2", title: "Two-Bank / Two-Jurisdiction Settlement", desc: "Expand only after required evidence from the initial controlled pilot supports broader cross-border testing." },
-  { num: "3", title: "Multi-Rail Interoperability", desc: "Test additional approved settlement rails, routing and controlled fallback behavior." },
-  { num: "4", title: "Institutional Scale", desc: "Expand to multi-bank and multi-jurisdiction institutional interoperability after applicable validation and governance gates." },
+const PILLARS = ["Security", "Compliance", "Interoperability", "Auditability", "Neutrality"];
+
+const ARCH_LEFT_GROUPS: { label: string; items: string[] }[] = [
+  { label: "Participants", items: ["Regulated institutions", "Bank sponsors", "Auditors"] },
+  { label: "Rails", items: ["Multi-rail routing", "Fallback corridors", "Settlement gateways"] },
+  { label: "Settlement", items: ["Three-book separation", "Finality controls", "Reconciliation"] },
 ];
 
-const GATES = [
-  { id: "G01", title: "Legal Classification" },
-  { id: "G02", title: "Licensing" },
-  { id: "G03", title: "Bank Contract" },
-  { id: "G04", title: "Liability / Resolution" },
-  { id: "G05", title: "Bank Technical Certification" },
-  { id: "G06", title: "Legal Backing" },
-  { id: "G07", title: "Protected Backing" },
-  { id: "G08", title: "Three-Book Operations" },
-  { id: "G09", title: "Technical + Legal Finality" },
-  { id: "G10", title: "AML / Sanctions" },
-  { id: "G11", title: "Live Reconciliation" },
-  { id: "G12", title: "Independent Assurance" },
-  { id: "G13", title: "Controlled Pilot" },
-  { id: "G14", title: "Accounting / Prudential" },
-  { id: "G15", title: "Cyber Assurance" },
-  { id: "G16", title: "Disaster Recovery" },
-  { id: "G17", title: "Commercial TCO" },
-  { id: "G18", title: "Competitive Validation" },
-  { id: "G19", title: "Wind-down" },
-  { id: "G20", title: "Production Governance" },
-];
-
-const FOUNDATION_ITEMS = ["Constitution", "Policy Registry", "Finality", "Three-Book Separation", "Protected Backing", "Reconciliation", "Bank Gateway", "Multi-Rail Routing", "Security", "Continuity"];
-const VALIDATION_DOMAINS = ["Legal", "Regulatory", "Bank", "Security", "Assurance", "Operations"];
-const FUTURE_ITEMS = ["New Jurisdictions", "New Rails", "New Institutional Participants", "Increased Operational Scale", "Advanced Interoperability"];
-const CRITICAL_PATH = [["G01"], ["G02","G03","G04"], ["G05"], ["G06","G07","G08"], ["G09","G10","G11"], ["G12"], ["G13"], ["G14–G20"]];
+const IsometricArch = () => (
+  <svg viewBox="0 0 320 280" width="100%" height="auto" aria-hidden="true" role="presentation">
+    {/* Layer 3 (top) */}
+    <polygon points="160,28 70,72 160,116 250,72" fill="color-mix(in srgb, var(--gold) 8%, transparent)" stroke="var(--gold)" strokeWidth="1" />
+    <polygon points="160,28 70,72 70,92 160,136 250,92 250,72" fill="color-mix(in srgb, var(--gold) 4%, transparent)" stroke="color-mix(in srgb, var(--gold) 60%, transparent)" strokeWidth="1" />
+    {/* Layer 2 (mid) */}
+    <polygon points="160,96 56,148 160,200 264,148" fill="color-mix(in srgb, var(--gold) 6%, transparent)" stroke="var(--gold)" strokeWidth="1" />
+    <polygon points="160,96 56,148 56,172 160,224 264,172 264,148" fill="color-mix(in srgb, var(--gold) 3%, transparent)" stroke="color-mix(in srgb, var(--gold) 50%, transparent)" strokeWidth="1" />
+    {/* Layer 1 (bottom) */}
+    <polygon points="160,168 44,226 160,284 276,226" fill="color-mix(in srgb, var(--gold) 5%, transparent)" stroke="var(--gold)" strokeWidth="1" />
+    <polygon points="160,168 44,226 44,252 160,310 276,252 276,226" fill="color-mix(in srgb, var(--gold) 2%, transparent)" stroke="color-mix(in srgb, var(--gold) 40%, transparent)" strokeWidth="1" />
+    {/* Central axis hint */}
+    <line x1="160" y1="28" x2="160" y2="168" stroke="color-mix(in srgb, var(--gold) 35%, transparent)" strokeWidth="1" strokeDasharray="2 4" />
+  </svg>
+);
 
 export default function RoadmapPage() {
   return (
     <>
       <header className="site-header">
         <div className="header-inner">
-          <a className="brand" href="/" aria-label="MITHQAL home"><MithqalLogo /><span className="brand-wordmark">MITHQAL</span></a>
+          <a className="brand" href="/" aria-label="MITHQAL home">
+            <MithqalLogo />
+            <span className="brand-wordmark">MITHQAL</span>
+          </a>
           <nav className="primary-nav" aria-label="Primary navigation">
-            {NAV_ITEMS.map((item, i) => <a key={item} className={`nav-link ${item === "Roadmap" ? "active" : ""}`} href={NAV_HREFS[i]}>{item}</a>)}
+            {NAV_ITEMS.map((item, i) => (
+              <a key={item} className={`nav-link ${item === "Roadmap" ? "active" : ""}`} href={NAV_HREFS[i]}>
+                {item}
+              </a>
+            ))}
           </nav>
-          <a className="launch-btn" href="/#platform"><span>Launch App</span><span aria-hidden="true">→</span></a>
+          <a className="launch-btn" href="/#platform">
+            <span>Launch App</span>
+            <span aria-hidden="true">→</span>
+          </a>
         </div>
       </header>
 
       <main>
-        {/* HERO */}
-        <section className="section" style={{ paddingTop: "120px" }}>
+        {/* HERO — split layout: text left / timeline image right */}
+        <section className="section" style={{ paddingTop: "120px", paddingBottom: "60px" }}>
           <div className="hero-grid">
             <div>
-              <div className="eyebrow"><span className="eyebrow-line" /><span>THE MITHQAL ROADMAP</span></div>
-              <h1 className="hero-title">A Structured Path to <span className="gold-text">Institutional Evolution.</span></h1>
-              <p className="body-text">MITHQAL evolves through controlled build, adversarial testing and independent institutional validation — expanding only when the required architectural, legal, regulatory and operational conditions have been satisfied.</p>
-              <div style={{ display: "flex", gap: "19px", marginTop: "36px", flexWrap: "wrap" }}>
-                <a className="btn btn-primary" href="/ecosystem">Explore the Ecosystem →</a>
-                <a className="btn btn-secondary" href="/features">View the Architecture</a>
+              <div className="eyebrow">
+                <span className="eyebrow-line" />
+                <span>THE MITHQAL ROADMAP</span>
+              </div>
+              <h1 className="hero-title">
+                A Structured Path to <span className="gold-text">Institutional Evolution.</span>
+              </h1>
+              <p className="body-text">
+                MITHQAL&apos;s roadmap outlines a phased approach to building neutral wholesale settlement infrastructure — from foundation through controlled expansion.
+              </p>
+              <div className="hero-actions">
+                <a className="btn btn-primary" href="#roadmap-steps">Read the Roadmap →</a>
+                <a className="btn btn-secondary" href="/features">View the Features</a>
               </div>
             </div>
             <div className="hero-visual" aria-hidden="true" />
@@ -96,19 +157,23 @@ export default function RoadmapPage() {
 
         <hr className="divider" />
 
-        {/* THE JOURNEY */}
-        <section className="section">
-          <div className="eyebrow"><span className="eyebrow-line" /><span>THE JOURNEY</span></div>
-          <h2 className="section-title">From Foundation to Institutional Readiness.</h2>
-          <p className="section-sub">MITHQAL does not treat architectural completion as institutional readiness. Each stage advances only when the evidence and governance required for the next stage exist.</p>
-          <div className="stage-grid" style={{ marginTop: "40px" }}>
-            {STAGES.map((s) => (
-              <div className="stage-card" key={s.num}>
-                <div className="stage-num">{s.num}</div>
-                <div className="stage-title">{s.title}</div>
-                <div className="stage-status">{s.status}</div>
-                <div className="stage-desc">{s.desc}</div>
-                <div className="stage-items">{s.items.map((item) => <div className="stage-item" key={item}>{item}</div>)}</div>
+        {/* HORIZONTAL 5-STEP TIMELINE */}
+        <section className="section" id="roadmap-steps">
+          <div className="eyebrow">
+            <span className="eyebrow-line" />
+            <span>FIVE PHASES</span>
+          </div>
+          <h2 className="section-title">Foundation to Global Readiness.</h2>
+          <p className="section-sub">
+            MITHQAL advances through five sequential phases — each gated by the evidence and approvals required for the next.
+          </p>
+          <div className="timeline-row">
+            {TIMELINE_STEPS.map((s) => (
+              <div className="timeline-step" key={s.num}>
+                <div className="timeline-circle">{s.icon}</div>
+                <div className="timeline-num">STEP {s.num}</div>
+                <div className="timeline-title">{s.title}</div>
+                <div className="timeline-desc">{s.desc}</div>
               </div>
             ))}
           </div>
@@ -116,158 +181,56 @@ export default function RoadmapPage() {
 
         <hr className="divider" />
 
-        {/* PILOT PATH */}
-        <section className="section">
-          <div className="eyebrow"><span className="eyebrow-line" /><span>THE CONTROLLED PILOT PATH</span></div>
-          <h2 className="section-title">Sequential Pilot Progression.</h2>
-          <div className="pilot-flow">
-            {PILOTS.map((p, i) => (
-              <div key={p.num}>
-                <div className="pilot-node"><span className="pilot-num">{p.num}</span><div><div className="pilot-title">{p.title}</div><div className="pilot-desc">{p.desc}</div></div></div>
-                {i < PILOTS.length - 1 && <div className="pilot-arrow">↓</div>}
-              </div>
-            ))}
+        {/* PLATFORM ARCHITECTURE — 3-col: text / isometric / pillars */}
+        <section className="section" id="platform-architecture">
+          <div className="eyebrow">
+            <span className="eyebrow-line" />
+            <span>PLATFORM ARCHITECTURE</span>
           </div>
-        </section>
-
-        <hr className="divider" />
-
-        {/* GATES */}
-        <section className="section">
-          <div className="eyebrow"><span className="eyebrow-line" /><span>NO SHORTCUTS</span></div>
-          <h2 className="section-title">Every Expansion Has a Gate.</h2>
-          <div className="gates-grid" style={{ marginTop: "40px" }}>
-            {GATES.map((g) => (
-              <div className="gate-cell" key={g.id}><div className="gate-id">{g.id}</div><div className="gate-title">{g.title}</div></div>
-            ))}
-          </div>
-        </section>
-
-        <hr className="divider" />
-
-        {/* CURRENT STATUS */}
-        <section className="section">
-          <div className="eyebrow"><span className="eyebrow-line" /><span>CURRENT POSITION</span></div>
-          <h2 className="section-title">Where MITHQAL Stands.</h2>
-          <div className="status-panel">
-            <div className="status-label">Verified Current State</div>
-            <div className="status-row"><span className="status-key">Production</span><span className="status-val">NOT AUTHORIZED</span></div>
-            <div className="status-row"><span className="status-key">Institutional Validation</span><span className="status-val">NOT ESTABLISHED</span></div>
-            <div className="status-row"><span className="status-key">Release Status</span><span className="status-val">RELEASE BLOCKED</span></div>
-            <div className="status-row"><span className="status-key">MTQ</span><span className="status-val">DISABLED</span></div>
-          </div>
-        </section>
-
-        <hr className="divider" />
-
-        {/* CRITICAL PATH */}
-        <section className="section">
-          <div className="eyebrow"><span className="eyebrow-line" /><span>CRITICAL PATH</span></div>
-          <h2 className="section-title">The Gate Sequence.</h2>
-          <div className="critical-path">
-            {CRITICAL_PATH.map((group, i) => (
-              <div key={i}>
-                <div className="cp-node">{group.join(" → ")}</div>
-                {i < CRITICAL_PATH.length - 1 && <div className="cp-arrow">↓</div>}
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <hr className="divider" />
-
-        {/* BUILD / TEST / VALIDATE */}
-        <section className="section">
-          <div className="eyebrow"><span className="eyebrow-line" /><span>METHODOLOGY</span></div>
-          <h2 className="section-title">Build. Test. Validate.</h2>
-          <div className="btv-grid">
-            <div className="btv-col">
-              <div className="btv-label">BUILD</div>
-              <div className="btv-item">Architecture</div>
-              <div className="btv-item">Controls</div>
-              <div className="btv-item">Services</div>
-              <div className="btv-item">Schemas</div>
-              <div className="btv-item">Policies</div>
+          <h2 className="section-title">Built for What&apos;s Next.</h2>
+          <p className="section-sub">
+            A layered control plane — settlement, governance, reconciliation and interoperability stacked as distinct, auditable layers that scale without compromising neutrality.
+          </p>
+          <div className="arch-grid">
+            <div className="arch-text">
+              {ARCH_LEFT_GROUPS.map((g) => (
+                <div className="arch-group" key={g.label}>
+                  <div className="arch-label">{g.label}</div>
+                  {g.items.map((it) => (
+                    <div className="arch-item" key={it}>{it}</div>
+                  ))}
+                </div>
+              ))}
             </div>
-            <div className="btv-col">
-              <div className="btv-label">TEST</div>
-              <div className="btv-item">Adversarial Scenarios</div>
-              <div className="btv-item">Failure Injection</div>
-              <div className="btv-item">Finality</div>
-              <div className="btv-item">Reconciliation</div>
-              <div className="btv-item">Security</div>
+            <div className="arch-visual">
+              <IsometricArch />
             </div>
-            <div className="btv-col">
-              <div className="btv-label">VALIDATE</div>
-              <div className="btv-item">Legal</div>
-              <div className="btv-item">Regulatory</div>
-              <div className="btv-item">Bank</div>
-              <div className="btv-item">Independent Assurance</div>
-              <div className="btv-item">Pilot Evidence</div>
+            <div className="arch-pillars">
+              <div className="pillar-title">Foundational Pillars</div>
+              {PILLARS.map((p) => (
+                <div className="pillar-item" key={p}>
+                  <span className="pillar-bullet" aria-hidden="true" />
+                  <span>{p}</span>
+                </div>
+              ))}
             </div>
           </div>
-          <div className="btv-center">BUILD → TEST → VALIDATE</div>
         </section>
 
-        <hr className="divider" />
-
-        {/* FOUNDATION */}
-        <section className="section">
-          <div className="eyebrow"><span className="eyebrow-line" /><span>FOUNDATION</span></div>
-          <h2 className="section-title">Built Before It Is Expanded.</h2>
-          <div className="foundation-grid" style={{ marginTop: "40px" }}>
-            {FOUNDATION_ITEMS.map((item) => <div className="foundation-item" key={item}>{item}</div>)}
-          </div>
-        </section>
-
-        <hr className="divider" />
-
-        {/* INSTITUTIONAL VALIDATION */}
-        <section className="section">
-          <div className="eyebrow"><span className="eyebrow-line" /><span>VALIDATION</span></div>
-          <h2 className="section-title">Validation Is External.</h2>
-          <p className="section-sub">MITHQAL treats independent institutional evidence as distinct from software completion, internal testing and architectural documentation.</p>
-          <div className="validation-flow">
-            {VALIDATION_DOMAINS.map((d) => <div className="val-node" key={d}>{d}</div>)}
-            <div className="val-arrow">↓</div>
-            <div className="val-node gold">INSTITUTIONAL VALIDATION</div>
-            <div className="val-arrow">↓</div>
-            <div className="val-node muted">Production Authorization (conditional — not currently established)</div>
-          </div>
-        </section>
-
-        <hr className="divider" />
-
-        {/* FUTURE EVOLUTION */}
-        <section className="section">
-          <div className="eyebrow"><span className="eyebrow-line" /><span>FUTURE EVOLUTION</span></div>
-          <h2 className="section-title">Expansion Follows Evidence.</h2>
-          <div className="future-grid" style={{ marginTop: "40px" }}>
-            {FUTURE_ITEMS.map((item) => <div className="future-item" key={item}>{item}</div>)}
-          </div>
-          <p className="section-sub" style={{ marginTop: "28px" }}>Each connects to Controlled Governance. Expansion is conditional.</p>
-        </section>
-
-        <hr className="divider" />
-
-        {/* MTQ */}
-        <section className="section">
-          <div className="mtq-box">
-            <div className="mtq-label">OPTIONAL SETTLEMENT PRIMITIVE</div>
-            <div className="mtq-title">MTQ</div>
-            <p className="mtq-desc">MTQ remains a permissioned institutional settlement instrument within the broader MITHQAL architecture. The control-plane architecture does not depend on speculative public-market access to MTQ.</p>
-          </div>
-        </section>
-
-        {/* CLOSING CTA */}
+        {/* CLOSING CTA — banner with background image */}
         <section className="cta-bg">
           <div className="cta-content">
-            <div className="eyebrow"><span className="eyebrow-line" /><span>THE ROAD AHEAD</span></div>
-            <h2 className="section-title">A Stronger Institutional Architecture.</h2>
-            <p className="section-sub">MITHQAL's evolution is governed by evidence, controlled progression and institutional validation — not by shortcuts.</p>
-            <div style={{ display: "flex", gap: "19px", marginTop: "36px", flexWrap: "wrap" }}>
-              <a className="btn btn-primary" href="/ecosystem">Explore the Ecosystem →</a>
-              <a className="btn btn-secondary" href="/features">Read the Features →</a>
+            <div className="eyebrow">
+              <span className="eyebrow-line" />
+              <span>THE ROAD AHEAD</span>
+            </div>
+            <h2 className="section-title">A Stronger Future.</h2>
+            <p className="section-sub">
+              MITHQAL&apos;s evolution is governed by evidence, controlled progression and institutional validation — not by shortcuts.
+            </p>
+            <div className="hero-actions">
+              <a className="btn btn-primary" href="/ecosystem">Explore Ecosystem →</a>
+              <a className="btn btn-secondary" href="#roadmap-steps">View the Roadmap</a>
             </div>
           </div>
         </section>

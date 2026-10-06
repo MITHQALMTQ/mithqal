@@ -2,7 +2,9 @@
  * MITHQAL — About Page (/about)
  * Page 05 — institutional identity.
  *
- * HOME=Vision | FEATURES=Control | ECOSYSTEM=Network | ROADMAP=Evolution | ABOUT=Identity
+ * Design: split hero (text left / portal image right) + Mission/Vision 2-col +
+ * 6-item Values grid + 4-col Principles grid + commitment banner.
+ * Matches reference image 1.
  *
  * BUILD_MODE = FROZEN — no backend changes.
  * productionAuthorized = false | institutionallyValidated = false
@@ -19,23 +21,35 @@ const MithqalLogo = () => (
 const NAV_ITEMS = ["Home", "Features", "Ecosystem", "Roadmap", "About"];
 const NAV_HREFS = ["/", "/features", "/ecosystem", "/roadmap", "/about"];
 
-const COMMITMENTS = [
-  { num: "01", title: "NEUTRALITY", desc: "MITHQAL does not favor one monetary system, jurisdiction or geopolitical bloc over another." },
-  { num: "02", title: "RESERVE DISCIPLINE", desc: "Settlement issuance cannot be separated from applicable backing, authorization, liquidity and finality controls." },
-  { num: "03", title: "CRYPTOGRAPHIC AUDITABILITY", desc: "Every important state leaves evidence — attributable, verifiable and auditable." },
-  { num: "04", title: "SETTLEMENT LAYER", desc: "MITHQAL exists between monetary systems — never instead of them." },
-  { num: "05", title: "INSTITUTIONAL TRACEABILITY", desc: "Every settlement state is designed to remain attributable, reconcilable and auditable." },
-  { num: "06", title: "JURISDICTIONAL DISCIPLINE", desc: "One architecture, different regulatory perimeters. Unknown jurisdiction = blocked." },
-  { num: "07", title: "NO SOVEREIGN DISPLACEMENT", desc: "MITHQAL does not displace sovereign currencies, central-bank money or existing institutions." },
+// ─── Values Icons (6 items) ────────────────────────────────────────
+const NeutralityIcon = () => (<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true"><path d="M12 2L4 6v6c0 5 3.5 9 8 10 4.5-1 8-5 8-10V6l-8-4z"/><path d="M9 12l2 2 4-4"/></svg>);
+const InstitutionIcon = () => (<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true"><path d="M3 21h18M3 10h18M5 6l7-4 7 4M4 10v11M20 10v11M8 14v3M12 14v3M16 14v3"/></svg>);
+const SecurityIcon = () => (<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>);
+const InteropIcon = () => (<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4M7 17l3-4M17 17l-3-4"/></svg>);
+const TransparencyIcon = () => (<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 0 0 20M2 12h20"/></svg>);
+const OversightIcon = () => (<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/></svg>);
+
+const VALUES = [
+  { title: "Neutrality", desc: "Non-sovereign, non-speculative infrastructure.", icon: <NeutralityIcon /> },
+  { title: "Institutional Focus", desc: "Built for institutions, not retail speculation.", icon: <InstitutionIcon /> },
+  { title: "Security & Control", desc: "Cryptographic auditability on every state.", icon: <SecurityIcon /> },
+  { title: "Interoperability", desc: "Complements existing financial infrastructure.", icon: <InteropIcon /> },
+  { title: "Transparency", desc: "Every settlement state is attributable.", icon: <TransparencyIcon /> },
+  { title: "Human Oversight", desc: "Operators retain all decision authority.", icon: <OversightIcon /> },
 ];
 
-const NOT_ITEMS = ["A central bank", "A commercial bank", "A sovereign currency issuer", "A retail payment platform", "An exchange", "A brokerage", "A market maker", "A lending institution", "An investment fund", "A wealth manager", "A DeFi protocol", "A speculative vehicle"];
+// ─── Principles Icons (4 items) ─────────────────────────────────────
+const IntegrityIcon = () => (<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true"><path d="M12 2L4 6v6c0 5 3.5 9 8 10 4.5-1 8-5 8-10V6l-8-4z"/><path d="M9 12l2 2 4-4"/></svg>);
+const ResilienceIcon = () => (<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true"><path d="M13 2L3 14h7l-1 8 10-12h-7l1-8Z"/></svg>);
+const CollaborationIcon = () => (<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4M7 17l3-4M17 17l-3-4"/></svg>);
+const ImpactIcon = () => (<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2" fill="currentColor"/></svg>);
 
-const CONSTITUTION_LAYERS = ["Constitution", "Strategic Objective", "Architecture", "Operations", "Code", "Institutional Engagement"];
-
-const TRACE_PATH = ["Participant", "Bank Transaction", "Institutional Settlement ID", "MITHQAL Settlement ID", "Transaction Hash", "Receiving Institution", "Beneficiary"];
-
-const JURISDICTIONS = ["Jurisdiction A", "Jurisdiction B", "Jurisdiction C", "Jurisdiction D"];
+const PRINCIPLES = [
+  { title: "Integrity", desc: "Every state leaves attributable evidence.", icon: <IntegrityIcon /> },
+  { title: "Resilience", desc: "Controlled through failure and recovery.", icon: <ResilienceIcon /> },
+  { title: "Collaboration", desc: "Institutional participants, connected.", icon: <CollaborationIcon /> },
+  { title: "Impact", desc: "A more connected financial future.", icon: <ImpactIcon /> },
+];
 
 export default function AboutPage() {
   return (
@@ -44,238 +58,92 @@ export default function AboutPage() {
         <div className="header-inner">
           <a className="brand" href="/" aria-label="MITHQAL home"><MithqalLogo /><span className="brand-wordmark">MITHQAL</span></a>
           <nav className="primary-nav" aria-label="Primary navigation">
-            {NAV_ITEMS.map((item, i) => <a key={item} className={`nav-link ${item === "About" ? "active" : ""}`} href={NAV_HREFS[i]}>{item}</a>)}
+            {NAV_ITEMS.map((item, i) => (
+              <a key={item} className={`nav-link ${item === "About" ? "active" : ""}`} href={NAV_HREFS[i]}>{item}</a>
+            ))}
           </nav>
-          <a className="launch-btn" href="/#platform"><span>Launch App</span><span aria-hidden="true">→</span></a>
+          <a className="launch-btn" href="/features"><span>Launch App</span><span aria-hidden="true">→</span></a>
         </div>
       </header>
 
       <main>
-        {/* HERO */}
+        {/* ─── HERO (split: text left / portal image right) ─── */}
         <section className="section" style={{ paddingTop: "120px" }}>
           <div className="hero-grid">
             <div>
               <div className="eyebrow"><span className="eyebrow-line" /><span>ABOUT MITHQAL</span></div>
-              <h1 className="hero-title">A Neutral Infrastructure for a More Connected <span className="gold-text">Financial Future.</span></h1>
-              <p className="body-text">MITHQAL is built around a simple principle: institutional settlement should work best when it is neutral, governed by clear rules, and designed to coexist with the financial systems that already exist. MITHQAL provides a settlement and interoperability layer between regulated monetary systems without seeking to displace sovereign currencies, central-bank money or existing financial institutions.</p>
-              <div style={{ display: "flex", gap: "19px", marginTop: "36px", flexWrap: "wrap" }}>
+              <h1 className="hero-title">A Neutral Infrastructure for a <span className="gold-text">More Connected Financial Future.</span></h1>
+              <p className="body-text">MITHQAL is a neutral wholesale settlement control plane — built to coordinate institutional participants, settlement workflows, policy, interoperability, reconciliation and evidence through one controlled architecture.</p>
+              <div className="hero-actions">
                 <a className="btn btn-primary" href="/features">Explore the Architecture →</a>
                 <a className="btn btn-secondary" href="/ecosystem">View the Ecosystem</a>
               </div>
             </div>
-            <div className="hero-visual" aria-hidden="true" />
+            <div className="hero-visual" aria-hidden="true" role="img" aria-label="MITHQAL portal" />
           </div>
         </section>
 
         <hr className="divider" />
 
-        {/* MISSION */}
+        {/* ─── MISSION / VISION (2-col) ─── */}
         <section className="section">
-          <div className="eyebrow"><span className="eyebrow-line" /><span>OUR MISSION</span></div>
-          <h2 className="section-title">Neutral Settlement. Institutional Control.</h2>
-          <p className="section-sub" style={{ maxWidth: "700px" }}>The mission of MITHQAL is to provide regulated monetary systems with a neutral, reserve-disciplined, cryptographically auditable settlement layer that sits between monetary systems — never instead of monetary systems — enabling regulated financial institutions to settle value across jurisdictions with institutional traceability, jurisdictional compliance and settlement finality.</p>
-          <div className="bridge">
-            <div className="bridge-side"><div className="bridge-label">Regulated Monetary System</div></div>
-            <span className="bridge-arrow">→</span>
-            <div className="bridge-center"><div className="bridge-center-label">MITHQAL</div><div className="bridge-sub">Neutral Settlement Layer</div></div>
-            <span className="bridge-arrow">→</span>
-            <div className="bridge-side"><div className="bridge-label">Regulated Monetary System</div></div>
-          </div>
-        </section>
-
-        <hr className="divider" />
-
-        {/* VISION */}
-        <section className="section">
-          <div className="eyebrow"><span className="eyebrow-line" /><span>OUR VISION</span></div>
-          <h2 className="section-title">A Neutral Settlement Fabric for the Regulated Financial System.</h2>
-          <p className="section-sub" style={{ maxWidth: "700px" }}>MITHQAL's vision is to become a neutral institutional settlement fabric of the regulated global financial system — a constitutionally governed, mathematically transparent and cryptographically enforced settlement layer that regulated financial institutions and sovereign monetary authorities can use to settle value across jurisdictions without ceding monetary sovereignty.</p>
-        </section>
-
-        <hr className="divider" />
-
-        {/* NEUTRALITY */}
-        <section className="section">
-          <div className="eyebrow"><span className="eyebrow-line" /><span>THE PRINCIPLE OF NEUTRALITY</span></div>
-          <h2 className="section-title">Between Monetary Systems. Never Instead of Them.</h2>
-          <p className="section-sub">MITHQAL does not favor one monetary system over another. MITHQAL does not favor one jurisdiction over another. MITHQAL does not favor one geopolitical bloc over another. Each monetary system remains under its own legal and institutional framework. MITHQAL exists as a neutral settlement layer.</p>
-        </section>
-
-        <hr className="divider" />
-
-        {/* WHAT MITHQAL IS NOT */}
-        <section className="section">
-          <div className="eyebrow"><span className="eyebrow-line" /><span>INSTITUTIONAL BOUNDARY</span></div>
-          <h2 className="section-title">Defined by What We Do. Protected by What We Do Not Become.</h2>
-          <div className="not-grid" style={{ marginTop: "40px" }}>
-            {NOT_ITEMS.map((item) => <div className="not-item" key={item}>{item}</div>)}
-          </div>
-        </section>
-
-        <hr className="divider" />
-
-        {/* SEVEN COMMITMENTS */}
-        <section className="section">
-          <div className="eyebrow"><span className="eyebrow-line" /><span>CORE COMMITMENTS</span></div>
-          <h2 className="section-title">Seven Architectural Commitments.</h2>
-          <div className="commitments-grid" style={{ marginTop: "40px" }}>
-            {COMMITMENTS.map((c) => (
-              <div className="commitment" key={c.num}>
-                <div className="commitment-num">{c.num}</div>
-                <div className="commitment-title">{c.title}</div>
-                <div className="commitment-desc">{c.desc}</div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <hr className="divider" />
-
-        {/* RESERVE DISCIPLINE */}
-        <section className="section">
-          <div className="eyebrow"><span className="eyebrow-line" /><span>RESERVE DISCIPLINE</span></div>
-          <h2 className="section-title">Control Before Issuance.</h2>
-          <p className="section-sub">MITHQAL's architecture is designed so that settlement issuance cannot be separated from applicable backing, authorization, liquidity, concentration, jurisdiction and finality controls.</p>
-        </section>
-
-        <hr className="divider" />
-
-        {/* CRYPTOGRAPHIC AUDITABILITY */}
-        <section className="section">
-          <div className="eyebrow"><span className="eyebrow-line" /><span>CRYPTOGRAPHIC AUDITABILITY</span></div>
-          <h2 className="section-title">Every Important State Leaves Evidence.</h2>
-          <div className="trace-flow">
-            {TRACE_PATH.map((step, i) => (
-              <div key={step} style={{ display: "flex", alignItems: "center" }}>
-                <div className="trace-node">{step}</div>
-                {i < TRACE_PATH.length - 1 && <span className="trace-arrow">→</span>}
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <hr className="divider" />
-
-        {/* JURISDICTIONAL DISCIPLINE */}
-        <section className="section">
-          <div className="eyebrow"><span className="eyebrow-line" /><span>JURISDICTIONAL DISCIPLINE</span></div>
-          <h2 className="section-title">One Architecture. Different Regulatory Perimeters.</h2>
-          <div className="jur-grid">
-            {JURISDICTIONS.map((j) => (
-              <div className="jur-card" key={j}><div className="jur-title">{j}</div><div className="jur-desc">Legal perimeter · Authorization · Policy</div></div>
-            ))}
-          </div>
-          <div className="layers" style={{ maxWidth: "400px", marginTop: "32px" }}>
-            <div className="layer gold">MITHQAL Jurisdictional Control</div>
-            <div className="layer muted">UNKNOWN = BLOCKED</div>
-          </div>
-        </section>
-
-        <hr className="divider" />
-
-        {/* HUMAN GOVERNANCE */}
-        <section className="section">
-          <div className="eyebrow"><span className="eyebrow-line" /><span>HUMAN GOVERNANCE</span></div>
-          <h2 className="section-title">Intelligence Assists. Governance Decides.</h2>
-          <p className="section-sub">Artificial intelligence may assist, analyze, monitor and advise. Constitutional legitimacy, governance authority and monetary sovereignty remain vested in qualified human governance.</p>
-          <div className="layers">
-            <div className="layer">AI / Analytics</div>
-            <div className="layer-arrow">↓</div>
-            <div className="layer">Recommend</div>
-            <div className="layer-arrow">↓</div>
-            <div className="layer gold">Human Governance</div>
-            <div className="layer-arrow">↓</div>
-            <div className="layer">Authorize / Reject</div>
-            <div className="layer-arrow">↓</div>
-            <div className="layer">Controlled Execution</div>
-          </div>
-        </section>
-
-        <hr className="divider" />
-
-        {/* CONSTITUTIONAL GOVERNANCE */}
-        <section className="section">
-          <div className="eyebrow"><span className="eyebrow-line" /><span>CONSTITUTIONAL GOVERNANCE</span></div>
-          <h2 className="section-title">Rules Before Convenience.</h2>
-          <div className="layers">
-            {CONSTITUTION_LAYERS.map((layer, i) => (
-              <div key={layer}>
-                <div className={`layer ${i === 0 ? "gold" : ""}`}>{layer}</div>
-                {i < CONSTITUTION_LAYERS.length - 1 && <div className="layer-arrow">↓</div>}
-              </div>
-            ))}
-          </div>
-          <p className="section-sub" style={{ marginTop: "28px" }}>Lower layers must conform to higher authority.</p>
-        </section>
-
-        <hr className="divider" />
-
-        {/* BUILD / TEST / VALIDATE */}
-        <section className="section">
-          <div className="eyebrow"><span className="eyebrow-line" /><span>METHODOLOGY</span></div>
-          <h2 className="section-title">Build. Test. Validate.</h2>
-          <div className="btv-grid">
-            <div className="btv-col"><div className="btv-label">BUILD</div><div className="btv-desc">Construct the architecture in conformance with the constitution.</div></div>
-            <div className="btv-col"><div className="btv-label">TEST</div><div className="btv-desc">Challenge the architecture against adversarial conditions.</div></div>
-            <div className="btv-col"><div className="btv-label">VALIDATE</div><div className="btv-desc">Obtain independent institutional evidence.</div></div>
-          </div>
-          <div className="btv-center">BUILD → TEST → VALIDATE</div>
-        </section>
-
-        <hr className="divider" />
-
-        {/* CURRENT STATUS */}
-        <section className="section">
-          <div className="eyebrow"><span className="eyebrow-line" /><span>CURRENT STATE</span></div>
-          <h2 className="section-title">Where MITHQAL Stands.</h2>
-          <div className="status-panel">
-            <div className="status-label">Verified Current State</div>
-            <div className="status-row"><span className="status-key">Architecture</span><span className="status-val">DESIGNED / IMPLEMENTED</span></div>
-            <div className="status-row"><span className="status-key">Institutional Validation</span><span className="status-val">NOT ESTABLISHED</span></div>
-            <div className="status-row"><span className="status-key">Production Authorization</span><span className="status-val">NOT AUTHORIZED</span></div>
-            <div className="status-row"><span className="status-key">MTQ</span><span className="status-val">DISABLED</span></div>
-          </div>
-        </section>
-
-        <hr className="divider" />
-
-        {/* NON-CUSTODIAL */}
-        <section className="section">
-          <div className="eyebrow"><span className="eyebrow-line" /><span>NON-CUSTODIAL BY DEFAULT</span></div>
-          <h2 className="section-title">Custody Is Configured Separately.</h2>
-          <p className="section-sub">MITHQAL does not become a custodian merely because reserve assets, bank money, CBDCs, gold or tokenised deposits are interoperable with the architecture. Custody and legal ownership are configured and validated separately.</p>
-        </section>
-
-        <hr className="divider" />
-
-        {/* MTQ */}
-        <section className="section">
-          <div className="mtq-box">
-            <div className="mtq-label">MTQ WITHIN THE ARCHITECTURE</div>
-            <div className="mtq-title">MTQ</div>
-            <p className="mtq-desc">MTQ is a permissioned wholesale settlement instrument used within the MITHQAL settlement infrastructure. MITHQAL does not present MTQ as a retail stablecoin, consumer payment coin, investment product, exchange-traded speculative instrument, sovereign currency, CBDC, or replacement for sovereign currency.</p>
-          </div>
-        </section>
-
-        <hr className="divider" />
-
-        {/* GOLD / SHARIA */}
-        <section className="section">
-          <div className="eyebrow"><span className="eyebrow-line" /><span>GOLD & SHARIA</span></div>
-          <h2 className="section-title">Gold Is Architectural. Sharia Requires Certification.</h2>
-          <p className="section-sub">Gold is an important component of the intended architecture. Final Sharia permissibility requires independent qualified scholarly review and certification of the complete live structure. Sharia certification is not represented as completed.</p>
-        </section>
-
-        {/* CLOSING CTA */}
-        <section className="cta-bg">
-          <div className="cta-content">
-            <div className="eyebrow"><span className="eyebrow-line" /><span>OUR COMMITMENT</span></div>
-            <h2 className="section-title">Built for Institutions. Designed for What Comes Next.</h2>
-            <p className="section-sub">MITHQAL is designed as long-term institutional infrastructure: neutral, controlled, interoperable and governed by evidence.</p>
-            <div style={{ display: "flex", gap: "19px", marginTop: "36px", flexWrap: "wrap" }}>
-              <a className="btn btn-primary" href="/features">Explore the Architecture →</a>
-              <a className="btn btn-secondary" href="/ecosystem">Explore the Ecosystem →</a>
+          <div className="two-col" style={{ gap: "60px" }}>
+            <div>
+              <div className="eyebrow"><span className="eyebrow-line" /><span>OUR MISSION</span></div>
+              <h2 className="section-title">Enable Institutional Settlement at <span className="gold-text">Scale.</span></h2>
+              <p className="section-sub">MITHQAL coordinates settlement workflows, policy, finality, reconciliation, multi-rail interoperability and audit-ready evidence through one controlled architecture — complementing existing financial infrastructure.</p>
             </div>
+            <div>
+              <div className="eyebrow"><span className="eyebrow-line" /><span>OUR VISION</span></div>
+              <h2 className="section-title">A More Connected <span className="gold-text">Financial Ecosystem.</span></h2>
+              <p className="section-sub">A neutral infrastructure that connects institutional participants across jurisdictions — without displacing sovereign currencies, central-bank money, or existing financial institutions.</p>
+            </div>
+          </div>
+        </section>
+
+        <hr className="divider" />
+
+        {/* ─── VALUES (6-item icon grid) ─── */}
+        <section className="section">
+          <div className="eyebrow"><span className="eyebrow-line" /><span>OUR VALUES</span></div>
+          <h2 className="section-title">What MITHQAL <span className="gold-text">Stands For.</span></h2>
+          <div className="values-grid" style={{ marginTop: "48px" }}>
+            {VALUES.map((v) => (
+              <div className="value-card" key={v.title}>
+                <div className="value-icon">{v.icon}</div>
+                <div className="value-title">{v.title}</div>
+                <div className="value-desc">{v.desc}</div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <hr className="divider" />
+
+        {/* ─── PRINCIPLES (4-col grid) ─── */}
+        <section className="section">
+          <div className="eyebrow"><span className="eyebrow-line" /><span>OUR PRINCIPLES</span></div>
+          <h2 className="section-title">Built on <span className="gold-text">Principle.</span></h2>
+          <div className="principles-grid" style={{ marginTop: "48px" }}>
+            {PRINCIPLES.map((p) => (
+              <div className="principle-card" key={p.title}>
+                <div className="principle-icon">{p.icon}</div>
+                <div className="principle-title">{p.title}</div>
+                <div className="principle-desc">{p.desc}</div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <hr className="divider" />
+
+        {/* ─── COMMITMENT BANNER ─── */}
+        <section className="cta-section">
+          <h2 className="cta-title">A Controlled Path to a <span className="gold-text">Connected Financial Future.</span></h2>
+          <p className="cta-sub">MITHQAL is not production-authorized. The build is frozen, the MTQ primitive is disabled, and every architectural commitment is documented for institutional review.</p>
+          <div className="cta-actions">
+            <a className="btn btn-primary" href="/ecosystem">Explore the Ecosystem →</a>
+            <a className="btn btn-secondary" href="/roadmap">View the Roadmap</a>
           </div>
         </section>
       </main>

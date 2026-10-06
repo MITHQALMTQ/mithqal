@@ -91,3 +91,48 @@
         @media (max-width: 900px) { .site-header { height: 70px; } .header-inner { display: flex; justify-content: space-between; } .primary-nav { display: none; } .launch-btn { min-width: auto; height: 36px; padding: 0 15px; } .hero-grid { grid-template-columns: 1fr; } .hero-visual { height: 300px; } .capabilities-grid { grid-template-columns: repeat(2, 1fr); } .cap-card:nth-child(2) { border-right: none; } .two-col { grid-template-columns: 1fr; } .book-row { grid-template-columns: 1fr; } .rails-grid { grid-template-columns: repeat(2, 1fr); } }
         @media (max-width: 620px) { .capabilities-grid { grid-template-columns: 1fr; } .cap-card { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.10); } .cap-card:last-child { border-bottom: none; } .launch-btn span:first-child { display: none; } .launch-btn { min-width: 44px; padding: 0 12px; } .flow-row { flex-direction: column; } .flow-arrow { transform: rotate(90deg); } }
         @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }
+
+/* ─── v25.15 additions: gold-text override + workflow circular icons ─── */
+.gold-text {
+  background: none !important;
+  -webkit-background-clip: initial !important;
+  background-clip: initial !important;
+  -webkit-text-fill-color: var(--gold) !important;
+  color: var(--gold) !important;
+}
+
+.hero-actions { display: flex; gap: 16px; margin-top: 36px; flex-wrap: wrap; }
+
+.workflow-row {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+  gap: 0;
+}
+.workflow-step {
+  display: flex; align-items: center; gap: 0;
+}
+.workflow-circle {
+  width: 64px; height: 64px; border-radius: 50%;
+  border: 1.5px solid color-mix(in srgb, var(--gold) 50%, transparent);
+  background: color-mix(in srgb, var(--gold) 4%, transparent);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--gold);
+  flex-shrink: 0;
+}
+.workflow-label {
+  margin-top: 12px;
+  font-size: 13px; font-weight: 500;
+  color: color-mix(in srgb, var(--foreground) 70%, transparent);
+  text-align: center;
+  position: absolute; top: 72px; left: 0; right: 0;
+}
+.workflow-step { position: relative; padding: 0 16px; }
+.workflow-arrow {
+  color: color-mix(in srgb, var(--gold) 40%, transparent);
+  font-size: 18px; padding: 0 8px;
+  align-self: center;
+}
+
+@media (max-width: 900px) {
+  .workflow-row { flex-direction: column; }
+  .workflow-arrow { transform: rotate(90deg); padding: 8px 0; }
+}

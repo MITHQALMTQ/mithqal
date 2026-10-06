@@ -110,3 +110,40 @@
         @media (max-width: 900px) { .site-header { height: 70px; } .header-inner { display: flex; justify-content: space-between; } .primary-nav { display: none; } .launch-btn { min-width: auto; height: 36px; padding: 0 15px; } .hero-grid { grid-template-columns: 1fr; } .hero-visual { min-height: 300px; } .stage-grid { grid-template-columns: 1fr; } .stage-card { border-right: none !important; } .gates-grid { grid-template-columns: repeat(2, 1fr); } .btv-grid { grid-template-columns: 1fr; } .foundation-grid, .future-grid { grid-template-columns: repeat(2, 1fr); } }
         @media (max-width: 620px) { .launch-btn span:first-child { display: none; } .launch-btn { min-width: 44px; padding: 0 12px; } .gates-grid { grid-template-columns: 1fr; } .foundation-grid, .future-grid { grid-template-columns: 1fr; } }
         @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }
+
+        /* ===== Task 22-ROADMAP-REWRITE additions ===== */
+
+        /* gold-text override — solid gold, no gradient/background-clip leakage */
+        .gold-text {
+          background: none !important;
+          -webkit-background-clip: initial !important;
+          background-clip: initial !important;
+          -webkit-text-fill-color: var(--gold) !important;
+          color: var(--gold) !important;
+        }
+
+        /* hero / CTA action row */
+        .hero-actions { display: flex; gap: 16px; margin-top: 36px; flex-wrap: wrap; }
+
+        /* horizontal 5-step timeline */
+        .timeline-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 0; margin-top: 48px; position: relative; }
+        .timeline-row::before { content: ""; position: absolute; top: 32px; left: 5%; right: 5%; height: 2px; background: color-mix(in srgb, var(--gold) 30%, transparent); z-index: 0; }
+        .timeline-step { display: flex; flex-direction: column; align-items: center; gap: 16px; flex: 1; position: relative; z-index: 1; padding: 0 16px; }
+        .timeline-circle { width: 64px; height: 64px; border-radius: 50%; border: 2px solid var(--gold); background: var(--background); display: flex; align-items: center; justify-content: center; color: var(--gold); }
+        .timeline-num { font-size: 12px; font-weight: 600; color: var(--gold); letter-spacing: 0.1em; }
+        .timeline-title { font-size: 18px; font-weight: 600; color: var(--foreground); text-align: center; }
+        .timeline-desc { font-size: 13px; color: color-mix(in srgb, var(--foreground) 60%, transparent); text-align: center; line-height: 1.5; max-width: 200px; }
+        @media (max-width: 900px) { .timeline-row { flex-direction: column; } .timeline-row::before { display: none; } }
+
+        /* platform architecture section — 3-col */
+        .arch-grid { display: grid; grid-template-columns: 1fr 1.15fr 1fr; gap: 48px; align-items: center; margin-top: 56px; }
+        .arch-text { display: flex; flex-direction: column; gap: 24px; }
+        .arch-group { display: flex; flex-direction: column; }
+        .arch-label { color: var(--gold); font-size: 11px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 8px; }
+        .arch-item { color: color-mix(in srgb, var(--foreground) 75%, transparent); font-size: 14px; padding: 4px 0; }
+        .arch-visual { display: flex; align-items: center; justify-content: center; min-height: 320px; padding: 16px; }
+        .arch-pillars { border: 1px solid color-mix(in srgb, var(--gold) 14%, transparent); padding: 32px 28px; background: color-mix(in srgb, var(--gold) 4%, transparent); }
+        .pillar-title { color: var(--foreground); font-size: 13px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+        .pillar-item { display: flex; align-items: center; gap: 14px; padding: 12px 0; color: color-mix(in srgb, var(--foreground) 80%, transparent); font-size: 15px; }
+        .pillar-bullet { width: 6px; height: 6px; border-radius: 50%; background: var(--gold); display: inline-block; flex: 0 0 6px; }
+        @media (max-width: 1000px) { .arch-grid { grid-template-columns: 1fr; gap: 32px; } .arch-visual { min-height: 260px; } }

@@ -94,3 +94,91 @@
         @media (max-width: 900px) { .site-header { height: 70px; } .header-inner { display: flex; justify-content: space-between; } .primary-nav { display: none; } .launch-btn { min-width: auto; height: 36px; padding: 0 15px; } .hero-grid { grid-template-columns: 1fr; } .hero-visual { min-height: 300px; } .participant-grid { grid-template-columns: 1fr; } .participant-card { border-right: none !important; } .two-col { grid-template-columns: 1fr; } .route-grid { grid-template-columns: 1fr; } .rails-grid { grid-template-columns: repeat(2, 1fr); } }
         @media (max-width: 620px) { .launch-btn span:first-child { display: none; } .launch-btn { min-width: 44px; padding: 0 12px; } .flow-row { flex-direction: column; } .flow-arrow { transform: rotate(90deg); } }
         @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }
+
+/* ─── v25.15 additions: ecosystem rewrite (Task 21-ECOSYSTEM-REWRITE) ─── */
+
+        /* gold-text override — solid var(--gold), no gradient background */
+        .gold-text {
+          background: none !important;
+          -webkit-background-clip: initial !important;
+          background-clip: initial !important;
+          -webkit-text-fill-color: var(--gold) !important;
+          color: var(--gold) !important;
+        }
+
+        /* hero-actions flex row */
+        .hero-actions { display: flex; gap: 16px; margin-top: 36px; flex-wrap: wrap; }
+
+        /* Borderless 5-col ecosystem layer row */
+        .eco-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0; margin-top: 40px; background: transparent; border: none; }
+        .eco-item { padding: 28px 22px; border: none; display: flex; flex-direction: column; gap: 14px; }
+        .eco-item .eco-num { color: var(--gold); font-size: 12px; font-weight: 600; letter-spacing: 0.1em; }
+        .eco-item .eco-icon { color: var(--gold); }
+        .eco-item .eco-title { font-size: 16px; font-weight: 500; color: var(--foreground); }
+        .eco-item .eco-desc { font-size: 13px; line-height: 1.55; color: color-mix(in srgb, var(--foreground) 65%, transparent); }
+
+        /* Multi-Rail: 2-col layout (3D stack left / rail list right) */
+        .rail-section { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center; }
+
+        /* 3D layered blocks graphic (isometric stack) */
+        .rail-3d-stack { position: relative; min-height: 360px; perspective: 1400px; display: flex; align-items: center; justify-content: center; }
+        .rail-3d-layer {
+          position: absolute;
+          left: 50%;
+          width: 75%;
+          min-width: 220px;
+          height: 64px;
+          border: 1px solid color-mix(in srgb, var(--gold) 35%, transparent);
+          background: color-mix(in srgb, var(--ink-card) 55%, transparent);
+          color: var(--foreground);
+          font-size: 12px;
+          font-weight: 600;
+          letter-spacing: 0.14em;
+          display: flex; align-items: center; justify-content: center;
+          transform-style: preserve-3d;
+          box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+        }
+        .rail-3d-layer.layer-1 { transform: translateX(-50%) rotateX(58deg) rotateZ(-32deg) translate3d(0, -90px, 0); }
+        .rail-3d-layer.layer-2 { transform: translateX(-50%) rotateX(58deg) rotateZ(-32deg) translate3d(0, -30px, 0); }
+        .rail-3d-layer.layer-3 { transform: translateX(-50%) rotateX(58deg) rotateZ(-32deg) translate3d(0, 30px, 0); }
+        .rail-3d-layer.layer-4 { transform: translateX(-50%) rotateX(58deg) rotateZ(-32deg) translate3d(0, 90px, 0); background: color-mix(in srgb, var(--gold) 08%, transparent); color: var(--gold-soft); border-color: color-mix(in srgb, var(--gold) 50%, transparent); }
+
+        /* Rail list (right column, compact) */
+        .rail-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+        .rail-list-item { display: grid; grid-template-columns: 8px 1fr; gap: 16px; align-items: start; padding: 16px 20px; border: 1px solid rgba(255,255,255,0.10); background: color-mix(in srgb, var(--ink-card) 30%, transparent); }
+        .rail-list-item .rail-bullet { width: 8px; height: 8px; border-radius: 50%; background: var(--gold); margin-top: 8px; }
+        .rail-list-item .rail-content { display: flex; flex-direction: column; gap: 4px; }
+        .rail-list-item .rail-code { color: var(--gold); font-size: 11px; font-weight: 600; letter-spacing: 0.1em; }
+        .rail-list-item .rail-name { color: var(--foreground); font-size: 15px; font-weight: 500; }
+        .rail-list-item .rail-desc { color: color-mix(in srgb, var(--foreground) 65%, transparent); font-size: 13px; line-height: 1.5; }
+
+        /* Controlled routing compact list (right column of two-col) */
+        .route-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+        .route-list-item { display: grid; grid-template-columns: 48px 1fr; gap: 18px; align-items: center; padding: 18px 22px; border: 1px solid rgba(255,255,255,0.10); background: color-mix(in srgb, var(--ink-card) 30%, transparent); }
+        .route-list-item .route-icon { width: 44px; height: 44px; border-radius: 50%; border: 1px solid color-mix(in srgb, var(--gold) 35%, transparent); background: color-mix(in srgb, var(--gold) 06%, transparent); color: var(--gold); display: grid; place-items: center; }
+        .route-list-item .route-content { display: flex; flex-direction: column; gap: 4px; }
+        .route-list-item .route-name { color: var(--gold); font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; }
+        .route-list-item .route-detail { color: var(--foreground); font-size: 15px; font-weight: 500; }
+        .route-list-item .route-detail-desc { color: color-mix(in srgb, var(--foreground) 65%, transparent); font-size: 12px; line-height: 1.5; }
+
+        /* CTA section with cityscape background image */
+        .cta-section { position: relative; min-height: 480px; background: url("/assets/mithqal-ecosystem-cta.png") center center / cover no-repeat; display: flex; align-items: center; overflow: hidden; }
+        .cta-section::before { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, color-mix(in srgb, var(--background) 88%, transparent) 0%, color-mix(in srgb, var(--background) 62%, transparent) 50%, color-mix(in srgb, var(--background) 40%, transparent) 100%); }
+        .cta-content { position: relative; z-index: 1; max-width: 1380px; margin: 0 auto; padding: 80px 6vw; width: 100%; }
+        .cta-title { font-size: clamp(32px, 4vw, 52px); font-weight: 400; line-height: 1.05; color: var(--foreground); letter-spacing: -0.04em; max-width: 720px; }
+        .cta-sub { color: color-mix(in srgb, var(--foreground) 75%, transparent); font-size: 17px; line-height: 1.6; max-width: 560px; margin: 20px 0 36px; }
+        .cta-actions { display: flex; gap: 16px; flex-wrap: wrap; }
+
+        /* Responsive overrides for new classes */
+        @media (max-width: 1200px) {
+          .eco-row { grid-template-columns: repeat(3, 1fr); }
+        }
+        @media (max-width: 900px) {
+          .eco-row { grid-template-columns: repeat(2, 1fr); }
+          .rail-section { grid-template-columns: 1fr; gap: 40px; }
+        }
+        @media (max-width: 620px) {
+          .eco-row { grid-template-columns: 1fr; }
+          .rail-3d-stack { min-height: 280px; }
+          .rail-3d-layer { width: 70%; min-width: 180px; height: 52px; font-size: 10px; }
+        }

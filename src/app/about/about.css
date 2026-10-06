@@ -101,3 +101,62 @@
         @media (max-width: 900px) { .site-header { height: 70px; } .header-inner { display: flex; justify-content: space-between; } .primary-nav { display: none; } .launch-btn { min-width: auto; height: 36px; padding: 0 15px; } .hero-grid { grid-template-columns: 1fr; } .hero-visual { min-height: 300px; } .two-col { grid-template-columns: 1fr; } .not-grid { grid-template-columns: repeat(2, 1fr); } .commitments-grid { grid-template-columns: repeat(2, 1fr); } .btv-grid { grid-template-columns: 1fr; } .jur-grid { grid-template-columns: 1fr; } .bridge { flex-direction: column; } }
         @media (max-width: 620px) { .launch-btn span:first-child { display: none; } .launch-btn { min-width: 44px; padding: 0 12px; } .not-grid { grid-template-columns: 1fr; } .commitments-grid { grid-template-columns: 1fr; } .trace-flow { flex-direction: column; } }
         @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }
+
+/* ─── v25.15 additions: gold-text + values/principles grids ─── */
+.gold-text {
+  background: none !important;
+  -webkit-background-clip: initial !important;
+  background-clip: initial !important;
+  -webkit-text-fill-color: var(--gold) !important;
+  color: var(--gold) !important;
+}
+
+.hero-actions { display: flex; gap: 16px; margin-top: 36px; flex-wrap: wrap; }
+
+.values-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 32px;
+}
+.value-card {
+  display: flex; flex-direction: column; gap: 12px;
+  padding: 28px;
+  border: 1px solid color-mix(in srgb, var(--foreground) 8%, transparent);
+  background: color-mix(in srgb, var(--ink-card) 30%, transparent);
+  border-radius: 8px;
+}
+.value-icon {
+  width: 56px; height: 56px; border-radius: 50%;
+  border: 1.5px solid color-mix(in srgb, var(--gold) 50%, transparent);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--gold);
+}
+.value-title { font-size: 18px; font-weight: 600; color: var(--foreground); }
+.value-desc { font-size: 14px; line-height: 1.5; color: color-mix(in srgb, var(--foreground) 65%, transparent); }
+
+.principles-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 32px;
+}
+.principle-card {
+  display: flex; flex-direction: column; gap: 16px;
+  text-align: center;
+  padding: 32px 24px;
+}
+.principle-icon {
+  color: var(--gold);
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto;
+}
+.principle-title { font-size: 20px; font-weight: 600; color: var(--foreground); }
+.principle-desc { font-size: 14px; line-height: 1.5; color: color-mix(in srgb, var(--foreground) 65%, transparent); }
+
+@media (max-width: 900px) {
+  .values-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .principles-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 620px) {
+  .values-grid { grid-template-columns: 1fr; }
+  .principles-grid { grid-template-columns: 1fr; }
+}
