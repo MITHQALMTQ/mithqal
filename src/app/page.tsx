@@ -107,6 +107,7 @@ export default function HomePage() {
 
       {/* Scroll spacer */}
       <div className="relative h-screen w-full" />
+      <Footer />
     </main>
   );
 }
