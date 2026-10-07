@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import FeatureGrid from "@/components/FeatureGrid";
+import { WaterCanvas } from "@/components/WaterShader";
 
 /**
  * MITHQAL — Hyper-Immersive Cinematic Landing Page (v25.20.4)
@@ -82,7 +83,7 @@ export default function HomePage() {
       </section>
 
       {/* Z-55: Isolated WebGL Water Reflection Pool (bottom 35vh, client-only) */}
-      {mounted && <ClientWaterCanvas assetPath="/assets/mithqal-home-full.png" />}
+      {mounted && <WaterCanvas assetPath="/assets/mithqal-home-full.png" />}
 
       {/* Z-60: Docked Footer Feature Matrix */}
       <FeatureGrid />
@@ -91,13 +92,4 @@ export default function HomePage() {
       <div className="relative h-screen w-full" />
     </main>
   );
-}
-
-/**
- * Client-only WaterCanvas wrapper.
- * Loaded after mount to avoid SSR issues with WebGL.
- */
-function ClientWaterCanvas({ assetPath }: { assetPath: string }) {
-  const { WaterCanvas } = require("@/components/WaterShader");
-  return <WaterCanvas assetPath={assetPath} />;
 }
