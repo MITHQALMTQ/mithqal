@@ -109,9 +109,11 @@ const WaterShaderMesh: React.FC<WaterMeshProps> = ({ backgroundImageUrl }) => {
     return t;
   }, [loadedTexture]);
 
-  useFrame((state) => {
+  useFrame((state, delta) => {
     if (materialRef.current) {
-      materialRef.current.uTime = state.clock.getElapsedTime();
+      // Use accumulated delta instead of clock.getElapsedTime() to avoid
+      // the THREE.Clock deprecation warning (three.js r155+)
+      materialRef.current.uTime += delta;
     }
   });
 

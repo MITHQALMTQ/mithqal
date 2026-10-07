@@ -80,16 +80,16 @@ const FEATURES = [
 export default function FeatureGrid() {
   return (
     <section
-      className="absolute bottom-0 left-0 right-0 z-[60] px-6 md:px-12 pb-8 pointer-events-none"
+      className="absolute bottom-0 left-0 right-0 z-[60] px-6 md:px-12 pb-12 pointer-events-none"
       aria-label="MITHQAL capabilities strip"
     >
-      <div className="max-w-[1440px] mx-auto grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-0">
+      <div className="max-w-[1440px] mx-auto grid grid-cols-2 md:grid-cols-5 gap-0">
         {FEATURES.map((f, i) => (
           <div
             key={f.title}
-            className={`flex items-center gap-4 px-6 py-4 ${
+            className={`flex items-center gap-4 px-6 py-6 ${
               i < FEATURES.length - 1 ? "border-r border-white/10" : ""
-            } ${i >= 2 ? "hidden lg:flex" : ""}`}
+            } ${i >= 2 ? "hidden md:flex" : ""}`}
           >
             <div className="flex items-center justify-center w-12 h-12 rounded-full border border-amber-500/40 text-amber-400 flex-shrink-0">
               {f.icon}
