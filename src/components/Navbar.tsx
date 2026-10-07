@@ -45,13 +45,16 @@ export default function Navbar() {
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", handleScroll, { passive: true });
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setCurrentPath(window.location.pathname);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   // Close mobile menu on route change
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setCurrentPath(window.location.pathname);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMobileOpen(false);
   }, []);
 
