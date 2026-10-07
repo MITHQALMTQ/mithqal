@@ -81,10 +81,9 @@ export default function ArchitecturePage() {
             <a href="/evidence" className="px-8 py-3 rounded-full border-2 border-amber-400/70 bg-black/30 backdrop-blur-md text-white font-medium text-sm tracking-wide hover:bg-amber-500/20 transition-all duration-300">View Evidence Layer</a>
           </motion.div>
         </motion.div>
-      </section>
-
       {mounted && <WaterCanvas assetPath="/assets/mithqal-architecture-landscape.png" />}
-      <FeatureGrid />
+        <FeatureGrid />
+      </section>
 
       {/* CONTENT SECTIONS (below the fold) */}
       <div className="relative z-20 bg-[#07090e]">

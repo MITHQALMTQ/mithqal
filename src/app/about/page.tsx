@@ -70,10 +70,9 @@ export default function AboutPage() {
             <a href="/ecosystem" className="px-8 py-3 rounded-full border-2 border-amber-400/70 bg-black/30 backdrop-blur-md text-white font-medium text-sm tracking-wide hover:bg-amber-500/20 transition-all duration-300">View the Ecosystem</a>
           </motion.div>
         </motion.div>
-      </section>
-
       {mounted && <WaterCanvas assetPath="/assets/mithqal-about-landscape.png" />}
-      <FeatureGrid />
+        <FeatureGrid />
+      </section>
 
       {/* CONTENT SECTIONS */}
       <div className="relative z-20 bg-[#07090e]">

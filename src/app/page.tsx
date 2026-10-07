@@ -96,14 +96,14 @@ export default function HomePage() {
             </a>
           </div>
         </div>
+
+        {/* Z-55: Isolated WebGL Water Reflection Pool (bottom 35vh, client-only) */}
+        {/* Uses landscape-only image — no mirrored text */}
+        {mounted && <WaterCanvas assetPath="/assets/mithqal-home-landscape.png" />}
+
+        {/* Z-60: Docked Footer Feature Matrix */}
+        <FeatureGrid />
       </section>
-
-      {/* Z-55: Isolated WebGL Water Reflection Pool (bottom 35vh, client-only) */}
-      {/* Uses landscape-only image — no mirrored text */}
-      {mounted && <WaterCanvas assetPath="/assets/mithqal-home-landscape.png" />}
-
-      {/* Z-60: Docked Footer Feature Matrix */}
-      <FeatureGrid />
 
       {/* Scroll spacer */}
       <div className="relative h-screen w-full" />
