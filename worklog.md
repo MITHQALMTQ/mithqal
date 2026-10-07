@@ -10907,3 +10907,168 @@ Per-page computed diagnostics (scrollY=0, viewport=1440×900):
 - **One honest caveat:** On the 4 secondary pages, the WebGL water canvas initializes correctly (real `WebGLRenderingContext`, 1440×315) but visually renders flatter than on the home page (80-101 KB canvas-only PNGs vs 465 KB on home; VLM labels them "static image"). This is plausibly because once scrolled to the bottom of a secondary page, the hero image (the shader's reflection source) is far above the viewport, so there is less material to reflect. Functionally the shader is not broken; visually it is less prominent on secondary pages than on home.
 - **No regressions vs v25.21:** The v25.21 ghosting fixes (no baked-in text, water no longer mirrors text, navbar contrast, button contrast) are all preserved in v25.22.
 - **All 5 pages pass.** The v25.22 cinematic rebuild of the 4 secondary pages is operationally complete and shipping on production.
+
+---
+
+## Task ID 39-V2524-FOOTER-SEO-VERIFY — v25.24 Shared Footer + Per-Page SEO Verification
+
+**Date:** 2026-10-07 (operator session immediately after push of commit `d53a688`).
+**Role:** Frontend Verification Operator.
+**Scope:** Poll Vercel for production-ready state of commit `d53a688` (v25.24 SHARED
+FOOTER + PER-PAGE SEO METADATA); verify all 10 institutional pages on the live
+production URL (https://mithqal.vercel.app) for HTTP 200, console errors, unique
+per-page `<title>`, presence of the new 4-column shared `<Footer />` component;
+capture 3 key screenshots; deliver brutally honest verdict.
+
+### PART A — Vercel deploy state (commit d53a688)
+
+- **Project ID:** `prj_SrfvqPNzATQizbErM63pIzDlbzEI`
+- **Production URL:** https://mithqal.vercel.app
+- **Deployment UID:** `dpl_5TtMQXBkWBMG5QqfsgjnTkYS15vP`
+- **readyState:** `READY`
+- **readySubstate:** `PROMOTED`
+- **target:** `production`
+- **aliases assigned:** `mithqal.vercel.app`, `mithqal-tonsy.vercel.app`,
+  `mithqal-git-main-tonsy.vercel.app`
+- **createdAt:** 2026-10-07T11:32:01.563Z (1791372721563 ms)
+- **buildingAt:** 2026-10-07T11:33:06.902Z (1791372786902 ms)
+- **aliasAssigned:** 2026-10-07T11:34:25.260Z (1791372865260 ms) — production alias
+  promoted.
+- **Build duration (buildingAt → aliasAssigned):** ~78.4 s (1.31 min)
+- **Total deploy duration (createdAt → aliasAssigned):** ~143.7 s (2.40 min)
+- **First live observation:** poll #1 at 11:39:11 returned `READY` (after the very
+  first observation at 11:33:58 still showed `BUILDING`).
+
+### PART B — Per-page verification (live production)
+
+Method: agent-browser (Playwright/Chromium) at 1440×900 viewport, 5 s settle
+after `open`, then `errors` (console errors), `get title`, and an `eval` probe
+for `document.querySelector('footer')` (returns `found`, `linkCount`, sitemap
+column text presence).
+
+| Page            | HTTP | Console errs | Unique `<title>`                                                                                          | Footer `<footer>` rendered? | Sitemap cols (Platform/Architecture/Institutional/Legal)? | Link count in footer |
+|-----------------|------|--------------|------------------------------------------------------------------------------------------------------------|------------------------------|----------------------------------------------------------|----------------------|
+| `/`             | 200  | 0            | `MITHQAL — Your Digital Capital. Unified. Intelligent. Limitless.`        | **NO — MISSING**            | n/a                                                      | 0                    |
+| `/features`     | 200  | 0            | `Features — The Control Plane Behind Institutional Settlement \| MITHQAL`                                  | YES                          | YES                                                      | 24                   |
+| `/ecosystem`    | 200  | 0            | `Ecosystem — Institutional Participants Connected Through MITHQAL`                                        | YES                          | YES                                                      | 24                   |
+| `/roadmap`      | 200  | 0            | `Roadmap — A Structured Path to Institutional Evolution \| MITHQAL`                                         | YES                          | YES                                                      | 24                   |
+| `/about`        | 200  | 0            | `About — A Neutral Infrastructure for a Connected Financial Future \| MITHQAL`                            | YES                          | YES                                                      | 24                   |
+| `/architecture` | 200  | 0            | `Architecture — The Architecture Behind Institutional Settlement \| MITHQAL`                              | YES                          | YES                                                      | 24                   |
+| `/evidence`     | 200  | 0            | `Evidence & Assurance — Every State Leaves Evidence \| MITHQAL`                                            | YES                          | YES                                                      | 24                   |
+| `/pilot`        | 200  | 0            | `Institutional Pilot — Controlled Pilot Engagement \| MITHQAL`                                            | YES                          | YES                                                      | 24                   |
+| `/legal`        | 200  | 0            | `Legal & Disclosures — Jurisdictional Discipline by Design \| MITHQAL`                                    | YES                          | YES                                                      | 24                   |
+| `/contact`      | 200  | 0            | `Contact — Institutional Enquiry \| MITHQAL`                                                              | YES                          | YES                                                      | 24                   |
+
+### Per-page title uniqueness check
+
+All 10 titles are unique. Each matches exactly the per-page SEO title in the
+v25.24 commit message. The 9 new `layout.tsx` files export a `metadata` object
+with `title` and `description`. Home is served by the root `app/layout.tsx` +
+the root `page.tsx` (the root `layout.tsx` already supplies the home metadata,
+which is why there is no separate `home/layout.tsx`). SEO metadata is verified
+WORKING — every page ships a distinct `<title>` tag.
+
+### Footer presence — CRITICAL DEFECT FOUND
+
+- 9 of 10 pages correctly render `<Footer />` (24 anchor links each, all four
+  sitemap columns `PLATFORM · ARCHITECTURE · INSTITUTIONAL · LEGAL` present,
+  plus the `CONNECT` column with Institutional Enquiry / Pilot Engagement /
+  Technical Review). Verified via `document.querySelector('footer')`.
+- **Home page (`/`) DOES NOT render the Footer.** The `Footer` import was added
+  to `src/app/page.tsx` line 7 in commit `d53a688`, but `<Footer />` was never
+  inserted into the JSX. The only line referencing "Footer" in the home page
+  body is a code comment `{/* Z-60: Docked Footer Feature Matrix */}` on line
+  105, immediately followed by `<FeatureGrid />` (which is the docked 5-icon
+  feature matrix — NOT the Footer). This is confirmed by both the live DOM
+  (no `<footer>` element, `document.body.scrollHeight === 1800` = exactly two
+  viewports: hero + FeatureGrid) and by `git show d53a688 -- src/app/page.tsx`,
+  which shows the commit's home-page diff consists of a single added
+  `import Footer from "@/components/Footer";` line — no JSX change.
+- **Symptom for users:** on https://mithqal.vercel.app/ the page ends with the
+  FeatureGrid docked strip. There is no sitemap, no Legal column, no copyright,
+  no INSTITUTIONALLY_VALIDATED marker. The other 9 pages all have it.
+- **Build/lint impact:** Because TypeScript's `noUnusedLocals` is not enforcing
+  (and/or ESLint's `no-unused-vars` rule is not blocking the build), the
+  `Footer` import is a "silent unused import" — the build still succeeds and
+  the commit message's "lint clean (0 errors), 0 bailout" claim is technically
+  true at the lint level but operationally false at the user-visible level.
+  This is exactly the kind of defect a manual DOM audit catches and a linter
+  does not.
+
+### Screenshots (3 captured)
+
+- `/home/z/my-project/screenshots/v25.24-vercel-home.png` — 1,433 KB, full-page
+  (hero + FeatureGrid; ends abruptly — no footer visible, confirming the
+  defect).
+- `/home/z/my-project/screenshots/v25.24-vercel-architecture.png` — 583 KB,
+  full-page scrolled to bottom (Footer + 4-column sitemap visible).
+- `/home/z/my-project/screenshots/v25.24-vercel-contact.png` — 525 KB, full-page
+  scrolled to bottom (Footer + 4-column sitemap visible).
+
+### PART C — Honest verdict
+
+- **Vercel deploy:** READY + PROMOTED to production; build duration ~78 s /
+  1.31 min; total deploy ~144 s / 2.40 min. Live at https://mithqal.vercel.app.
+- **All 10 pages HTTP 200 with 0 console errors.** No JavaScript runtime
+  errors, no hydration warnings, no 404 asset requests, no chunk-load failures.
+- **Per-page SEO metadata is FULLY WORKING.** All 10 `<title>` tags are unique
+  and match the v25.24 specification exactly. The 9 new `layout.tsx` files
+  deliver per-page `title` + `description` metadata correctly. SEO objective:
+  PASS.
+- **Shared Footer:** RENDERED on 9 of 10 pages (`/features`, `/ecosystem`,
+  `/roadmap`, `/about`, `/architecture`, `/evidence`, `/pilot`, `/legal`,
+  `/contact`). Each renders the MITHQAL logo + tagline, institutional state
+  markers (`NOT PRODUCTION-AUTHORIZED · BUILD_MODE = FROZEN · MTQ DISABLED`),
+  the 4-column sitemap (Platform · Architecture · Institutional · Legal), the
+  Connect column, and 24 anchor links. **Footer objective: PARTIAL FAIL.**
+- **Critical defect:** The home page (`/`) imports `Footer` in `src/app/page.tsx`
+  line 7 but never renders `<Footer />` in the JSX. The `git show` diff confirms
+  the v25.24 commit added only the import line to the home page. The home page
+  therefore lacks the sitemap, Legal column, copyright, and institutional state
+  markers. All other 9 pages are correct.
+
+### Honest summary
+
+- **v25.24 = 9.5/10.** SEO per-page metadata objective: 10/10 (all 10 unique
+  titles, all 10 pages 200 OK, zero console errors). Footer objective: 9/10
+  (rendered on 9 pages, missing on the home page).
+- **The defect is real and user-visible.** Any visitor who lands on
+  https://mithqal.vercel.app/ and scrolls to the bottom sees only the
+  FeatureGrid dock — no sitemap, no Legal links, no copyright. The other 9
+  pages do show the full Footer.
+- **Root cause:** A 1-line JSX omission in `src/app/page.tsx`. The Footer is
+  imported but never placed in the JSX tree (the existing `{/* Z-60: Docked
+  Footer Feature Matrix */}` comment block — which actually renders
+  `<FeatureGrid />`, not the Footer — appears to have been confused with the
+  new Footer component during the v25.24 commit.
+
+### Recommended next action (single-line fix)
+
+In `src/app/page.tsx`, immediately after the existing
+`<div className="relative h-screen w-full" />` scroll-spacer (line 107) — or in
+any other sensible position at the bottom of the `<main>` tree — add:
+
+```tsx
+      {/* v25.24 Shared Footer (4-column institutional sitemap) */}
+      <Footer />
+```
+
+The `Footer` import is already on line 7; no new import needed. Re-deploy and
+re-verify. This single JSX insertion converts the v25.24 release from
+"Footer on 9/10 pages" to "Footer on 10/10 pages" and closes the task.
+
+### Files / artifacts produced by this verification
+
+- `screenshots/v25.24-vercel-home.png` (1,433 KB — full-page, shows missing
+  footer)
+- `screenshots/v25.24-vercel-architecture.png` (583 KB — full-page scrolled to
+  footer)
+- `screenshots/v25.24-vercel-contact.png` (525 KB — full-page scrolled to
+  footer)
+- This worklog entry.
+
+**Final operator verdict:** v25.24 deploy is READY and SEO metadata objective
+is fully met. The shared-Footer objective is met on 9/10 pages but FAILED on
+the home page (`/`) due to a 1-line JSX omission in `src/app/page.tsx` (the
+`Footer` import is present, but `<Footer />` is not rendered). Recommend a
+single-line patch + re-deploy.
