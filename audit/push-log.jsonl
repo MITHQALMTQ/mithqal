@@ -34,3 +34,6 @@
 {"ts":"2026-10-07T06:24:02Z","local_ref":"refs/heads/main","local_oid":"76274e4fb1ff40d5ce6883d15e88183e428a0bfa","remote_ref":"refs/heads/main","remote_oid":"f696dec6bdf717f0d38ed6faadfa074be7c7de55","user":"z"}
 {"ts":"2026-10-07T06:26:20Z","local_ref":"refs/heads/main","local_oid":"1ddd18bef622bd2f734c587e6e3a95b34106856e","remote_ref":"refs/heads/main","remote_oid":"76274e4fb1ff40d5ce6883d15e88183e428a0bfa","user":"z"}
 {"ts":"2026-10-07T07:16:14Z","local_ref":"refs/heads/main","local_oid":"be0015672c24d29e99d4de3ef8f33a533a86de85","remote_ref":"refs/heads/main","remote_oid":"1ddd18bef622bd2f734c587e6e3a95b34106856e","user":"z"}
+{"ts":"2026-10-07T07:41:36Z","local_ref":"refs/heads/main","local_oid":"2d1be917dc86ce2342c25927dd77f591eb987045","remote_ref":"refs/heads/main","remote_oid":"be0015672c24d29e99d4de3ef8f33a533a86de85","user":"z"}
+{"ts":"2026-10-07T07:41:42Z","local_ref":"refs/heads/backup/v25.22-full-platform","local_oid":"2d1be917dc86ce2342c25927dd77f591eb987045","remote_ref":"refs/heads/backup/v25.22-full-platform","remote_oid":"0000000000000000000000000000000000000000","user":"z"}
+{"ts":"2026-10-07T07:41:43Z","local_ref":"refs/tags/v25.22-full-platform","local_oid":"2d1be917dc86ce2342c25927dd77f591eb987045","remote_ref":"refs/tags/v25.22-full-platform","remote_oid":"0000000000000000000000000000000000000000","user":"z"}
