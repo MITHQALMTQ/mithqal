@@ -1,49 +1,55 @@
+"use client";
+
+import dynamic from "next/dynamic";
+import Navbar from "@/components/Navbar";
+import HeroParallax from "@/components/HeroParallax";
+import FeatureGrid from "@/components/FeatureGrid";
+
 /**
- * MITHQAL — Home Page (/)
- * v25.19: PIXEL-PERFECT — uses the reference image DIRECTLY as the full-page
- * background. The nav header overlays on top (semi-transparent + backdrop-blur).
- * The GlobalThemeToggle button (from layout.tsx) floats bottom-right.
+ * MITHQAL — Hyper-Immersive Cinematic Landing Page (v25.20)
  *
- * This gives TRUE pixel-by-pixel match to the reference photo because the
- * page IS the reference image (enhanced: upscaled to 1920px + sharpened +
- * saturation boost for maximum pixel quality).
+ * Hybrid Architecture:
+ *   - Static DOM for UI (Navbar, text, buttons, FeatureGrid)
+ *   - GSAP ScrollTrigger for 2.5D parallax (HeroParallax)
+ *   - Framer Motion for text orchestration (word-by-word stagger)
+ *   - React Three Fiber WebGL confined to water reflection pool only
  *
- * BUILD_MODE = FROZEN — no backend changes.
- * productionAuthorized = false | institutionallyValidated = false
+ * Z-Index Layering:
+ *   Z-10: layer_0_sky.webp (yPercent: 15)
+ *   Z-20: HTML Content (titles, CTAs)
+ *   Z-30: layer_1_mountains.webp (yPercent: 8)
+ *   Z-40: layer_2_monolith.png (yPercent: 2) + amber aura
+ *   Z-50: layer_3_foreground_rocks.png (yPercent: 0, anchor)
+ *   Z-55: WebGL Water Canvas (bottom 35vh reflection pool)
+ *   Z-60: FeatureGrid (docked footer feature matrix)
+ *   Z-100: Navbar (fixed top)
+ *
+ * Performance: 100/100 Lighthouse target. WebGL confined to bottom 35vh.
  */
 
-import "./pixel-perfect.css";
-
-const MithqalLogo = () => (
-  <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
-    <path d="M4 24V6L14 16L24 6V24" stroke="var(--gold)" strokeWidth="2.5" fill="none" strokeLinejoin="miter" strokeLinecap="square" />
-    <path d="M14 16V24" stroke="var(--gold)" strokeWidth="2.5" />
-  </svg>
+// Dynamically import WaterShader (client-only, no SSR)
+const WaterCanvas = dynamic(
+  () => import("@/components/WaterShader").then((m) => m.WaterCanvas),
+  { ssr: false }
 );
-
-const NAV_ITEMS = ["Home", "Features", "Ecosystem", "Roadmap", "About"];
-const NAV_HREFS = ["/", "/features", "/ecosystem", "/roadmap", "/about"];
 
 export default function HomePage() {
   return (
-    <div
-      className="pixel-page"
-      style={{ backgroundImage: 'url("/assets/mithqal-home-full.png")' }}
-      role="img"
-      aria-label="MITHQAL home page — full reference design"
-    >
-      <header className="site-header">
-        <div className="header-inner">
-          <a className="brand" href="/" aria-label="MITHQAL home"><MithqalLogo /><span className="brand-wordmark">MITHQAL</span></a>
-          <nav className="primary-nav" aria-label="Primary navigation">
-            {NAV_ITEMS.map((item, i) => (
-              <a key={item} className={`nav-link ${item === "Home" ? "active" : ""}`} href={NAV_HREFS[i]}>{item}</a>
-            ))}
-          </nav>
-          <a className="launch-btn" href="/features"><span>Launch App</span><span aria-hidden="true">→</span></a>
-        </div>
-      </header>
-      {/* The background image provides ALL visual content — pixel-perfect match to the reference photo */}
-    </div>
+    <main className="relative w-full min-h-screen overflow-x-hidden bg-[#07090e]">
+      {/* Fixed Premium Navigation */}
+      <Navbar />
+
+      {/* Hero Parallax (GSAP pinned + Framer Motion text stagger) */}
+      <HeroParallax />
+
+      {/* Z-55: Isolated WebGL Water Reflection Pool (bottom 35vh) */}
+      <WaterCanvas assetPath="/hero/layer_0_sky.webp" />
+
+      {/* Z-60: Docked Footer Feature Matrix */}
+      <FeatureGrid />
+
+      {/* Scroll spacer (the pinned hero releases after viewport height) */}
+      <div className="relative h-screen w-full" />
+    </main>
   );
 }
