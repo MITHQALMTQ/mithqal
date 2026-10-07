@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import Navbar from "@/components/Navbar";
 import FeatureGrid from "@/components/FeatureGrid";
 import { WaterCanvas } from "@/components/WaterShader";
+import Footer from "@/components/Footer";
 
 /**
  * MITHQAL — Pilot Page (/pilot)
@@ -167,6 +168,7 @@ export default function PilotPage() {
           </div>
         </section>
       </div>
+      <Footer />
     </main>
   );
 }

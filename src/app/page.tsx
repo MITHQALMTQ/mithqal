@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import FeatureGrid from "@/components/FeatureGrid";
 import { WaterCanvas } from "@/components/WaterShader";
+import Footer from "@/components/Footer";
 
 /**
  * MITHQAL — Hyper-Immersive Cinematic Landing Page (v25.21)

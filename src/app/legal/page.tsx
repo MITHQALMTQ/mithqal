@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import Navbar from "@/components/Navbar";
 import FeatureGrid from "@/components/FeatureGrid";
 import { WaterCanvas } from "@/components/WaterShader";
+import Footer from "@/components/Footer";
 
 /**
  * MITHQAL — Legal Page (/legal)
@@ -194,6 +195,7 @@ export default function LegalPage() {
           </div>
         </section>
       </div>
+      <Footer />
     </main>
   );
 }

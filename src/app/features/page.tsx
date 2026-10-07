@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import Navbar from "@/components/Navbar";
 import FeatureGrid from "@/components/FeatureGrid";
 import { WaterCanvas } from "@/components/WaterShader";
+import Footer from "@/components/Footer";
 
 /**
  * MITHQAL — Features Page (/features)
@@ -130,6 +131,7 @@ export default function FeaturesPage() {
           </div>
         </section>
       </div>
+      <Footer />
     </main>
   );
 }
