@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useMemo } from "react";
+import React, { useRef, useMemo, useState, useEffect } from "react";
 import { Canvas, useFrame, useLoader, extend } from "@react-three/fiber";
 import { shaderMaterial } from "@react-three/drei";
 import * as THREE from "three";
@@ -139,11 +139,20 @@ interface WaterCanvasProps {
 }
 
 export const WaterCanvas: React.FC<WaterCanvasProps> = ({ assetPath }) => {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setMounted(true);
+  }, []);
+
   return (
     <div className="absolute bottom-0 left-0 w-full h-[35vh] z-[55] pointer-events-auto">
-      <Canvas camera={{ position: [0, 0, 5], fov: 75 }}>
-        <WaterShaderMesh backgroundImageUrl={assetPath} />
-      </Canvas>
+      {mounted && (
+        <Canvas camera={{ position: [0, 0, 5], fov: 75 }}>
+          <WaterShaderMesh backgroundImageUrl={assetPath} />
+        </Canvas>
+      )}
     </div>
   );
 };

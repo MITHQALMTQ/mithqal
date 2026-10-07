@@ -938,3 +938,30 @@ html {
   transform: translateY(0);
   transition: opacity 0.4s ease, transform 0.4s ease;
 }
+
+/* ===== v25.20.3: Framer Motion fallback — ensure text is visible before JS loads =====
+ * Framer Motion sets opacity:0 as the initial "hidden" variant on the server.
+ * If JS fails to load (slow connection, blocked JS), the text stays invisible.
+ * This CSS rule ensures the text is visible by default, and Framer Motion
+ * overrides it with the animation on client hydration.
+ */
+@media (prefers-reduced-motion: reduce) {
+  [style*="opacity:0"] {
+    opacity: 1 !important;
+    filter: none !important;
+    transform: none !important;
+  }
+}
+
+/* Fallback: if JS hasn't loaded after 3s, force text visible */
+@keyframes framer-fallback {
+  0%, 90% { opacity: 0; }
+  100% { opacity: 1; filter: none; transform: none; }
+}
+
+/* The HeroParallax section text should be visible even without JS */
+.hero-text-fallback {
+  opacity: 1 !important;
+  filter: none !important;
+  transform: none !important;
+}
