@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useMemo } from "react";
 import { Canvas, useFrame, useLoader, extend } from "@react-three/fiber";
 import { shaderMaterial } from "@react-three/drei";
 import * as THREE from "three";
@@ -98,13 +98,16 @@ interface WaterMeshProps {
 
 const WaterShaderMesh: React.FC<WaterMeshProps> = ({ backgroundImageUrl }) => {
   const materialRef = useRef<any>(null);
-  const texture = useLoader(THREE.TextureLoader, backgroundImageUrl);
+  const loadedTexture = useLoader(THREE.TextureLoader, backgroundImageUrl);
 
-  useEffect(() => {
-    texture.wrapS = THREE.RepeatWrapping;
-    texture.wrapT = THREE.RepeatWrapping;
-    texture.needsUpdate = true;
-  }, [texture]);
+  // Clone the texture and set wrapping on the clone (avoids mutating the hook's return value)
+  const texture = useMemo(() => {
+    const t = loadedTexture.clone();
+    t.wrapS = THREE.RepeatWrapping;
+    t.wrapT = THREE.RepeatWrapping;
+    t.needsUpdate = true;
+    return t;
+  }, [loadedTexture]);
 
   useFrame((state) => {
     if (materialRef.current) {
