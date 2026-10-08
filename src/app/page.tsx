@@ -5,6 +5,7 @@ import Navbar from "@/components/Navbar";
 import FeatureGrid from "@/components/FeatureGrid";
 import { WaterCanvas } from "@/components/WaterShader";
 import Footer from "@/components/Footer";
+import ProgramStatus from "@/components/ProgramStatus";
 
 /**
  * MITHQAL — Hyper-Immersive Cinematic Landing Page (v25.27)
@@ -171,6 +172,41 @@ export default function HomePage() {
         </div>
       </section>
 
+      
+      <ProgramStatus data={{
+  "title": "PROGRAM STATUS OVERVIEW",
+  "badge": "BUILD_MODE = FROZEN — MTQ DISABLED",
+  "badgeColor": "amber",
+  "metrics": [
+    {
+      "label": "Latest Prompt",
+      "value": "77",
+      "status": "conditional"
+    },
+    {
+      "label": "Pages Built",
+      "value": "10",
+      "status": "pass"
+    },
+    {
+      "label": "Providers",
+      "value": "1/5",
+      "status": "blocked"
+    },
+    {
+      "label": "Production",
+      "value": "BLOCKED",
+      "status": "blocked"
+    }
+  ],
+  "blockers": [
+    "4 of 5 providers blocked (Vercel, Inngest, Turso, Neon)",
+    "5 credentials require operator rotation",
+    "G0 gate: FAIL (16 unresolved issues)",
+    "Pilot A: 18/18 conditions blocking"
+  ],
+  "note": "MITHQAL is an institutional settlement control plane — designed, not deployed. The website is a public institutional facade documenting the architecture, evidence model, and controlled pilot pathway. NOT PRODUCTION-AUTHORIZED."
+}} />
       <Footer />
     </main>
   );

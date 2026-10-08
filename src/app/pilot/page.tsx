@@ -6,6 +6,7 @@ import Navbar from "@/components/Navbar";
 import FeatureGrid from "@/components/FeatureGrid";
 import { WaterCanvas } from "@/components/WaterShader";
 import Footer from "@/components/Footer";
+import ProgramStatus from "@/components/ProgramStatus";
 
 /**
  * MITHQAL — Pilot Page (/pilot)
@@ -364,6 +365,43 @@ export default function PilotPage() {
           </div>
         </section>
       </div>
+      
+      <ProgramStatus data={{
+  "title": "PILOT-A READINESS",
+  "badge": "18/18 CONDITIONS BLOCKING",
+  "badgeColor": "red",
+  "metrics": [
+    {
+      "label": "Conditions Precedent",
+      "value": "18/18",
+      "status": "blocked"
+    },
+    {
+      "label": "Banks Contacted",
+      "value": "0",
+      "status": "blocked"
+    },
+    {
+      "label": "Workshops",
+      "value": "0",
+      "status": "blocked"
+    },
+    {
+      "label": "Counsel Engaged",
+      "value": "0",
+      "status": "blocked"
+    }
+  ],
+  "blockers": [
+    "B-LEGAL: G0_CONDITIONAL + G1 BLOCKED (0 counsel, 50 questions)",
+    "B-REGULATORY: 0/8 jurisdictions triaged, 0 filed",
+    "B-BANK: 0 banks contacted, 0 workshops conducted",
+    "B-DATA: 0 bank baseline data, 0 NDA, 0 DPA",
+    "ALL 15 KPI baselines UNKNOWN",
+    "Term sheet status: BLOCKED_BY_WORKSHOP"
+  ],
+  "note": "Pilot ID: PILOT-A-001. Corridor: C-AE-SG (NOT bank-confirmed). Settlement: PROPOSED (BANK_MONEY, MTQ disabled, SIMULATED). All conditions must be resolved before pilot execution."
+}} />
       <Footer />
     </main>
   );
