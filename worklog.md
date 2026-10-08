@@ -11597,3 +11597,41 @@ Time to fix the 4 URGENT items: ~30 minutes of code, ~5 minutes of
 CI/CD, ~10 minutes to verify on production. Total: < 1 hour.
 
 — End of Task 49-FINAL-E2E-AUDIT
+
+---
+Task ID: 50-HARDEN-AND-DOCUMENT-FIXINGS
+Agent: COO/CTO/Project Manager
+Task: Backup, harden, verify nothing missing, delete old git, document fixings
+
+Work Log:
+- Verified ALL items present: 10 pages, 10 components, 4 hero layers, 10 landscapes, 9 layouts, 404, sitemap, robots, 287 institutional files, .env.encrypted
+- Deleted 41 old tags (v25.3 through v25.24)
+- Deleted 20 old backup branches (backup/v25.7 through backup/v25.24)
+- Deleted 4 old hardened-backup branches (v25.2, v25.3, v25.3.2, v25.3.22)
+- Deleted 2 old local audit branches
+- Remaining: 4 tags (v25.33+), 4 backup branches (v25.33+), main, vercel/install
+- Branch protection: enforce_admins=True, force_pushes=False, allow_deletions=False
+- .env re-encrypted (AES-256-CBC + PBKDF2)
+- 5/5 providers verified live (GitHub, Vercel, Neon, Turso, Inngest)
+
+FIXINGS TO REMEMBER (to not face same errors again):
+1. Don't use dynamic({ssr:false}) in server components — causes BAILOUT_TO_CLIENT_SIDE_RENDERING (blank page). Use ClientProviders wrapper ("use client") instead.
+2. Don't use min-min-height typo — verify Python regex replacements carefully.
+3. Don't use multi-line JSON in JSX attributes — breaks JSX parsing. Use single-line JSON.
+4. Don't use require() in TypeScript — use import. Add eslint-disable for unavoidable cases.
+5. Don't have both public/sitemap.xml AND src/app/sitemap.ts — Next.js conflict error. Use dynamic route only.
+6. Don't use text-white/60 opacity — fails WCAG AA. Use text-[#cbd5e1] (passes AAA).
+7. Don't use THREE.Clock in useFrame — deprecated. Use delta accumulation.
+8. Don't leave empty h-screen scroll spacers — looks broken. Replace with content.
+9. Don't place WaterCanvas outside hero section — covers footer. Always inside <section>.
+10. Always run bun install after git reset --hard — node_modules gets cleaned.
+11. Always verify HEAD matches origin/main after reset — use git fetch --force + reset --hard.
+12. Don't use set-state-in-effect without eslint-disable — React 19+ flags it.
+
+Stage Summary:
+- All old git artifacts deleted — repo can never roll back to v25.3-v25.24
+- Only v25.33-v25.35 tags + backups remain
+- Branch protection prevents force-push + deletion
+- 5/5 providers live in harmony
+- 10 pages + 404 + 10 components + 14 assets + 287 institutional files verified
+- Lint clean, all HTTP 200
