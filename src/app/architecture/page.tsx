@@ -1,11 +1,15 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import dynamic from "next/dynamic";
 import { motion } from "framer-motion";
 import Navbar from "@/components/Navbar";
 import FeatureGrid from "@/components/FeatureGrid";
 import { WaterCanvas } from "@/components/WaterShader";
 import Footer from "@/components/Footer";
+
+// 3D architecture explorer — WebGL canvas, must be client-only (no SSR).
+const Architecture3D = dynamic(() => import("@/components/Architecture3D"), { ssr: false });
 
 /**
  * MITHQAL — Architecture Page (/architecture)
@@ -110,6 +114,15 @@ export default function ArchitecturePage() {
                 </div>
               </div>
             ))}
+          </div>
+
+          {/* Phase 3 — Interactive 3D isometric architecture explorer (R3F) */}
+          <div className="mb-12 mt-10">
+            <div className="text-center mb-4">
+              <span className="text-xs font-semibold tracking-[0.28em] uppercase text-amber-400/80">INTERACTIVE 3D VIEW</span>
+              <p className="text-sm text-[#94a3b8] mt-2">Orbit, zoom, and hover each layer to inspect its role in the architecture.</p>
+            </div>
+            <Architecture3D />
           </div>
         </section>
 

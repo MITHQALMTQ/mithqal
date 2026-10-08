@@ -46,6 +46,200 @@ const CONSTRAINTS = [
   { num: "03", title: "Evidence-Gated Expansion", desc: "Any expansion beyond the configured scope requires explicit evidence-based evaluation — no silent growth." },
 ];
 
+/* ───────────────────────────────────────────────────────────────────────────
+ * Phase 3 — Pilot Eligibility Checker
+ *
+ * Interactive 5-question form (radio-based). Each answer contributes a points
+ * weight (0-20) and the aggregate score (0-100) gates three outcomes:
+ *   ≥80  → Pilot Ready     (CTA enabled → /contact)
+ *   50-79→ Exploring       (CTA enabled → /contact)
+ *   <50  → Not Ready       (no CTA — focus on building evidence first)
+ *
+ * Page is already "use client" so useState is permitted inside this component.
+ * ─────────────────────────────────────────────────────────────────────────── */
+
+interface CheckerOption {
+  label: string;
+  value: string;
+  points: number;
+}
+interface CheckerQuestion {
+  id: string;
+  label: string;
+  options: CheckerOption[];
+}
+
+const CHECKER_QUESTIONS: CheckerQuestion[] = [
+  {
+    id: "institutionType",
+    label: "Institution Type",
+    options: [
+      { label: "Regulated Bank", value: "bank", points: 20 },
+      { label: "Payment Network", value: "network", points: 15 },
+      { label: "Regulator", value: "regulator", points: 10 },
+      { label: "Other", value: "other", points: 5 },
+    ],
+  },
+  {
+    id: "jurisdiction",
+    label: "Jurisdiction",
+    options: [
+      { label: "Defined", value: "defined", points: 20 },
+      { label: "Multiple", value: "multiple", points: 10 },
+      { label: "Unknown", value: "unknown", points: 0 },
+    ],
+  },
+  {
+    id: "assetVolume",
+    label: "Asset Volume",
+    options: [
+      { label: ">$100M", value: "100m+", points: 20 },
+      { label: "$10M-$100M", value: "10-100m", points: 15 },
+      { label: "<$10M", value: "10m-", points: 5 },
+    ],
+  },
+  {
+    id: "evidenceCapability",
+    label: "Evidence Capability",
+    options: [
+      { label: "Full", value: "full", points: 20 },
+      { label: "Partial", value: "partial", points: 10 },
+      { label: "None", value: "none", points: 0 },
+    ],
+  },
+  {
+    id: "pilotReadiness",
+    label: "Pilot Readiness",
+    options: [
+      { label: "Ready", value: "ready", points: 20 },
+      { label: "Exploring", value: "exploring", points: 10 },
+      { label: "Not Ready", value: "not-ready", points: 0 },
+    ],
+  },
+];
+
+const CHECKER_MAX_SCORE = 100; // 20 + 20 + 20 + 20 + 20
+
+function EligibilityChecker() {
+  const [answers, setAnswers] = useState<Record<string, string>>({});
+
+  const score = CHECKER_QUESTIONS.reduce((sum, q) => {
+    const chosen = q.options.find((o) => o.value === answers[q.id]);
+    return sum + (chosen?.points ?? 0);
+  }, 0);
+
+  const allAnswered = CHECKER_QUESTIONS.every((q) => answers[q.id]);
+
+  // Tiered result message — only meaningful once every question is answered.
+  let resultTitle = "Awaiting Responses";
+  let resultMessage = "Answer all five questions to compute your pilot readiness score.";
+  let resultAccent = "text-amber-400";
+  let showCta = false;
+
+  if (allAnswered) {
+    if (score >= 80) {
+      resultTitle = "Pilot Ready";
+      resultMessage = "Contact the MITHQAL team to begin engagement.";
+      resultAccent = "text-emerald-400";
+      showCta = true;
+    } else if (score >= 50) {
+      resultTitle = "Exploring";
+      resultMessage = "Review the architecture and evidence model.";
+      resultAccent = "text-amber-400";
+      showCta = true;
+    } else {
+      resultTitle = "Not Ready";
+      resultMessage = "Focus on building evidence capability first.";
+      resultAccent = "text-red-400";
+      showCta = false;
+    }
+  }
+
+  return (
+    <section id="checker" className="max-w-[1440px] mx-auto px-6 md:px-12 py-24 border-t border-white/5">
+      <div className="text-center mb-16">
+        <div className="inline-flex items-center gap-3 mb-4">
+          <span className="w-px h-4 bg-amber-400" />
+          <span className="text-xs font-semibold tracking-[0.28em] uppercase text-amber-400">PILOT ELIGIBILITY CHECKER</span>
+        </div>
+        <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white">Are You <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Pilot Ready?</span></h2>
+        <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mt-6">Answer five institutional questions to compute your pilot readiness score (0–100) and surface the next step for your institution.</p>
+      </div>
+
+      <div className="max-w-4xl mx-auto space-y-6">
+        {CHECKER_QUESTIONS.map((q, qi) => (
+          <div key={q.id} className="bg-white/5 backdrop-blur-sm border border-amber-500/10 rounded-2xl p-8 hover:border-amber-500/20 transition-all duration-300">
+            <div className="flex items-baseline gap-3 mb-4">
+              <span className="text-xs font-semibold text-amber-400 tracking-[0.1em]">{String(qi + 1).padStart(2, "0")}</span>
+              <h3 className="text-lg font-semibold text-white">{q.label}</h3>
+            </div>
+            <div className="flex flex-wrap gap-3" role="radiogroup" aria-label={q.label}>
+              {q.options.map((opt) => {
+                const selected = answers[q.id] === opt.value;
+                return (
+                  <label
+                    key={opt.value}
+                    className={`cursor-pointer select-none px-5 py-2.5 rounded-full border text-sm font-medium transition-all duration-300 ${selected ? "bg-gradient-to-r from-amber-400 to-amber-200 text-[#07090e] border-amber-300 shadow-lg shadow-amber-500/20" : "border-amber-400/30 bg-black/30 text-white/80 hover:border-amber-400/60 hover:bg-amber-500/10"}`}
+                  >
+                    <input
+                      type="radio"
+                      name={q.id}
+                      value={opt.value}
+                      checked={selected}
+                      onChange={() => setAnswers((prev) => ({ ...prev, [q.id]: opt.value }))}
+                      className="sr-only"
+                    />
+                    {opt.label}
+                  </label>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+
+        {/* Score + result panel */}
+        <div className="bg-white/5 backdrop-blur-sm border border-amber-500/10 rounded-2xl p-8">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-semibold text-amber-400 tracking-[0.28em] uppercase">Pilot Readiness Score</span>
+            <span className="text-2xl font-bold text-white tabular-nums">
+              {score}
+              <span className="text-base text-[#94a3b8]">/{CHECKER_MAX_SCORE}</span>
+            </span>
+          </div>
+
+          {/* Gold gradient progress bar — animates width to score% */}
+          <div className="h-4 rounded-full bg-black/40 overflow-hidden border border-amber-500/10">
+            <motion.div
+              className="h-full rounded-full bg-gradient-to-r from-amber-400 to-amber-200"
+              initial={{ width: 0 }}
+              animate={{ width: `${score}%` }}
+              transition={{ duration: 0.6, ease: "easeOut" }}
+            />
+          </div>
+
+          {/* Result message */}
+          <div className="mt-6">
+            <div className={`text-lg font-semibold ${resultAccent} mb-1`}>{resultTitle}</div>
+            <div className="text-sm text-[#cbd5e1]">{resultMessage}</div>
+          </div>
+
+          {/* CTA — only visible when score >= 50 */}
+          {showCta && (
+            <div className="mt-6">
+              <a
+                href="/contact"
+                className="inline-block px-8 py-3 rounded-full bg-gradient-to-r from-amber-400 to-amber-200 text-[#07090e] font-semibold text-sm tracking-wide hover:scale-105 transition-transform duration-300 btn-press shadow-lg shadow-amber-500/30 border-2 border-amber-300"
+              >
+                Contact the MITHQAL Team →
+              </a>
+            </div>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export default function PilotPage() {
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
@@ -156,6 +350,9 @@ export default function PilotPage() {
             ))}
           </div>
         </section>
+
+        {/* Pilot Eligibility Checker (Phase 3 interactive) */}
+        <EligibilityChecker />
 
         {/* CTA */}
         <section className="max-w-[1440px] mx-auto px-6 md:px-12 py-24 border-t border-white/5 text-center">

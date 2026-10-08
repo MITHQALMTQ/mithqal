@@ -104,7 +104,7 @@ export default function EvidencePage() {
           </div>
         </section>
 
-        {/* Evidence Formula */}
+        {/* Evidence Formula — enhanced with animated Reserve Backing Visualization */}
         <section className="max-w-[1440px] mx-auto px-6 md:px-12 py-24 border-t border-white/5">
           <div className="text-center mb-16">
             <div className="inline-flex items-center gap-3 mb-4">
@@ -114,7 +114,9 @@ export default function EvidencePage() {
             <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white">Only True <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Availability.</span></h2>
             <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mt-6">Available backing is not assumed — it is computed. Recognized, minus encumbered, minus allocated, equals only what is truly available to spend.</p>
           </div>
-          <div className="max-w-4xl mx-auto">
+
+          <div className="max-w-4xl mx-auto space-y-8">
+            {/* Formula — prominent display */}
             <div className="bg-white/5 backdrop-blur-sm border border-amber-500/10 rounded-2xl p-10 md:p-14 text-center">
               <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-6 text-xl md:text-3xl font-semibold text-white/80">
                 <span>Recognized</span>
@@ -125,6 +127,89 @@ export default function EvidencePage() {
                 <span className="text-amber-400">=</span>
                 <span className="inline-block bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Available Backing</span>
               </div>
+            </div>
+
+            {/* Reserve Backing Visualization — animated horizontal bars */}
+            <div className="bg-white/5 backdrop-blur-sm border border-amber-500/10 rounded-2xl p-8 md:p-10">
+              <div className="flex items-center gap-3 mb-8">
+                <span className="w-px h-4 bg-amber-400" />
+                <span className="text-xs font-semibold tracking-[0.28em] uppercase text-amber-400">RESERVE BACKING VISUALIZATION</span>
+              </div>
+
+              <div className="space-y-6">
+                {/* Recognized — 100% width, gold */}
+                <div>
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-sm font-semibold text-white">Recognized</span>
+                    <span className="text-sm text-amber-400 font-semibold tabular-nums">$130M</span>
+                  </div>
+                  <div className="h-8 rounded-full bg-black/40 overflow-hidden border border-amber-500/10">
+                    <motion.div
+                      className="h-full rounded-full bg-gradient-to-r from-amber-400 to-amber-200"
+                      initial={{ width: 0 }}
+                      whileInView={{ width: "100%" }}
+                      viewport={{ once: true, margin: "-80px" }}
+                      transition={{ duration: 1.2, ease: "easeOut" }}
+                    />
+                  </div>
+                </div>
+
+                {/* Encumbered — 35% width, red-500 */}
+                <div>
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-sm font-semibold text-white">Encumbered</span>
+                    <span className="text-sm text-red-400 font-semibold tabular-nums">$45.5M</span>
+                  </div>
+                  <div className="h-8 rounded-full bg-black/40 overflow-hidden border border-amber-500/10">
+                    <motion.div
+                      className="h-full rounded-full bg-red-500"
+                      initial={{ width: 0 }}
+                      whileInView={{ width: "35%" }}
+                      viewport={{ once: true, margin: "-80px" }}
+                      transition={{ duration: 1.2, ease: "easeOut", delay: 0.2 }}
+                    />
+                  </div>
+                </div>
+
+                {/* Allocated — 20% width, amber-500 */}
+                <div>
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-sm font-semibold text-white">Allocated</span>
+                    <span className="text-sm text-amber-500 font-semibold tabular-nums">$26M</span>
+                  </div>
+                  <div className="h-8 rounded-full bg-black/40 overflow-hidden border border-amber-500/10">
+                    <motion.div
+                      className="h-full rounded-full bg-amber-500"
+                      initial={{ width: 0 }}
+                      whileInView={{ width: "20%" }}
+                      viewport={{ once: true, margin: "-80px" }}
+                      transition={{ duration: 1.2, ease: "easeOut", delay: 0.4 }}
+                    />
+                  </div>
+                </div>
+
+                {/* Available Backing — 45% width, emerald-400 */}
+                <div>
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-sm font-semibold text-white">Available Backing</span>
+                    <span className="text-sm text-emerald-400 font-semibold tabular-nums">$58.5M</span>
+                  </div>
+                  <div className="h-8 rounded-full bg-black/40 overflow-hidden border border-amber-500/10">
+                    <motion.div
+                      className="h-full rounded-full bg-emerald-400"
+                      initial={{ width: 0 }}
+                      whileInView={{ width: "45%" }}
+                      viewport={{ once: true, margin: "-80px" }}
+                      transition={{ duration: 1.2, ease: "easeOut", delay: 0.6 }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Reuse prohibition note */}
+              <p className="text-sm text-[#94a3b8] italic mt-8 text-center border-t border-white/5 pt-6">
+                Evidence must not be reused across multiple backing claims.
+              </p>
             </div>
           </div>
         </section>

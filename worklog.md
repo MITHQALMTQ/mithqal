@@ -11072,3 +11072,92 @@ is fully met. The shared-Footer objective is met on 9/10 pages but FAILED on
 the home page (`/`) due to a 1-line JSX omission in `src/app/page.tsx` (the
 `Footer` import is present, but `<Footer />` is not rendered). Recommend a
 single-line patch + re-deploy.
+
+---
+
+## Task ID 44-PHASE3-FEATURES — Phase 3 Interactive Features
+
+**Date:** see file mtime.
+**Role:** Senior Frontend Developer.
+**Scope:** Integrate the new Architecture3D R3F canvas into the /architecture
+page, build a Pilot Eligibility Checker on /pilot, and build an animated
+Reserve Backing Visualization on /evidence — all without rewriting any
+existing sections.
+
+### Files modified (exactly 3 — per CRITICAL rule)
+
+1. `src/app/architecture/page.tsx`
+   - Added `import dynamic from "next/dynamic"` and
+     `const Architecture3D = dynamic(() => import("@/components/Architecture3D"), { ssr: false })`
+     (SSR disabled because the component renders a WebGL canvas via React
+     Three Fiber).
+   - Rendered `<Architecture3D />` INSIDE the existing "Four-Layer
+     Architecture" section (`id="layers"`), placed AFTER the 4-card grid
+     so users see the conceptual cards first, then the live 3D isometric
+     view. Wrapped in a small "INTERACTIVE 3D VIEW" caption block.
+
+2. `src/app/pilot/page.tsx`
+   - Added a new `EligibilityChecker` component (defined in-file before
+     `PilotPage`). Page is already `"use client"`, so `useState` is legal.
+   - 5 radio-based questions, each with points-weighted options:
+     - Institution Type: Regulated Bank=20 / Payment Network=15 /
+       Regulator=10 / Other=5
+     - Jurisdiction: Defined=20 / Multiple=10 / Unknown=0
+     - Asset Volume: >$100M=20 / $10M-$100M=15 / <$10M=5
+     - Evidence Capability: Full=20 / Partial=10 / None=0
+     - Pilot Readiness: Ready=20 / Exploring=10 / Not Ready=0
+     - MAX_SCORE = 100.
+   - Score is derived (single source of truth) via `reduce()` over the
+     `CHECKER_QUESTIONS` table — no risk of UI/score drift.
+   - Tiered result:
+     - ≥80: "Pilot Ready — Contact the MITHQAL team to begin engagement."
+       (emerald accent; CTA shown → /contact)
+     - 50–79: "Exploring — Review the architecture and evidence model."
+       (amber accent; CTA shown → /contact)
+     - <50: "Not Ready — Focus on building evidence capability first."
+       (red accent; CTA hidden)
+   - Gold gradient progress bar (`from-amber-400 to-amber-200`) animates
+     width to `score%` via Framer Motion `motion.div`.
+   - Rendered `<EligibilityChecker />` immediately BEFORE the CTA section.
+
+3. `src/app/evidence/page.tsx`
+   - Enhanced the existing "Evidence Formula" section (kept the prominent
+     formula card on top, added a new visualization card below).
+   - Added 4 animated horizontal bars (Framer Motion `motion.div`):
+     | Bar              | Width | Color        | Value    |
+     |------------------|-------|--------------|----------|
+     | Recognized       | 100%  | gold gradient| $130M    |
+     | Encumbered       | 35%   | red-500      | $45.5M   |
+     | Allocated        | 20%   | amber-500    | $26M     |
+     | Available Backing| 45%   | emerald-400  | $58.5M   |
+     Numerical check: 130 − 45.5 − 26 = 58.5 ✓ — internally consistent.
+   - Each bar uses `initial={{width:0}} whileInView={{width:'X%'}}
+     viewport={{once:true, margin:'-80px'}}` so the animation triggers on
+     scroll-into-view and only plays once. Staggered delays (0 / 0.2 / 0.4 /
+     0.6s) create a cascade reveal.
+   - Bars are `h-8 rounded-full` on a `bg-black/40` track.
+   - Added the note: "Evidence must not be reused across multiple backing
+     claims." at the bottom of the visualization card.
+
+### Verification
+
+- `bun run lint` — **PASS**. 0 errors, 1 warning.
+  The single warning is in `src/components/Navbar.tsx` ("Unused eslint-
+  disable directive") — pre-existing, NOT in any file this task touched.
+- `/home/z/my-project/dev.log` was not present at verification time (dev
+  server had not produced a log yet); lint is the canonical quality gate.
+
+### Honest summary
+
+- All three tasks completed exactly to spec. No existing section in any of
+  the three pages was rewritten; only additive edits were made.
+- The three new interactive features form the Phase 3 algorithmic
+  differentiator layer on top of the v25.22 cinematic page shells:
+  - 3D explorable architecture (webgl, hover tooltips, orbit controls)
+  - 5-question pilot readiness scoring (instant feedback, gold progress,
+    gated CTA)
+  - Animated reserve-backing bars that visually prove the
+    `Recognized − Encumbered − Allocated = Available` formula.
+- Single source of truth for the pilot scoring (`CHECKER_QUESTIONS`) and
+  the reserve math is hard-coded per the brief's "simulated" wording; a
+  future agent can wire live data by replacing those constants only.
