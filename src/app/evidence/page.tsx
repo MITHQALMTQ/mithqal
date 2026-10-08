@@ -247,43 +247,7 @@ export default function EvidencePage() {
         </section>
       </div>
       
-      <ProgramStatus data={{
-  "title": "PROGRAM INTEGRITY — AUDIT STATUS",
-  "badge": "LOSS_RECOVERED_WITH_LIMITATIONS",
-  "badgeColor": "amber",
-  "metrics": [
-    {
-      "label": "Total Prompts",
-      "value": "77",
-      "status": "conditional"
-    },
-    {
-      "label": "Verified Complete",
-      "value": "1",
-      "status": "blocked"
-    },
-    {
-      "label": "Unverifiable",
-      "value": "61",
-      "status": "unknown"
-    },
-    {
-      "label": "Missing",
-      "value": "1",
-      "status": "blocked"
-    }
-  ],
-  "blockers": [
-    "Secret status: BLOCKED (0 working, 5 rotation pending)",
-    "Vercel: UNVERIFIABLE",
-    "Inngest: BLOCKED",
-    "Turso: BLOCKED",
-    "Neon: BLOCKED",
-    "End-to-end: BLOCKED (no secrets, no connectivity)",
-    "Release status: RELEASE_BLOCKED"
-  ],
-  "note": "Prompt 71 MISSING (Pilot A never executed). 15 Prompts 62-69 files RECOVERED from conversation context. 42 assurance files RECOVERED. Dev server running (HTTP 200). GitHub VERIFIED. Harmony score: 0.2 (1 of 5 providers verified)."
-}} />
+      <ProgramStatus data={{"title": "PROGRAM INTEGRITY — AUDIT STATUS","badge": "LOSS_RECOVERED_WITH_LIMITATIONS","badgeColor": "amber","metrics": [{"label": "Total Prompts","value": "77","status": "conditional"},{"label": "Verified Complete","value": "1","status": "blocked"},{"label": "Unverifiable","value": "61","status": "unknown"},{"label": "Missing","value": "1","status": "blocked"}],"blockers": ["Secret status: BLOCKED (0 working, 5 rotation pending)","Vercel: UNVERIFIABLE","Inngest: BLOCKED","Turso: BLOCKED","Neon: BLOCKED","End-to-end: BLOCKED (no secrets, no connectivity)","Release status: RELEASE_BLOCKED"],"note": "Prompt 71 MISSING (Pilot A never executed). 15 Prompts 62-69 files RECOVERED from conversation context. 42 assurance files RECOVERED. Dev server running (HTTP 200). GitHub VERIFIED. Harmony score: 0.2 (1 of 5 providers verified)."}} />
       <Footer />
     </main>
   );

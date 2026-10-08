@@ -196,41 +196,7 @@ export default function LegalPage() {
         </section>
       </div>
       
-      <ProgramStatus data={{
-  "title": "LEGAL WORKSTREAM STATUS",
-  "badge": "G0_CONDITIONAL — COUNSEL REQUIRED",
-  "badgeColor": "amber",
-  "metrics": [
-    {
-      "label": "G0 Status",
-      "value": "CONDITIONAL",
-      "status": "conditional"
-    },
-    {
-      "label": "Legal Contradictions",
-      "value": "3",
-      "status": "blocked"
-    },
-    {
-      "label": "Primary Docs Missing",
-      "value": "3",
-      "status": "blocked"
-    },
-    {
-      "label": "Legal Opinions",
-      "value": "0",
-      "status": "blocked"
-    }
-  ],
-  "blockers": [
-    "3 critical legal contradictions identified",
-    "3 primary documents MISSING (entity docs, board resolution, shareholder agreement)",
-    "Counsel REQUIRED — 0 counsel engaged",
-    "0 validated jurisdictions",
-    "Legal scope defined but NOT counsel-verified"
-  ],
-  "note": "Primary corridor: C-AE-SG (UAE to Singapore). Next external evidence: engage qualified external legal counsel for UAE (DIFC/ADGM) jurisdiction. BLOCKED by G0_CONDITIONAL."
-}} />
+      <ProgramStatus data={{"title": "LEGAL WORKSTREAM STATUS","badge": "G0_CONDITIONAL — COUNSEL REQUIRED","badgeColor": "amber","metrics": [{"label": "G0 Status","value": "CONDITIONAL","status": "conditional"},{"label": "Legal Contradictions","value": "3","status": "blocked"},{"label": "Primary Docs Missing","value": "3","status": "blocked"},{"label": "Legal Opinions","value": "0","status": "blocked"}],"blockers": ["3 critical legal contradictions identified","3 primary documents MISSING (entity docs, board resolution, shareholder agreement)","Counsel REQUIRED — 0 counsel engaged","0 validated jurisdictions","Legal scope defined but NOT counsel-verified"],"note": "Primary corridor: C-AE-SG (UAE to Singapore). Next external evidence: engage qualified external legal counsel for UAE (DIFC/ADGM) jurisdiction. BLOCKED by G0_CONDITIONAL."}} />
       <Footer />
     </main>
   );

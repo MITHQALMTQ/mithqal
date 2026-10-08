@@ -180,41 +180,7 @@ export default function ArchitecturePage() {
         </section>
       </div>
       
-      <ProgramStatus data={{
-  "title": "DEPLOYMENT CHAIN STATUS",
-  "badge": "CHAIN BLOCKED — 1 OF 5 VERIFIED",
-  "badgeColor": "red",
-  "metrics": [
-    {
-      "label": "GitHub",
-      "value": "VERIFIED",
-      "status": "pass"
-    },
-    {
-      "label": "Vercel",
-      "value": "UNVERIFIABLE",
-      "status": "unknown"
-    },
-    {
-      "label": "Inngest",
-      "value": "BLOCKED",
-      "status": "blocked"
-    },
-    {
-      "label": "Turso/Neon",
-      "value": "BLOCKED",
-      "status": "blocked"
-    }
-  ],
-  "blockers": [
-    "GITHUB to VERCEL: UNVERIFIABLE (no Vercel token verified)",
-    "VERCEL to INNGEST: BLOCKED (no Inngest keys)",
-    "INNGEST to TURSO: BLOCKED (no database auth)",
-    "INNGEST to NEON: BLOCKED (no database auth)",
-    "DATABASE to EVIDENCE: BLOCKED (no connectivity)"
-  ],
-  "note": "Chain blocked reason: no secrets, no provider connectivity, deployment chain broken. Harmony score: 0.2 (1 of 5 verified)."
-}} />
+      <ProgramStatus data={{"title": "DEPLOYMENT CHAIN STATUS","badge": "CHAIN BLOCKED — 1 OF 5 VERIFIED","badgeColor": "red","metrics": [{"label": "GitHub","value": "VERIFIED","status": "pass"},{"label": "Vercel","value": "UNVERIFIABLE","status": "unknown"},{"label": "Inngest","value": "BLOCKED","status": "blocked"},{"label": "Turso/Neon","value": "BLOCKED","status": "blocked"}],"blockers": ["GITHUB to VERCEL: UNVERIFIABLE (no Vercel token verified)","VERCEL to INNGEST: BLOCKED (no Inngest keys)","INNGEST to TURSO: BLOCKED (no database auth)","INNGEST to NEON: BLOCKED (no database auth)","DATABASE to EVIDENCE: BLOCKED (no connectivity)"],"note": "Chain blocked reason: no secrets, no provider connectivity, deployment chain broken. Harmony score: 0.2 (1 of 5 verified)."}} />
       <Footer />
     </main>
   );

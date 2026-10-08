@@ -139,41 +139,7 @@ export default function EcosystemPage() {
         </section>
       </div>
       
-      <ProgramStatus data={{
-  "title": "CORRIDOR & BANK PIPELINE",
-  "badge": "0 BANKS CONTACTED — ALL RESEARCHED",
-  "badgeColor": "amber",
-  "metrics": [
-    {
-      "label": "Candidate Corridors",
-      "value": "5",
-      "status": "conditional"
-    },
-    {
-      "label": "Banks Researched",
-      "value": "15",
-      "status": "conditional"
-    },
-    {
-      "label": "Banks Contacted",
-      "value": "0",
-      "status": "blocked"
-    },
-    {
-      "label": "Design Partners",
-      "value": "0",
-      "status": "blocked"
-    }
-  ],
-  "blockers": [
-    "G0_CONDITIONAL — entity not counsel-verified",
-    "0 banks contacted (ALL RESEARCHED, none engaged)",
-    "0 bank-validated problem statements",
-    "0 bank baseline data",
-    "Primary corridor: C-AE-SG (UAE to Singapore) — NOT bank-confirmed"
-  ],
-  "note": "Primary corridor for deep discovery: C-AE-SG (UAE to Singapore). Shortlisted: C-AE-SG, C-AE-EG, C-CN-AE. All corridors require G0_PASS + G1 counsel engagement before bank outreach."
-}} />
+      <ProgramStatus data={{"title": "CORRIDOR & BANK PIPELINE","badge": "0 BANKS CONTACTED — ALL RESEARCHED","badgeColor": "amber","metrics": [{"label": "Candidate Corridors","value": "5","status": "conditional"},{"label": "Banks Researched","value": "15","status": "conditional"},{"label": "Banks Contacted","value": "0","status": "blocked"},{"label": "Design Partners","value": "0","status": "blocked"}],"blockers": ["G0_CONDITIONAL — entity not counsel-verified","0 banks contacted (ALL RESEARCHED, none engaged)","0 bank-validated problem statements","0 bank baseline data","Primary corridor: C-AE-SG (UAE to Singapore) — NOT bank-confirmed"],"note": "Primary corridor for deep discovery: C-AE-SG (UAE to Singapore). Shortlisted: C-AE-SG, C-AE-EG, C-CN-AE. All corridors require G0_PASS + G1 counsel engagement before bank outreach."}} />
       <Footer />
     </main>
   );

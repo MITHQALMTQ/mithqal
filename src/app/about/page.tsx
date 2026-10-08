@@ -138,42 +138,7 @@ export default function AboutPage() {
         </section>
       </div>
       
-      <ProgramStatus data={{
-  "title": "MITHQAL PROGRAM STATUS",
-  "badge": "RELEASE_BLOCKED — NOT PRODUCTION-AUTHORIZED",
-  "badgeColor": "red",
-  "metrics": [
-    {
-      "label": "Program Integrity",
-      "value": "RECOVERED",
-      "status": "conditional"
-    },
-    {
-      "label": "Providers Verified",
-      "value": "1/5",
-      "status": "blocked"
-    },
-    {
-      "label": "Production Authorized",
-      "value": "FALSE",
-      "status": "blocked"
-    },
-    {
-      "label": "Institutionally Validated",
-      "value": "FALSE",
-      "status": "blocked"
-    }
-  ],
-  "blockers": [
-    "GitHub: VERIFIED (only provider working)",
-    "Vercel: UNVERIFIABLE",
-    "Inngest: BLOCKED",
-    "Turso: BLOCKED",
-    "Neon: BLOCKED",
-    "5 credentials require operator rotation (AI cannot rotate)"
-  ],
-  "note": "MITHQAL is designed, not deployed. The build is frozen, the MTQ primitive is disabled, and every architectural commitment is documented for institutional review. The program is at the G0 gate — entity verification is the first external evidence required."
-}} />
+      <ProgramStatus data={{"title": "MITHQAL PROGRAM STATUS","badge": "RELEASE_BLOCKED — NOT PRODUCTION-AUTHORIZED","badgeColor": "red","metrics": [{"label": "Program Integrity","value": "RECOVERED","status": "conditional"},{"label": "Providers Verified","value": "1/5","status": "blocked"},{"label": "Production Authorized","value": "FALSE","status": "blocked"},{"label": "Institutionally Validated","value": "FALSE","status": "blocked"}],"blockers": ["GitHub: VERIFIED (only provider working)","Vercel: UNVERIFIABLE","Inngest: BLOCKED","Turso: BLOCKED","Neon: BLOCKED","5 credentials require operator rotation (AI cannot rotate)"],"note": "MITHQAL is designed, not deployed. The build is frozen, the MTQ primitive is disabled, and every architectural commitment is documented for institutional review. The program is at the G0 gate — entity verification is the first external evidence required."}} />
       <Footer />
     </main>
   );
