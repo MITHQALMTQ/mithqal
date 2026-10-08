@@ -578,7 +578,7 @@ function StatusDisciplineReference() {
         </p>
       }
     >
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-8 lg:grid-cols-2">
         <motion.div {...REVEAL}>
           <GlassCard className="h-full">
             <div className="mb-4 flex items-center gap-2">

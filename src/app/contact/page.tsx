@@ -79,18 +79,18 @@ export default function ContactPage() {
       {/* CONTENT SECTIONS (below the fold) */}
       <div className="relative z-20 bg-[#07090e]">
         {/* Enquiry Form */}
-        <section id="form" className="max-w-[1440px] mx-auto px-6 md:px-12 py-24">
-          <div className="text-center mb-16">
+        <section id="form" className="max-w-[1440px] mx-auto px-6 md:px-12 py-32">
+          <div className="text-center mb-20 scroll-reveal">
             <div className="inline-flex items-center gap-3 mb-4">
               <span className="w-px h-4 bg-amber-400" />
               <span className="text-xs font-semibold tracking-[0.28em] uppercase text-amber-400">ENQUIRY FORM</span>
             </div>
             <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white">Submit an <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Institutional Enquiry.</span></h2>
-            <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mt-6">Provide your details and the appropriate MITHQAL team will route and respond within the timeline below.</p>
+            <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mt-8">Provide your details and the appropriate MITHQAL team will route and respond within the timeline below.</p>
           </div>
           <div className="max-w-3xl mx-auto">
             <form className="bg-white/5 backdrop-blur-sm border border-amber-500/10 rounded-2xl p-8 md:p-10 space-y-6" onSubmit={(e) => e.preventDefault()}>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div>
                   <label htmlFor="name" className="block text-xs font-semibold tracking-[0.1em] uppercase text-amber-400 mb-2">Name</label>
                   <input id="name" type="text" placeholder="Full name" className="w-full bg-black/30 border border-white/10 rounded-lg px-4 py-3 text-white text-sm placeholder:text-[#94a3b8] focus:border-amber-400/60 focus:outline-none transition-colors" />
@@ -100,7 +100,7 @@ export default function ContactPage() {
                   <input id="organization" type="text" placeholder="Institution name" className="w-full bg-black/30 border border-white/10 rounded-lg px-4 py-3 text-white text-sm placeholder:text-[#94a3b8] focus:border-amber-400/60 focus:outline-none transition-colors" />
                 </div>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div>
                   <label htmlFor="email" className="block text-xs font-semibold tracking-[0.1em] uppercase text-amber-400 mb-2">Email</label>
                   <input id="email" type="email" placeholder="institutional@email.com" className="w-full bg-black/30 border border-white/10 rounded-lg px-4 py-3 text-white text-sm placeholder:text-[#94a3b8] focus:border-amber-400/60 focus:outline-none transition-colors" />
@@ -129,22 +129,22 @@ export default function ContactPage() {
         </section>
 
         {/* Contact Channels */}
-        <section className="max-w-[1440px] mx-auto px-6 md:px-12 py-24 border-t border-white/5">
-          <div className="text-center mb-16">
+        <section className="max-w-[1440px] mx-auto px-6 md:px-12 py-32 border-t border-white/5">
+          <div className="text-center mb-20 scroll-reveal">
             <div className="inline-flex items-center gap-3 mb-4">
               <span className="w-px h-4 bg-amber-400" />
               <span className="text-xs font-semibold tracking-[0.28em] uppercase text-amber-400">CONTACT CHANNELS</span>
             </div>
             <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white">Direct <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Channels.</span></h2>
-            <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mt-6">Each enquiry type routes to a dedicated institutional channel — no generic inbox, no lost enquiries.</p>
+            <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mt-8">Each enquiry type routes to a dedicated institutional channel — no generic inbox, no lost enquiries.</p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {CHANNELS.map((channel) => (
-              <div key={channel.num} className="bg-white/5 backdrop-blur-sm border border-amber-500/10 rounded-2xl p-8 hover:border-amber-500/30 transition-all duration-300 card-lift">
+              <div key={channel.num} className="bg-white/5 backdrop-blur-sm border border-amber-500/10 rounded-2xl p-8 hover:border-amber-500/30 stagger-card transition-all duration-300 card-lift">
                 <div className="text-3xl mb-4 icon-scale">{channel.icon}</div>
                 <div className="text-xs font-semibold text-amber-400 tracking-[0.1em] mb-2">{channel.num}</div>
-                <h3 className="text-lg font-semibold text-white mb-3">{channel.title}</h3>
-                <p className="text-sm text-[#cbd5e1] leading-relaxed mb-4">{channel.desc}</p>
+                <h3 className="text-lg font-semibold text-white mb-4">{channel.title}</h3>
+                <p className="text-base text-[#cbd5e1] leading-loose mb-4">{channel.desc}</p>
                 <div className="pt-4 border-t border-white/5">
                   <span className="text-xs text-amber-400 tracking-[0.1em] uppercase block mb-1">Email</span>
                   <span className="text-sm text-white/80 break-all">{channel.email}</span>
@@ -155,25 +155,25 @@ export default function ContactPage() {
         </section>
 
         {/* Response Timeline */}
-        <section className="max-w-[1440px] mx-auto px-6 md:px-12 py-24 border-t border-white/5">
-          <div className="text-center mb-16">
+        <section className="max-w-[1440px] mx-auto px-6 md:px-12 py-32 border-t border-white/5">
+          <div className="text-center mb-20 scroll-reveal">
             <div className="inline-flex items-center gap-3 mb-4">
               <span className="w-px h-4 bg-amber-400" />
               <span className="text-xs font-semibold tracking-[0.28em] uppercase text-amber-400">RESPONSE TIMELINE</span>
             </div>
             <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white">From Submission to <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Decision.</span></h2>
-            <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mt-6">Each institutional enquiry moves through three review stages with explicit, bounded response windows.</p>
+            <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mt-8">Each institutional enquiry moves through three review stages with explicit, bounded response windows.</p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
             {TIMELINE.map((item, i) => (
               <div key={item.num} className="relative">
-                <div className="bg-white/5 backdrop-blur-sm border border-amber-500/10 rounded-2xl p-8 hover:border-amber-500/30 transition-all duration-300 card-lift">
+                <div className="bg-white/5 backdrop-blur-sm border border-amber-500/10 rounded-2xl p-8 hover:border-amber-500/30 stagger-card transition-all duration-300 card-lift">
                   <div className="flex items-center gap-4 mb-4">
                     <div className="w-12 h-12 rounded-full border-2 border-amber-400/50 bg-amber-500/5 flex items-center justify-center text-amber-400 font-semibold text-sm">{item.num}</div>
                     <span className="text-xs font-semibold text-amber-400 tracking-[0.1em] uppercase">{item.timeframe}</span>
                   </div>
-                  <h3 className="text-lg font-semibold text-white mb-3">{item.title}</h3>
-                  <p className="text-sm text-[#cbd5e1] leading-relaxed">{item.desc}</p>
+                  <h3 className="text-lg font-semibold text-white mb-4">{item.title}</h3>
+                  <p className="text-base text-[#cbd5e1] leading-loose">{item.desc}</p>
                 </div>
                 {i < TIMELINE.length - 1 && (
                   <div className="hidden md:block absolute top-1/2 -right-3 -translate-y-1/2 text-amber-400/70 text-2xl">→</div>
@@ -184,7 +184,7 @@ export default function ContactPage() {
         </section>
 
         {/* CTA */}
-        <section className="max-w-[1440px] mx-auto px-6 md:px-12 py-24 border-t border-white/5 text-center">
+        <section className="max-w-[1440px] mx-auto px-6 md:px-12 py-32 border-t border-white/5 text-center">
           <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white mb-6">Explore the <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Platform.</span></h2>
           <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mb-10">Before reaching out, explore the MITHQAL architecture, evidence layer, pilot model and legal framework — the institutional context for any enquiry.</p>
           <div className="flex flex-wrap items-center justify-center gap-4">

@@ -283,7 +283,7 @@ export default function InstitutionalEngagementPage() {
          * §1 — HERO
          * ────────────────────────────────────────────────────────────── */}
         <section className="mesh-bg relative overflow-hidden border-b border-line/40">
-          <div className="mx-auto w-full max-w-7xl px-4 py-20 sm:px-6 sm:py-24 lg:px-8 lg:py-32">
+          <div className="mx-auto w-full max-w-7xl px-4 py-20 sm:px-6 sm:py-32 lg:px-8 lg:py-32">
             <motion.div
               initial={{ opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}

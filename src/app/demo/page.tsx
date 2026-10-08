@@ -876,7 +876,7 @@ export default function DemoPage() {
             violation (WCAG 1.3.1). The visible MITHQAL wordmark below is
             demoted to <h2> so it sub-heads this page-level <h1>. */}
         <h1 className="sr-only">Mithqal Demo Center</h1>
-        <Tabs value={tab} onValueChange={setTab} className="flex flex-col gap-6">
+        <Tabs value={tab} onValueChange={setTab} className="flex flex-col gap-8">
           {/* Tab bar */}
           <div className="sticky top-0 z-20 -mx-4 bg-[#0A0E1A]/95 px-4 py-3 backdrop-blur sm:mx-0 sm:rounded-xl sm:border sm:border-white/10 sm:px-3">
             <TabsList className="h-auto w-full flex-wrap justify-start gap-1 overflow-x-auto bg-white/5 p-1.5">
@@ -1045,7 +1045,7 @@ function Overview({
       subtitle="A presentation center for Mithqal Demo Center — every section is grounded in the current MVP."
     >
       <PanelCard className="mb-6 overflow-hidden">
-        <div className="flex flex-col items-start gap-6">
+        <div className="flex flex-col items-start gap-8">
           <div className="flex items-center gap-2">
             <Badge className="border-[#2775CA]/40 bg-[#2775CA]/15 text-[#7FB3F0] hover:bg-[#2775CA]/20">
               <CircleDot className="mr-1 h-3 w-3" /> Circle Hackathon Submission
@@ -1506,7 +1506,7 @@ function AssetsLibrary() {
       title="Assets Library"
       subtitle="Brand, backgrounds, icons, animations, overlays, lower thirds, end cards, and thumbnail."
     >
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-8">
         {categories.map((cat) => (
           <div key={cat}>
             <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-[#C9A961]">
@@ -1706,7 +1706,7 @@ function Matrix({ implementedPct }: { implementedPct: number }) {
         </p>
       </PanelCard>
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-8 lg:grid-cols-2">
         <PanelCard>
           <div className="mb-4 flex items-center gap-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/15">

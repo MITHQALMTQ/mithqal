@@ -75,25 +75,25 @@ export default function EcosystemPage() {
       {/* CONTENT SECTIONS */}
       <div className="relative z-20 bg-[#07090e]">
         {/* Ecosystem Partners */}
-        <section id="partners" className="max-w-[1440px] mx-auto px-6 md:px-12 py-24">
-          <div className="text-center mb-16">
+        <section id="partners" className="max-w-[1440px] mx-auto px-6 md:px-12 py-32">
+          <div className="text-center mb-20 scroll-reveal">
             <div className="inline-flex items-center gap-3 mb-4"><span className="w-px h-4 bg-amber-400" /><span className="text-xs font-semibold tracking-[0.28em] uppercase text-amber-400">THE ECOSYSTEM LAYER</span></div>
             <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white">Trusted Partners. Unified <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Infrastructure.</span></h2>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-8">
             {PARTNERS.map((p) => (
-              <div key={p.num} className="bg-white/5 backdrop-blur-sm border border-amber-500/10 rounded-2xl p-8 hover:border-amber-500/30 transition-all duration-300 card-lift text-center">
+              <div key={p.num} className="bg-white/5 backdrop-blur-sm border border-amber-500/10 rounded-2xl p-8 hover:border-amber-500/30 stagger-card transition-all duration-300 card-lift text-center">
                 <div className="text-4xl mb-4">{p.icon}</div>
                 <div className="text-xs font-semibold text-amber-400 tracking-[0.1em] mb-2">{p.num}</div>
-                <h3 className="text-lg font-semibold text-white mb-3">{p.title}</h3>
-                <p className="text-sm text-[#cbd5e1] leading-relaxed">{p.desc}</p>
+                <h3 className="text-lg font-semibold text-white mb-4">{p.title}</h3>
+                <p className="text-base text-[#cbd5e1] leading-loose">{p.desc}</p>
               </div>
             ))}
           </div>
         </section>
 
         {/* Multi-Rail Connectivity */}
-        <section className="max-w-[1440px] mx-auto px-6 md:px-12 py-24 border-t border-white/5">
+        <section className="max-w-[1440px] mx-auto px-6 md:px-12 py-32 border-t border-white/5">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
               <div className="inline-flex items-center gap-3 mb-4"><span className="w-px h-4 bg-amber-400" /><span className="text-xs font-semibold tracking-[0.28em] uppercase text-amber-400">MULTI-RAIL CONNECTIVITY</span></div>
@@ -112,24 +112,24 @@ export default function EcosystemPage() {
         </section>
 
         {/* Controlled Routing */}
-        <section id="routing" className="max-w-[1440px] mx-auto px-6 md:px-12 py-24 border-t border-white/5">
-          <div className="text-center mb-16">
+        <section id="routing" className="max-w-[1440px] mx-auto px-6 md:px-12 py-32 border-t border-white/5">
+          <div className="text-center mb-20 scroll-reveal">
             <div className="inline-flex items-center gap-3 mb-4"><span className="w-px h-4 bg-amber-400" /><span className="text-xs font-semibold tracking-[0.28em] uppercase text-amber-400">CONTROLLED ROUTING</span></div>
             <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white">Primary. Secondary. <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Emergency.</span></h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {ROUTES.map((r) => (
-              <div key={r.name} className="bg-white/5 backdrop-blur-sm border border-amber-500/10 rounded-2xl p-8 hover:border-amber-500/30 transition-all duration-300 card-lift">
+              <div key={r.name} className="bg-white/5 backdrop-blur-sm border border-amber-500/10 rounded-2xl p-8 hover:border-amber-500/30 stagger-card transition-all duration-300 card-lift">
                 <div className="text-4xl mb-4">{r.icon}</div>
-                <h3 className="text-xl font-semibold text-white mb-3">{r.name}</h3>
-                <p className="text-sm text-[#cbd5e1] leading-relaxed">{r.desc}</p>
+                <h3 className="text-xl font-semibold text-white mb-4">{r.name}</h3>
+                <p className="text-base text-[#cbd5e1] leading-loose">{r.desc}</p>
               </div>
             ))}
           </div>
         </section>
 
         {/* CTA */}
-        <section className="max-w-[1440px] mx-auto px-6 md:px-12 py-24 border-t border-white/5 text-center">
+        <section className="max-w-[1440px] mx-auto px-6 md:px-12 py-32 border-t border-white/5 text-center">
           <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white mb-6">A Growing Ecosystem. A <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Stronger Future.</span></h2>
           <div className="flex flex-wrap items-center justify-center gap-4 mt-10">
             <a href="/features" className="px-8 py-3 rounded-full bg-gradient-to-r from-amber-400 to-amber-200 text-[#07090e] font-semibold text-sm tracking-wide hover:scale-105 transition-transform duration-300 btn-press shadow-lg shadow-amber-500/30 border-2 border-amber-300">Explore the Architecture →</a>

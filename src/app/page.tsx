@@ -88,8 +88,8 @@ export default function HomePage() {
 
       {/* WHY MITHQAL — content section with H2 + H3s */}
       <section className="relative z-20 bg-[#07090e] border-t border-amber-500/10">
-        <div className="max-w-[1440px] mx-auto px-6 md:px-12 py-24">
-          <div className="text-center mb-16">
+        <div className="max-w-[1440px] mx-auto px-6 md:px-12 py-32">
+          <div className="text-center mb-20 scroll-reveal">
             <div className="inline-flex items-center gap-3 mb-4">
               <span className="w-px h-4 bg-amber-400" />
               <span className="text-xs font-semibold tracking-[0.28em] uppercase text-amber-400">WHY MITHQAL</span>
@@ -102,20 +102,20 @@ export default function HomePage() {
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="bg-white/5 backdrop-blur-sm border border-amber-500/10 rounded-2xl p-8 hover:border-amber-500/30 transition-all duration-300 card-lift">
+            <div className="bg-white/5 backdrop-blur-sm border border-amber-500/10 rounded-2xl p-8 hover:border-amber-500/30 stagger-card transition-all duration-300 card-lift">
               <div className="text-3xl mb-4 icon-scale">🧠</div>
-              <h3 className="text-xl font-semibold text-white mb-3">AI-Powered Intelligence</h3>
-              <p className="text-sm text-[#cbd5e1] leading-relaxed">Smarter decisions, greater opportunities. Built-in AI orchestration for institutional workflows.</p>
+              <h3 className="text-xl font-semibold text-white mb-4">AI-Powered Intelligence</h3>
+              <p className="text-base text-[#cbd5e1] leading-loose">Smarter decisions, greater opportunities. Built-in AI orchestration for institutional workflows.</p>
             </div>
-            <div className="bg-white/5 backdrop-blur-sm border border-amber-500/10 rounded-2xl p-8 hover:border-amber-500/30 transition-all duration-300 card-lift">
+            <div className="bg-white/5 backdrop-blur-sm border border-amber-500/10 rounded-2xl p-8 hover:border-amber-500/30 stagger-card transition-all duration-300 card-lift">
               <div className="text-3xl mb-4 icon-scale">🔗</div>
-              <h3 className="text-xl font-semibold text-white mb-3">Unified Infrastructure</h3>
-              <p className="text-sm text-[#cbd5e1] leading-relaxed">One control plane connecting institutions, payment networks, and settlement rails across jurisdictions.</p>
+              <h3 className="text-xl font-semibold text-white mb-4">Unified Infrastructure</h3>
+              <p className="text-base text-[#cbd5e1] leading-loose">One control plane connecting institutions, payment networks, and settlement rails across jurisdictions.</p>
             </div>
-            <div className="bg-white/5 backdrop-blur-sm border border-amber-500/10 rounded-2xl p-8 hover:border-amber-500/30 transition-all duration-300 card-lift">
+            <div className="bg-white/5 backdrop-blur-sm border border-amber-500/10 rounded-2xl p-8 hover:border-amber-500/30 stagger-card transition-all duration-300 card-lift">
               <div className="text-3xl mb-4 icon-scale">⚡</div>
-              <h3 className="text-xl font-semibold text-white mb-3">Built for the Future</h3>
-              <p className="text-sm text-[#cbd5e1] leading-relaxed">Next-gen technology with real-world impact. Controlled, auditable, and evidence-based by design.</p>
+              <h3 className="text-xl font-semibold text-white mb-4">Built for the Future</h3>
+              <p className="text-base text-[#cbd5e1] leading-loose">Next-gen technology with real-world impact. Controlled, auditable, and evidence-based by design.</p>
             </div>
           </div>
         </div>
@@ -123,8 +123,8 @@ export default function HomePage() {
 
       {/* PLATFORM PILLARS — H2 + grid */}
       <section className="relative z-20 bg-[#07090e] border-t border-white/5">
-        <div className="max-w-[1440px] mx-auto px-6 md:px-12 py-24">
-          <div className="text-center mb-16">
+        <div className="max-w-[1440px] mx-auto px-6 md:px-12 py-32">
+          <div className="text-center mb-20 scroll-reveal">
             <div className="inline-flex items-center gap-3 mb-4">
               <span className="w-px h-4 bg-amber-400" />
               <span className="text-xs font-semibold tracking-[0.28em] uppercase text-amber-400">PLATFORM PILLARS</span>
@@ -136,7 +136,7 @@ export default function HomePage() {
               Five non-negotiable institutional pillars that govern every architectural decision.
             </p>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-8">
             {[
               { icon: "⚖", title: "Neutral", desc: "Non-sovereign infrastructure." },
               { icon: "🏦", title: "Wholesale", desc: "Built for institutions." },
@@ -156,7 +156,7 @@ export default function HomePage() {
 
       {/* CTA */}
       <section className="relative z-20 bg-[#07090e] border-t border-white/5">
-        <div className="max-w-[1440px] mx-auto px-6 md:px-12 py-24 text-center">
+        <div className="max-w-[1440px] mx-auto px-6 md:px-12 py-32 text-center">
           <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white mb-6">
             Ready to Explore the <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Architecture?</span>
           </h2>

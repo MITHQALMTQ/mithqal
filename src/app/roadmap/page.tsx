@@ -75,11 +75,11 @@ export default function RoadmapPage() {
       {/* CONTENT SECTIONS */}
       <div className="relative z-20 bg-[#07090e]">
         {/* 5-Step Timeline */}
-        <section id="timeline" className="max-w-[1440px] mx-auto px-6 md:px-12 py-24">
-          <div className="text-center mb-16">
+        <section id="timeline" className="max-w-[1440px] mx-auto px-6 md:px-12 py-32">
+          <div className="text-center mb-20 scroll-reveal">
             <div className="inline-flex items-center gap-3 mb-4"><span className="w-px h-4 bg-amber-400" /><span className="text-xs font-semibold tracking-[0.28em] uppercase text-amber-400">FIVE PHASES</span></div>
             <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white">Foundation to <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Global Readiness.</span></h2>
-            <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mt-6">MITHQAL advances through five sequential phases — each gated by the evidence and approvals required for the next.</p>
+            <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mt-8">MITHQAL advances through five sequential phases — each gated by the evidence and approvals required for the next.</p>
           </div>
           <div className="relative">
             {/* Timeline line */}
@@ -89,8 +89,8 @@ export default function RoadmapPage() {
                 <div key={step.num} className="flex flex-col items-center text-center">
                   <div className="w-20 h-20 rounded-full border-2 border-amber-400 bg-[#07090e] flex items-center justify-center text-3xl mb-6 relative z-10">{step.icon}</div>
                   <div className="text-xs font-semibold text-amber-400 tracking-[0.1em] mb-2">STEP {step.num}</div>
-                  <h3 className="text-lg font-semibold text-white mb-3">{step.title}</h3>
-                  <p className="text-sm text-[#cbd5e1] leading-relaxed">{step.desc}</p>
+                  <h3 className="text-lg font-semibold text-white mb-4">{step.title}</h3>
+                  <p className="text-base text-[#cbd5e1] leading-loose">{step.desc}</p>
                 </div>
               ))}
             </div>
@@ -98,8 +98,8 @@ export default function RoadmapPage() {
         </section>
 
         {/* Platform Architecture */}
-        <section className="max-w-[1440px] mx-auto px-6 md:px-12 py-24 border-t border-white/5">
-          <div className="text-center mb-16">
+        <section className="max-w-[1440px] mx-auto px-6 md:px-12 py-32 border-t border-white/5">
+          <div className="text-center mb-20 scroll-reveal">
             <div className="inline-flex items-center gap-3 mb-4"><span className="w-px h-4 bg-amber-400" /><span className="text-xs font-semibold tracking-[0.28em] uppercase text-amber-400">PLATFORM ARCHITECTURE</span></div>
             <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white">Built for What&apos;s <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Next.</span></h2>
           </div>
@@ -139,7 +139,7 @@ export default function RoadmapPage() {
         </section>
 
         {/* CTA */}
-        <section className="max-w-[1440px] mx-auto px-6 md:px-12 py-24 border-t border-white/5 text-center">
+        <section className="max-w-[1440px] mx-auto px-6 md:px-12 py-32 border-t border-white/5 text-center">
           <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white mb-6">A <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Stronger Future.</span></h2>
           <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mb-10">MITHQAL&apos;s evolution is governed by evidence, controlled progression and institutional validation — not by shortcuts.</p>
           <div className="flex flex-wrap items-center justify-center gap-4">

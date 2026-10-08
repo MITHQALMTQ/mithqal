@@ -156,14 +156,14 @@ function EligibilityChecker() {
   }
 
   return (
-    <section id="checker" className="max-w-[1440px] mx-auto px-6 md:px-12 py-24 border-t border-white/5">
-      <div className="text-center mb-16">
+    <section id="checker" className="max-w-[1440px] mx-auto px-6 md:px-12 py-32 border-t border-white/5">
+      <div className="text-center mb-20 scroll-reveal">
         <div className="inline-flex items-center gap-3 mb-4">
           <span className="w-px h-4 bg-amber-400" />
           <span className="text-xs font-semibold tracking-[0.28em] uppercase text-amber-400">PILOT ELIGIBILITY CHECKER</span>
         </div>
         <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white">Are You <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Pilot Ready?</span></h2>
-        <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mt-6">Answer five institutional questions to compute your pilot readiness score (0–100) and surface the next step for your institution.</p>
+        <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mt-8">Answer five institutional questions to compute your pilot readiness score (0–100) and surface the next step for your institution.</p>
       </div>
 
       <div className="max-w-4xl mx-auto space-y-6">
@@ -281,24 +281,24 @@ export default function PilotPage() {
       {/* CONTENT SECTIONS (below the fold) */}
       <div className="relative z-20 bg-[#07090e]">
         {/* Pilot Eligibility */}
-        <section id="model" className="max-w-[1440px] mx-auto px-6 md:px-12 py-24">
-          <div className="text-center mb-16">
+        <section id="model" className="max-w-[1440px] mx-auto px-6 md:px-12 py-32">
+          <div className="text-center mb-20 scroll-reveal">
             <div className="inline-flex items-center gap-3 mb-4">
               <span className="w-px h-4 bg-amber-400" />
               <span className="text-xs font-semibold tracking-[0.28em] uppercase text-amber-400">PILOT ELIGIBILITY</span>
             </div>
             <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white">Bounded by <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Design.</span></h2>
-            <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mt-6">Pilot engagement is bounded by institution, jurisdiction, corridor and evidence — scope is explicit, never open-ended.</p>
+            <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mt-8">Pilot engagement is bounded by institution, jurisdiction, corridor and evidence — scope is explicit, never open-ended.</p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {ELIGIBILITY.map((item) => (
-              <div key={item.num} className="bg-white/5 backdrop-blur-sm border border-amber-500/10 rounded-2xl p-8 hover:border-amber-500/30 transition-all duration-300 card-lift">
+              <div key={item.num} className="bg-white/5 backdrop-blur-sm border border-amber-500/10 rounded-2xl p-8 hover:border-amber-500/30 stagger-card transition-all duration-300 card-lift">
                 <div className="flex items-start gap-4">
                   <div className="text-3xl">{item.icon}</div>
                   <div className="flex-1">
                     <div className="text-xs font-semibold text-amber-400 tracking-[0.1em] mb-2">{item.num}</div>
-                    <h3 className="text-xl font-semibold text-white mb-3">{item.title}</h3>
-                    <p className="text-sm text-[#cbd5e1] leading-relaxed">{item.desc}</p>
+                    <h3 className="text-xl font-semibold text-white mb-4">{item.title}</h3>
+                    <p className="text-base text-[#cbd5e1] leading-loose">{item.desc}</p>
                   </div>
                 </div>
               </div>
@@ -307,18 +307,18 @@ export default function PilotPage() {
         </section>
 
         {/* Engagement Pathway */}
-        <section className="max-w-[1440px] mx-auto px-6 md:px-12 py-24 border-t border-white/5">
-          <div className="text-center mb-16">
+        <section className="max-w-[1440px] mx-auto px-6 md:px-12 py-32 border-t border-white/5">
+          <div className="text-center mb-20 scroll-reveal">
             <div className="inline-flex items-center gap-3 mb-4">
               <span className="w-px h-4 bg-amber-400" />
               <span className="text-xs font-semibold tracking-[0.28em] uppercase text-amber-400">ENGAGEMENT PATHWAY</span>
             </div>
             <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white">From Application to <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Evaluation.</span></h2>
-            <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mt-6">Five stages take an institutional enquiry through qualification and configuration to pilot execution and evidence-gated evaluation.</p>
+            <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mt-8">Five stages take an institutional enquiry through qualification and configuration to pilot execution and evidence-gated evaluation.</p>
           </div>
-          <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6">
+          <div className="flex flex-wrap items-center justify-center gap-4 md:gap-8">
             {PATHWAY.map((step, i) => (
-              <div key={step.num} className="flex items-center gap-4 md:gap-6">
+              <div key={step.num} className="flex items-center gap-4 md:gap-8">
                 <div className="flex flex-col items-center gap-3 max-w-[160px]">
                   <div className="w-16 h-16 rounded-full border-2 border-amber-400/50 bg-amber-500/5 flex items-center justify-center text-amber-400 font-semibold text-sm">{step.num}</div>
                   <span className="text-sm text-white font-semibold">{step.title}</span>
@@ -331,21 +331,21 @@ export default function PilotPage() {
         </section>
 
         {/* Pilot Constraints */}
-        <section className="max-w-[1440px] mx-auto px-6 md:px-12 py-24 border-t border-white/5">
-          <div className="text-center mb-16">
+        <section className="max-w-[1440px] mx-auto px-6 md:px-12 py-32 border-t border-white/5">
+          <div className="text-center mb-20 scroll-reveal">
             <div className="inline-flex items-center gap-3 mb-4">
               <span className="w-px h-4 bg-amber-400" />
               <span className="text-xs font-semibold tracking-[0.28em] uppercase text-amber-400">PILOT CONSTRAINTS</span>
             </div>
             <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white">Discipline at Every <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Stage.</span></h2>
-            <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mt-6">Pilot constraints ensure scope, access and expansion remain explicitly controlled throughout the engagement lifecycle.</p>
+            <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mt-8">Pilot constraints ensure scope, access and expansion remain explicitly controlled throughout the engagement lifecycle.</p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {CONSTRAINTS.map((item) => (
-              <div key={item.num} className="bg-white/5 backdrop-blur-sm border border-amber-500/10 rounded-2xl p-8 hover:border-amber-500/30 transition-all duration-300 card-lift">
+              <div key={item.num} className="bg-white/5 backdrop-blur-sm border border-amber-500/10 rounded-2xl p-8 hover:border-amber-500/30 stagger-card transition-all duration-300 card-lift">
                 <div className="text-xs font-semibold text-amber-400 tracking-[0.1em] mb-2">{item.num}</div>
-                <h3 className="text-lg font-semibold text-white mb-3">{item.title}</h3>
-                <p className="text-sm text-[#cbd5e1] leading-relaxed">{item.desc}</p>
+                <h3 className="text-lg font-semibold text-white mb-4">{item.title}</h3>
+                <p className="text-base text-[#cbd5e1] leading-loose">{item.desc}</p>
               </div>
             ))}
           </div>
@@ -355,7 +355,7 @@ export default function PilotPage() {
         <EligibilityChecker />
 
         {/* CTA */}
-        <section className="max-w-[1440px] mx-auto px-6 md:px-12 py-24 border-t border-white/5 text-center">
+        <section className="max-w-[1440px] mx-auto px-6 md:px-12 py-32 border-t border-white/5 text-center">
           <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white mb-6">Start the <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Conversation.</span></h2>
           <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mb-10">For institutional pilot enquiry, connect with the MITHQAL team through the appropriate channel.</p>
           <div className="flex flex-wrap items-center justify-center gap-4">

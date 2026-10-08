@@ -93,7 +93,7 @@ export default function ArchitecturePage() {
       <div className="relative z-20 bg-[#07090e]">
         {/* Four-Layer Architecture */}
         <section id="layers" className="max-w-[1440px] mx-auto px-6 md:px-12 py-32">
-          <div className="text-center mb-20">
+          <div className="text-center mb-20 scroll-reveal">
             <div className="inline-flex items-center gap-3 mb-4">
               <span className="w-px h-4 bg-amber-400" />
               <span className="text-xs font-semibold tracking-[0.28em] uppercase text-amber-400">FOUR-LAYER ARCHITECTURE</span>
@@ -103,7 +103,7 @@ export default function ArchitecturePage() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {LAYERS.map((layer) => (
-              <div key={layer.num} className="bg-white/5 backdrop-blur-sm border border-amber-500/10 rounded-2xl p-8 hover:border-amber-500/30 transition-all duration-300 card-lift">
+              <div key={layer.num} className="bg-white/5 backdrop-blur-sm border border-amber-500/10 rounded-2xl p-8 hover:border-amber-500/30 stagger-card transition-all duration-300 card-lift">
                 <div className="flex items-start gap-4">
                   <div className="text-3xl">{layer.icon}</div>
                   <div className="flex-1">
@@ -128,7 +128,7 @@ export default function ArchitecturePage() {
 
         {/* Three-Book Separation */}
         <section className="max-w-[1440px] mx-auto px-6 md:px-12 py-32 border-t border-white/5">
-          <div className="text-center mb-20">
+          <div className="text-center mb-20 scroll-reveal">
             <div className="inline-flex items-center gap-3 mb-4">
               <span className="w-px h-4 bg-amber-400" />
               <span className="text-xs font-semibold tracking-[0.28em] uppercase text-amber-400">THREE-BOOK SEPARATION</span>
@@ -138,7 +138,7 @@ export default function ArchitecturePage() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {BOOKS.map((book) => (
-              <div key={book.book} className="bg-white/5 backdrop-blur-sm border border-amber-500/10 rounded-2xl p-8 hover:border-amber-500/30 transition-all duration-300 card-lift">
+              <div key={book.book} className="bg-white/5 backdrop-blur-sm border border-amber-500/10 rounded-2xl p-8 hover:border-amber-500/30 stagger-card transition-all duration-300 card-lift">
                 <div className="w-12 h-12 rounded-full border-2 border-amber-400/50 bg-amber-500/5 flex items-center justify-center text-amber-400 font-semibold text-lg mb-6">Book {book.book}</div>
                 <h3 className="text-xl font-semibold text-white mb-4">{book.title}</h3>
                 <p className="text-base text-[#cbd5e1] leading-loose">{book.desc}</p>
@@ -149,7 +149,7 @@ export default function ArchitecturePage() {
 
         {/* Finality Control */}
         <section className="max-w-[1440px] mx-auto px-6 md:px-12 py-32 border-t border-white/5">
-          <div className="text-center mb-20">
+          <div className="text-center mb-20 scroll-reveal">
             <div className="inline-flex items-center gap-3 mb-4">
               <span className="w-px h-4 bg-amber-400" />
               <span className="text-xs font-semibold tracking-[0.28em] uppercase text-amber-400">FINALITY CONTROL</span>
@@ -159,7 +159,7 @@ export default function ArchitecturePage() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {FINALITY.map((item) => (
-              <div key={item.num} className="bg-white/5 backdrop-blur-sm border border-amber-500/10 rounded-2xl p-8 hover:border-amber-500/30 transition-all duration-300 card-lift">
+              <div key={item.num} className="bg-white/5 backdrop-blur-sm border border-amber-500/10 rounded-2xl p-8 hover:border-amber-500/30 stagger-card transition-all duration-300 card-lift">
                 <div className="text-xs font-semibold text-amber-400 tracking-[0.1em] mb-2">{item.num}</div>
                 <h3 className="text-lg font-semibold text-white mb-4">{item.title}</h3>
                 <p className="text-base text-[#cbd5e1] leading-loose">{item.desc}</p>

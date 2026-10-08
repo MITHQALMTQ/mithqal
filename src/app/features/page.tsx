@@ -77,30 +77,30 @@ export default function FeaturesPage() {
       {/* CONTENT SECTIONS (below the fold) */}
       <div className="relative z-20 bg-[#07090e]">
         {/* Core Capabilities */}
-        <section id="capabilities" className="max-w-[1440px] mx-auto px-6 md:px-12 py-24">
-          <div className="text-center mb-16">
+        <section id="capabilities" className="max-w-[1440px] mx-auto px-6 md:px-12 py-32">
+          <div className="text-center mb-20 scroll-reveal">
             <div className="inline-flex items-center gap-3 mb-4">
               <span className="w-px h-4 bg-amber-400" />
               <span className="text-xs font-semibold tracking-[0.28em] uppercase text-amber-400">CORE CAPABILITIES</span>
             </div>
             <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white">Built as One <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Control System.</span></h2>
-            <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mt-6">Each capability operates as part of one coordinated institutional architecture rather than as an isolated product feature.</p>
+            <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mt-8">Each capability operates as part of one coordinated institutional architecture rather than as an isolated product feature.</p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
             {CAPABILITIES.map((cap) => (
-              <div key={cap.num} className="bg-white/5 backdrop-blur-sm border border-amber-500/10 rounded-2xl p-8 hover:border-amber-500/30 transition-all duration-300 card-lift">
+              <div key={cap.num} className="bg-white/5 backdrop-blur-sm border border-amber-500/10 rounded-2xl p-8 hover:border-amber-500/30 stagger-card transition-all duration-300 card-lift">
                 <div className="text-3xl mb-4 icon-scale">{cap.icon}</div>
                 <div className="text-xs font-semibold text-amber-400 tracking-[0.1em] mb-2">{cap.num}</div>
-                <h3 className="text-lg font-semibold text-white mb-3">{cap.title}</h3>
-                <p className="text-sm text-[#cbd5e1] leading-relaxed">{cap.desc}</p>
+                <h3 className="text-lg font-semibold text-white mb-4">{cap.title}</h3>
+                <p className="text-base text-[#cbd5e1] leading-loose">{cap.desc}</p>
               </div>
             ))}
           </div>
         </section>
 
         {/* Orchestration Workflow */}
-        <section className="max-w-[1440px] mx-auto px-6 md:px-12 py-24 border-t border-white/5">
-          <div className="text-center mb-16">
+        <section className="max-w-[1440px] mx-auto px-6 md:px-12 py-32 border-t border-white/5">
+          <div className="text-center mb-20 scroll-reveal">
             <div className="inline-flex items-center gap-3 mb-4">
               <span className="w-px h-4 bg-amber-400" />
               <span className="text-xs font-semibold tracking-[0.28em] uppercase text-amber-400">ORCHESTRATION WORKFLOW</span>
@@ -121,7 +121,7 @@ export default function FeaturesPage() {
         </section>
 
         {/* CTA */}
-        <section className="max-w-[1440px] mx-auto px-6 md:px-12 py-24 border-t border-white/5 text-center">
+        <section className="max-w-[1440px] mx-auto px-6 md:px-12 py-32 border-t border-white/5 text-center">
           <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white mb-6">See the Architecture Behind the <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Control Plane.</span></h2>
           <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mb-10">Explore how MITHQAL coordinates institutional participants, settlement workflows, policy, interoperability, reconciliation and evidence through one controlled architecture.</p>
           <div className="flex flex-wrap items-center justify-center gap-4">

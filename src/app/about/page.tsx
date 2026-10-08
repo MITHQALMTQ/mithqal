@@ -77,7 +77,7 @@ export default function AboutPage() {
       {/* CONTENT SECTIONS */}
       <div className="relative z-20 bg-[#07090e]">
         {/* Mission / Vision */}
-        <section className="max-w-[1440px] mx-auto px-6 md:px-12 py-24">
+        <section className="max-w-[1440px] mx-auto px-6 md:px-12 py-32">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
             <div>
               <div className="inline-flex items-center gap-3 mb-4"><span className="w-px h-4 bg-amber-400" /><span className="text-xs font-semibold tracking-[0.28em] uppercase text-amber-400">OUR MISSION</span></div>
@@ -93,25 +93,25 @@ export default function AboutPage() {
         </section>
 
         {/* Values */}
-        <section className="max-w-[1440px] mx-auto px-6 md:px-12 py-24 border-t border-white/5">
-          <div className="text-center mb-16">
+        <section className="max-w-[1440px] mx-auto px-6 md:px-12 py-32 border-t border-white/5">
+          <div className="text-center mb-20 scroll-reveal">
             <div className="inline-flex items-center gap-3 mb-4"><span className="w-px h-4 bg-amber-400" /><span className="text-xs font-semibold tracking-[0.28em] uppercase text-amber-400">OUR VALUES</span></div>
             <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white">What MITHQAL <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Stands For.</span></h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {VALUES.map((v) => (
-              <div key={v.title} className="bg-white/5 backdrop-blur-sm border border-amber-500/10 rounded-2xl p-8 hover:border-amber-500/30 transition-all duration-300 card-lift">
+              <div key={v.title} className="bg-white/5 backdrop-blur-sm border border-amber-500/10 rounded-2xl p-8 hover:border-amber-500/30 stagger-card transition-all duration-300 card-lift">
                 <div className="w-14 h-14 rounded-full border border-amber-500/60 flex items-center justify-center text-2xl mb-4">{v.icon}</div>
                 <h3 className="text-lg font-semibold text-white mb-2">{v.title}</h3>
-                <p className="text-sm text-[#cbd5e1] leading-relaxed">{v.desc}</p>
+                <p className="text-base text-[#cbd5e1] leading-loose">{v.desc}</p>
               </div>
             ))}
           </div>
         </section>
 
         {/* Principles */}
-        <section className="max-w-[1440px] mx-auto px-6 md:px-12 py-24 border-t border-white/5">
-          <div className="text-center mb-16">
+        <section className="max-w-[1440px] mx-auto px-6 md:px-12 py-32 border-t border-white/5">
+          <div className="text-center mb-20 scroll-reveal">
             <div className="inline-flex items-center gap-3 mb-4"><span className="w-px h-4 bg-amber-400" /><span className="text-xs font-semibold tracking-[0.28em] uppercase text-amber-400">OUR PRINCIPLES</span></div>
             <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white">Built on <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Principle.</span></h2>
           </div>
@@ -119,15 +119,15 @@ export default function AboutPage() {
             {PRINCIPLES.map((p) => (
               <div key={p.title} className="text-center p-8">
                 <div className="text-4xl mb-6 icon-scale">{p.icon}</div>
-                <h3 className="text-xl font-semibold text-white mb-3">{p.title}</h3>
-                <p className="text-sm text-[#cbd5e1] leading-relaxed">{p.desc}</p>
+                <h3 className="text-xl font-semibold text-white mb-4">{p.title}</h3>
+                <p className="text-base text-[#cbd5e1] leading-loose">{p.desc}</p>
               </div>
             ))}
           </div>
         </section>
 
         {/* CTA */}
-        <section className="max-w-[1440px] mx-auto px-6 md:px-12 py-24 border-t border-white/5 text-center">
+        <section className="max-w-[1440px] mx-auto px-6 md:px-12 py-32 border-t border-white/5 text-center">
           <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white mb-6">A Controlled Path to a <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Connected Financial Future.</span></h2>
           <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mb-10">MITHQAL is not production-authorized. The build is frozen, the MTQ primitive is disabled, and every architectural commitment is documented for institutional review.</p>
           <div className="flex flex-wrap items-center justify-center gap-4">

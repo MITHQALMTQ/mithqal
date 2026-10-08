@@ -165,7 +165,7 @@ export default function VideoPage() {
                 wordmark is a sub-heading. */}
             <h2 className="text-xl font-light tracking-wide text-white/90 sm:text-2xl">MITHQAL</h2>
             <p className="mt-1 text-sm text-[#94a3b8]">Constitutional Settlement Institution</p>
-            <div className="mt-4 flex items-center justify-center gap-6 text-xs text-white/30">
+            <div className="mt-4 flex items-center justify-center gap-8 text-xs text-white/30">
               <Link href="/" className="transition hover:text-[#C9A961]">Dashboard</Link>
               <a href="https://github.com/MITHQALMTQ/mithqal" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 transition hover:text-[#C9A961]">GitHub<ExternalLink className="h-3 w-3" /></a>
             </div>
@@ -213,7 +213,7 @@ function SceneContent({
     // Scene 1: The Problem
     case 1:
       return (
-        <div className="flex flex-col items-center gap-6 px-8 text-center" style={fs}>
+        <div className="flex flex-col items-center gap-8 px-8 text-center" style={fs}>
           <h2 className="max-w-2xl text-2xl font-light leading-snug sm:text-3xl md:text-4xl">
             Cross-border settlement remains <span className="text-[#C9A961] font-medium">slow, expensive,</span> and <span className="text-[#C9A961] font-medium">fragmented.</span>
           </h2>
@@ -245,7 +245,7 @@ function SceneContent({
     // Scene 3: What is MITHQAL
     case 3:
       return (
-        <div className="flex flex-col items-center gap-6" style={fs}>
+        <div className="flex flex-col items-center gap-8" style={fs}>
           <div className="flex flex-wrap items-center justify-center gap-2">
             {["Participant", "USDC", "MTQ Mint", "Settlement", "Redeem", "USDC"].map((node, i) => (
               <div key={i} className="flex items-center gap-2">
@@ -254,7 +254,7 @@ function SceneContent({
               </div>
             ))}
           </div>
-          <div className="flex gap-4 text-xs text-[#94a3b8] sm:gap-6 sm:text-sm">
+          <div className="flex gap-4 text-xs text-[#94a3b8] sm:gap-8 sm:text-sm">
             <span>✓ 100% Reserve Ratio</span><span>✓ No Lending</span><span>✓ Redemption Never Pauses</span>
           </div>
         </div>

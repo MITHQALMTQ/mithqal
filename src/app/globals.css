@@ -1038,3 +1038,53 @@ html {
 .glow-pulse {
   animation: glowPulse 2.5s ease-in-out infinite;
 }
+
+/* ===== v25.31 Scroll-Triggered Reveal Animations ===== */
+/* CSS-only scroll-driven animations (no JS needed, Chrome 115+) */
+@supports (animation-timeline: view()) {
+  .scroll-reveal {
+    animation: cardEnter 0.6s cubic-bezier(0.25, 0.1, 0.25, 1) both;
+    animation-timeline: view();
+    animation-range: entry 10% entry 60%;
+  }
+  
+  .scroll-reveal-delay-1 {
+    animation: cardEnter 0.6s cubic-bezier(0.25, 0.1, 0.25, 1) both;
+    animation-timeline: view();
+    animation-range: entry 15% entry 65%;
+  }
+  
+  .scroll-reveal-delay-2 {
+    animation: cardEnter 0.6s cubic-bezier(0.25, 0.1, 0.25, 1) both;
+    animation-timeline: view();
+    animation-range: entry 20% entry 70%;
+  }
+}
+
+/* Fallback for browsers without animation-timeline */
+@supports not (animation-timeline: view()) {
+  .scroll-reveal,
+  .scroll-reveal-delay-1,
+  .scroll-reveal-delay-2 {
+    animation: cardEnter 0.5s ease-out forwards;
+  }
+}
+
+/* Card stagger animation on scroll */
+@keyframes staggerIn {
+  from { opacity: 0; transform: translateY(24px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.stagger-card {
+  opacity: 0;
+  animation: staggerIn 0.5s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+}
+
+@supports (animation-timeline: view()) {
+  .stagger-card {
+    animation: staggerIn 0.5s cubic-bezier(0.25, 0.1, 0.25, 1) both;
+    animation-timeline: view();
+    animation-range: entry 10% entry 50%;
+  }
+}

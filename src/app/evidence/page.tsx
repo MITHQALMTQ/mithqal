@@ -83,42 +83,42 @@ export default function EvidencePage() {
       {/* CONTENT SECTIONS (below the fold) */}
       <div className="relative z-20 bg-[#07090e]">
         {/* Six Evidence Layers */}
-        <section id="layers" className="max-w-[1440px] mx-auto px-6 md:px-12 py-24">
-          <div className="text-center mb-16">
+        <section id="layers" className="max-w-[1440px] mx-auto px-6 md:px-12 py-32">
+          <div className="text-center mb-20 scroll-reveal">
             <div className="inline-flex items-center gap-3 mb-4">
               <span className="w-px h-4 bg-amber-400" />
               <span className="text-xs font-semibold tracking-[0.28em] uppercase text-amber-400">SIX EVIDENCE LAYERS</span>
             </div>
             <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white">Evidence as a <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Control Layer.</span></h2>
-            <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mt-6">Six independent evidence layers ensure every settlement state is attributable, verifiable and auditable — never reused across multiple backing claims.</p>
+            <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mt-8">Six independent evidence layers ensure every settlement state is attributable, verifiable and auditable — never reused across multiple backing claims.</p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {EVIDENCE_LAYERS.map((layer) => (
-              <div key={layer.num} className="bg-white/5 backdrop-blur-sm border border-amber-500/10 rounded-2xl p-8 hover:border-amber-500/30 transition-all duration-300 card-lift">
+              <div key={layer.num} className="bg-white/5 backdrop-blur-sm border border-amber-500/10 rounded-2xl p-8 hover:border-amber-500/30 stagger-card transition-all duration-300 card-lift">
                 <div className="text-3xl mb-4 icon-scale">{layer.icon}</div>
                 <div className="text-xs font-semibold text-amber-400 tracking-[0.1em] mb-2">{layer.num}</div>
-                <h3 className="text-lg font-semibold text-white mb-3">{layer.title}</h3>
-                <p className="text-sm text-[#cbd5e1] leading-relaxed">{layer.desc}</p>
+                <h3 className="text-lg font-semibold text-white mb-4">{layer.title}</h3>
+                <p className="text-base text-[#cbd5e1] leading-loose">{layer.desc}</p>
               </div>
             ))}
           </div>
         </section>
 
         {/* Evidence Formula — enhanced with animated Reserve Backing Visualization */}
-        <section className="max-w-[1440px] mx-auto px-6 md:px-12 py-24 border-t border-white/5">
-          <div className="text-center mb-16">
+        <section className="max-w-[1440px] mx-auto px-6 md:px-12 py-32 border-t border-white/5">
+          <div className="text-center mb-20 scroll-reveal">
             <div className="inline-flex items-center gap-3 mb-4">
               <span className="w-px h-4 bg-amber-400" />
               <span className="text-xs font-semibold tracking-[0.28em] uppercase text-amber-400">EVIDENCE FORMULA</span>
             </div>
             <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white">Only True <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Availability.</span></h2>
-            <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mt-6">Available backing is not assumed — it is computed. Recognized, minus encumbered, minus allocated, equals only what is truly available to spend.</p>
+            <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mt-8">Available backing is not assumed — it is computed. Recognized, minus encumbered, minus allocated, equals only what is truly available to spend.</p>
           </div>
 
           <div className="max-w-4xl mx-auto space-y-8">
             {/* Formula — prominent display */}
             <div className="bg-white/5 backdrop-blur-sm border border-amber-500/10 rounded-2xl p-10 md:p-14 text-center">
-              <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-6 text-xl md:text-3xl font-semibold text-white/80">
+              <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8 text-xl md:text-3xl font-semibold text-white/80">
                 <span>Recognized</span>
                 <span className="text-amber-400">−</span>
                 <span>Encumbered</span>
@@ -215,28 +215,28 @@ export default function EvidencePage() {
         </section>
 
         {/* Assurance Gates */}
-        <section className="max-w-[1440px] mx-auto px-6 md:px-12 py-24 border-t border-white/5">
-          <div className="text-center mb-16">
+        <section className="max-w-[1440px] mx-auto px-6 md:px-12 py-32 border-t border-white/5">
+          <div className="text-center mb-20 scroll-reveal">
             <div className="inline-flex items-center gap-3 mb-4">
               <span className="w-px h-4 bg-amber-400" />
               <span className="text-xs font-semibold tracking-[0.28em] uppercase text-amber-400">ASSURANCE GATES</span>
             </div>
             <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white">Closed-Loop <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Assurance.</span></h2>
-            <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mt-6">Four assurance gates close the loop — from instruction through execution to audit — leaving no state unaccounted for.</p>
+            <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mt-8">Four assurance gates close the loop — from instruction through execution to audit — leaving no state unaccounted for.</p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {GATES.map((gate) => (
-              <div key={gate.num} className="bg-white/5 backdrop-blur-sm border border-amber-500/10 rounded-2xl p-8 hover:border-amber-500/30 transition-all duration-300 card-lift">
+              <div key={gate.num} className="bg-white/5 backdrop-blur-sm border border-amber-500/10 rounded-2xl p-8 hover:border-amber-500/30 stagger-card transition-all duration-300 card-lift">
                 <div className="w-12 h-12 rounded-full border-2 border-amber-400/50 bg-amber-500/5 flex items-center justify-center text-amber-400 font-semibold text-sm mb-6">{gate.num}</div>
-                <h3 className="text-lg font-semibold text-white mb-3">{gate.title}</h3>
-                <p className="text-sm text-[#cbd5e1] leading-relaxed">{gate.desc}</p>
+                <h3 className="text-lg font-semibold text-white mb-4">{gate.title}</h3>
+                <p className="text-base text-[#cbd5e1] leading-loose">{gate.desc}</p>
               </div>
             ))}
           </div>
         </section>
 
         {/* CTA */}
-        <section className="max-w-[1440px] mx-auto px-6 md:px-12 py-24 border-t border-white/5 text-center">
+        <section className="max-w-[1440px] mx-auto px-6 md:px-12 py-32 border-t border-white/5 text-center">
           <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white mb-6">Read the <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Architecture.</span></h2>
           <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mb-10">Explore how layered separation — participants, control plane, rails, and evidence — makes every settlement state attributable and auditable.</p>
           <div className="flex flex-wrap items-center justify-center gap-4">
