@@ -92,24 +92,24 @@ export default function ArchitecturePage() {
       {/* CONTENT SECTIONS (below the fold) */}
       <div className="relative z-20 bg-[#07090e]">
         {/* Four-Layer Architecture */}
-        <section id="layers" className="max-w-[1440px] mx-auto px-6 md:px-12 py-24">
-          <div className="text-center mb-16">
+        <section id="layers" className="max-w-[1440px] mx-auto px-6 md:px-12 py-32">
+          <div className="text-center mb-20">
             <div className="inline-flex items-center gap-3 mb-4">
               <span className="w-px h-4 bg-amber-400" />
               <span className="text-xs font-semibold tracking-[0.28em] uppercase text-amber-400">FOUR-LAYER ARCHITECTURE</span>
             </div>
             <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white">Layered <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Separation.</span></h2>
-            <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mt-6">Each layer operates independently yet remains auditable, reconcilable and controlled as part of one institutional architecture.</p>
+            <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mt-8">Each layer operates independently yet remains auditable, reconcilable and controlled as part of one institutional architecture.</p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {LAYERS.map((layer) => (
               <div key={layer.num} className="bg-white/5 backdrop-blur-sm border border-amber-500/10 rounded-2xl p-8 hover:border-amber-500/30 transition-all duration-300 card-lift">
                 <div className="flex items-start gap-4">
                   <div className="text-3xl">{layer.icon}</div>
                   <div className="flex-1">
                     <div className="text-xs font-semibold text-amber-400 tracking-[0.1em] mb-2">{layer.num}</div>
-                    <h3 className="text-xl font-semibold text-white mb-3">{layer.title}</h3>
-                    <p className="text-sm text-[#cbd5e1] leading-relaxed">{layer.desc}</p>
+                    <h3 className="text-xl font-semibold text-white mb-4">{layer.title}</h3>
+                    <p className="text-base text-[#cbd5e1] leading-loose">{layer.desc}</p>
                   </div>
                 </div>
               </div>
@@ -117,59 +117,59 @@ export default function ArchitecturePage() {
           </div>
 
           {/* Phase 3 — Interactive 3D isometric architecture explorer (R3F) */}
-          <div className="mb-12 mt-10">
-            <div className="text-center mb-4">
+          <div className="mb-16 mt-20">
+            <div className="text-center mb-6">
               <span className="text-xs font-semibold tracking-[0.28em] uppercase text-amber-400/80">INTERACTIVE 3D VIEW</span>
-              <p className="text-sm text-[#94a3b8] mt-2">Orbit, zoom, and hover each layer to inspect its role in the architecture.</p>
+              <p className="text-base text-[#94a3b8] mt-3">Orbit, zoom, and hover each layer to inspect its role in the architecture.</p>
             </div>
             <Architecture3D />
           </div>
         </section>
 
         {/* Three-Book Separation */}
-        <section className="max-w-[1440px] mx-auto px-6 md:px-12 py-24 border-t border-white/5">
-          <div className="text-center mb-16">
+        <section className="max-w-[1440px] mx-auto px-6 md:px-12 py-32 border-t border-white/5">
+          <div className="text-center mb-20">
             <div className="inline-flex items-center gap-3 mb-4">
               <span className="w-px h-4 bg-amber-400" />
               <span className="text-xs font-semibold tracking-[0.28em] uppercase text-amber-400">THREE-BOOK SEPARATION</span>
             </div>
             <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white">Economic <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Separation.</span></h2>
-            <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mt-6">Three independent ledgers ensure MITHQAL's obligations, bank obligations, and participant positions remain economically separate and individually auditable.</p>
+            <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mt-8">Three independent ledgers ensure MITHQAL's obligations, bank obligations, and participant positions remain economically separate and individually auditable.</p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {BOOKS.map((book) => (
               <div key={book.book} className="bg-white/5 backdrop-blur-sm border border-amber-500/10 rounded-2xl p-8 hover:border-amber-500/30 transition-all duration-300 card-lift">
                 <div className="w-12 h-12 rounded-full border-2 border-amber-400/50 bg-amber-500/5 flex items-center justify-center text-amber-400 font-semibold text-lg mb-6">Book {book.book}</div>
-                <h3 className="text-xl font-semibold text-white mb-3">{book.title}</h3>
-                <p className="text-sm text-[#cbd5e1] leading-relaxed">{book.desc}</p>
+                <h3 className="text-xl font-semibold text-white mb-4">{book.title}</h3>
+                <p className="text-base text-[#cbd5e1] leading-loose">{book.desc}</p>
               </div>
             ))}
           </div>
         </section>
 
         {/* Finality Control */}
-        <section className="max-w-[1440px] mx-auto px-6 md:px-12 py-24 border-t border-white/5">
-          <div className="text-center mb-16">
+        <section className="max-w-[1440px] mx-auto px-6 md:px-12 py-32 border-t border-white/5">
+          <div className="text-center mb-20">
             <div className="inline-flex items-center gap-3 mb-4">
               <span className="w-px h-4 bg-amber-400" />
               <span className="text-xs font-semibold tracking-[0.28em] uppercase text-amber-400">FINALITY CONTROL</span>
             </div>
             <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white">Finality by <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Design.</span></h2>
-            <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mt-6">Finality is not a single event — it is a layered chain of technical, legal and control conditions that must all be satisfied.</p>
+            <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mt-8">Finality is not a single event — it is a layered chain of technical, legal and control conditions that must all be satisfied.</p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {FINALITY.map((item) => (
               <div key={item.num} className="bg-white/5 backdrop-blur-sm border border-amber-500/10 rounded-2xl p-8 hover:border-amber-500/30 transition-all duration-300 card-lift">
                 <div className="text-xs font-semibold text-amber-400 tracking-[0.1em] mb-2">{item.num}</div>
-                <h3 className="text-lg font-semibold text-white mb-3">{item.title}</h3>
-                <p className="text-sm text-[#cbd5e1] leading-relaxed">{item.desc}</p>
+                <h3 className="text-lg font-semibold text-white mb-4">{item.title}</h3>
+                <p className="text-base text-[#cbd5e1] leading-loose">{item.desc}</p>
               </div>
             ))}
           </div>
         </section>
 
         {/* CTA */}
-        <section className="max-w-[1440px] mx-auto px-6 md:px-12 py-24 border-t border-white/5 text-center">
+        <section className="max-w-[1440px] mx-auto px-6 md:px-12 py-32 border-t border-white/5 text-center">
           <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white mb-6">Explore the Full <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Architecture.</span></h2>
           <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mb-10">Read how the evidence layer turns every settlement state into attributable, verifiable, auditable control.</p>
           <div className="flex flex-wrap items-center justify-center gap-4">
