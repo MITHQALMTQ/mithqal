@@ -91,14 +91,14 @@ export default function FeatureGrid() {
               i < FEATURES.length - 1 ? "border-r border-white/10" : ""
             } ${i >= 2 ? "hidden md:flex" : ""}`}
           >
-            <div className="flex items-center justify-center w-12 h-12 rounded-full border border-amber-500/40 text-amber-400 flex-shrink-0">
+            <div className="flex items-center justify-center w-12 h-12 rounded-full border border-amber-500/60 text-amber-400 flex-shrink-0">
               {f.icon}
             </div>
             <div className="flex flex-col">
               <span className="text-sm font-semibold text-white tracking-wide">
                 {f.title}
               </span>
-              <span className="text-xs text-white/60 leading-snug">
+              <span className="text-xs text-[#cbd5e1] leading-snug">
                 {f.desc}
               </span>
             </div>

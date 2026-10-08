@@ -230,7 +230,7 @@ function verdictBadgeClass(v: Verdict): string {
     case "MODERATE":
       return "border-line bg-ink-card text-fg-muted";
     case "VOLATILE":
-      return "border-amber-500/40 bg-amber-500/10 text-amber-600 dark:text-amber-400";
+      return "border-amber-500/60 bg-amber-500/10 text-amber-600 dark:text-amber-400";
     case "HIGHLY VOLATILE":
       return "border-destructive/40 bg-destructive/10 text-destructive";
   }
@@ -718,7 +718,7 @@ function StressScenariosTab({
                       <div className="flex flex-col gap-0.5">
                         <span>{s.scenario}</span>
                         {s.existential && (
-                          <Badge className="w-fit border-amber-500/40 bg-amber-500/10 text-[9px] text-amber-600 dark:text-amber-400 hover:bg-amber-500/10">
+                          <Badge className="w-fit border-amber-500/60 bg-amber-500/10 text-[9px] text-amber-600 dark:text-amber-400 hover:bg-amber-500/10">
                             <AlertTriangle className="h-2.5 w-2.5" aria-hidden="true" />
                             Existential
                           </Badge>
@@ -838,7 +838,7 @@ function CrisisSurvivalTab() {
                     </span>
                   </TableCell>
                   <TableCell className="px-3 py-2 text-center">
-                    <Badge className="border-amber-500/40 bg-amber-500/10 text-[10px] text-amber-600 dark:text-amber-400">
+                    <Badge className="border-amber-500/60 bg-amber-500/10 text-[10px] text-amber-600 dark:text-amber-400">
                       <PauseCircle className="h-3 w-3" aria-hidden="true" />
                       {c.minting}
                     </Badge>

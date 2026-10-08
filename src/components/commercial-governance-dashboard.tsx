@@ -563,7 +563,7 @@ function EntitiesTab({ entities }: { entities: ConstitutionalEntity[] }) {
                 <CardTitle className="mt-3 text-base font-semibold text-foreground">
                   <span className="flex items-center gap-2 flex-wrap">
                     <span>{e.name}</span>
-                    <span className="inline-flex items-center rounded border border-amber-500/40 bg-amber-500/10 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-amber-200">
+                    <span className="inline-flex items-center rounded border border-amber-500/60 bg-amber-500/10 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-amber-200">
                       PLANNED
                     </span>
                   </span>
@@ -1028,7 +1028,7 @@ function ExecutionTab() {
             { tier: "Excellent", range: "≥ 90", color: "border-reserve/40 bg-reserve/10 text-reserve" },
             { tier: "Good", range: "80 – 89", color: "border-reserve/30 bg-reserve/5 text-reserve" },
             { tier: "Acceptable", range: "75 – 79", color: "border-gold/40 bg-gold/10 text-gold" },
-            { tier: "Marginal", range: "65 – 74", color: "border-amber-500/40 bg-amber-500/10 text-amber-500 dark:text-amber-400" },
+            { tier: "Marginal", range: "65 – 74", color: "border-amber-500/60 bg-amber-500/10 text-amber-500 dark:text-amber-400" },
             { tier: "Unacceptable", range: "< 65", color: "border-destructive/40 bg-destructive/10 text-destructive" },
           ].map((t) => (
             <div

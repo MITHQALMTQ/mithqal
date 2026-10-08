@@ -94,7 +94,7 @@ export default function PilotPage() {
               <span className="text-xs font-semibold tracking-[0.28em] uppercase text-amber-400">PILOT ELIGIBILITY</span>
             </div>
             <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white">Bounded by <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Design.</span></h2>
-            <p className="text-lg text-white/60 max-w-2xl mx-auto mt-6">Pilot engagement is bounded by institution, jurisdiction, corridor and evidence — scope is explicit, never open-ended.</p>
+            <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mt-6">Pilot engagement is bounded by institution, jurisdiction, corridor and evidence — scope is explicit, never open-ended.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {ELIGIBILITY.map((item) => (
@@ -104,7 +104,7 @@ export default function PilotPage() {
                   <div className="flex-1">
                     <div className="text-xs font-semibold text-amber-400 tracking-[0.1em] mb-2">{item.num}</div>
                     <h3 className="text-xl font-semibold text-white mb-3">{item.title}</h3>
-                    <p className="text-sm text-white/60 leading-relaxed">{item.desc}</p>
+                    <p className="text-sm text-[#cbd5e1] leading-relaxed">{item.desc}</p>
                   </div>
                 </div>
               </div>
@@ -120,7 +120,7 @@ export default function PilotPage() {
               <span className="text-xs font-semibold tracking-[0.28em] uppercase text-amber-400">ENGAGEMENT PATHWAY</span>
             </div>
             <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white">From Application to <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Evaluation.</span></h2>
-            <p className="text-lg text-white/60 max-w-2xl mx-auto mt-6">Five stages take an institutional enquiry through qualification and configuration to pilot execution and evidence-gated evaluation.</p>
+            <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mt-6">Five stages take an institutional enquiry through qualification and configuration to pilot execution and evidence-gated evaluation.</p>
           </div>
           <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6">
             {PATHWAY.map((step, i) => (
@@ -128,9 +128,9 @@ export default function PilotPage() {
                 <div className="flex flex-col items-center gap-3 max-w-[160px]">
                   <div className="w-16 h-16 rounded-full border-2 border-amber-400/50 bg-amber-500/5 flex items-center justify-center text-amber-400 font-semibold text-sm">{step.num}</div>
                   <span className="text-sm text-white font-semibold">{step.title}</span>
-                  <span className="text-xs text-white/50 text-center leading-relaxed">{step.desc}</span>
+                  <span className="text-xs text-[#94a3b8] text-center leading-relaxed">{step.desc}</span>
                 </div>
-                {i < PATHWAY.length - 1 && <span className="text-amber-400/40 text-2xl">→</span>}
+                {i < PATHWAY.length - 1 && <span className="text-amber-400/70 text-2xl">→</span>}
               </div>
             ))}
           </div>
@@ -144,14 +144,14 @@ export default function PilotPage() {
               <span className="text-xs font-semibold tracking-[0.28em] uppercase text-amber-400">PILOT CONSTRAINTS</span>
             </div>
             <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white">Discipline at Every <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Stage.</span></h2>
-            <p className="text-lg text-white/60 max-w-2xl mx-auto mt-6">Pilot constraints ensure scope, access and expansion remain explicitly controlled throughout the engagement lifecycle.</p>
+            <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mt-6">Pilot constraints ensure scope, access and expansion remain explicitly controlled throughout the engagement lifecycle.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {CONSTRAINTS.map((item) => (
               <div key={item.num} className="bg-white/5 backdrop-blur-sm border border-amber-500/10 rounded-2xl p-8 hover:border-amber-500/30 transition-all duration-300">
                 <div className="text-xs font-semibold text-amber-400 tracking-[0.1em] mb-2">{item.num}</div>
                 <h3 className="text-lg font-semibold text-white mb-3">{item.title}</h3>
-                <p className="text-sm text-white/60 leading-relaxed">{item.desc}</p>
+                <p className="text-sm text-[#cbd5e1] leading-relaxed">{item.desc}</p>
               </div>
             ))}
           </div>
@@ -160,7 +160,7 @@ export default function PilotPage() {
         {/* CTA */}
         <section className="max-w-[1440px] mx-auto px-6 md:px-12 py-24 border-t border-white/5 text-center">
           <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white mb-6">Start the <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Conversation.</span></h2>
-          <p className="text-lg text-white/60 max-w-2xl mx-auto mb-10">For institutional pilot enquiry, connect with the MITHQAL team through the appropriate channel.</p>
+          <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mb-10">For institutional pilot enquiry, connect with the MITHQAL team through the appropriate channel.</p>
           <div className="flex flex-wrap items-center justify-center gap-4">
             <a href="/contact" className="px-8 py-3 rounded-full bg-gradient-to-r from-amber-400 to-amber-200 text-[#07090e] font-semibold text-sm tracking-wide hover:scale-105 transition-transform duration-300 shadow-lg shadow-amber-500/30 border-2 border-amber-300">Start the Conversation →</a>
             <a href="/architecture" className="px-8 py-3 rounded-full border-2 border-amber-400/70 bg-black/30 backdrop-blur-md text-white font-medium text-sm tracking-wide hover:bg-amber-500/20 transition-all duration-300">View the Architecture</a>

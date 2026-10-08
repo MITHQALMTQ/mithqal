@@ -181,7 +181,7 @@ export default function HeroParallax() {
           {/* Subheadline */}
           <motion.p
             variants={wordVariant}
-            className="text-lg md:text-xl text-white/70 max-w-2xl mx-auto mb-10 leading-relaxed"
+            className="text-lg md:text-xl text-white/85 max-w-2xl mx-auto mb-10 leading-relaxed"
           >
             {subheadline}
           </motion.p>
@@ -199,7 +199,7 @@ export default function HeroParallax() {
             </a>
             <a
               href="/ecosystem"
-              className="px-8 py-3 rounded-full border border-amber-500/40 text-white font-medium text-sm tracking-wide hover:bg-amber-500/10 transition-all duration-300"
+              className="px-8 py-3 rounded-full border border-amber-500/60 text-white font-medium text-sm tracking-wide hover:bg-amber-500/10 transition-all duration-300"
             >
               Explore Ecosystem
             </a>

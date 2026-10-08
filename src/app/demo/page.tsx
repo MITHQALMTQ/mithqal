@@ -807,7 +807,7 @@ function statusBadge(status: string) {
   if (status === "Pending") {
     return <Badge className="bg-amber-500/15 text-amber-400 border-amber-500/30 hover:bg-amber-500/20">{status}</Badge>;
   }
-  return <Badge className="bg-white/10 text-white/60 border-white/20 hover:bg-white/15">{status}</Badge>;
+  return <Badge className="bg-white/10 text-[#cbd5e1] border-white/20 hover:bg-white/15">{status}</Badge>;
 }
 
 function shortAddr(a: string): string {
@@ -949,7 +949,7 @@ function Header() {
       <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
         <Link
           href="/"
-          className="flex items-center gap-2 text-sm text-white/60 transition hover:text-white"
+          className="flex items-center gap-2 text-sm text-[#cbd5e1] transition hover:text-white"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to MITHQAL
@@ -965,7 +965,7 @@ function Header() {
 
 function Footer() {
   return (
-    <footer className="mt-auto border-t border-white/10 bg-[#0A0E1A] px-6 py-6 text-center text-xs text-white/40">
+    <footer className="mt-auto border-t border-white/10 bg-[#0A0E1A] px-6 py-6 text-center text-xs text-[#94a3b8]">
       <div className="mx-auto w-full max-w-7xl">
         <p>
           MITHQAL — Constitutional Settlement Institution ·{" "}
@@ -1006,7 +1006,7 @@ function SectionShell({
           {title}
         </h2>
         {subtitle && (
-          <p className="mt-2 max-w-3xl text-sm text-white/50">{subtitle}</p>
+          <p className="mt-2 max-w-3xl text-sm text-[#94a3b8]">{subtitle}</p>
         )}
       </div>
       {children}
@@ -1064,7 +1064,7 @@ function Overview({
             <h2 className="text-3xl font-semibold leading-tight tracking-tight text-white sm:text-4xl lg:text-5xl">
               {"MITHQAL —\u00A0"}<span className="text-[#C9A961]">Constitutional Settlement</span>{"\u00A0Institution"}
             </h2>
-            <p className="mt-4 max-w-3xl text-base leading-relaxed text-white/60 sm:text-lg">
+            <p className="mt-4 max-w-3xl text-base leading-relaxed text-[#cbd5e1] sm:text-lg">
               MITHQAL is a constitutional, fully-reserved monetary settlement
               institution that explores how Circle&rsquo;s USDC can serve as the
               operational liquidity layer for transparent, programmable,
@@ -1149,7 +1149,7 @@ function Overview({
             >
               <q.icon className="h-5 w-5 text-[#C9A961]" />
               <span className="text-sm font-medium text-white">{q.label}</span>
-              <span className="text-xs text-white/40">{q.desc}</span>
+              <span className="text-xs text-[#94a3b8]">{q.desc}</span>
             </button>
           ))}
         </div>
@@ -1162,7 +1162,7 @@ function StatTile({ value, label }: { value: string; label: string }) {
   return (
     <Card className="items-center gap-1 bg-[#111726] px-4 py-4 text-center text-white">
       <div className="text-2xl font-bold tabular-nums text-[#C9A961]">{value}</div>
-      <div className="text-xs text-white/50">{label}</div>
+      <div className="text-xs text-[#94a3b8]">{label}</div>
     </Card>
   );
 }
@@ -1193,7 +1193,7 @@ function Storyboard({ liveData }: { liveData: LiveData }) {
                   <span className="text-base font-semibold text-white">
                     {s.name}
                   </span>
-                  <div className="flex items-center gap-2 text-xs text-white/50">
+                  <div className="flex items-center gap-2 text-xs text-[#94a3b8]">
                     <Clock className="h-3 w-3" />
                     <span className="font-mono">
                       {s.start}–{s.end}
@@ -1221,7 +1221,7 @@ function Storyboard({ liveData }: { liveData: LiveData }) {
               </div>
               <div className="flex items-center gap-2 border-t border-white/10 pt-3">
                 <Checkbox checked={s.status === "Approved"} disabled />
-                <span className="text-xs text-white/40">
+                <span className="text-xs text-[#94a3b8]">
                   Status: {s.status}
                 </span>
               </div>
@@ -1248,7 +1248,7 @@ function Field({
         {label}
       </div>
       <div
-        className={`text-sm leading-relaxed text-white/70 ${mono ? "font-mono" : ""}`}
+        className={`text-sm leading-relaxed text-white/85 ${mono ? "font-mono" : ""}`}
       >
         {value}
       </div>
@@ -1287,7 +1287,7 @@ function VideoScript({ liveData }: { liveData: LiveData }) {
                   {line.title}
                 </span>
               </div>
-              <div className="flex items-center gap-2 text-xs text-white/40">
+              <div className="flex items-center gap-2 text-xs text-[#94a3b8]">
                 <span className="font-mono">{line.time}</span>
                 <span className="text-white/20">·</span>
                 <span>{line.words} words</span>
@@ -1309,7 +1309,7 @@ function ScriptStat({ label, value }: { label: string; value: string }) {
   return (
     <div>
       <div className="text-2xl font-bold tabular-nums text-[#C9A961]">{value}</div>
-      <div className="mt-1 text-xs text-white/50">{label}</div>
+      <div className="mt-1 text-xs text-[#94a3b8]">{label}</div>
     </div>
   );
 }
@@ -1330,7 +1330,7 @@ function ScriptText({ text }: { text: string }) {
           return (
             <span
               key={i}
-              className="mx-1 inline-flex items-center rounded border border-white/20 bg-white/5 px-1.5 py-0.5 align-middle font-mono text-[10px] text-white/50"
+              className="mx-1 inline-flex items-center rounded border border-white/20 bg-white/5 px-1.5 py-0.5 align-middle font-mono text-[10px] text-[#94a3b8]"
             >
               PAUSE
             </span>
@@ -1357,21 +1357,21 @@ function ShotList() {
           <Table>
             <TableHeader>
               <TableRow className="border-white/10 hover:bg-transparent">
-                <TableHead className="text-white/50">Scene</TableHead>
-                <TableHead className="text-white/50">Camera</TableHead>
-                <TableHead className="text-white/50">Screen Rec</TableHead>
-                <TableHead className="text-white/50">Zoom</TableHead>
-                <TableHead className="text-white/50">Pan</TableHead>
-                <TableHead className="text-white/50">Transition</TableHead>
-                <TableHead className="text-white/50">Duration</TableHead>
-                <TableHead className="hidden text-white/50 lg:table-cell">Notes</TableHead>
+                <TableHead className="text-[#94a3b8]">Scene</TableHead>
+                <TableHead className="text-[#94a3b8]">Camera</TableHead>
+                <TableHead className="text-[#94a3b8]">Screen Rec</TableHead>
+                <TableHead className="text-[#94a3b8]">Zoom</TableHead>
+                <TableHead className="text-[#94a3b8]">Pan</TableHead>
+                <TableHead className="text-[#94a3b8]">Transition</TableHead>
+                <TableHead className="text-[#94a3b8]">Duration</TableHead>
+                <TableHead className="hidden text-[#94a3b8] lg:table-cell">Notes</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {SHOT_LIST.map((shot) => (
                 <TableRow
                   key={shot.scene}
-                  className="border-white/5 text-white/70"
+                  className="border-white/5 text-white/85"
                 >
                   <TableCell className="font-medium text-white">
                     {shot.scene}
@@ -1386,11 +1386,11 @@ function ShotList() {
                       <span className="text-white/30">—</span>
                     )}
                   </TableCell>
-                  <TableCell className="text-white/50">{shot.zoom}</TableCell>
-                  <TableCell className="text-white/50">{shot.pan}</TableCell>
-                  <TableCell className="text-white/50">{shot.transition}</TableCell>
+                  <TableCell className="text-[#94a3b8]">{shot.zoom}</TableCell>
+                  <TableCell className="text-[#94a3b8]">{shot.pan}</TableCell>
+                  <TableCell className="text-[#94a3b8]">{shot.transition}</TableCell>
                   <TableCell className="font-mono text-[#C9A961]">{shot.duration}</TableCell>
-                  <TableCell className="hidden text-xs text-white/40 lg:table-cell">
+                  <TableCell className="hidden text-xs text-[#94a3b8] lg:table-cell">
                     {shot.notes}
                   </TableCell>
                 </TableRow>
@@ -1424,13 +1424,13 @@ function CaptureChecklist({
       <PanelCard className="mb-6">
         <div className="flex items-center justify-between">
           <div>
-            <div className="text-sm text-white/50">Capture progress</div>
+            <div className="text-sm text-[#94a3b8]">Capture progress</div>
             <div className="mt-1 text-2xl font-bold tabular-nums text-[#C9A961]">
               {done} / {total}
             </div>
           </div>
           <div className="text-right">
-            <div className="text-sm text-white/50">Complete</div>
+            <div className="text-sm text-[#94a3b8]">Complete</div>
             <div className="mt-1 text-2xl font-bold tabular-nums text-white">{pct}%</div>
           </div>
         </div>
@@ -1447,7 +1447,7 @@ function CaptureChecklist({
                   <span className="text-sm font-semibold text-white">{item.label}</span>
                   {statusBadge(item.status)}
                 </div>
-                <p className="mt-1 text-xs text-white/50">{item.detail}</p>
+                <p className="mt-1 text-xs text-[#94a3b8]">{item.detail}</p>
               </div>
             </div>
           </PanelCard>
@@ -1476,14 +1476,14 @@ function MotionGraphics() {
               </div>
               <div className="flex-1">
                 <div className="text-sm font-semibold text-white">{m.name}</div>
-                <div className="mt-1 text-xs text-white/50">{m.description}</div>
+                <div className="mt-1 text-xs text-[#94a3b8]">{m.description}</div>
               </div>
             </div>
             <div className="mt-auto flex flex-wrap items-center gap-2 border-t border-white/5 pt-3">
               <Badge className="border-[#2775CA]/30 bg-[#2775CA]/10 text-[#7FB3F0] hover:bg-[#2775CA]/15">
                 {m.format}
               </Badge>
-              <span className="text-xs text-white/40">Used in: {m.usedIn}</span>
+              <span className="text-xs text-[#94a3b8]">Used in: {m.usedIn}</span>
             </div>
           </PanelCard>
         ))}
@@ -1529,10 +1529,10 @@ function AssetsLibrary() {
                     )}
                   </div>
                   <div className="flex items-center gap-2 text-xs">
-                    <Badge variant="outline" className="border-white/20 text-white/60">
+                    <Badge variant="outline" className="border-white/20 text-[#cbd5e1]">
                       {a.format}
                     </Badge>
-                    <span className="truncate font-mono text-white/40">{a.path}</span>
+                    <span className="truncate font-mono text-[#94a3b8]">{a.path}</span>
                   </div>
                   {a.available && a.href && (
                     <a
@@ -1576,13 +1576,13 @@ function EvidencePanel({
       <PanelCard className="mb-6">
         <div className="flex items-center justify-between">
           <div>
-            <div className="text-sm text-white/50">Claims supported</div>
+            <div className="text-sm text-[#94a3b8]">Claims supported</div>
             <div className="mt-1 text-2xl font-bold tabular-nums text-emerald-400">
               {supported} / {total}
             </div>
           </div>
           <div className="text-right">
-            <div className="text-sm text-white/50">Evidence coverage</div>
+            <div className="text-sm text-[#94a3b8]">Evidence coverage</div>
             <div className="mt-1 text-2xl font-bold tabular-nums text-white">{pct}%</div>
           </div>
         </div>
@@ -1594,12 +1594,12 @@ function EvidencePanel({
           <Table>
             <TableHeader>
               <TableRow className="border-white/10 hover:bg-transparent">
-                <TableHead className="text-white/50">Claim</TableHead>
-                <TableHead className="text-white/50">Type</TableHead>
-                <TableHead className="text-white/50">Repository</TableHead>
-                <TableHead className="text-white/50">Contract</TableHead>
-                <TableHead className="text-white/50">Dashboard</TableHead>
-                <TableHead className="text-white/50">Status</TableHead>
+                <TableHead className="text-[#94a3b8]">Claim</TableHead>
+                <TableHead className="text-[#94a3b8]">Type</TableHead>
+                <TableHead className="text-[#94a3b8]">Repository</TableHead>
+                <TableHead className="text-[#94a3b8]">Contract</TableHead>
+                <TableHead className="text-[#94a3b8]">Dashboard</TableHead>
+                <TableHead className="text-[#94a3b8]">Status</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -1611,11 +1611,11 @@ function EvidencePanel({
                     {substituteLiveValues(e.claim, liveData)}
                   </TableCell>
                   <TableCell>
-                    <Badge variant="outline" className="border-white/20 text-white/60">
+                    <Badge variant="outline" className="border-white/20 text-[#cbd5e1]">
                       {e.type}
                     </Badge>
                   </TableCell>
-                  <TableCell className="text-xs text-white/50">
+                  <TableCell className="text-xs text-[#94a3b8]">
                     {e.repo ? (
                       <a
                         href={`${GITHUB_URL}/blob/main/${e.repo}`}
@@ -1645,7 +1645,7 @@ function EvidencePanel({
                       <span className="text-white/20">—</span>
                     )}
                   </TableCell>
-                  <TableCell className="text-xs text-white/50">
+                  <TableCell className="text-xs text-[#94a3b8]">
                     {e.dashboard ? (
                       <a
                         href={e.dashboard}
@@ -1693,7 +1693,7 @@ function Matrix({ implementedPct }: { implementedPct: number }) {
     >
       <PanelCard className="mb-6">
         <div className="flex items-center justify-between">
-          <div className="text-sm text-white/50">
+          <div className="text-sm text-[#94a3b8]">
             Implemented share of total scope
           </div>
           <div className="text-2xl font-bold tabular-nums text-[#C9A961]">
@@ -1701,7 +1701,7 @@ function Matrix({ implementedPct }: { implementedPct: number }) {
           </div>
         </div>
         <Progress value={implementedPct} className="mt-3 h-2 bg-white/10" />
-        <p className="mt-2 text-xs text-white/40">
+        <p className="mt-2 text-xs text-[#94a3b8]">
           Implemented: {IMPLEMENTED.length} · Planned: {PLANNED.length}
         </p>
       </PanelCard>
@@ -1714,7 +1714,7 @@ function Matrix({ implementedPct }: { implementedPct: number }) {
             </div>
             <div>
               <h3 className="text-base font-semibold text-white">Implemented</h3>
-              <p className="text-xs text-white/40">Live on Monad Testnet today</p>
+              <p className="text-xs text-[#94a3b8]">Live on Monad Testnet today</p>
             </div>
           </div>
           <ul className="flex flex-col gap-3">
@@ -1726,7 +1726,7 @@ function Matrix({ implementedPct }: { implementedPct: number }) {
                 <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />
                 <div>
                   <div className="text-sm font-medium text-white">{item.label}</div>
-                  <div className="mt-0.5 text-xs text-white/50">{item.detail}</div>
+                  <div className="mt-0.5 text-xs text-[#94a3b8]">{item.detail}</div>
                 </div>
               </li>
             ))}
@@ -1740,7 +1740,7 @@ function Matrix({ implementedPct }: { implementedPct: number }) {
             </div>
             <div>
               <h3 className="text-base font-semibold text-white">Planned · Roadmap</h3>
-              <p className="text-xs text-white/40">Not yet implemented</p>
+              <p className="text-xs text-[#94a3b8]">Not yet implemented</p>
             </div>
           </div>
           <ul className="flex flex-col gap-3">
@@ -1757,7 +1757,7 @@ function Matrix({ implementedPct }: { implementedPct: number }) {
                       PLANNED
                     </Badge>
                   </div>
-                  <div className="mt-0.5 text-xs text-white/50">{item.detail}</div>
+                  <div className="mt-0.5 text-xs text-[#94a3b8]">{item.detail}</div>
                 </div>
               </li>
             ))}
@@ -1783,25 +1783,25 @@ function VideoTimeline() {
           <Table>
             <TableHeader>
               <TableRow className="border-white/10 hover:bg-transparent">
-                <TableHead className="text-white/50">Time</TableHead>
-                <TableHead className="text-white/50">Scene</TableHead>
-                <TableHead className="text-white/50">Audio</TableHead>
-                <TableHead className="text-white/50">Voice</TableHead>
-                <TableHead className="text-white/50">Animation</TableHead>
-                <TableHead className="text-white/50">Transition</TableHead>
-                <TableHead className="text-white/50">Music</TableHead>
+                <TableHead className="text-[#94a3b8]">Time</TableHead>
+                <TableHead className="text-[#94a3b8]">Scene</TableHead>
+                <TableHead className="text-[#94a3b8]">Audio</TableHead>
+                <TableHead className="text-[#94a3b8]">Voice</TableHead>
+                <TableHead className="text-[#94a3b8]">Animation</TableHead>
+                <TableHead className="text-[#94a3b8]">Transition</TableHead>
+                <TableHead className="text-[#94a3b8]">Music</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {TIMELINE.map((row) => (
-                <TableRow key={row.time} className="border-white/5 text-white/70">
+                <TableRow key={row.time} className="border-white/5 text-white/85">
                   <TableCell className="font-mono text-[#C9A961]">{row.time}</TableCell>
                   <TableCell className="font-medium text-white">{row.scene}</TableCell>
-                  <TableCell className="text-white/50">{row.audio}</TableCell>
-                  <TableCell className="text-white/50">{row.voice}</TableCell>
-                  <TableCell className="text-xs text-white/50">{row.animation}</TableCell>
-                  <TableCell className="text-xs text-white/50">{row.transition}</TableCell>
-                  <TableCell className="text-xs text-white/50">{row.music}</TableCell>
+                  <TableCell className="text-[#94a3b8]">{row.audio}</TableCell>
+                  <TableCell className="text-[#94a3b8]">{row.voice}</TableCell>
+                  <TableCell className="text-xs text-[#94a3b8]">{row.animation}</TableCell>
+                  <TableCell className="text-xs text-[#94a3b8]">{row.transition}</TableCell>
+                  <TableCell className="text-xs text-[#94a3b8]">{row.music}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -1831,22 +1831,22 @@ function AudioRecommendations() {
             <div className="flex-1">
               <div className="flex flex-wrap items-center gap-2">
                 <h3 className="text-base font-semibold text-white">{track.title}</h3>
-                <Badge variant="outline" className="border-white/20 text-white/60">
+                <Badge variant="outline" className="border-white/20 text-[#cbd5e1]">
                   <Music className="mr-1 h-3 w-3" /> {track.tempo}
                 </Badge>
               </div>
               <dl className="mt-3 grid grid-cols-1 gap-1.5 text-xs">
                 <div className="flex gap-2">
-                  <dt className="w-16 shrink-0 text-white/40">Style:</dt>
-                  <dd className="text-white/70">{track.style}</dd>
+                  <dt className="w-16 shrink-0 text-[#94a3b8]">Style:</dt>
+                  <dd className="text-white/85">{track.style}</dd>
                 </div>
                 <div className="flex gap-2">
-                  <dt className="w-16 shrink-0 text-white/40">Mood:</dt>
-                  <dd className="text-white/70">{track.mood}</dd>
+                  <dt className="w-16 shrink-0 text-[#94a3b8]">Mood:</dt>
+                  <dd className="text-white/85">{track.mood}</dd>
                 </div>
                 <div className="flex gap-2">
-                  <dt className="w-16 shrink-0 text-white/40">Source:</dt>
-                  <dd className="text-white/70">{track.source}</dd>
+                  <dt className="w-16 shrink-0 text-[#94a3b8]">Source:</dt>
+                  <dd className="text-white/85">{track.source}</dd>
                 </div>
               </dl>
             </div>
@@ -1934,11 +1934,11 @@ function ExportCenter({ liveData }: { liveData: LiveData }) {
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-semibold text-white">{item.title}</span>
-                        <Badge variant="outline" className="border-white/20 text-white/60">
+                        <Badge variant="outline" className="border-white/20 text-[#cbd5e1]">
                           {item.format}
                         </Badge>
                       </div>
-                      <p className="mt-1 text-xs text-white/50">{item.description}</p>
+                      <p className="mt-1 text-xs text-[#94a3b8]">{item.description}</p>
                       <span className="mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-[#C9A961]">
                         <Download className="h-3 w-3" /> Download
                       </span>
@@ -1958,11 +1958,11 @@ function ExportCenter({ liveData }: { liveData: LiveData }) {
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-semibold text-white">{item.title}</span>
-                      <Badge variant="outline" className="border-white/20 text-white/60">
+                      <Badge variant="outline" className="border-white/20 text-[#cbd5e1]">
                         {item.format}
                       </Badge>
                     </div>
-                    <p className="mt-1 text-xs text-white/50">{item.description}</p>
+                    <p className="mt-1 text-xs text-[#94a3b8]">{item.description}</p>
                     <span className="mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-[#C9A961]">
                       <Download className="h-3 w-3" /> {item.kind === "print" ? "Open print view" : "Generate"}
                     </span>
@@ -1979,10 +1979,10 @@ function ExportCenter({ liveData }: { liveData: LiveData }) {
           <FileType className="mt-0.5 h-5 w-5 shrink-0 text-[#C9A961]" />
           <div>
             <h3 className="text-sm font-semibold text-[#C9A961]">Export notes</h3>
-            <ul className="mt-2 space-y-1 text-xs text-white/60">
+            <ul className="mt-2 space-y-1 text-xs text-[#cbd5e1]">
               <li>• Storyboard PDF and Voice Script PDF open a print-optimized view — use your browser&rsquo;s &ldquo;Save as PDF&rdquo;.</li>
               <li>• JSON and Shot List MD are generated client-side from the live data on this page.</li>
-              <li>• Subtitle SRT and Thumbnail PNG link to the existing production assets in <code className="font-mono text-white/50">/video/</code>.</li>
+              <li>• Subtitle SRT and Thumbnail PNG link to the existing production assets in <code className="font-mono text-[#94a3b8]">/video/</code>.</li>
             </ul>
           </div>
         </div>

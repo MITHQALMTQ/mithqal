@@ -52,7 +52,7 @@ export default function Footer() {
               <MithqalLogo />
               <span className="text-xl font-semibold tracking-[0.18em] text-[#D4AF37]" style={{ fontFamily: "Inter, sans-serif" }}>MITHQAL</span>
             </a>
-            <p className="text-sm text-white/50 leading-relaxed">
+            <p className="text-sm text-[#94a3b8] leading-relaxed">
               Neutral wholesale settlement infrastructure. Built for institutional participants, controlled settlement workflows, and audit-ready evidence.
             </p>
             <div className="flex flex-wrap gap-3 mt-2">
@@ -62,20 +62,20 @@ export default function Footer() {
             </div>
           </div>
           <div className="flex flex-col gap-3">
-            <div className="text-xs font-semibold tracking-[0.18em] uppercase text-amber-400/60 mb-2">Connect</div>
-            <a href="/contact" className="text-sm text-white/70 hover:text-amber-400 transition-colors duration-300 flex items-center gap-2"><span>📧</span> Institutional Enquiry</a>
-            <a href="/pilot" className="text-sm text-white/70 hover:text-amber-400 transition-colors duration-300 flex items-center gap-2"><span>🚀</span> Pilot Engagement</a>
-            <a href="/architecture" className="text-sm text-white/70 hover:text-amber-400 transition-colors duration-300 flex items-center gap-2"><span>🏗</span> Technical Review</a>
+            <div className="text-xs font-semibold tracking-[0.18em] uppercase text-amber-400/80 mb-2">Connect</div>
+            <a href="/contact" className="text-sm text-white/85 hover:text-amber-400 transition-colors duration-300 flex items-center gap-2"><span>📧</span> Institutional Enquiry</a>
+            <a href="/pilot" className="text-sm text-white/85 hover:text-amber-400 transition-colors duration-300 flex items-center gap-2"><span>🚀</span> Pilot Engagement</a>
+            <a href="/architecture" className="text-sm text-white/85 hover:text-amber-400 transition-colors duration-300 flex items-center gap-2"><span>🏗</span> Technical Review</a>
           </div>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
           {Object.entries(SITEMAP).map(([category, links]) => (
             <div key={category}>
-              <div className="text-xs font-semibold tracking-[0.18em] uppercase text-amber-400/60 mb-4 pb-3 border-b border-white/5">{category}</div>
+              <div className="text-xs font-semibold tracking-[0.18em] uppercase text-amber-400/80 mb-4 pb-3 border-b border-white/5">{category}</div>
               <ul className="space-y-2.5">
                 {links.map((link) => (
                   <li key={link.label}>
-                    <a href={link.href} className="text-sm text-white/60 hover:text-white transition-colors duration-200">{link.label}</a>
+                    <a href={link.href} className="text-sm text-[#cbd5e1] hover:text-white transition-colors duration-200">{link.label}</a>
                   </li>
                 ))}
               </ul>
@@ -83,8 +83,8 @@ export default function Footer() {
           ))}
         </div>
         <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-xs text-white/40">© {new Date().getFullYear()} MITHQAL. Neutral Institutional Settlement Control Plane. All rights reserved.</p>
-          <p className="text-xs text-amber-400/40">INSTITUTIONALLY_VALIDATED = false · PRODUCTION_AUTHORIZED = false</p>
+          <p className="text-xs text-[#94a3b8]">© {new Date().getFullYear()} MITHQAL. Neutral Institutional Settlement Control Plane. All rights reserved.</p>
+          <p className="text-xs text-amber-400/70">INSTITUTIONALLY_VALIDATED = false · PRODUCTION_AUTHORIZED = false</p>
         </div>
       </div>
     </footer>

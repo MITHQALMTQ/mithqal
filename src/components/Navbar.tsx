@@ -124,7 +124,7 @@ export default function Navbar() {
           {/* Right: Launch App pill (desktop) */}
           <a
             href="/features"
-            className="hidden md:flex border border-amber-500/40 rounded-full px-6 py-2 bg-transparent text-white hover:bg-amber-500/10 transition-all duration-300 text-sm font-medium tracking-wide items-center gap-2 flex-shrink-0"
+            className="hidden md:flex border border-amber-500/60 rounded-full px-6 py-2 bg-transparent text-white hover:bg-amber-500/10 transition-all duration-300 text-sm font-medium tracking-wide items-center gap-2 flex-shrink-0"
           >
             <span>Launch App</span>
             <span aria-hidden="true">→</span>

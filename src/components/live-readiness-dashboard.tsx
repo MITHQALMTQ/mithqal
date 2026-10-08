@@ -429,7 +429,7 @@ function verdictBadgeClass(v: Verdict): string {
     case "READY":
       return "border-reserve/40 bg-reserve/10 text-reserve hover:bg-reserve/10";
     case "CONDITIONAL":
-      return "border-amber-500/40 bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/10";
+      return "border-amber-500/60 bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/10";
     case "NOT_READY":
       return "border-rose-500/40 bg-rose-500/10 text-rose-600 dark:text-rose-400 hover:bg-rose-500/10";
   }
@@ -500,7 +500,7 @@ function defenseBadgeClass(pct: number): string {
   if (pct >= 100)
     return "border-reserve/40 bg-reserve/10 text-reserve hover:bg-reserve/10";
   if (pct >= 67)
-    return "border-amber-500/40 bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/10";
+    return "border-amber-500/60 bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/10";
   return "border-rose-500/40 bg-rose-500/10 text-rose-600 dark:text-rose-400 hover:bg-rose-500/10";
 }
 
@@ -549,9 +549,9 @@ function HeaderSection({ live }: { live: LiveReadinessData }) {
 
       {/* Verdict badge */}
       <Reveal delay={0.14}>
-        <div className="overflow-hidden rounded-2xl border border-amber-500/40 bg-gradient-to-br from-amber-500/[0.10] via-gold/[0.06] to-reserve/[0.05] p-5 sm:p-7">
+        <div className="overflow-hidden rounded-2xl border border-amber-500/60 bg-gradient-to-br from-amber-500/[0.10] via-gold/[0.06] to-reserve/[0.05] p-5 sm:p-7">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:gap-6">
-            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl border border-amber-500/40 bg-amber-500/10">
+            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl border border-amber-500/60 bg-amber-500/10">
               <ShieldAlert
                 className="h-8 w-8 text-amber-600 dark:text-amber-400"
                 aria-hidden="true"
@@ -563,7 +563,7 @@ function HeaderSection({ live }: { live: LiveReadinessData }) {
                   Overall verdict
                 </span>
                 <Badge
-                  className="border-amber-500/40 bg-amber-500/15 text-amber-700 dark:text-amber-300 hover:bg-amber-500/15"
+                  className="border-amber-500/60 bg-amber-500/15 text-amber-700 dark:text-amber-300 hover:bg-amber-500/15"
                   aria-label="Conditionally ready for live deployment"
                 >
                   <ShieldCheck className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
@@ -1024,7 +1024,7 @@ function FindingsSection() {
                       {f.finding}
                     </TableCell>
                     <TableCell className="px-3 py-2.5">
-                      <Badge className="border-amber-500/40 bg-amber-500/10 text-[10px] text-amber-600 dark:text-amber-400 hover:bg-amber-500/10">
+                      <Badge className="border-amber-500/60 bg-amber-500/10 text-[10px] text-amber-600 dark:text-amber-400 hover:bg-amber-500/10">
                         {f.severity}
                       </Badge>
                     </TableCell>
@@ -1119,7 +1119,7 @@ function ChecklistSection() {
                   Monitored
                 </span>
               </div>
-              <Badge className="border-amber-500/40 bg-amber-500/10 text-[11px] text-amber-600 dark:text-amber-400 hover:bg-amber-500/10">
+              <Badge className="border-amber-500/60 bg-amber-500/10 text-[11px] text-amber-600 dark:text-amber-400 hover:bg-amber-500/10">
                 {monitored.length} ⚠
               </Badge>
             </div>

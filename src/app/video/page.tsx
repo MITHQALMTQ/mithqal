@@ -113,7 +113,7 @@ export default function VideoPage() {
             </svg>
             <span className="text-sm font-medium tracking-wider text-white/80">MITHQAL</span>
           </Link>
-          <Link href="/" className="text-xs text-white/40 transition hover:text-white/70">mithqal.vercel.app</Link>
+          <Link href="/" className="text-xs text-[#94a3b8] transition hover:text-white/85">mithqal.vercel.app</Link>
         </div>
       </header>
 
@@ -150,7 +150,7 @@ export default function VideoPage() {
                 <Pause className="h-3.5 w-3.5 fill-white text-white" />
               </button>
             )}
-            <div className="absolute bottom-3 left-3 z-20 rounded-full bg-black/50 px-3 py-1 text-xs font-medium text-white/70">{currentScene + 1} / {scenes.length}</div>
+            <div className="absolute bottom-3 left-3 z-20 rounded-full bg-black/50 px-3 py-1 text-xs font-medium text-white/85">{currentScene + 1} / {scenes.length}</div>
           </div>
 
           <div className="mt-4 flex justify-center gap-1.5">
@@ -164,7 +164,7 @@ export default function VideoPage() {
                 h1 is now the sr-only heading at the top of <main>; this visible
                 wordmark is a sub-heading. */}
             <h2 className="text-xl font-light tracking-wide text-white/90 sm:text-2xl">MITHQAL</h2>
-            <p className="mt-1 text-sm text-white/40">Constitutional Settlement Institution</p>
+            <p className="mt-1 text-sm text-[#94a3b8]">Constitutional Settlement Institution</p>
             <div className="mt-4 flex items-center justify-center gap-6 text-xs text-white/30">
               <Link href="/" className="transition hover:text-[#C9A961]">Dashboard</Link>
               <a href="https://github.com/MITHQALMTQ/mithqal" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 transition hover:text-[#C9A961]">GitHub<ExternalLink className="h-3 w-3" /></a>
@@ -176,7 +176,7 @@ export default function VideoPage() {
       {/* Defect 4 fix (audit 2-A): add a real <footer> element so the route is
           consistent with the other 11 routes (which all have main + footer) and
           the 61px gap on tall viewports is filled with the copyright line. */}
-      <footer className="mt-auto border-t border-[#C9A961]/15 bg-[#0A0E1A] px-6 py-6 text-center text-xs text-white/40">
+      <footer className="mt-auto border-t border-[#C9A961]/15 bg-[#0A0E1A] px-6 py-6 text-center text-xs text-[#94a3b8]">
         <div className="mx-auto w-full max-w-5xl">
           <p>
             MITHQAL — Constitutional Settlement Institution ·{" "}
@@ -254,7 +254,7 @@ function SceneContent({
               </div>
             ))}
           </div>
-          <div className="flex gap-4 text-xs text-white/50 sm:gap-6 sm:text-sm">
+          <div className="flex gap-4 text-xs text-[#94a3b8] sm:gap-6 sm:text-sm">
             <span>✓ 100% Reserve Ratio</span><span>✓ No Lending</span><span>✓ Redemption Never Pauses</span>
           </div>
         </div>
@@ -264,14 +264,14 @@ function SceneContent({
     case 4:
       return (
         <div className="flex flex-col items-center gap-4" style={fs}>
-          <div className="text-sm font-medium text-white/60 sm:text-base">Every MTQ is backed by a diversified reserve portfolio</div>
+          <div className="text-sm font-medium text-[#cbd5e1] sm:text-base">Every MTQ is backed by a diversified reserve portfolio</div>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             <ReserveTier name="Cash" pct="52%" desc="Central-bank quality" color="#4ADE80" />
             <ReserveTier name="Sovereign" pct="23%" desc="T-bills ≤ 1yr" color="#60A5FA" />
             <ReserveTier name="Gold + Silver" pct="19%" desc="Allocated bullion" color="#C9A961" />
             <ReserveTier name="Stablecoin" pct="5%" desc="Regulated, USDC" color="#2775CA" />
           </div>
-          <div className="mt-2 flex flex-col items-center gap-1 text-xs text-white/40">
+          <div className="mt-2 flex flex-col items-center gap-1 text-xs text-[#94a3b8]">
             <span>Reserve Ratio: <span className="font-semibold text-[#C9A961]">{liveData.reserveRatio.toFixed(2)}%</span> (≥100% constitutional minimum)</span>
             <span>NAV: <span className="font-semibold text-[#C9A961]">${liveData.navM.toFixed(4)}</span> (dynamic — floats with reserve value)</span>
             <span>Bullion Protection: <span className="font-semibold text-[#4ADE80]">Gold liquidated last</span></span>
@@ -283,7 +283,7 @@ function SceneContent({
     case 5:
       return (
         <div className="flex flex-col items-center gap-3" style={fs}>
-          <div className="text-sm font-medium text-white/60 sm:text-base">How MTQ works with Circle USDC</div>
+          <div className="text-sm font-medium text-[#cbd5e1] sm:text-base">How MTQ works with Circle USDC</div>
           <div className="flex flex-col gap-2">
             {[
               { step: "1", text: "Participant deposits USDC", color: "#2775CA" },
@@ -299,7 +299,7 @@ function SceneContent({
               </div>
             ))}
           </div>
-          <div className="mt-1 text-xs text-white/40">USDC is the entry point. The reserve is the backbone.</div>
+          <div className="mt-1 text-xs text-[#94a3b8]">USDC is the entry point. The reserve is the backbone.</div>
         </div>
       );
 
@@ -307,7 +307,7 @@ function SceneContent({
     case 6:
       return (
         <div className="flex flex-col items-center gap-4" style={fs}>
-          <div className="text-sm text-white/40 sm:text-base">mithqal.vercel.app</div>
+          <div className="text-sm text-[#94a3b8] sm:text-base">mithqal.vercel.app</div>
           <div className="grid grid-cols-3 gap-3 sm:gap-5">
             <Metric value={`${liveData.reserveRatio.toFixed(2)}%`} label="Reserve Ratio" />
             <Metric value={`$${liveData.navM.toFixed(4)}`} label="NAV" />
@@ -338,7 +338,7 @@ function SceneContent({
               </div>
             ))}
           </div>
-          <div className="text-xs text-white/40">Monad Testnet · <span className="font-semibold text-[#C9A961]">Chain ID 10143</span></div>
+          <div className="text-xs text-[#94a3b8]">Monad Testnet · <span className="font-semibold text-[#C9A961]">Chain ID 10143</span></div>
         </div>
       );
 
@@ -346,8 +346,8 @@ function SceneContent({
     case 8:
       return (
         <div className="flex flex-col items-center gap-3" style={fs}>
-          <div className="text-lg font-light text-white/70 sm:text-xl">github.com/MITHQALMTQ/mithqal</div>
-          <div className="text-sm text-white/40">Open Source</div>
+          <div className="text-lg font-light text-white/85 sm:text-xl">github.com/MITHQALMTQ/mithqal</div>
+          <div className="text-sm text-[#94a3b8]">Open Source</div>
           <div className="flex gap-2">
             {["foundry/src/", "docs/", "foundry/test/", "certora/"].map((p, i) => (
               <div key={i} className="rounded border border-white/10 bg-[#111726] px-3 py-1.5 font-mono text-xs text-[#C9A961]">{p}</div>
@@ -416,7 +416,7 @@ function SceneContent({
             <text x="50" y="58" textAnchor="middle" fill="#C9A961" fontSize="24" fontWeight="700" fontFamily="Inter, sans-serif">M</text>
           </svg>
           <div className="text-3xl font-light tracking-[0.15em] sm:text-4xl">MITHQAL</div>
-          <div className="text-sm text-white/40 sm:text-base">Constitutional Settlement Institution</div>
+          <div className="text-sm text-[#94a3b8] sm:text-base">Constitutional Settlement Institution</div>
           <div className="h-0.5 w-16 bg-[#C9A961]" />
           <div className="font-mono text-xs text-[#C9A961] sm:text-sm">mithqal.vercel.app</div>
         </div>
@@ -428,17 +428,17 @@ function SceneContent({
 }
 
 function Stat({ num, label }: { num: string; label: string }) {
-  return (<div className="text-center"><div className="text-2xl font-bold text-[#C9A961] sm:text-3xl">{num}</div><div className="mt-0.5 text-xs text-white/40">{label}</div></div>);
+  return (<div className="text-center"><div className="text-2xl font-bold text-[#C9A961] sm:text-3xl">{num}</div><div className="mt-0.5 text-xs text-[#94a3b8]">{label}</div></div>);
 }
 function Metric({ value, label }: { value: string; label: string }) {
-  return (<div className="rounded-lg border border-white/10 bg-[#111726] p-3 text-center"><div className="text-lg font-bold text-[#C9A961] sm:text-xl">{value}</div><div className="mt-0.5 text-[10px] text-white/40 sm:text-xs">{label}</div></div>);
+  return (<div className="rounded-lg border border-white/10 bg-[#111726] p-3 text-center"><div className="text-lg font-bold text-[#C9A961] sm:text-xl">{value}</div><div className="mt-0.5 text-[10px] text-[#94a3b8] sm:text-xs">{label}</div></div>);
 }
 function ReserveTier({ name, pct, desc, color }: { name: string; pct: string; desc: string; color: string }) {
   return (
     <div className="rounded-lg border border-white/10 bg-[#111726] p-3 text-center" style={{ borderColor: `${color}30` }}>
       <div className="text-sm font-bold" style={{ color }}>{name}</div>
       <div className="mt-1 text-lg font-bold text-white">{pct}</div>
-      <div className="mt-0.5 text-[10px] text-white/40">{desc}</div>
+      <div className="mt-0.5 text-[10px] text-[#94a3b8]">{desc}</div>
     </div>
   );
 }

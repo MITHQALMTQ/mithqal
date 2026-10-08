@@ -107,7 +107,7 @@ export default function LegalPage() {
               <span className="text-xs font-semibold tracking-[0.28em] uppercase text-amber-400">LEGAL FRAMEWORK</span>
             </div>
             <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white">One Architecture, Many <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Perimeters.</span></h2>
-            <p className="text-lg text-white/60 max-w-2xl mx-auto mt-6">MITHQAL operates within applicable legal frameworks — discipline is enforced as a gate at every layer, not bolted on after the fact.</p>
+            <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mt-6">MITHQAL operates within applicable legal frameworks — discipline is enforced as a gate at every layer, not bolted on after the fact.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {FRAMEWORK.map((item) => (
@@ -117,7 +117,7 @@ export default function LegalPage() {
                   <div className="flex-1">
                     <div className="text-xs font-semibold text-amber-400 tracking-[0.1em] mb-2">{item.num}</div>
                     <h3 className="text-xl font-semibold text-white mb-3">{item.title}</h3>
-                    <p className="text-sm text-white/60 leading-relaxed">{item.desc}</p>
+                    <p className="text-sm text-[#cbd5e1] leading-relaxed">{item.desc}</p>
                   </div>
                 </div>
               </div>
@@ -133,7 +133,7 @@ export default function LegalPage() {
               <span className="text-xs font-semibold tracking-[0.28em] uppercase text-amber-400">DISCLOSURES</span>
             </div>
             <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white">Honest About the <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Build Status.</span></h2>
-            <p className="text-lg text-white/60 max-w-2xl mx-auto mt-6">MITHQAL discloses its build status plainly — no production authorization, no live MTQ, no confirmed institutional engagement.</p>
+            <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mt-6">MITHQAL discloses its build status plainly — no production authorization, no live MTQ, no confirmed institutional engagement.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl mx-auto">
             {DISCLOSURES.map((item) => (
@@ -142,7 +142,7 @@ export default function LegalPage() {
                   <span className="w-2 h-2 rounded-full bg-amber-400" />
                   <h3 className="text-lg font-semibold text-white">{item.title}</h3>
                 </div>
-                <p className="text-sm text-white/60 leading-relaxed">{item.desc}</p>
+                <p className="text-sm text-[#cbd5e1] leading-relaxed">{item.desc}</p>
               </div>
             ))}
           </div>
@@ -156,14 +156,14 @@ export default function LegalPage() {
               <span className="text-xs font-semibold tracking-[0.28em] uppercase text-amber-400">TERMS & PRIVACY</span>
             </div>
             <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white">Clear, Bounded <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Terms.</span></h2>
-            <p className="text-lg text-white/60 max-w-2xl mx-auto mt-6">MITHQAL's terms and privacy principles are stated plainly — what we collect, why, and for how long — within the build-mode context.</p>
+            <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mt-6">MITHQAL's terms and privacy principles are stated plainly — what we collect, why, and for how long — within the build-mode context.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl mx-auto">
             <div className="bg-white/5 backdrop-blur-sm border border-amber-500/10 rounded-2xl p-8">
               <h3 className="text-xl font-semibold text-white mb-4">Terms of Use</h3>
               <ul className="space-y-3">
                 {TERMS.map((item, i) => (
-                  <li key={i} className="flex items-start gap-3 text-sm text-white/60 leading-relaxed">
+                  <li key={i} className="flex items-start gap-3 text-sm text-[#cbd5e1] leading-relaxed">
                     <span className="text-amber-400 mt-1 flex-shrink-0">▸</span>
                     <span>{item}</span>
                   </li>
@@ -174,7 +174,7 @@ export default function LegalPage() {
               <h3 className="text-xl font-semibold text-white mb-4">Privacy Policy</h3>
               <ul className="space-y-3">
                 {PRIVACY.map((item, i) => (
-                  <li key={i} className="flex items-start gap-3 text-sm text-white/60 leading-relaxed">
+                  <li key={i} className="flex items-start gap-3 text-sm text-[#cbd5e1] leading-relaxed">
                     <span className="text-amber-400 mt-1 flex-shrink-0">▸</span>
                     <span>{item}</span>
                   </li>
@@ -187,7 +187,7 @@ export default function LegalPage() {
         {/* CTA */}
         <section className="max-w-[1440px] mx-auto px-6 md:px-12 py-24 border-t border-white/5 text-center">
           <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white mb-6">Contact the <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Legal Team.</span></h2>
-          <p className="text-lg text-white/60 max-w-2xl mx-auto mb-10">For institutional legal enquiry, regulatory perimeter questions or build-status clarification, connect with the MITHQAL legal team.</p>
+          <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mb-10">For institutional legal enquiry, regulatory perimeter questions or build-status clarification, connect with the MITHQAL legal team.</p>
           <div className="flex flex-wrap items-center justify-center gap-4">
             <a href="/contact" className="px-8 py-3 rounded-full bg-gradient-to-r from-amber-400 to-amber-200 text-[#07090e] font-semibold text-sm tracking-wide hover:scale-105 transition-transform duration-300 shadow-lg shadow-amber-500/30 border-2 border-amber-300">Contact Legal Team →</a>
             <a href="/architecture" className="px-8 py-3 rounded-full border-2 border-amber-400/70 bg-black/30 backdrop-blur-md text-white font-medium text-sm tracking-wide hover:bg-amber-500/20 transition-all duration-300">View the Architecture</a>

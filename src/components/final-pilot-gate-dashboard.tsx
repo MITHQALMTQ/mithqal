@@ -186,7 +186,7 @@ function gateStatusBadge(status: string) {
     return (
       <Badge
         variant="outline"
-        className="border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300 text-xs"
+        className="border-amber-500/60 bg-amber-500/10 text-amber-700 dark:text-amber-300 text-xs"
       >
         <Activity className="mr-1 h-3 w-3" />
         {status}
@@ -217,7 +217,7 @@ function blockerStatusBadge(status: string) {
     return (
       <Badge
         variant="outline"
-        className="border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300 text-xs"
+        className="border-amber-500/60 bg-amber-500/10 text-amber-700 dark:text-amber-300 text-xs"
       >
         <Activity className="mr-1 h-3 w-3" />
         {status}
@@ -351,7 +351,7 @@ export function FinalPilotGateDashboard() {
           <div className="mt-4 flex flex-wrap items-center gap-2">
             <Badge
               variant="outline"
-              className="border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300"
+              className="border-amber-500/60 bg-amber-500/10 text-amber-700 dark:text-amber-300"
             >
               <Flag className="mr-1 h-3 w-3" />
               {report.finalStatus} ({report.finalStatusColor})
@@ -398,7 +398,7 @@ export function FinalPilotGateDashboard() {
                   </p>
                   <Badge
                     variant="outline"
-                    className="mt-2 border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300"
+                    className="mt-2 border-amber-500/60 bg-amber-500/10 text-amber-700 dark:text-amber-300"
                   >
                     Color: {report.finalStatusColor}
                   </Badge>
@@ -814,7 +814,7 @@ export function FinalPilotGateDashboard() {
           transition={{ duration: 0.4 }}
           className="mt-10"
         >
-          <Card className="border-amber-500/40 bg-amber-500/5">
+          <Card className="border-amber-500/60 bg-amber-500/5">
             <CardContent className="pt-6">
               <div className="flex items-start gap-3">
                 <Lock className="mt-0.5 h-5 w-5 text-amber-600 dark:text-amber-400" />

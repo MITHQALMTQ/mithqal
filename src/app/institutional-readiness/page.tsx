@@ -84,7 +84,7 @@ const STATUS_COLOR_CLASSES: Record<
   },
   amber: {
     badge:
-      "bg-amber-500/10 text-amber-300 border-amber-500/40",
+      "bg-amber-500/10 text-amber-300 border-amber-500/60",
     dot: "bg-amber-400",
     text: "text-amber-300",
     ring: "ring-amber-500/40",

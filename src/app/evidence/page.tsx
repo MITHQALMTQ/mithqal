@@ -90,7 +90,7 @@ export default function EvidencePage() {
               <span className="text-xs font-semibold tracking-[0.28em] uppercase text-amber-400">SIX EVIDENCE LAYERS</span>
             </div>
             <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white">Evidence as a <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Control Layer.</span></h2>
-            <p className="text-lg text-white/60 max-w-2xl mx-auto mt-6">Six independent evidence layers ensure every settlement state is attributable, verifiable and auditable — never reused across multiple backing claims.</p>
+            <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mt-6">Six independent evidence layers ensure every settlement state is attributable, verifiable and auditable — never reused across multiple backing claims.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {EVIDENCE_LAYERS.map((layer) => (
@@ -98,7 +98,7 @@ export default function EvidencePage() {
                 <div className="text-3xl mb-4">{layer.icon}</div>
                 <div className="text-xs font-semibold text-amber-400 tracking-[0.1em] mb-2">{layer.num}</div>
                 <h3 className="text-lg font-semibold text-white mb-3">{layer.title}</h3>
-                <p className="text-sm text-white/60 leading-relaxed">{layer.desc}</p>
+                <p className="text-sm text-[#cbd5e1] leading-relaxed">{layer.desc}</p>
               </div>
             ))}
           </div>
@@ -112,7 +112,7 @@ export default function EvidencePage() {
               <span className="text-xs font-semibold tracking-[0.28em] uppercase text-amber-400">EVIDENCE FORMULA</span>
             </div>
             <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white">Only True <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Availability.</span></h2>
-            <p className="text-lg text-white/60 max-w-2xl mx-auto mt-6">Available backing is not assumed — it is computed. Recognized, minus encumbered, minus allocated, equals only what is truly available to spend.</p>
+            <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mt-6">Available backing is not assumed — it is computed. Recognized, minus encumbered, minus allocated, equals only what is truly available to spend.</p>
           </div>
           <div className="max-w-4xl mx-auto">
             <div className="bg-white/5 backdrop-blur-sm border border-amber-500/10 rounded-2xl p-10 md:p-14 text-center">
@@ -137,14 +137,14 @@ export default function EvidencePage() {
               <span className="text-xs font-semibold tracking-[0.28em] uppercase text-amber-400">ASSURANCE GATES</span>
             </div>
             <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white">Closed-Loop <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Assurance.</span></h2>
-            <p className="text-lg text-white/60 max-w-2xl mx-auto mt-6">Four assurance gates close the loop — from instruction through execution to audit — leaving no state unaccounted for.</p>
+            <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mt-6">Four assurance gates close the loop — from instruction through execution to audit — leaving no state unaccounted for.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {GATES.map((gate) => (
               <div key={gate.num} className="bg-white/5 backdrop-blur-sm border border-amber-500/10 rounded-2xl p-8 hover:border-amber-500/30 transition-all duration-300">
                 <div className="w-12 h-12 rounded-full border-2 border-amber-400/50 bg-amber-500/5 flex items-center justify-center text-amber-400 font-semibold text-sm mb-6">{gate.num}</div>
                 <h3 className="text-lg font-semibold text-white mb-3">{gate.title}</h3>
-                <p className="text-sm text-white/60 leading-relaxed">{gate.desc}</p>
+                <p className="text-sm text-[#cbd5e1] leading-relaxed">{gate.desc}</p>
               </div>
             ))}
           </div>
@@ -153,7 +153,7 @@ export default function EvidencePage() {
         {/* CTA */}
         <section className="max-w-[1440px] mx-auto px-6 md:px-12 py-24 border-t border-white/5 text-center">
           <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white mb-6">Read the <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Architecture.</span></h2>
-          <p className="text-lg text-white/60 max-w-2xl mx-auto mb-10">Explore how layered separation — participants, control plane, rails, and evidence — makes every settlement state attributable and auditable.</p>
+          <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mb-10">Explore how layered separation — participants, control plane, rails, and evidence — makes every settlement state attributable and auditable.</p>
           <div className="flex flex-wrap items-center justify-center gap-4">
             <a href="/architecture" className="px-8 py-3 rounded-full bg-gradient-to-r from-amber-400 to-amber-200 text-[#07090e] font-semibold text-sm tracking-wide hover:scale-105 transition-transform duration-300 shadow-lg shadow-amber-500/30 border-2 border-amber-300">Read the Architecture →</a>
             <a href="/pilot" className="px-8 py-3 rounded-full border-2 border-amber-400/70 bg-black/30 backdrop-blur-md text-white font-medium text-sm tracking-wide hover:bg-amber-500/20 transition-all duration-300">View Pilot Model</a>

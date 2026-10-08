@@ -276,7 +276,7 @@ const tierColor = (tier: string) => {
     case "TIER_A":
       return "border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300";
     case "TIER_B":
-      return "border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300";
+      return "border-amber-500/60 bg-amber-500/10 text-amber-700 dark:text-amber-300";
     case "TIER_C":
       return "border-orange-500/40 bg-orange-500/10 text-orange-700 dark:text-orange-300";
     case "TIER_D_CONVERSION_ONLY":
@@ -293,7 +293,7 @@ const statusColor = (status: string) => {
     case "ACTIVE":
       return "border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300";
     case "WATCH":
-      return "border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300";
+      return "border-amber-500/60 bg-amber-500/10 text-amber-700 dark:text-amber-300";
     case "RESTRICTED":
       return "border-orange-500/40 bg-orange-500/10 text-orange-700 dark:text-orange-300";
     case "SUSPENDED":
@@ -333,7 +333,7 @@ const depegActionColor = (action: string) => {
       return "border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300";
     case "HAIRCUT_INCREASE":
     case "RESTRICT_INPUT":
-      return "border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300";
+      return "border-amber-500/60 bg-amber-500/10 text-amber-700 dark:text-amber-300";
     case "SUSPEND_INPUT":
       return "border-orange-500/40 bg-orange-500/10 text-orange-700 dark:text-orange-300";
     case "PROHIBIT":
@@ -460,7 +460,7 @@ export function V25_1Dashboard() {
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
               MITHQAL <span className="gold-text">v25.1</span>
             </h2>
-            <Badge className="border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300">
+            <Badge className="border-amber-500/60 bg-amber-500/10 text-amber-700 dark:text-amber-300">
               {report.moduleId}
             </Badge>
           </div>
@@ -612,7 +612,7 @@ export function V25_1Dashboard() {
             <h3 className="text-2xl font-bold tracking-tight">
               Asset Eligibility Registry
             </h3>
-            <Badge className="border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300">
+            <Badge className="border-amber-500/60 bg-amber-500/10 text-amber-700 dark:text-amber-300">
               {assets.length} ASSETS
             </Badge>
           </div>
@@ -800,7 +800,7 @@ export function V25_1Dashboard() {
             <h3 className="text-2xl font-bold tracking-tight">
               Stablecoin Depeg Protection — 10 Threshold Controls
             </h3>
-            <Badge className="border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300">
+            <Badge className="border-amber-500/60 bg-amber-500/10 text-amber-700 dark:text-amber-300">
               1% → 100%
             </Badge>
           </div>
@@ -987,7 +987,7 @@ export function V25_1Dashboard() {
             <h3 className="text-2xl font-bold tracking-tight">
               Reserve Architecture — 130% Strategic Target
             </h3>
-            <Badge className="border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300">
+            <Badge className="border-amber-500/60 bg-amber-500/10 text-amber-700 dark:text-amber-300">
               GOVERNANCE-CONTROLLED
             </Badge>
           </div>
@@ -1001,7 +1001,7 @@ export function V25_1Dashboard() {
 
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 mb-6">
             {/* Strategic target */}
-            <Card className="border-amber-500/40 bg-amber-500/5">
+            <Card className="border-amber-500/60 bg-amber-500/5">
               <CardContent className="p-6">
                 <div className="flex items-center gap-2 text-amber-700 dark:text-amber-300 mb-2">
                   <Activity className="h-5 w-5" />
@@ -1224,7 +1224,7 @@ export function V25_1Dashboard() {
             <h3 className="text-2xl font-bold tracking-tight">
               Multi-Rail Architecture &amp; Fallback Matrix
             </h3>
-            <Badge className="border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300">
+            <Badge className="border-amber-500/60 bg-amber-500/10 text-amber-700 dark:text-amber-300">
               {railTypes.length} RAILS
             </Badge>
           </div>
@@ -1368,7 +1368,7 @@ export function V25_1Dashboard() {
           </div>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
             {report.institutionalControlDomains.map((d) => (
-              <Card key={d.name} className="border-border/60 hover:border-amber-500/40 transition-colors">
+              <Card key={d.name} className="border-border/60 hover:border-amber-500/60 transition-colors">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm">{d.name}</CardTitle>
                 </CardHeader>
@@ -1472,7 +1472,7 @@ export function V25_1Dashboard() {
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
         >
-          <Card className="border-amber-500/40 bg-gradient-to-br from-amber-500/5 via-background to-background">
+          <Card className="border-amber-500/60 bg-gradient-to-br from-amber-500/5 via-background to-background">
             <CardHeader>
               <div className="flex items-center gap-3">
                 <Building2 className="h-6 w-6 text-amber-600 dark:text-amber-400" />

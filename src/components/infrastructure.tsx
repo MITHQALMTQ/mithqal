@@ -247,7 +247,7 @@ export default function InfrastructureView() {
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
             <div className="flex items-center gap-2">
               <Badge className="glass border-gold/40 text-gold hover:bg-gold/10">v25.0 FINAL INSTITUTIONAL EDITION</Badge>
-              <Badge className="glass border-amber-500/40 text-amber-600 dark:text-amber-400 hover:bg-amber-500/10">APPROVED CANDIDATE FOR CONTROLLED TESTING</Badge>
+              <Badge className="glass border-amber-500/60 text-amber-600 dark:text-amber-400 hover:bg-amber-500/10">APPROVED CANDIDATE FOR CONTROLLED TESTING</Badge>
             </div>
             <div className="mt-6 flex items-center gap-4">
               <Logo className="h-14 w-14 shrink-0" />

@@ -86,7 +86,7 @@ export default function EcosystemPage() {
                 <div className="text-4xl mb-4">{p.icon}</div>
                 <div className="text-xs font-semibold text-amber-400 tracking-[0.1em] mb-2">{p.num}</div>
                 <h3 className="text-lg font-semibold text-white mb-3">{p.title}</h3>
-                <p className="text-sm text-white/60 leading-relaxed">{p.desc}</p>
+                <p className="text-sm text-[#cbd5e1] leading-relaxed">{p.desc}</p>
               </div>
             ))}
           </div>
@@ -98,7 +98,7 @@ export default function EcosystemPage() {
             <div>
               <div className="inline-flex items-center gap-3 mb-4"><span className="w-px h-4 bg-amber-400" /><span className="text-xs font-semibold tracking-[0.28em] uppercase text-amber-400">MULTI-RAIL CONNECTIVITY</span></div>
               <h2 className="text-4xl font-bold tracking-tight text-white mb-6">One Control Plane. Many Institutional <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Rails.</span></h2>
-              <p className="text-lg text-white/60 mb-8">MITHQAL complements existing financial messaging and payment infrastructure — coordinating approved settlement rails through one controlled institutional layer.</p>
+              <p className="text-lg text-[#cbd5e1] mb-8">MITHQAL complements existing financial messaging and payment infrastructure — coordinating approved settlement rails through one controlled institutional layer.</p>
               <a href="#routing" className="px-8 py-3 rounded-full border-2 border-amber-400/70 bg-black/30 backdrop-blur-md text-white font-medium text-sm tracking-wide hover:bg-amber-500/20 transition-all duration-300">View Rail Details →</a>
             </div>
             <div className="grid grid-cols-2 gap-4">
@@ -122,7 +122,7 @@ export default function EcosystemPage() {
               <div key={r.name} className="bg-white/5 backdrop-blur-sm border border-amber-500/10 rounded-2xl p-8 hover:border-amber-500/30 transition-all duration-300">
                 <div className="text-4xl mb-4">{r.icon}</div>
                 <h3 className="text-xl font-semibold text-white mb-3">{r.name}</h3>
-                <p className="text-sm text-white/60 leading-relaxed">{r.desc}</p>
+                <p className="text-sm text-[#cbd5e1] leading-relaxed">{r.desc}</p>
               </div>
             ))}
           </div>

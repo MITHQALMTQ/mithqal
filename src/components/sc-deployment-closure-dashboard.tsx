@@ -225,7 +225,7 @@ function riskBadge(risk: string) {
     return (
       <Badge
         variant="outline"
-        className="border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300 text-xs"
+        className="border-amber-500/60 bg-amber-500/10 text-amber-700 dark:text-amber-300 text-xs"
       >
         <Activity className="mr-1 h-3 w-3" />
         {risk}
@@ -256,7 +256,7 @@ function deploymentStatusBadge(status: string) {
     return (
       <Badge
         variant="outline"
-        className="border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300 text-xs"
+        className="border-amber-500/60 bg-amber-500/10 text-amber-700 dark:text-amber-300 text-xs"
       >
         <Activity className="mr-1 h-3 w-3" />
         {status}
@@ -278,7 +278,7 @@ function deploymentStatusBadge(status: string) {
     return (
       <Badge
         variant="outline"
-        className="border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300 text-xs"
+        className="border-amber-500/60 bg-amber-500/10 text-amber-700 dark:text-amber-300 text-xs"
       >
         <Activity className="mr-1 h-3 w-3" />
         TESTNET
@@ -331,7 +331,7 @@ function verificationStatusBadge(status: string) {
     return (
       <Badge
         variant="outline"
-        className="border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300 text-xs"
+        className="border-amber-500/60 bg-amber-500/10 text-amber-700 dark:text-amber-300 text-xs"
       >
         <Activity className="mr-1 h-3 w-3" />
         {status}
@@ -357,7 +357,7 @@ function verificationStatusBadge(status: string) {
 }
 
 const CHAIN_COLORS: Record<string, string> = {
-  "monad-testnet": "border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300",
+  "monad-testnet": "border-amber-500/60 bg-amber-500/10 text-amber-700 dark:text-amber-300",
   "arc-testnet": "border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
   "anvil-local": "border-border/60 bg-muted/40 text-muted-foreground",
   "solana-devnet": "border-red-500/40 bg-red-500/10 text-red-700 dark:text-red-300",
@@ -514,7 +514,7 @@ export function SCDeploymentClosureDashboard() {
             </Badge>
             <Badge
               variant="outline"
-              className="border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300"
+              className="border-amber-500/60 bg-amber-500/10 text-amber-700 dark:text-amber-300"
             >
               <Activity className="mr-1 h-3 w-3" />
               Testnet authorized: YES
@@ -542,7 +542,7 @@ export function SCDeploymentClosureDashboard() {
           transition={{ duration: 0.4, delay: 0.1 }}
           className="mb-10"
         >
-          <Card className="border-amber-500/40 bg-amber-500/5">
+          <Card className="border-amber-500/60 bg-amber-500/5">
             <CardContent className="pt-6">
               <div className="flex items-start gap-3">
                 <AlertTriangle className="mt-0.5 h-5 w-5 text-amber-600 dark:text-amber-400" />
@@ -711,7 +711,7 @@ export function SCDeploymentClosureDashboard() {
                         <TableCell>{verificationStatusBadge(v.status)}</TableCell>
                       </TableRow>
                     ))}
-                    <TableRow className="border-t-2 border-amber-500/40 bg-amber-500/5">
+                    <TableRow className="border-t-2 border-amber-500/60 bg-amber-500/5">
                       <TableCell className="font-bold">TOTAL</TableCell>
                       <TableCell className="text-center font-mono font-bold">
                         {verificationTotals.totalTests}
@@ -876,7 +876,7 @@ export function SCDeploymentClosureDashboard() {
                     ) : (
                       <Badge
                         variant="outline"
-                        className="border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300 text-xs"
+                        className="border-amber-500/60 bg-amber-500/10 text-amber-700 dark:text-amber-300 text-xs"
                       >
                         {q.quarantineStatus}
                       </Badge>
@@ -1086,7 +1086,7 @@ export function SCDeploymentClosureDashboard() {
           transition={{ duration: 0.4 }}
           className="mt-10"
         >
-          <Card className="border-amber-500/40 bg-amber-500/5">
+          <Card className="border-amber-500/60 bg-amber-500/5">
             <CardContent className="pt-6">
               <div className="flex items-start gap-3">
                 <Lock className="mt-0.5 h-5 w-5 text-amber-600 dark:text-amber-400" />

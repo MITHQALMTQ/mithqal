@@ -79,7 +79,7 @@ export default function RoadmapPage() {
           <div className="text-center mb-16">
             <div className="inline-flex items-center gap-3 mb-4"><span className="w-px h-4 bg-amber-400" /><span className="text-xs font-semibold tracking-[0.28em] uppercase text-amber-400">FIVE PHASES</span></div>
             <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white">Foundation to <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Global Readiness.</span></h2>
-            <p className="text-lg text-white/60 max-w-2xl mx-auto mt-6">MITHQAL advances through five sequential phases — each gated by the evidence and approvals required for the next.</p>
+            <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mt-6">MITHQAL advances through five sequential phases — each gated by the evidence and approvals required for the next.</p>
           </div>
           <div className="relative">
             {/* Timeline line */}
@@ -90,7 +90,7 @@ export default function RoadmapPage() {
                   <div className="w-20 h-20 rounded-full border-2 border-amber-400 bg-[#07090e] flex items-center justify-center text-3xl mb-6 relative z-10">{step.icon}</div>
                   <div className="text-xs font-semibold text-amber-400 tracking-[0.1em] mb-2">STEP {step.num}</div>
                   <h3 className="text-lg font-semibold text-white mb-3">{step.title}</h3>
-                  <p className="text-sm text-white/60 leading-relaxed">{step.desc}</p>
+                  <p className="text-sm text-[#cbd5e1] leading-relaxed">{step.desc}</p>
                 </div>
               ))}
             </div>
@@ -110,7 +110,7 @@ export default function RoadmapPage() {
                 <div key={g.label}>
                   <div className="text-xs font-semibold text-amber-400 tracking-[0.2em] uppercase mb-3">{g.label}</div>
                   {g.items.map((it) => (
-                    <div key={it} className="text-white/70 text-sm py-1">• {it}</div>
+                    <div key={it} className="text-white/85 text-sm py-1">• {it}</div>
                   ))}
                 </div>
               ))}
@@ -141,7 +141,7 @@ export default function RoadmapPage() {
         {/* CTA */}
         <section className="max-w-[1440px] mx-auto px-6 md:px-12 py-24 border-t border-white/5 text-center">
           <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white mb-6">A <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Stronger Future.</span></h2>
-          <p className="text-lg text-white/60 max-w-2xl mx-auto mb-10">MITHQAL&apos;s evolution is governed by evidence, controlled progression and institutional validation — not by shortcuts.</p>
+          <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mb-10">MITHQAL&apos;s evolution is governed by evidence, controlled progression and institutional validation — not by shortcuts.</p>
           <div className="flex flex-wrap items-center justify-center gap-4">
             <a href="/ecosystem" className="px-8 py-3 rounded-full bg-gradient-to-r from-amber-400 to-amber-200 text-[#07090e] font-semibold text-sm tracking-wide hover:scale-105 transition-transform duration-300 shadow-lg shadow-amber-500/30 border-2 border-amber-300">Explore Ecosystem →</a>
             <a href="/about" className="px-8 py-3 rounded-full border-2 border-amber-400/70 bg-black/30 backdrop-blur-md text-white font-medium text-sm tracking-wide hover:bg-amber-500/20 transition-all duration-300">About MITHQAL</a>

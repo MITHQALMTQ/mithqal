@@ -1077,7 +1077,7 @@ function CrisisProtectionCallout() {
               <Badge className="border-gold/30 bg-gold/10 text-[10px] text-gold hover:bg-gold/10">
                 Gold is the anchor (§1, §14)
               </Badge>
-              <Badge className="border-amber-500/40 bg-amber-500/10 text-[10px] text-amber-600 dark:text-amber-400 hover:bg-amber-500/10">
+              <Badge className="border-amber-500/60 bg-amber-500/10 text-[10px] text-amber-600 dark:text-amber-400 hover:bg-amber-500/10">
                 <Zap className="mr-1 h-3 w-3" aria-hidden="true" />
                 SDP auto-fires &gt; 5%
               </Badge>

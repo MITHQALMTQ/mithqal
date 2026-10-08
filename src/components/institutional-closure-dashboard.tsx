@@ -337,7 +337,7 @@ function scalarBadgeClass(value: unknown): string {
       ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
       : "border-red-500/40 bg-red-500/10 text-red-700 dark:text-red-300";
   }
-  return "border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300";
+  return "border-amber-500/60 bg-amber-500/10 text-amber-700 dark:text-amber-300";
 }
 
 function renderScalarValue(value: unknown): string {
@@ -376,7 +376,7 @@ function toneBadgeClass(tone: "amber" | "emerald" | "red" | "gray"): string {
     case "red":
       return "border-red-500/40 bg-red-500/10 text-red-700 dark:text-red-300";
     case "amber":
-      return "border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300";
+      return "border-amber-500/60 bg-amber-500/10 text-amber-700 dark:text-amber-300";
     default:
       return "border-muted-foreground/30 bg-muted/40 text-muted-foreground";
   }
@@ -487,7 +487,7 @@ function ErrorCard({ message, api, onRetry }: {
         <button
           type="button"
           onClick={onRetry}
-          className="inline-flex items-center gap-1.5 rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-1.5 text-xs font-medium text-amber-700 hover:bg-amber-500/20 dark:text-amber-300 transition-colors"
+          className="inline-flex items-center gap-1.5 rounded-md border border-amber-500/60 bg-amber-500/10 px-3 py-1.5 text-xs font-medium text-amber-700 hover:bg-amber-500/20 dark:text-amber-300 transition-colors"
         >
           <RefreshCw className="h-3.5 w-3.5" />
           Retry fetch
@@ -655,7 +655,7 @@ function TabContent({ tab, state, jsonOpen, onToggleJson, onRetry }: {
               )}
               <Badge
                 variant="outline"
-                className="border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300"
+                className="border-amber-500/60 bg-amber-500/10 text-amber-700 dark:text-amber-300"
               >
                 v25.0
               </Badge>
@@ -912,7 +912,7 @@ export function InstitutionalClosureDashboard() {
                   "group relative flex shrink-0 items-center gap-2 rounded-md border px-3 py-2 text-xs font-medium transition-all",
                   isActive
                     ? "border-amber-500/60 bg-amber-500/15 text-amber-800 shadow-sm dark:text-amber-200"
-                    : "border-muted-foreground/15 bg-background text-muted-foreground hover:border-amber-500/40 hover:bg-amber-500/5 hover:text-amber-700 dark:hover:text-amber-300",
+                    : "border-muted-foreground/15 bg-background text-muted-foreground hover:border-amber-500/60 hover:bg-amber-500/5 hover:text-amber-700 dark:hover:text-amber-300",
                 ].join(" ")}
               >
                 <span className="flex h-5 w-5 items-center justify-center rounded bg-amber-500/10 text-[10px] font-mono text-amber-700 dark:text-amber-300">

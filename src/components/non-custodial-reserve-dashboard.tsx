@@ -144,7 +144,7 @@ function fvStatusBadge(status: string) {
   return (
     <Badge
       variant="outline"
-      className="border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300 text-xs"
+      className="border-amber-500/60 bg-amber-500/10 text-amber-700 dark:text-amber-300 text-xs"
     >
       <Activity className="mr-1 h-3 w-3" />
       {status}
@@ -179,7 +179,7 @@ function testStatusBadge(status: string) {
   return (
     <Badge
       variant="outline"
-      className="border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300 text-xs"
+      className="border-amber-500/60 bg-amber-500/10 text-amber-700 dark:text-amber-300 text-xs"
     >
       <Activity className="mr-1 h-3 w-3" />
       {status}
@@ -284,7 +284,7 @@ export function NonCustodialReserveDashboard() {
           <div className="mt-4 flex flex-wrap items-center gap-2">
             <Badge
               variant="outline"
-              className="border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300"
+              className="border-amber-500/60 bg-amber-500/10 text-amber-700 dark:text-amber-300"
             >
               <ShieldCheck className="mr-1 h-3 w-3" />
               {report.defaultArchitecture}
@@ -318,7 +318,7 @@ export function NonCustodialReserveDashboard() {
           transition={{ duration: 0.4, delay: 0.1 }}
           className="mb-10"
         >
-          <Card className="border-amber-500/40 bg-amber-500/5">
+          <Card className="border-amber-500/60 bg-amber-500/5">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-lg">
                 <Scale className="h-5 w-5 text-amber-600 dark:text-amber-400" />
@@ -364,7 +364,7 @@ export function NonCustodialReserveDashboard() {
                   <CardTitle className="flex items-center gap-2 text-base">
                     <Badge
                       variant="outline"
-                      className="border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300 text-xs"
+                      className="border-amber-500/60 bg-amber-500/10 text-amber-700 dark:text-amber-300 text-xs"
                     >
                       {actor.role}
                     </Badge>
@@ -500,7 +500,7 @@ export function NonCustodialReserveDashboard() {
                 {Array.from({ length: report.issuanceGateSteps }, (_, i) => i + 1).map(
                   (step, idx, arr) => (
                     <div key={step} className="flex items-center gap-2">
-                      <div className="flex h-12 w-12 flex-col items-center justify-center rounded-full border-2 border-amber-500/40 bg-amber-500/10">
+                      <div className="flex h-12 w-12 flex-col items-center justify-center rounded-full border-2 border-amber-500/60 bg-amber-500/10">
                         <span className="text-sm font-bold text-amber-700 dark:text-amber-300">
                           {step}
                         </span>
@@ -746,7 +746,7 @@ export function NonCustodialReserveDashboard() {
           transition={{ duration: 0.4 }}
           className="mt-10"
         >
-          <Card className="border-amber-500/40 bg-amber-500/5">
+          <Card className="border-amber-500/60 bg-amber-500/5">
             <CardContent className="pt-6">
               <div className="flex items-start gap-3">
                 <Lock className="mt-0.5 h-5 w-5 text-amber-600 dark:text-amber-400" />

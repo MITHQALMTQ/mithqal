@@ -213,7 +213,7 @@ function evidenceStateBadge(state: string) {
   return (
     <Badge
       variant="outline"
-      className="border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300 text-xs"
+      className="border-amber-500/60 bg-amber-500/10 text-amber-700 dark:text-amber-300 text-xs"
     >
       {state}
     </Badge>
@@ -344,7 +344,7 @@ export function BankFundedIssuanceDashboard() {
           <div className="mt-4 flex flex-wrap items-center gap-2">
             <Badge
               variant="outline"
-              className="border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300"
+              className="border-amber-500/60 bg-amber-500/10 text-amber-700 dark:text-amber-300"
             >
               <ShieldCheck className="mr-1 h-3 w-3" />
               4 capital concepts distinguished
@@ -378,7 +378,7 @@ export function BankFundedIssuanceDashboard() {
           transition={{ duration: 0.4, delay: 0.1 }}
           className="mb-10"
         >
-          <Card className="border-amber-500/40 bg-amber-500/5">
+          <Card className="border-amber-500/60 bg-amber-500/5">
             <CardContent className="pt-6">
               <div className="flex items-start gap-3">
                 <AlertTriangle className="mt-0.5 h-5 w-5 text-amber-600 dark:text-amber-400" />
@@ -638,7 +638,7 @@ export function BankFundedIssuanceDashboard() {
                           </TableCell>
                         </TableRow>
                       ))}
-                      <TableRow className="border-t-2 border-amber-500/40 bg-amber-500/5">
+                      <TableRow className="border-t-2 border-amber-500/60 bg-amber-500/5">
                         <TableCell className="font-bold">TOTAL</TableCell>
                         <TableCell className="text-right font-mono font-bold text-amber-700 dark:text-amber-300">
                           {fmtUSD(ilps.total)}
@@ -648,7 +648,7 @@ export function BankFundedIssuanceDashboard() {
                   </Table>
                 </div>
                 <div className="space-y-3">
-                  <div className="rounded-lg border border-amber-500/40 bg-amber-500/5 p-4">
+                  <div className="rounded-lg border border-amber-500/60 bg-amber-500/5 p-4">
                     <p className="mb-1 font-semibold text-amber-700 dark:text-amber-300">
                       Emergency + Structural (Subset)
                     </p>
@@ -806,7 +806,7 @@ export function BankFundedIssuanceDashboard() {
                   <CardTitle className="flex items-center gap-2 text-base">
                     <Badge
                       variant="outline"
-                      className="border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300 text-xs"
+                      className="border-amber-500/60 bg-amber-500/10 text-amber-700 dark:text-amber-300 text-xs"
                     >
                       {s.scenarioId}
                     </Badge>
@@ -1000,7 +1000,7 @@ export function BankFundedIssuanceDashboard() {
           transition={{ duration: 0.4 }}
           className="mt-10"
         >
-          <Card className="border-amber-500/40 bg-amber-500/5">
+          <Card className="border-amber-500/60 bg-amber-500/5">
             <CardContent className="pt-6">
               <div className="flex items-start gap-3">
                 <Lock className="mt-0.5 h-5 w-5 text-amber-600 dark:text-amber-400" />

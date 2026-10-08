@@ -49,7 +49,7 @@ export default function NotFound() {
           </motion.h1>
 
           {/* Subheadline */}
-          <motion.p variants={wordVariant} className="text-lg text-white/60 max-w-xl mx-auto mb-10 leading-relaxed">
+          <motion.p variants={wordVariant} className="text-lg text-[#cbd5e1] max-w-xl mx-auto mb-10 leading-relaxed">
             The route you sought is not among the defined institutional paths. Like the architecture itself, the routes here are controlled — and this one is not among them.
           </motion.p>
 

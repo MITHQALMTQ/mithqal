@@ -480,7 +480,7 @@ export function InstitutionalEconomics() {
                       <CardTitle className="mt-3 text-sm font-semibold text-foreground">
                         <span className="flex items-center gap-2">
                           <span>{e.name}</span>
-                          <Badge className="border-amber-500/40 bg-amber-500/10 text-amber-200">
+                          <Badge className="border-amber-500/60 bg-amber-500/10 text-amber-200">
                             PLANNED
                           </Badge>
                         </span>
@@ -570,7 +570,7 @@ function FlowNode({
             <div className={`font-semibold text-foreground ${compact ? "text-sm" : "text-base"} flex items-center gap-2 flex-wrap`}>
               <span>{label}</span>
               {planned && (
-                <Badge className="border-amber-500/40 bg-amber-500/10 text-amber-200 text-[9px]">
+                <Badge className="border-amber-500/60 bg-amber-500/10 text-amber-200 text-[9px]">
                   PLANNED
                 </Badge>
               )}

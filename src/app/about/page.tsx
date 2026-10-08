@@ -82,12 +82,12 @@ export default function AboutPage() {
             <div>
               <div className="inline-flex items-center gap-3 mb-4"><span className="w-px h-4 bg-amber-400" /><span className="text-xs font-semibold tracking-[0.28em] uppercase text-amber-400">OUR MISSION</span></div>
               <h2 className="text-4xl font-bold tracking-tight text-white mb-6">Enable Institutional Settlement at <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Scale.</span></h2>
-              <p className="text-lg text-white/60 leading-relaxed">MITHQAL coordinates settlement workflows, policy, finality, reconciliation, multi-rail interoperability and audit-ready evidence through one controlled architecture — complementing existing financial infrastructure.</p>
+              <p className="text-lg text-[#cbd5e1] leading-relaxed">MITHQAL coordinates settlement workflows, policy, finality, reconciliation, multi-rail interoperability and audit-ready evidence through one controlled architecture — complementing existing financial infrastructure.</p>
             </div>
             <div>
               <div className="inline-flex items-center gap-3 mb-4"><span className="w-px h-4 bg-amber-400" /><span className="text-xs font-semibold tracking-[0.28em] uppercase text-amber-400">OUR VISION</span></div>
               <h2 className="text-4xl font-bold tracking-tight text-white mb-6">A More Connected <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Financial Ecosystem.</span></h2>
-              <p className="text-lg text-white/60 leading-relaxed">A neutral infrastructure that connects institutional participants across jurisdictions — without displacing sovereign currencies, central-bank money, or existing financial institutions.</p>
+              <p className="text-lg text-[#cbd5e1] leading-relaxed">A neutral infrastructure that connects institutional participants across jurisdictions — without displacing sovereign currencies, central-bank money, or existing financial institutions.</p>
             </div>
           </div>
         </section>
@@ -101,9 +101,9 @@ export default function AboutPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {VALUES.map((v) => (
               <div key={v.title} className="bg-white/5 backdrop-blur-sm border border-amber-500/10 rounded-2xl p-8 hover:border-amber-500/30 transition-all duration-300">
-                <div className="w-14 h-14 rounded-full border border-amber-500/40 flex items-center justify-center text-2xl mb-4">{v.icon}</div>
+                <div className="w-14 h-14 rounded-full border border-amber-500/60 flex items-center justify-center text-2xl mb-4">{v.icon}</div>
                 <h3 className="text-lg font-semibold text-white mb-2">{v.title}</h3>
-                <p className="text-sm text-white/60 leading-relaxed">{v.desc}</p>
+                <p className="text-sm text-[#cbd5e1] leading-relaxed">{v.desc}</p>
               </div>
             ))}
           </div>
@@ -120,7 +120,7 @@ export default function AboutPage() {
               <div key={p.title} className="text-center p-8">
                 <div className="text-4xl mb-6">{p.icon}</div>
                 <h3 className="text-xl font-semibold text-white mb-3">{p.title}</h3>
-                <p className="text-sm text-white/60 leading-relaxed">{p.desc}</p>
+                <p className="text-sm text-[#cbd5e1] leading-relaxed">{p.desc}</p>
               </div>
             ))}
           </div>
@@ -129,7 +129,7 @@ export default function AboutPage() {
         {/* CTA */}
         <section className="max-w-[1440px] mx-auto px-6 md:px-12 py-24 border-t border-white/5 text-center">
           <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white mb-6">A Controlled Path to a <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Connected Financial Future.</span></h2>
-          <p className="text-lg text-white/60 max-w-2xl mx-auto mb-10">MITHQAL is not production-authorized. The build is frozen, the MTQ primitive is disabled, and every architectural commitment is documented for institutional review.</p>
+          <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mb-10">MITHQAL is not production-authorized. The build is frozen, the MTQ primitive is disabled, and every architectural commitment is documented for institutional review.</p>
           <div className="flex flex-wrap items-center justify-center gap-4">
             <a href="/ecosystem" className="px-8 py-3 rounded-full bg-gradient-to-r from-amber-400 to-amber-200 text-[#07090e] font-semibold text-sm tracking-wide hover:scale-105 transition-transform duration-300 shadow-lg shadow-amber-500/30 border-2 border-amber-300">Explore the Ecosystem →</a>
             <a href="/roadmap" className="px-8 py-3 rounded-full border-2 border-amber-400/70 bg-black/30 backdrop-blur-md text-white font-medium text-sm tracking-wide hover:bg-amber-500/20 transition-all duration-300">View the Roadmap</a>

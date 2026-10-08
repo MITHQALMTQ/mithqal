@@ -84,7 +84,7 @@ export default function FeaturesPage() {
               <span className="text-xs font-semibold tracking-[0.28em] uppercase text-amber-400">CORE CAPABILITIES</span>
             </div>
             <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white">Built as One <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Control System.</span></h2>
-            <p className="text-lg text-white/60 max-w-2xl mx-auto mt-6">Each capability operates as part of one coordinated institutional architecture rather than as an isolated product feature.</p>
+            <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mt-6">Each capability operates as part of one coordinated institutional architecture rather than as an isolated product feature.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
             {CAPABILITIES.map((cap) => (
@@ -92,7 +92,7 @@ export default function FeaturesPage() {
                 <div className="text-3xl mb-4">{cap.icon}</div>
                 <div className="text-xs font-semibold text-amber-400 tracking-[0.1em] mb-2">{cap.num}</div>
                 <h3 className="text-lg font-semibold text-white mb-3">{cap.title}</h3>
-                <p className="text-sm text-white/60 leading-relaxed">{cap.desc}</p>
+                <p className="text-sm text-[#cbd5e1] leading-relaxed">{cap.desc}</p>
               </div>
             ))}
           </div>
@@ -112,9 +112,9 @@ export default function FeaturesPage() {
               <div key={step} className="flex items-center gap-4">
                 <div className="flex flex-col items-center gap-3">
                   <div className="w-16 h-16 rounded-full border-2 border-amber-400/50 bg-amber-500/5 flex items-center justify-center text-amber-400 font-semibold text-sm">{i + 1}</div>
-                  <span className="text-sm text-white/70 font-medium">{step}</span>
+                  <span className="text-sm text-white/85 font-medium">{step}</span>
                 </div>
-                {i < WORKFLOW.length - 1 && <span className="text-amber-400/40 text-2xl">→</span>}
+                {i < WORKFLOW.length - 1 && <span className="text-amber-400/70 text-2xl">→</span>}
               </div>
             ))}
           </div>
@@ -123,7 +123,7 @@ export default function FeaturesPage() {
         {/* CTA */}
         <section className="max-w-[1440px] mx-auto px-6 md:px-12 py-24 border-t border-white/5 text-center">
           <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white mb-6">See the Architecture Behind the <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Control Plane.</span></h2>
-          <p className="text-lg text-white/60 max-w-2xl mx-auto mb-10">Explore how MITHQAL coordinates institutional participants, settlement workflows, policy, interoperability, reconciliation and evidence through one controlled architecture.</p>
+          <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mb-10">Explore how MITHQAL coordinates institutional participants, settlement workflows, policy, interoperability, reconciliation and evidence through one controlled architecture.</p>
           <div className="flex flex-wrap items-center justify-center gap-4">
             <a href="/ecosystem" className="px-8 py-3 rounded-full bg-gradient-to-r from-amber-400 to-amber-200 text-[#07090e] font-semibold text-sm tracking-wide hover:scale-105 transition-transform duration-300 shadow-lg shadow-amber-500/30 border-2 border-amber-300">Explore the Ecosystem →</a>
             <a href="/roadmap" className="px-8 py-3 rounded-full border-2 border-amber-400/70 bg-black/30 backdrop-blur-md text-white font-medium text-sm tracking-wide hover:bg-amber-500/20 transition-all duration-300">Read the Roadmap</a>

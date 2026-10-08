@@ -95,7 +95,7 @@ export default function ArchitecturePage() {
               <span className="text-xs font-semibold tracking-[0.28em] uppercase text-amber-400">FOUR-LAYER ARCHITECTURE</span>
             </div>
             <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white">Layered <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Separation.</span></h2>
-            <p className="text-lg text-white/60 max-w-2xl mx-auto mt-6">Each layer operates independently yet remains auditable, reconcilable and controlled as part of one institutional architecture.</p>
+            <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mt-6">Each layer operates independently yet remains auditable, reconcilable and controlled as part of one institutional architecture.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {LAYERS.map((layer) => (
@@ -105,7 +105,7 @@ export default function ArchitecturePage() {
                   <div className="flex-1">
                     <div className="text-xs font-semibold text-amber-400 tracking-[0.1em] mb-2">{layer.num}</div>
                     <h3 className="text-xl font-semibold text-white mb-3">{layer.title}</h3>
-                    <p className="text-sm text-white/60 leading-relaxed">{layer.desc}</p>
+                    <p className="text-sm text-[#cbd5e1] leading-relaxed">{layer.desc}</p>
                   </div>
                 </div>
               </div>
@@ -121,14 +121,14 @@ export default function ArchitecturePage() {
               <span className="text-xs font-semibold tracking-[0.28em] uppercase text-amber-400">THREE-BOOK SEPARATION</span>
             </div>
             <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white">Economic <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Separation.</span></h2>
-            <p className="text-lg text-white/60 max-w-2xl mx-auto mt-6">Three independent ledgers ensure MITHQAL's obligations, bank obligations, and participant positions remain economically separate and individually auditable.</p>
+            <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mt-6">Three independent ledgers ensure MITHQAL's obligations, bank obligations, and participant positions remain economically separate and individually auditable.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {BOOKS.map((book) => (
               <div key={book.book} className="bg-white/5 backdrop-blur-sm border border-amber-500/10 rounded-2xl p-8 hover:border-amber-500/30 transition-all duration-300">
                 <div className="w-12 h-12 rounded-full border-2 border-amber-400/50 bg-amber-500/5 flex items-center justify-center text-amber-400 font-semibold text-lg mb-6">Book {book.book}</div>
                 <h3 className="text-xl font-semibold text-white mb-3">{book.title}</h3>
-                <p className="text-sm text-white/60 leading-relaxed">{book.desc}</p>
+                <p className="text-sm text-[#cbd5e1] leading-relaxed">{book.desc}</p>
               </div>
             ))}
           </div>
@@ -142,14 +142,14 @@ export default function ArchitecturePage() {
               <span className="text-xs font-semibold tracking-[0.28em] uppercase text-amber-400">FINALITY CONTROL</span>
             </div>
             <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white">Finality by <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Design.</span></h2>
-            <p className="text-lg text-white/60 max-w-2xl mx-auto mt-6">Finality is not a single event — it is a layered chain of technical, legal and control conditions that must all be satisfied.</p>
+            <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mt-6">Finality is not a single event — it is a layered chain of technical, legal and control conditions that must all be satisfied.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {FINALITY.map((item) => (
               <div key={item.num} className="bg-white/5 backdrop-blur-sm border border-amber-500/10 rounded-2xl p-8 hover:border-amber-500/30 transition-all duration-300">
                 <div className="text-xs font-semibold text-amber-400 tracking-[0.1em] mb-2">{item.num}</div>
                 <h3 className="text-lg font-semibold text-white mb-3">{item.title}</h3>
-                <p className="text-sm text-white/60 leading-relaxed">{item.desc}</p>
+                <p className="text-sm text-[#cbd5e1] leading-relaxed">{item.desc}</p>
               </div>
             ))}
           </div>
@@ -158,7 +158,7 @@ export default function ArchitecturePage() {
         {/* CTA */}
         <section className="max-w-[1440px] mx-auto px-6 md:px-12 py-24 border-t border-white/5 text-center">
           <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white mb-6">Explore the Full <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Architecture.</span></h2>
-          <p className="text-lg text-white/60 max-w-2xl mx-auto mb-10">Read how the evidence layer turns every settlement state into attributable, verifiable, auditable control.</p>
+          <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mb-10">Read how the evidence layer turns every settlement state into attributable, verifiable, auditable control.</p>
           <div className="flex flex-wrap items-center justify-center gap-4">
             <a href="/evidence" className="px-8 py-3 rounded-full bg-gradient-to-r from-amber-400 to-amber-200 text-[#07090e] font-semibold text-sm tracking-wide hover:scale-105 transition-transform duration-300 shadow-lg shadow-amber-500/30 border-2 border-amber-300">Explore the full architecture →</a>
             <a href="/pilot" className="px-8 py-3 rounded-full border-2 border-amber-400/70 bg-black/30 backdrop-blur-md text-white font-medium text-sm tracking-wide hover:bg-amber-500/20 transition-all duration-300">View Pilot Model</a>

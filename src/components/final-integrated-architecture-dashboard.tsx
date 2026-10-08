@@ -159,7 +159,7 @@ function fvStatusBadge(status: string) {
     return (
       <Badge
         variant="outline"
-        className="border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300 text-xs"
+        className="border-amber-500/60 bg-amber-500/10 text-amber-700 dark:text-amber-300 text-xs"
       >
         <Activity className="mr-1 h-3 w-3" />
         {status}
@@ -200,7 +200,7 @@ function testStatusBadge(status: string) {
   return (
     <Badge
       variant="outline"
-      className="border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300 text-xs"
+      className="border-amber-500/60 bg-amber-500/10 text-amber-700 dark:text-amber-300 text-xs"
     >
       <Activity className="mr-1 h-3 w-3" />
       {status}
@@ -336,7 +336,7 @@ export function FinalIntegratedArchitectureDashboard() {
           <div className="mt-4 flex flex-wrap items-center gap-2">
             <Badge
               variant="outline"
-              className="border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300"
+              className="border-amber-500/60 bg-amber-500/10 text-amber-700 dark:text-amber-300"
             >
               <ShieldCheck className="mr-1 h-3 w-3" />
               {report.architectureVersion}
@@ -374,7 +374,7 @@ export function FinalIntegratedArchitectureDashboard() {
           transition={{ duration: 0.4, delay: 0.1 }}
           className="mb-10"
         >
-          <Card className="border-amber-500/40 bg-amber-500/5">
+          <Card className="border-amber-500/60 bg-amber-500/5">
             <CardContent className="pt-6">
               <div className="flex items-start gap-3">
                 <AlertTriangle className="mt-0.5 h-5 w-5 text-amber-600 dark:text-amber-400" />
@@ -425,7 +425,7 @@ export function FinalIntegratedArchitectureDashboard() {
                     <CardTitle className="text-base">{entity.name}</CardTitle>
                     <Badge
                       variant="outline"
-                      className="border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300 text-xs"
+                      className="border-amber-500/60 bg-amber-500/10 text-amber-700 dark:text-amber-300 text-xs"
                     >
                       {entity.type}
                     </Badge>
@@ -528,7 +528,7 @@ export function FinalIntegratedArchitectureDashboard() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
-                <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
+                <div className="rounded-md border border-amber-500/60 bg-amber-500/10 p-3">
                   <p className="font-mono text-xs text-amber-800 dark:text-amber-200">
                     {report.dmceFormula}
                   </p>
@@ -814,7 +814,7 @@ export function FinalIntegratedArchitectureDashboard() {
           transition={{ duration: 0.4 }}
           className="mt-10"
         >
-          <Card className="border-amber-500/40 bg-amber-500/5">
+          <Card className="border-amber-500/60 bg-amber-500/5">
             <CardContent className="pt-6">
               <div className="flex items-start gap-3">
                 <Lock className="mt-0.5 h-5 w-5 text-amber-600 dark:text-amber-400" />

@@ -262,7 +262,7 @@ export function MBGDashboard() {
           <div className="mt-4 flex flex-wrap items-center gap-2">
             <Badge
               variant="outline"
-              className="border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300"
+              className="border-amber-500/60 bg-amber-500/10 text-amber-700 dark:text-amber-300"
             >
               <Activity className="mr-1 h-3 w-3" />
               {report.integrationState}
@@ -300,7 +300,7 @@ export function MBGDashboard() {
           transition={{ duration: 0.4, delay: 0.1 }}
           className="mb-10"
         >
-          <Card className="border-amber-500/40 bg-amber-500/5">
+          <Card className="border-amber-500/60 bg-amber-500/5">
             <CardContent className="pt-6">
               <div className="flex items-start gap-3">
                 <AlertTriangle className="mt-0.5 h-5 w-5 text-amber-600 dark:text-amber-400" />
@@ -526,7 +526,7 @@ export function MBGDashboard() {
                         ? "border-emerald-500/40 bg-emerald-500/5"
                         : e.c === "red"
                           ? "border-red-500/40 bg-red-500/5"
-                          : "border-amber-500/40 bg-amber-500/5"
+                          : "border-amber-500/60 bg-amber-500/5"
                     }`}
                   >
                     <span className="font-mono font-semibold">{e.s}</span>
@@ -589,7 +589,7 @@ export function MBGDashboard() {
                         ? "border-emerald-500/40 bg-emerald-500/5"
                         : r.c === "red"
                           ? "border-red-500/40 bg-red-500/5"
-                          : "border-amber-500/40 bg-amber-500/5"
+                          : "border-amber-500/60 bg-amber-500/5"
                     }`}
                   >
                     <span className="font-mono font-semibold text-sm">
@@ -726,7 +726,7 @@ export function MBGDashboard() {
                     className={`flex items-center justify-between rounded border px-2 py-1 ${
                       j.c === "red"
                         ? "border-red-500/40 bg-red-500/5"
-                        : "border-amber-500/40 bg-amber-500/5"
+                        : "border-amber-500/60 bg-amber-500/5"
                     }`}
                   >
                     <span className="font-mono font-semibold">{j.j}</span>
@@ -752,7 +752,7 @@ export function MBGDashboard() {
             </CardHeader>
             <CardContent>
               <div className="space-y-3 text-xs">
-                <div className="rounded-md border border-amber-500/40 bg-amber-500/5 p-3">
+                <div className="rounded-md border border-amber-500/60 bg-amber-500/5 p-3">
                   <div className="font-semibold text-amber-700 dark:text-amber-300 mb-1">
                     Gateway Failure
                   </div>
@@ -985,7 +985,7 @@ export function MBGDashboard() {
                       </span>
                       <Badge
                         variant="outline"
-                        className="border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300 text-xs"
+                        className="border-amber-500/60 bg-amber-500/10 text-amber-700 dark:text-amber-300 text-xs"
                       >
                         {t.status}
                       </Badge>
@@ -1084,7 +1084,7 @@ export function MBGDashboard() {
         </Card>
 
         {/* Recommended next actions */}
-        <Card className="mt-6 border-amber-500/40">
+        <Card className="mt-6 border-amber-500/60">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-lg">
               <ArrowRight className="h-5 w-5 text-amber-600 dark:text-amber-400" />
@@ -1120,7 +1120,7 @@ export function MBGDashboard() {
           transition={{ duration: 0.4 }}
           className="mt-10"
         >
-          <Card className="border-amber-500/40 bg-amber-500/5">
+          <Card className="border-amber-500/60 bg-amber-500/5">
             <CardContent className="pt-6">
               <div className="flex items-start gap-3">
                 <DollarSign className="mt-0.5 h-5 w-5 text-amber-600 dark:text-amber-400" />

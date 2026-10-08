@@ -86,24 +86,24 @@ export default function ContactPage() {
               <span className="text-xs font-semibold tracking-[0.28em] uppercase text-amber-400">ENQUIRY FORM</span>
             </div>
             <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white">Submit an <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Institutional Enquiry.</span></h2>
-            <p className="text-lg text-white/60 max-w-2xl mx-auto mt-6">Provide your details and the appropriate MITHQAL team will route and respond within the timeline below.</p>
+            <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mt-6">Provide your details and the appropriate MITHQAL team will route and respond within the timeline below.</p>
           </div>
           <div className="max-w-3xl mx-auto">
             <form className="bg-white/5 backdrop-blur-sm border border-amber-500/10 rounded-2xl p-8 md:p-10 space-y-6" onSubmit={(e) => e.preventDefault()}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label htmlFor="name" className="block text-xs font-semibold tracking-[0.1em] uppercase text-amber-400 mb-2">Name</label>
-                  <input id="name" type="text" placeholder="Full name" className="w-full bg-black/30 border border-white/10 rounded-lg px-4 py-3 text-white text-sm placeholder:text-white/40 focus:border-amber-400/60 focus:outline-none transition-colors" />
+                  <input id="name" type="text" placeholder="Full name" className="w-full bg-black/30 border border-white/10 rounded-lg px-4 py-3 text-white text-sm placeholder:text-[#94a3b8] focus:border-amber-400/60 focus:outline-none transition-colors" />
                 </div>
                 <div>
                   <label htmlFor="organization" className="block text-xs font-semibold tracking-[0.1em] uppercase text-amber-400 mb-2">Organization</label>
-                  <input id="organization" type="text" placeholder="Institution name" className="w-full bg-black/30 border border-white/10 rounded-lg px-4 py-3 text-white text-sm placeholder:text-white/40 focus:border-amber-400/60 focus:outline-none transition-colors" />
+                  <input id="organization" type="text" placeholder="Institution name" className="w-full bg-black/30 border border-white/10 rounded-lg px-4 py-3 text-white text-sm placeholder:text-[#94a3b8] focus:border-amber-400/60 focus:outline-none transition-colors" />
                 </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label htmlFor="email" className="block text-xs font-semibold tracking-[0.1em] uppercase text-amber-400 mb-2">Email</label>
-                  <input id="email" type="email" placeholder="institutional@email.com" className="w-full bg-black/30 border border-white/10 rounded-lg px-4 py-3 text-white text-sm placeholder:text-white/40 focus:border-amber-400/60 focus:outline-none transition-colors" />
+                  <input id="email" type="email" placeholder="institutional@email.com" className="w-full bg-black/30 border border-white/10 rounded-lg px-4 py-3 text-white text-sm placeholder:text-[#94a3b8] focus:border-amber-400/60 focus:outline-none transition-colors" />
                 </div>
                 <div>
                   <label htmlFor="enquiry-type" className="block text-xs font-semibold tracking-[0.1em] uppercase text-amber-400 mb-2">Enquiry Type</label>
@@ -118,10 +118,10 @@ export default function ContactPage() {
               </div>
               <div>
                 <label htmlFor="message" className="block text-xs font-semibold tracking-[0.1em] uppercase text-amber-400 mb-2">Message</label>
-                <textarea id="message" rows={5} placeholder="Describe your institutional enquiry — participants, jurisdictions, corridors, evidence requirements..." className="w-full bg-black/30 border border-white/10 rounded-lg px-4 py-3 text-white text-sm placeholder:text-white/40 focus:border-amber-400/60 focus:outline-none transition-colors resize-none" />
+                <textarea id="message" rows={5} placeholder="Describe your institutional enquiry — participants, jurisdictions, corridors, evidence requirements..." className="w-full bg-black/30 border border-white/10 rounded-lg px-4 py-3 text-white text-sm placeholder:text-[#94a3b8] focus:border-amber-400/60 focus:outline-none transition-colors resize-none" />
               </div>
               <div className="flex flex-wrap items-center justify-between gap-4 pt-2">
-                <p className="text-xs text-white/40 max-w-md">By submitting, you acknowledge MITHQAL's build-mode status. No production activity is authorized.</p>
+                <p className="text-xs text-[#94a3b8] max-w-md">By submitting, you acknowledge MITHQAL's build-mode status. No production activity is authorized.</p>
                 <button type="submit" className="px-8 py-3 rounded-full bg-gradient-to-r from-amber-400 to-amber-200 text-[#07090e] font-semibold text-sm tracking-wide hover:scale-105 transition-transform duration-300 shadow-lg shadow-amber-500/30 border-2 border-amber-300">Submit Enquiry →</button>
               </div>
             </form>
@@ -136,7 +136,7 @@ export default function ContactPage() {
               <span className="text-xs font-semibold tracking-[0.28em] uppercase text-amber-400">CONTACT CHANNELS</span>
             </div>
             <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white">Direct <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Channels.</span></h2>
-            <p className="text-lg text-white/60 max-w-2xl mx-auto mt-6">Each enquiry type routes to a dedicated institutional channel — no generic inbox, no lost enquiries.</p>
+            <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mt-6">Each enquiry type routes to a dedicated institutional channel — no generic inbox, no lost enquiries.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {CHANNELS.map((channel) => (
@@ -144,7 +144,7 @@ export default function ContactPage() {
                 <div className="text-3xl mb-4">{channel.icon}</div>
                 <div className="text-xs font-semibold text-amber-400 tracking-[0.1em] mb-2">{channel.num}</div>
                 <h3 className="text-lg font-semibold text-white mb-3">{channel.title}</h3>
-                <p className="text-sm text-white/60 leading-relaxed mb-4">{channel.desc}</p>
+                <p className="text-sm text-[#cbd5e1] leading-relaxed mb-4">{channel.desc}</p>
                 <div className="pt-4 border-t border-white/5">
                   <span className="text-xs text-amber-400 tracking-[0.1em] uppercase block mb-1">Email</span>
                   <span className="text-sm text-white/80 break-all">{channel.email}</span>
@@ -162,7 +162,7 @@ export default function ContactPage() {
               <span className="text-xs font-semibold tracking-[0.28em] uppercase text-amber-400">RESPONSE TIMELINE</span>
             </div>
             <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white">From Submission to <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Decision.</span></h2>
-            <p className="text-lg text-white/60 max-w-2xl mx-auto mt-6">Each institutional enquiry moves through three review stages with explicit, bounded response windows.</p>
+            <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mt-6">Each institutional enquiry moves through three review stages with explicit, bounded response windows.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
             {TIMELINE.map((item, i) => (
@@ -173,10 +173,10 @@ export default function ContactPage() {
                     <span className="text-xs font-semibold text-amber-400 tracking-[0.1em] uppercase">{item.timeframe}</span>
                   </div>
                   <h3 className="text-lg font-semibold text-white mb-3">{item.title}</h3>
-                  <p className="text-sm text-white/60 leading-relaxed">{item.desc}</p>
+                  <p className="text-sm text-[#cbd5e1] leading-relaxed">{item.desc}</p>
                 </div>
                 {i < TIMELINE.length - 1 && (
-                  <div className="hidden md:block absolute top-1/2 -right-3 -translate-y-1/2 text-amber-400/40 text-2xl">→</div>
+                  <div className="hidden md:block absolute top-1/2 -right-3 -translate-y-1/2 text-amber-400/70 text-2xl">→</div>
                 )}
               </div>
             ))}
@@ -186,7 +186,7 @@ export default function ContactPage() {
         {/* CTA */}
         <section className="max-w-[1440px] mx-auto px-6 md:px-12 py-24 border-t border-white/5 text-center">
           <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white mb-6">Explore the <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Platform.</span></h2>
-          <p className="text-lg text-white/60 max-w-2xl mx-auto mb-10">Before reaching out, explore the MITHQAL architecture, evidence layer, pilot model and legal framework — the institutional context for any enquiry.</p>
+          <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mb-10">Before reaching out, explore the MITHQAL architecture, evidence layer, pilot model and legal framework — the institutional context for any enquiry.</p>
           <div className="flex flex-wrap items-center justify-center gap-4">
             <a href="/features" className="px-8 py-3 rounded-full bg-gradient-to-r from-amber-400 to-amber-200 text-[#07090e] font-semibold text-sm tracking-wide hover:scale-105 transition-transform duration-300 shadow-lg shadow-amber-500/30 border-2 border-amber-300">Explore the Platform →</a>
             <a href="/architecture" className="px-8 py-3 rounded-full border-2 border-amber-400/70 bg-black/30 backdrop-blur-md text-white font-medium text-sm tracking-wide hover:bg-amber-500/20 transition-all duration-300">View the Architecture</a>
