@@ -66,7 +66,7 @@ export default function AboutPage() {
             MITHQAL is a neutral wholesale settlement control plane — built to coordinate institutional participants, settlement workflows, policy, interoperability, reconciliation and evidence through one controlled architecture.
           </motion.p>
           <motion.div variants={wordVariant} className="flex flex-wrap items-center justify-center gap-4">
-            <a href="/features" className="px-8 py-3 rounded-full bg-gradient-to-r from-amber-400 to-amber-200 text-[#07090e] font-semibold text-sm tracking-wide hover:scale-105 transition-transform duration-300 shadow-lg shadow-amber-500/30 border-2 border-amber-300">Explore the Architecture →</a>
+            <a href="/features" className="px-8 py-3 rounded-full bg-gradient-to-r from-amber-400 to-amber-200 text-[#07090e] font-semibold text-sm tracking-wide hover:scale-105 transition-transform duration-300 btn-press shadow-lg shadow-amber-500/30 border-2 border-amber-300">Explore the Architecture →</a>
             <a href="/ecosystem" className="px-8 py-3 rounded-full border-2 border-amber-400/70 bg-black/30 backdrop-blur-md text-white font-medium text-sm tracking-wide hover:bg-amber-500/20 transition-all duration-300">View the Ecosystem</a>
           </motion.div>
         </motion.div>
@@ -100,7 +100,7 @@ export default function AboutPage() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {VALUES.map((v) => (
-              <div key={v.title} className="bg-white/5 backdrop-blur-sm border border-amber-500/10 rounded-2xl p-8 hover:border-amber-500/30 transition-all duration-300">
+              <div key={v.title} className="bg-white/5 backdrop-blur-sm border border-amber-500/10 rounded-2xl p-8 hover:border-amber-500/30 transition-all duration-300 card-lift">
                 <div className="w-14 h-14 rounded-full border border-amber-500/60 flex items-center justify-center text-2xl mb-4">{v.icon}</div>
                 <h3 className="text-lg font-semibold text-white mb-2">{v.title}</h3>
                 <p className="text-sm text-[#cbd5e1] leading-relaxed">{v.desc}</p>
@@ -118,7 +118,7 @@ export default function AboutPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {PRINCIPLES.map((p) => (
               <div key={p.title} className="text-center p-8">
-                <div className="text-4xl mb-6">{p.icon}</div>
+                <div className="text-4xl mb-6 icon-scale">{p.icon}</div>
                 <h3 className="text-xl font-semibold text-white mb-3">{p.title}</h3>
                 <p className="text-sm text-[#cbd5e1] leading-relaxed">{p.desc}</p>
               </div>
@@ -131,7 +131,7 @@ export default function AboutPage() {
           <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white mb-6">A Controlled Path to a <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Connected Financial Future.</span></h2>
           <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mb-10">MITHQAL is not production-authorized. The build is frozen, the MTQ primitive is disabled, and every architectural commitment is documented for institutional review.</p>
           <div className="flex flex-wrap items-center justify-center gap-4">
-            <a href="/ecosystem" className="px-8 py-3 rounded-full bg-gradient-to-r from-amber-400 to-amber-200 text-[#07090e] font-semibold text-sm tracking-wide hover:scale-105 transition-transform duration-300 shadow-lg shadow-amber-500/30 border-2 border-amber-300">Explore the Ecosystem →</a>
+            <a href="/ecosystem" className="px-8 py-3 rounded-full bg-gradient-to-r from-amber-400 to-amber-200 text-[#07090e] font-semibold text-sm tracking-wide hover:scale-105 transition-transform duration-300 btn-press shadow-lg shadow-amber-500/30 border-2 border-amber-300">Explore the Ecosystem →</a>
             <a href="/roadmap" className="px-8 py-3 rounded-full border-2 border-amber-400/70 bg-black/30 backdrop-blur-md text-white font-medium text-sm tracking-wide hover:bg-amber-500/20 transition-all duration-300">View the Roadmap</a>
           </div>
         </section>

@@ -64,7 +64,7 @@ export default function EcosystemPage() {
             MITHQAL connects participating institutions, banking infrastructure, payment networks and approved settlement rails through one coordinated institutional control plane.
           </motion.p>
           <motion.div variants={wordVariant} className="flex flex-wrap items-center justify-center gap-4">
-            <a href="#partners" className="px-8 py-3 rounded-full bg-gradient-to-r from-amber-400 to-amber-200 text-[#07090e] font-semibold text-sm tracking-wide hover:scale-105 transition-transform duration-300 shadow-lg shadow-amber-500/30 border-2 border-amber-300">Explore Participants →</a>
+            <a href="#partners" className="px-8 py-3 rounded-full bg-gradient-to-r from-amber-400 to-amber-200 text-[#07090e] font-semibold text-sm tracking-wide hover:scale-105 transition-transform duration-300 btn-press shadow-lg shadow-amber-500/30 border-2 border-amber-300">Explore Participants →</a>
             <a href="/features" className="px-8 py-3 rounded-full border-2 border-amber-400/70 bg-black/30 backdrop-blur-md text-white font-medium text-sm tracking-wide hover:bg-amber-500/20 transition-all duration-300">View Architecture</a>
           </motion.div>
         </motion.div>
@@ -82,7 +82,7 @@ export default function EcosystemPage() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
             {PARTNERS.map((p) => (
-              <div key={p.num} className="bg-white/5 backdrop-blur-sm border border-amber-500/10 rounded-2xl p-8 hover:border-amber-500/30 transition-all duration-300 text-center">
+              <div key={p.num} className="bg-white/5 backdrop-blur-sm border border-amber-500/10 rounded-2xl p-8 hover:border-amber-500/30 transition-all duration-300 card-lift text-center">
                 <div className="text-4xl mb-4">{p.icon}</div>
                 <div className="text-xs font-semibold text-amber-400 tracking-[0.1em] mb-2">{p.num}</div>
                 <h3 className="text-lg font-semibold text-white mb-3">{p.title}</h3>
@@ -103,7 +103,7 @@ export default function EcosystemPage() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               {RAILS.map((rail) => (
-                <div key={rail} className="bg-white/5 border border-amber-500/10 rounded-xl p-6 hover:border-amber-500/30 transition-all duration-300">
+                <div key={rail} className="bg-white/5 border border-amber-500/10 rounded-xl p-6 hover:border-amber-500/30 transition-all duration-300 card-lift">
                   <div className="text-sm font-semibold text-white">{rail}</div>
                 </div>
               ))}
@@ -119,7 +119,7 @@ export default function EcosystemPage() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {ROUTES.map((r) => (
-              <div key={r.name} className="bg-white/5 backdrop-blur-sm border border-amber-500/10 rounded-2xl p-8 hover:border-amber-500/30 transition-all duration-300">
+              <div key={r.name} className="bg-white/5 backdrop-blur-sm border border-amber-500/10 rounded-2xl p-8 hover:border-amber-500/30 transition-all duration-300 card-lift">
                 <div className="text-4xl mb-4">{r.icon}</div>
                 <h3 className="text-xl font-semibold text-white mb-3">{r.name}</h3>
                 <p className="text-sm text-[#cbd5e1] leading-relaxed">{r.desc}</p>
@@ -132,7 +132,7 @@ export default function EcosystemPage() {
         <section className="max-w-[1440px] mx-auto px-6 md:px-12 py-24 border-t border-white/5 text-center">
           <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white mb-6">A Growing Ecosystem. A <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Stronger Future.</span></h2>
           <div className="flex flex-wrap items-center justify-center gap-4 mt-10">
-            <a href="/features" className="px-8 py-3 rounded-full bg-gradient-to-r from-amber-400 to-amber-200 text-[#07090e] font-semibold text-sm tracking-wide hover:scale-105 transition-transform duration-300 shadow-lg shadow-amber-500/30 border-2 border-amber-300">Explore the Architecture →</a>
+            <a href="/features" className="px-8 py-3 rounded-full bg-gradient-to-r from-amber-400 to-amber-200 text-[#07090e] font-semibold text-sm tracking-wide hover:scale-105 transition-transform duration-300 btn-press shadow-lg shadow-amber-500/30 border-2 border-amber-300">Explore the Architecture →</a>
             <a href="/roadmap" className="px-8 py-3 rounded-full border-2 border-amber-400/70 bg-black/30 backdrop-blur-md text-white font-medium text-sm tracking-wide hover:bg-amber-500/20 transition-all duration-300">View the Roadmap</a>
           </div>
         </section>

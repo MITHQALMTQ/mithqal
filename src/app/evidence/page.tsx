@@ -72,7 +72,7 @@ export default function EvidencePage() {
             MITHQAL treats evidence as a control layer — every settlement state is attributable, verifiable, and auditable. Evidence must not be reused across multiple backing claims.
           </motion.p>
           <motion.div variants={wordVariant} className="flex flex-wrap items-center justify-center gap-4">
-            <a href="#layers" className="px-8 py-3 rounded-full bg-gradient-to-r from-amber-400 to-amber-200 text-[#07090e] font-semibold text-sm tracking-wide hover:scale-105 transition-transform duration-300 shadow-lg shadow-amber-500/30 border-2 border-amber-300">Explore Evidence Layers →</a>
+            <a href="#layers" className="px-8 py-3 rounded-full bg-gradient-to-r from-amber-400 to-amber-200 text-[#07090e] font-semibold text-sm tracking-wide hover:scale-105 transition-transform duration-300 btn-press shadow-lg shadow-amber-500/30 border-2 border-amber-300">Explore Evidence Layers →</a>
             <a href="/architecture" className="px-8 py-3 rounded-full border-2 border-amber-400/70 bg-black/30 backdrop-blur-md text-white font-medium text-sm tracking-wide hover:bg-amber-500/20 transition-all duration-300">View Architecture</a>
           </motion.div>
         </motion.div>
@@ -94,8 +94,8 @@ export default function EvidencePage() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {EVIDENCE_LAYERS.map((layer) => (
-              <div key={layer.num} className="bg-white/5 backdrop-blur-sm border border-amber-500/10 rounded-2xl p-8 hover:border-amber-500/30 transition-all duration-300">
-                <div className="text-3xl mb-4">{layer.icon}</div>
+              <div key={layer.num} className="bg-white/5 backdrop-blur-sm border border-amber-500/10 rounded-2xl p-8 hover:border-amber-500/30 transition-all duration-300 card-lift">
+                <div className="text-3xl mb-4 icon-scale">{layer.icon}</div>
                 <div className="text-xs font-semibold text-amber-400 tracking-[0.1em] mb-2">{layer.num}</div>
                 <h3 className="text-lg font-semibold text-white mb-3">{layer.title}</h3>
                 <p className="text-sm text-[#cbd5e1] leading-relaxed">{layer.desc}</p>
@@ -141,7 +141,7 @@ export default function EvidencePage() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {GATES.map((gate) => (
-              <div key={gate.num} className="bg-white/5 backdrop-blur-sm border border-amber-500/10 rounded-2xl p-8 hover:border-amber-500/30 transition-all duration-300">
+              <div key={gate.num} className="bg-white/5 backdrop-blur-sm border border-amber-500/10 rounded-2xl p-8 hover:border-amber-500/30 transition-all duration-300 card-lift">
                 <div className="w-12 h-12 rounded-full border-2 border-amber-400/50 bg-amber-500/5 flex items-center justify-center text-amber-400 font-semibold text-sm mb-6">{gate.num}</div>
                 <h3 className="text-lg font-semibold text-white mb-3">{gate.title}</h3>
                 <p className="text-sm text-[#cbd5e1] leading-relaxed">{gate.desc}</p>
@@ -155,7 +155,7 @@ export default function EvidencePage() {
           <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white mb-6">Read the <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Architecture.</span></h2>
           <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mb-10">Explore how layered separation — participants, control plane, rails, and evidence — makes every settlement state attributable and auditable.</p>
           <div className="flex flex-wrap items-center justify-center gap-4">
-            <a href="/architecture" className="px-8 py-3 rounded-full bg-gradient-to-r from-amber-400 to-amber-200 text-[#07090e] font-semibold text-sm tracking-wide hover:scale-105 transition-transform duration-300 shadow-lg shadow-amber-500/30 border-2 border-amber-300">Read the Architecture →</a>
+            <a href="/architecture" className="px-8 py-3 rounded-full bg-gradient-to-r from-amber-400 to-amber-200 text-[#07090e] font-semibold text-sm tracking-wide hover:scale-105 transition-transform duration-300 btn-press shadow-lg shadow-amber-500/30 border-2 border-amber-300">Read the Architecture →</a>
             <a href="/pilot" className="px-8 py-3 rounded-full border-2 border-amber-400/70 bg-black/30 backdrop-blur-md text-white font-medium text-sm tracking-wide hover:bg-amber-500/20 transition-all duration-300">View Pilot Model</a>
           </div>
         </section>

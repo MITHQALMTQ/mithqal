@@ -68,7 +68,7 @@ export default function ContactPage() {
             For institutional enquiries, pilot engagement, or technical architecture review — connect with the MITHQAL team through the appropriate channel.
           </motion.p>
           <motion.div variants={wordVariant} className="flex flex-wrap items-center justify-center gap-4">
-            <a href="#form" className="px-8 py-3 rounded-full bg-gradient-to-r from-amber-400 to-amber-200 text-[#07090e] font-semibold text-sm tracking-wide hover:scale-105 transition-transform duration-300 shadow-lg shadow-amber-500/30 border-2 border-amber-300">Submit Enquiry →</a>
+            <a href="#form" className="px-8 py-3 rounded-full bg-gradient-to-r from-amber-400 to-amber-200 text-[#07090e] font-semibold text-sm tracking-wide hover:scale-105 transition-transform duration-300 btn-press shadow-lg shadow-amber-500/30 border-2 border-amber-300">Submit Enquiry →</a>
             <a href="/architecture" className="px-8 py-3 rounded-full border-2 border-amber-400/70 bg-black/30 backdrop-blur-md text-white font-medium text-sm tracking-wide hover:bg-amber-500/20 transition-all duration-300">View Architecture</a>
           </motion.div>
         </motion.div>
@@ -122,7 +122,7 @@ export default function ContactPage() {
               </div>
               <div className="flex flex-wrap items-center justify-between gap-4 pt-2">
                 <p className="text-xs text-[#94a3b8] max-w-md">By submitting, you acknowledge MITHQAL's build-mode status. No production activity is authorized.</p>
-                <button type="submit" className="px-8 py-3 rounded-full bg-gradient-to-r from-amber-400 to-amber-200 text-[#07090e] font-semibold text-sm tracking-wide hover:scale-105 transition-transform duration-300 shadow-lg shadow-amber-500/30 border-2 border-amber-300">Submit Enquiry →</button>
+                <button type="submit" className="px-8 py-3 rounded-full bg-gradient-to-r from-amber-400 to-amber-200 text-[#07090e] font-semibold text-sm tracking-wide hover:scale-105 transition-transform duration-300 btn-press shadow-lg shadow-amber-500/30 border-2 border-amber-300">Submit Enquiry →</button>
               </div>
             </form>
           </div>
@@ -140,8 +140,8 @@ export default function ContactPage() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {CHANNELS.map((channel) => (
-              <div key={channel.num} className="bg-white/5 backdrop-blur-sm border border-amber-500/10 rounded-2xl p-8 hover:border-amber-500/30 transition-all duration-300">
-                <div className="text-3xl mb-4">{channel.icon}</div>
+              <div key={channel.num} className="bg-white/5 backdrop-blur-sm border border-amber-500/10 rounded-2xl p-8 hover:border-amber-500/30 transition-all duration-300 card-lift">
+                <div className="text-3xl mb-4 icon-scale">{channel.icon}</div>
                 <div className="text-xs font-semibold text-amber-400 tracking-[0.1em] mb-2">{channel.num}</div>
                 <h3 className="text-lg font-semibold text-white mb-3">{channel.title}</h3>
                 <p className="text-sm text-[#cbd5e1] leading-relaxed mb-4">{channel.desc}</p>
@@ -167,7 +167,7 @@ export default function ContactPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
             {TIMELINE.map((item, i) => (
               <div key={item.num} className="relative">
-                <div className="bg-white/5 backdrop-blur-sm border border-amber-500/10 rounded-2xl p-8 hover:border-amber-500/30 transition-all duration-300">
+                <div className="bg-white/5 backdrop-blur-sm border border-amber-500/10 rounded-2xl p-8 hover:border-amber-500/30 transition-all duration-300 card-lift">
                   <div className="flex items-center gap-4 mb-4">
                     <div className="w-12 h-12 rounded-full border-2 border-amber-400/50 bg-amber-500/5 flex items-center justify-center text-amber-400 font-semibold text-sm">{item.num}</div>
                     <span className="text-xs font-semibold text-amber-400 tracking-[0.1em] uppercase">{item.timeframe}</span>
@@ -188,7 +188,7 @@ export default function ContactPage() {
           <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white mb-6">Explore the <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Platform.</span></h2>
           <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mb-10">Before reaching out, explore the MITHQAL architecture, evidence layer, pilot model and legal framework — the institutional context for any enquiry.</p>
           <div className="flex flex-wrap items-center justify-center gap-4">
-            <a href="/features" className="px-8 py-3 rounded-full bg-gradient-to-r from-amber-400 to-amber-200 text-[#07090e] font-semibold text-sm tracking-wide hover:scale-105 transition-transform duration-300 shadow-lg shadow-amber-500/30 border-2 border-amber-300">Explore the Platform →</a>
+            <a href="/features" className="px-8 py-3 rounded-full bg-gradient-to-r from-amber-400 to-amber-200 text-[#07090e] font-semibold text-sm tracking-wide hover:scale-105 transition-transform duration-300 btn-press shadow-lg shadow-amber-500/30 border-2 border-amber-300">Explore the Platform →</a>
             <a href="/architecture" className="px-8 py-3 rounded-full border-2 border-amber-400/70 bg-black/30 backdrop-blur-md text-white font-medium text-sm tracking-wide hover:bg-amber-500/20 transition-all duration-300">View the Architecture</a>
           </div>
         </section>

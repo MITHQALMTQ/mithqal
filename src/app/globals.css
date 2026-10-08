@@ -965,3 +965,76 @@ html {
   filter: none !important;
   transform: none !important;
 }
+
+/* ===== v25.28 Phase 2: Micro-interactions ===== */
+
+/* Card lift on hover */
+.card-lift {
+  transition: transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1), 
+              border-color 0.3s ease, 
+              box-shadow 0.3s ease;
+}
+.card-lift:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(212, 175, 55, 0.15);
+}
+
+/* Icon scale on hover */
+.icon-scale {
+  transition: transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+.icon-scale:hover {
+  transform: scale(1.1);
+}
+
+/* Button press feedback */
+.btn-press {
+  transition: transform 0.15s ease;
+}
+.btn-press:active {
+  transform: scale(0.96);
+}
+
+/* Focus ring for accessibility */
+*:focus-visible {
+  outline: 2px solid #D4AF37;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Smooth scroll behavior */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Card entrance animation (fade + slide up) */
+@keyframes cardEnter {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.card-enter {
+  animation: cardEnter 0.5s ease-out forwards;
+}
+
+/* Gradient text shimmer */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.gold-shimmer {
+  background: linear-gradient(90deg, #D4AF37 0%, #F3C879 25%, #D4AF37 50%, #F3C879 75%, #D4AF37 100%);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: shimmer 3s linear infinite;
+}
+
+/* Glow pulse for CTAs */
+@keyframes glowPulse {
+  0%, 100% { box-shadow: 0 0 20px -5px rgba(212, 175, 55, 0.3); }
+  50% { box-shadow: 0 0 30px 0px rgba(212, 175, 55, 0.5); }
+}
+.glow-pulse {
+  animation: glowPulse 2.5s ease-in-out infinite;
+}

@@ -69,7 +69,7 @@ export default function HomePage() {
           <div className="flex flex-wrap items-center justify-center gap-4">
             <a
               href="/features"
-              className="px-8 py-3 rounded-full bg-gradient-to-r from-amber-400 to-amber-200 text-[#07090e] font-semibold text-sm tracking-wide hover:scale-105 transition-transform duration-300 shadow-lg shadow-amber-500/30 border-2 border-amber-300"
+              className="px-8 py-3 rounded-full bg-gradient-to-r from-amber-400 to-amber-200 text-[#07090e] font-semibold text-sm tracking-wide hover:scale-105 transition-transform duration-300 btn-press shadow-lg shadow-amber-500/30 border-2 border-amber-300"
             >
               Get Started →
             </a>
@@ -102,18 +102,18 @@ export default function HomePage() {
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="bg-white/5 backdrop-blur-sm border border-amber-500/10 rounded-2xl p-8 hover:border-amber-500/30 transition-all duration-300">
-              <div className="text-3xl mb-4">🧠</div>
+            <div className="bg-white/5 backdrop-blur-sm border border-amber-500/10 rounded-2xl p-8 hover:border-amber-500/30 transition-all duration-300 card-lift">
+              <div className="text-3xl mb-4 icon-scale">🧠</div>
               <h3 className="text-xl font-semibold text-white mb-3">AI-Powered Intelligence</h3>
               <p className="text-sm text-[#cbd5e1] leading-relaxed">Smarter decisions, greater opportunities. Built-in AI orchestration for institutional workflows.</p>
             </div>
-            <div className="bg-white/5 backdrop-blur-sm border border-amber-500/10 rounded-2xl p-8 hover:border-amber-500/30 transition-all duration-300">
-              <div className="text-3xl mb-4">🔗</div>
+            <div className="bg-white/5 backdrop-blur-sm border border-amber-500/10 rounded-2xl p-8 hover:border-amber-500/30 transition-all duration-300 card-lift">
+              <div className="text-3xl mb-4 icon-scale">🔗</div>
               <h3 className="text-xl font-semibold text-white mb-3">Unified Infrastructure</h3>
               <p className="text-sm text-[#cbd5e1] leading-relaxed">One control plane connecting institutions, payment networks, and settlement rails across jurisdictions.</p>
             </div>
-            <div className="bg-white/5 backdrop-blur-sm border border-amber-500/10 rounded-2xl p-8 hover:border-amber-500/30 transition-all duration-300">
-              <div className="text-3xl mb-4">⚡</div>
+            <div className="bg-white/5 backdrop-blur-sm border border-amber-500/10 rounded-2xl p-8 hover:border-amber-500/30 transition-all duration-300 card-lift">
+              <div className="text-3xl mb-4 icon-scale">⚡</div>
               <h3 className="text-xl font-semibold text-white mb-3">Built for the Future</h3>
               <p className="text-sm text-[#cbd5e1] leading-relaxed">Next-gen technology with real-world impact. Controlled, auditable, and evidence-based by design.</p>
             </div>
@@ -144,8 +144,8 @@ export default function HomePage() {
               { icon: "📊", title: "Reserve", desc: "130% backing specification." },
               { icon: "🔍", title: "Evidence", desc: "Immutable audit by design." },
             ].map((p) => (
-              <div key={p.title} className="text-center p-6 bg-white/5 border border-amber-500/10 rounded-2xl hover:border-amber-500/30 transition-all duration-300">
-                <div className="text-3xl mb-3">{p.icon}</div>
+              <div key={p.title} className="text-center p-6 bg-white/5 border border-amber-500/10 rounded-2xl hover:border-amber-500/30 transition-all duration-300 card-lift">
+                <div className="text-3xl mb-3 icon-scale">{p.icon}</div>
                 <h3 className="text-base font-semibold text-white mb-2">{p.title}</h3>
                 <p className="text-xs text-[#cbd5e1] leading-relaxed">{p.desc}</p>
               </div>
@@ -164,7 +164,7 @@ export default function HomePage() {
             Dive deeper into the control plane, the evidence model, and the institutional pilot pathway.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4">
-            <a href="/features" className="px-8 py-3 rounded-full bg-gradient-to-r from-amber-400 to-amber-200 text-[#07090e] font-semibold text-sm tracking-wide hover:scale-105 transition-transform duration-300 shadow-lg shadow-amber-500/30 border-2 border-amber-300">Explore Features →</a>
+            <a href="/features" className="px-8 py-3 rounded-full bg-gradient-to-r from-amber-400 to-amber-200 text-[#07090e] font-semibold text-sm tracking-wide hover:scale-105 transition-transform duration-300 btn-press shadow-lg shadow-amber-500/30 border-2 border-amber-300">Explore Features →</a>
             <a href="/architecture" className="px-8 py-3 rounded-full border-2 border-amber-400 bg-black/30 backdrop-blur-md text-white font-medium text-sm tracking-wide hover:bg-amber-500/20 transition-all duration-300">View Architecture</a>
             <a href="/contact" className="px-8 py-3 rounded-full border-2 border-amber-400 bg-black/30 backdrop-blur-md text-white font-medium text-sm tracking-wide hover:bg-amber-500/20 transition-all duration-300">Contact Us</a>
           </div>

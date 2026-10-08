@@ -66,7 +66,7 @@ export default function FeaturesPage() {
             MITHQAL brings settlement orchestration, policy control, finality, reconciliation, multi-rail interoperability and audit-ready evidence into one coordinated institutional control plane.
           </motion.p>
           <motion.div variants={wordVariant} className="flex flex-wrap items-center justify-center gap-4">
-            <a href="#capabilities" className="px-8 py-3 rounded-full bg-gradient-to-r from-amber-400 to-amber-200 text-[#07090e] font-semibold text-sm tracking-wide hover:scale-105 transition-transform duration-300 shadow-lg shadow-amber-500/30 border-2 border-amber-300">Explore Capabilities →</a>
+            <a href="#capabilities" className="px-8 py-3 rounded-full bg-gradient-to-r from-amber-400 to-amber-200 text-[#07090e] font-semibold text-sm tracking-wide hover:scale-105 transition-transform duration-300 btn-press shadow-lg shadow-amber-500/30 border-2 border-amber-300">Explore Capabilities →</a>
             <a href="/ecosystem" className="px-8 py-3 rounded-full border-2 border-amber-400/70 bg-black/30 backdrop-blur-md text-white font-medium text-sm tracking-wide hover:bg-amber-500/20 transition-all duration-300">View the Ecosystem</a>
           </motion.div>
         </motion.div>
@@ -88,8 +88,8 @@ export default function FeaturesPage() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
             {CAPABILITIES.map((cap) => (
-              <div key={cap.num} className="bg-white/5 backdrop-blur-sm border border-amber-500/10 rounded-2xl p-8 hover:border-amber-500/30 transition-all duration-300">
-                <div className="text-3xl mb-4">{cap.icon}</div>
+              <div key={cap.num} className="bg-white/5 backdrop-blur-sm border border-amber-500/10 rounded-2xl p-8 hover:border-amber-500/30 transition-all duration-300 card-lift">
+                <div className="text-3xl mb-4 icon-scale">{cap.icon}</div>
                 <div className="text-xs font-semibold text-amber-400 tracking-[0.1em] mb-2">{cap.num}</div>
                 <h3 className="text-lg font-semibold text-white mb-3">{cap.title}</h3>
                 <p className="text-sm text-[#cbd5e1] leading-relaxed">{cap.desc}</p>
@@ -125,7 +125,7 @@ export default function FeaturesPage() {
           <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white mb-6">See the Architecture Behind the <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Control Plane.</span></h2>
           <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mb-10">Explore how MITHQAL coordinates institutional participants, settlement workflows, policy, interoperability, reconciliation and evidence through one controlled architecture.</p>
           <div className="flex flex-wrap items-center justify-center gap-4">
-            <a href="/ecosystem" className="px-8 py-3 rounded-full bg-gradient-to-r from-amber-400 to-amber-200 text-[#07090e] font-semibold text-sm tracking-wide hover:scale-105 transition-transform duration-300 shadow-lg shadow-amber-500/30 border-2 border-amber-300">Explore the Ecosystem →</a>
+            <a href="/ecosystem" className="px-8 py-3 rounded-full bg-gradient-to-r from-amber-400 to-amber-200 text-[#07090e] font-semibold text-sm tracking-wide hover:scale-105 transition-transform duration-300 btn-press shadow-lg shadow-amber-500/30 border-2 border-amber-300">Explore the Ecosystem →</a>
             <a href="/roadmap" className="px-8 py-3 rounded-full border-2 border-amber-400/70 bg-black/30 backdrop-blur-md text-white font-medium text-sm tracking-wide hover:bg-amber-500/20 transition-all duration-300">Read the Roadmap</a>
           </div>
         </section>

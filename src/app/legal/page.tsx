@@ -89,7 +89,7 @@ export default function LegalPage() {
             MITHQAL operates within applicable legal frameworks — one architecture, different regulatory perimeters. Unknown jurisdiction means blocked. No exceptions.
           </motion.p>
           <motion.div variants={wordVariant} className="flex flex-wrap items-center justify-center gap-4">
-            <a href="#framework" className="px-8 py-3 rounded-full bg-gradient-to-r from-amber-400 to-amber-200 text-[#07090e] font-semibold text-sm tracking-wide hover:scale-105 transition-transform duration-300 shadow-lg shadow-amber-500/30 border-2 border-amber-300">View Legal Framework →</a>
+            <a href="#framework" className="px-8 py-3 rounded-full bg-gradient-to-r from-amber-400 to-amber-200 text-[#07090e] font-semibold text-sm tracking-wide hover:scale-105 transition-transform duration-300 btn-press shadow-lg shadow-amber-500/30 border-2 border-amber-300">View Legal Framework →</a>
             <a href="/contact" className="px-8 py-3 rounded-full border-2 border-amber-400/70 bg-black/30 backdrop-blur-md text-white font-medium text-sm tracking-wide hover:bg-amber-500/20 transition-all duration-300">Contact Legal Team</a>
           </motion.div>
         </motion.div>
@@ -111,7 +111,7 @@ export default function LegalPage() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {FRAMEWORK.map((item) => (
-              <div key={item.num} className="bg-white/5 backdrop-blur-sm border border-amber-500/10 rounded-2xl p-8 hover:border-amber-500/30 transition-all duration-300">
+              <div key={item.num} className="bg-white/5 backdrop-blur-sm border border-amber-500/10 rounded-2xl p-8 hover:border-amber-500/30 transition-all duration-300 card-lift">
                 <div className="flex items-start gap-4">
                   <div className="text-3xl">{item.icon}</div>
                   <div className="flex-1">
@@ -189,7 +189,7 @@ export default function LegalPage() {
           <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white mb-6">Contact the <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Legal Team.</span></h2>
           <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mb-10">For institutional legal enquiry, regulatory perimeter questions or build-status clarification, connect with the MITHQAL legal team.</p>
           <div className="flex flex-wrap items-center justify-center gap-4">
-            <a href="/contact" className="px-8 py-3 rounded-full bg-gradient-to-r from-amber-400 to-amber-200 text-[#07090e] font-semibold text-sm tracking-wide hover:scale-105 transition-transform duration-300 shadow-lg shadow-amber-500/30 border-2 border-amber-300">Contact Legal Team →</a>
+            <a href="/contact" className="px-8 py-3 rounded-full bg-gradient-to-r from-amber-400 to-amber-200 text-[#07090e] font-semibold text-sm tracking-wide hover:scale-105 transition-transform duration-300 btn-press shadow-lg shadow-amber-500/30 border-2 border-amber-300">Contact Legal Team →</a>
             <a href="/architecture" className="px-8 py-3 rounded-full border-2 border-amber-400/70 bg-black/30 backdrop-blur-md text-white font-medium text-sm tracking-wide hover:bg-amber-500/20 transition-all duration-300">View the Architecture</a>
           </div>
         </section>
