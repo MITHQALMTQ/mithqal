@@ -133,7 +133,8 @@ export default function EcosystemPage() {
         <section className="max-w-[1440px] mx-auto px-6 md:px-12 py-32 border-t border-white/5 text-center">
           <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white mb-6">A Growing Ecosystem. A <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Stronger Future.</span></h2>
           <div className="flex flex-wrap items-center justify-center gap-4 mt-10">
-            <a href="/features" className="px-8 py-3 rounded-full bg-gradient-to-r from-amber-400 to-amber-200 text-[#07090e] font-semibold text-sm tracking-wide hover:scale-105 transition-transform duration-300 btn-press shadow-lg shadow-amber-500/30 border-2 border-amber-300">Explore the Architecture →</a>
+            <a href="/architecture" className="px-8 py-3 rounded-full bg-gradient-to-r from-amber-400 to-amber-200 text-[#07090e] font-semibold text-sm tracking-wide hover:scale-105 transition-transform duration-300 btn-press shadow-lg shadow-amber-500/30 border-2 border-amber-300">Explore the Architecture →</a>
+            <a href="/features" className="px-8 py-3 rounded-full border-2 border-amber-400/70 bg-black/30 backdrop-blur-md text-white font-medium text-sm tracking-wide hover:bg-amber-500/20 transition-all duration-300">View Features</a>
             <a href="/roadmap" className="px-8 py-3 rounded-full border-2 border-amber-400/70 bg-black/30 backdrop-blur-md text-white font-medium text-sm tracking-wide hover:bg-amber-500/20 transition-all duration-300">View the Roadmap</a>
           </div>
         </section>
