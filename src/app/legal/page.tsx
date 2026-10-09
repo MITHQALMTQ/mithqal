@@ -185,6 +185,28 @@ export default function LegalPage() {
           </div>
         </section>
 
+                {/* Key Metrics Strip */}
+        <section className="max-w-[1440px] mx-auto px-6 md:px-12 py-16 border-t border-white/5 scroll-reveal">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              <div className="bg-white/5 border border-amber-500/10 rounded-xl p-6 text-center stagger-card">
+                <div className="text-3xl font-bold text-amber-400 mb-2">3</div>
+                <div className="text-xs text-[#94a3b8] tracking-wide uppercase">Legal Contradictions</div>
+              </div>
+              <div className="bg-white/5 border border-amber-500/10 rounded-xl p-6 text-center stagger-card">
+                <div className="text-3xl font-bold text-amber-400 mb-2">3</div>
+                <div className="text-xs text-[#94a3b8] tracking-wide uppercase">Docs Missing</div>
+              </div>
+              <div className="bg-white/5 border border-amber-500/10 rounded-xl p-6 text-center stagger-card">
+                <div className="text-3xl font-bold text-amber-400 mb-2">0</div>
+                <div className="text-xs text-[#94a3b8] tracking-wide uppercase">Counsel Engaged</div>
+              </div>
+              <div className="bg-white/5 border border-amber-500/10 rounded-xl p-6 text-center stagger-card">
+                <div className="text-3xl font-bold text-amber-400 mb-2">0</div>
+                <div className="text-xs text-[#94a3b8] tracking-wide uppercase">Validated Jurisdictions</div>
+              </div>
+          </div>
+        </section>
+
         {/* CTA */}
         <section className="max-w-[1440px] mx-auto px-6 md:px-12 py-32 border-t border-white/5 text-center">
           <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white mb-6">Contact the <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Legal Team.</span></h2>

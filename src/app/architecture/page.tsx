@@ -169,6 +169,28 @@ export default function ArchitecturePage() {
           </div>
         </section>
 
+                {/* Key Metrics Strip */}
+        <section className="max-w-[1440px] mx-auto px-6 md:px-12 py-16 border-t border-white/5 scroll-reveal">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              <div className="bg-white/5 border border-amber-500/10 rounded-xl p-6 text-center stagger-card">
+                <div className="text-3xl font-bold text-amber-400 mb-2">4</div>
+                <div className="text-xs text-[#94a3b8] tracking-wide uppercase">Architecture Layers</div>
+              </div>
+              <div className="bg-white/5 border border-amber-500/10 rounded-xl p-6 text-center stagger-card">
+                <div className="text-3xl font-bold text-amber-400 mb-2">3</div>
+                <div className="text-xs text-[#94a3b8] tracking-wide uppercase">Book Separation</div>
+              </div>
+              <div className="bg-white/5 border border-amber-500/10 rounded-xl p-6 text-center stagger-card">
+                <div className="text-3xl font-bold text-amber-400 mb-2">3</div>
+                <div className="text-xs text-[#94a3b8] tracking-wide uppercase">Finality Layers</div>
+              </div>
+              <div className="bg-white/5 border border-amber-500/10 rounded-xl p-6 text-center stagger-card">
+                <div className="text-3xl font-bold text-amber-400 mb-2">20</div>
+                <div className="text-xs text-[#94a3b8] tracking-wide uppercase">Institutional Gates</div>
+              </div>
+          </div>
+        </section>
+
         {/* CTA */}
         <section className="max-w-[1440px] mx-auto px-6 md:px-12 py-32 border-t border-white/5 text-center">
           <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white mb-6">Explore the Full <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Architecture.</span></h2>
