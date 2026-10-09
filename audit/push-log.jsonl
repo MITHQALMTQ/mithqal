@@ -145,3 +145,6 @@
 {"ts":"2026-10-08T23:11:50Z","local_ref":"(delete)","local_oid":"0000000000000000000000000000000000000000","remote_ref":"refs/heads/v25.3-hardened-backup","remote_oid":"c90af88599963df1122d024eedf09b4ca8376dea","user":"z"}
 {"ts":"2026-10-08T23:11:52Z","local_ref":"(delete)","local_oid":"0000000000000000000000000000000000000000","remote_ref":"refs/heads/v25.3-hardened-backup-2","remote_oid":"97ceea7bbaee12c83d18f4b5c520a6d73e13f39e","user":"z"}
 {"ts":"2026-10-08T23:11:55Z","local_ref":"(delete)","local_oid":"0000000000000000000000000000000000000000","remote_ref":"refs/heads/v25.3.22-hardened-backup","remote_oid":"db9b34b775d83597b7d71c3a51b3b974184b0d61","user":"z"}
+{"ts":"2026-10-09T09:00:36Z","local_ref":"refs/heads/main","local_oid":"196fb746c8915b424d3795638d13bafe028f5d27","remote_ref":"refs/heads/main","remote_oid":"a8d4eb415a5179881b564e8c8d70c025f398f9ac","user":"z"}
+{"ts":"2026-10-09T09:00:38Z","local_ref":"refs/heads/backup/v25.38-blueprint","local_oid":"196fb746c8915b424d3795638d13bafe028f5d27","remote_ref":"refs/heads/backup/v25.38-blueprint","remote_oid":"0000000000000000000000000000000000000000","user":"z"}
+{"ts":"2026-10-09T09:00:41Z","local_ref":"refs/tags/v25.38-blueprint","local_oid":"196fb746c8915b424d3795638d13bafe028f5d27","remote_ref":"refs/tags/v25.38-blueprint","remote_oid":"0000000000000000000000000000000000000000","user":"z"}
