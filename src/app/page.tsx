@@ -42,7 +42,7 @@ export default function HomePage() {
 
       {/* HERO */}
       <section className="relative z-20 min-h-screen flex flex-col items-center justify-center text-center px-6">
-        <div className="max-w-4xl" style={{ filter: "drop-shadow(0 4px 12px rgba(0,0,0,0.8))" }}>
+        <div className="max-w-4xl hero-scrim" style={{ filter: "drop-shadow(0 4px 12px rgba(0,0,0,0.8))" }}>
           <div className="inline-flex items-center justify-center gap-3 mb-6 bg-black/30 backdrop-blur-md px-4 py-2 rounded-full border border-amber-500/20">
             <span className="w-px h-4 bg-amber-400" />
             <span className="text-xs font-semibold tracking-[0.28em] uppercase text-amber-400">

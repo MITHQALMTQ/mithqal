@@ -288,7 +288,7 @@ export default function InstitutionalEngagementPage() {
               initial={{ opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-              className="max-w-4xl"
+              className="max-w-4xl hero-scrim"
             >
               <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-gold/30 bg-gold/5 px-3 py-1 text-[11px] font-medium uppercase tracking-[0.22em] text-gold">
                 <span className="live-dot inline-block h-1.5 w-1.5 rounded-full bg-gold" />

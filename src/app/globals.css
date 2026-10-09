@@ -1088,3 +1088,15 @@ html {
     animation-range: entry 10% entry 50%;
   }
 }
+
+/* ===== v25.41 Hero Contrast Remediation ===== */
+.hero-scrim { position: relative; }
+.hero-scrim::before {
+  content: "";
+  position: absolute;
+  inset: -20px -40px;
+  background: radial-gradient(ellipse at center, rgba(7,9,14,0.65) 0%, rgba(7,9,14,0.35) 50%, transparent 75%);
+  z-index: -1;
+  pointer-events: none;
+  border-radius: 2rem;
+}
