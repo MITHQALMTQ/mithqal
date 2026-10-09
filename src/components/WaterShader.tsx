@@ -149,7 +149,7 @@ export const WaterCanvas: React.FC<WaterCanvasProps> = ({ assetPath }) => {
   }, []);
 
   return (
-    <div className="absolute bottom-0 left-0 w-full h-[50vh] z-[55] pointer-events-auto">
+    <div className="absolute bottom-0 left-0 w-full h-[25vh] z-[5] pointer-events-none opacity-40">
       {mounted && (
         <Canvas camera={{ position: [0, 0, 5], fov: 75 }}>
           <WaterShaderMesh backgroundImageUrl={assetPath} />
