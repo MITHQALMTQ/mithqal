@@ -5,6 +5,8 @@ import Navbar from "@/components/Navbar";
 import FeatureGrid from "@/components/FeatureGrid";
 import { WaterCanvas } from "@/components/WaterShader";
 import Footer from "@/components/Footer";
+import dynamic from "next/dynamic";
+const ReadinessDashboard = dynamic(() => import("@/components/ReadinessDashboard"), { ssr: false });
 import ProgramStatus from "@/components/ProgramStatus";
 
 /**
@@ -158,7 +160,9 @@ export default function HomePage() {
       {/* CTA */}
       <section className="relative z-20 bg-[#07090e] border-t border-white/5">
         <div className="max-w-[1440px] mx-auto px-6 md:px-12 py-32 text-center">
-          <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white mb-6">
+          <ReadinessDashboard />
+
+          <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white mb-6 mt-16">
             Ready to Explore the <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Architecture?</span>
           </h2>
           <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mb-10 leading-relaxed">

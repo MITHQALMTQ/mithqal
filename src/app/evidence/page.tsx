@@ -6,6 +6,8 @@ import Navbar from "@/components/Navbar";
 import FeatureGrid from "@/components/FeatureGrid";
 import { WaterCanvas } from "@/components/WaterShader";
 import Footer from "@/components/Footer";
+import dynamic from "next/dynamic";
+const ReserveCalculator = dynamic(() => import("@/components/ReserveCalculator"), { ssr: false });
 import ProgramStatus from "@/components/ProgramStatus";
 
 /**
@@ -235,6 +237,8 @@ export default function EvidencePage() {
             ))}
           </div>
         </section>
+
+        <div className="mb-8"><ReserveCalculator /></div>
 
         {/* CTA */}
         <section className="max-w-[1440px] mx-auto px-6 md:px-12 py-32 border-t border-white/5 text-center">

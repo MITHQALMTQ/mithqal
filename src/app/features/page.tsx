@@ -6,6 +6,8 @@ import Navbar from "@/components/Navbar";
 import FeatureGrid from "@/components/FeatureGrid";
 import { WaterCanvas } from "@/components/WaterShader";
 import Footer from "@/components/Footer";
+import dynamic from "next/dynamic";
+const SettlementFlowSimulator = dynamic(() => import("@/components/SettlementFlowSimulator"), { ssr: false });
 
 /**
  * MITHQAL — Features Page (/features)
@@ -119,6 +121,8 @@ export default function FeaturesPage() {
             ))}
           </div>
         </section>
+
+        <div className="mb-8"><SettlementFlowSimulator /></div>
 
         {/* CTA */}
         <section className="max-w-[1440px] mx-auto px-6 md:px-12 py-32 border-t border-white/5 text-center">
