@@ -97,12 +97,23 @@ export default function Navbar() {
               onMouseEnter={() => setMoreOpen(true)}
               onMouseLeave={() => setMoreOpen(false)}
             >
-              <button className="relative text-sm font-medium tracking-wide text-white/80 hover:text-white transition-colors duration-300 flex items-center gap-1">
-                More
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className={`transition-transform duration-300 ${moreOpen ? "rotate-180" : ""}`}>
-                  <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </button>
+              {(() => {
+                const morePaths = MORE_NAV.map(m => m.href);
+                const isMoreActive = morePaths.includes(currentPath);
+                return (
+                  <button className={`relative text-sm font-medium tracking-wide transition-colors duration-300 flex items-center gap-1 ${
+                    isMoreActive ? "text-white" : "text-white/80 hover:text-white"
+                  }`}>
+                    More
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className={`transition-transform duration-300 ${moreOpen ? "rotate-180" : ""}`}>
+                      <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                    <span className={`absolute -bottom-1 left-0 right-0 h-px bg-gradient-to-r from-amber-400 to-amber-200 transition-transform duration-300 origin-left ${
+                      isMoreActive ? "scale-x-100" : "scale-x-0"
+                    }`} />
+                  </button>
+                );
+              })()}
               {moreOpen && (
                 <div className="absolute top-full right-0 mt-2 w-56 bg-[#07090e]/95 backdrop-blur-xl border border-amber-500/20 rounded-xl py-2 shadow-2xl">
                   {MORE_NAV.map((item) => (
