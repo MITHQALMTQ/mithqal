@@ -207,6 +207,21 @@ export default function LegalPage() {
           </div>
         </section>
 
+        
+        {/* Sharia / AAOIFI Governance Boundary */}
+        <section className="max-w-[1440px] mx-auto px-6 md:px-12 py-32 border-t border-white/5 scroll-reveal">
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center gap-3 mb-4"><span className="w-px h-4 bg-amber-400" /><span className="text-xs font-semibold tracking-[0.28em] uppercase text-amber-400">SHARIA / AAOIFI BOUNDARY</span></div>
+            <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white">Sharia <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Boundary.</span></h2>
+            <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mt-8">MITHQAL respects the Sharia and AAOIFI governance boundary. The architecture does not claim Sharia compliance without external AAOIFI certification. Where corridor participants require Sharia-compliant settlement, the structure must be validated by an independent Sharia board before execution.</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="bg-white/5 border border-amber-500/10 rounded-2xl p-8 stagger-card"><div className="text-3xl mb-4">🕌</div><h3 className="text-lg font-semibold text-white mb-3">No Claim Without Certification</h3><p className="text-sm text-[#cbd5e1] leading-loose">MITHQAL does not self-certify Sharia compliance. External AAOIFI certification is required before any Sharia-compliant claim.</p></div>
+            <div className="bg-white/5 border border-amber-500/10 rounded-2xl p-8 stagger-card"><div className="text-3xl mb-4">⚖</div><h3 className="text-lg font-semibold text-white mb-3">Corridor-Specific Validation</h3><p className="text-sm text-[#cbd5e1] leading-loose">Where corridor participants require Sharia-compliant settlement, a separate Sharia board must validate the structure before execution.</p></div>
+            <div className="bg-white/5 border border-amber-500/10 rounded-2xl p-8 stagger-card"><div className="text-3xl mb-4">📋</div><h3 className="text-lg font-semibold text-white mb-3">Boundary, Not Prohibition</h3><p className="text-sm text-[#cbd5e1] leading-loose">This is a governance boundary, not a prohibition. MITHQAL can operate in Sharia-sensitive corridors with appropriate external validation.</p></div>
+          </div>
+        </section>
+
         {/* CTA */}
         <section className="max-w-[1440px] mx-auto px-6 md:px-12 py-32 border-t border-white/5 text-center">
           <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white mb-6">Contact the <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Legal Team.</span></h2>

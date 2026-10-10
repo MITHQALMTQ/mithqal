@@ -150,7 +150,7 @@ export default function RoadmapPage() {
         </section>
       </div>
       
-      <ProgramStatus data={{"title": "GATE STATUS — G0 / G1","badge": "G0_FAIL — 16 UNRESOLVED ISSUES","badgeColor": "red","metrics": [{"label": "G0 Status","value": "FAIL","status": "blocked"},{"label": "Unresolved Issues","value": "16","status": "blocked"},{"label": "Primary Docs Missing","value": "4","status": "blocked"},{"label": "Legal Questions","value": "50","status": "blocked"}],"blockers": ["JOZOUR_LLC_NJ — PRIMARY_DOCUMENT_MISSING","Operating Agreement — PRIMARY_DOCUMENT_MISSING","Articles of Incorporation — PRIMARY_DOCUMENT_MISSING","No board resolution — authority matrix PENDING","No shareholder agreement — ownership UNKNOWN"],"note": "G0 must pass before G1 counsel engagement. G1 must pass before Pilot A. All gates are sequential and evidence-based."}} />
+      <ProgramStatus data={{"title": "GATE STATUS — G0 / G1","badge": "G0_FAIL — 16 UNRESOLVED ISSUES","badgeColor": "red","metrics": [{"label": "G0 Status","value": "FAIL","status": "blocked"},{"label": "Unresolved Issues","value": "16","status": "blocked"},{"label": "Primary Docs Missing","value": "4","status": "blocked"},{"label": "Legal Questions","value": "50","status": "blocked"}],"blockers": ["JOZOUR_LLC_NJ — corporate/contractual integrity: PRIMARY_DOCUMENT_MISSING","Operating Agreement — PRIMARY_DOCUMENT_MISSING","Articles of Incorporation — PRIMARY_DOCUMENT_MISSING","No board resolution — authority matrix PENDING","No shareholder agreement — ownership UNKNOWN"],"note": "G0 must pass before G1 counsel engagement. G1 must pass before Pilot A. All gates are sequential and evidence-based."}} />
       <Footer />
     </main>
   );

@@ -44,7 +44,7 @@ const PATHWAY = [
 const CONSTRAINTS = [
   { num: "01", title: "Limited Scope", desc: "Pilot is bounded by named participants, jurisdictions and corridors — no open-ended scope." },
   { num: "02", title: "Controlled Access", desc: "Engagement is by application and qualification only — no self-service or instant onboarding." },
-  { num: "03", title: "Evidence-Gated Expansion", desc: "Any expansion beyond the configured scope requires explicit evidence-based evaluation — no silent growth." },
+  { num: "03", title: "Evidence-Gated Expansion — Pilot A operates with MTQ disabled (control-plane mode). Pilot B (MTQ mode) is gated behind separate extension gates requiring Pilot A evidence + G0 pass", desc: "Any expansion beyond the configured scope requires explicit evidence-based evaluation — no silent growth." },
 ];
 
 /* ───────────────────────────────────────────────────────────────────────────

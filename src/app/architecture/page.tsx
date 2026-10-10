@@ -135,7 +135,7 @@ export default function ArchitecturePage() {
               <span className="text-xs font-semibold tracking-[0.28em] uppercase text-amber-400">THREE-BOOK SEPARATION</span>
             </div>
             <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white">Economic <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Separation.</span></h2>
-            <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mt-8">Three independent ledgers ensure MITHQAL's obligations, bank obligations, and participant positions remain economically separate and individually auditable.</p>
+            <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mt-8">Three independent ledgers ensure MITHQAL's obligations, bank obligations, and participant positions remain economically separate. Settlement liquidity is separated from the strategic resilience reserve — operational liquidity must be available in the appropriate currency, while strategic reserves provide long-horizon stability, bank obligations, and participant positions remain economically separate and individually auditable.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {BOOKS.map((book) => (
@@ -226,7 +226,7 @@ export default function ArchitecturePage() {
             </div>
             <div className="bg-white/5 border border-amber-500/10 rounded-2xl p-8 stagger-card">
               <h3 className="text-xl font-semibold text-white mb-6">3 Digitized Coin Types</h3>
-              {[["Tokenized Bank Money","Bank-issued, regulated, NOT a stablecoin"],["Tokenized RWA","On-chain representation of real-world assets"],["MTQ (DISABLED)","Institutional settlement unit — currently disabled per governance"]].map(([t, d]) => (
+              {[["Tokenized Bank Money","Bank-issued, regulated, NOT a stablecoin"],["Tokenized RWA","On-chain representation of real-world assets"],["MTQ — permissioned wholesale unit (DISABLED)","Institutional settlement unit — currently disabled per governance"]].map(([t, d]) => (
                 <div key={t} className="flex items-start gap-3 py-3"><span className="text-amber-400 mt-1">▸</span><div><span className="text-sm font-medium text-white">{t}</span><p className="text-xs text-[#94a3b8] mt-1">{d}</p></div></div>
               ))}
             </div>
