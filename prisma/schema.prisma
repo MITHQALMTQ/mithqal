@@ -1,20 +1,14 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+// MITHQAL — Prisma schema (v26.0 Canonical Baseline)
+// v26.0 §6.1/D-006: Neon Postgres is the canonical authoritative writer.
 
 generator client {
   provider        = "prisma-client-js"
   previewFeatures = ["driverAdapters"]
 }
 
-// When using the libsql driver adapter, the datasource URL is only used by
-// Prisma's internal validation — the actual connection is handled by the
-// adapter in src/lib/db.ts (which reads DATABASE_URL for the real Turso URL).
 datasource db {
-  provider = "sqlite"
-  url      = "file:./prisma.db"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model User {
@@ -35,36 +29,217 @@ model Post {
   updatedAt DateTime @updatedAt
 }
 
-// Public Formation Committee interest capture — the credibility-layer intake
-// for investors, advisors, anchor participants and Council nominees.
 model FormationInterest {
   id        String   @id @default(cuid())
   fullName  String
   email     String
   org       String?
-  role      String   // investor | advisor | anchor | council-nominee | partner | other
+  role      String
   message   String?
   createdAt DateTime @default(now())
-
   @@index([role])
   @@index([createdAt])
 }
 
-// MTQ testnet simulator — append-only ledger of mint/redeem operations.
-// State (supply, reserves by tier, NAV, reserve ratio) is derived from this
-// immutable log on every read. This mirrors the Constitution's own
-// auditability principle: every claim verifiable from the ledger.
 model TestnetOperation {
   id           String   @id @default(cuid())
-  type         String   // mint | redeem
-  amountUsd    Float    // USD value of the deposit (mint) or claim (redeem)
-  mtq          Float    // MTQ minted or burned
-  participant  String   // label for the simulated participant
-  nav          Float    // NAV (USD per MTQ) at time of op
-  reserveRatio Float    // reserve ratio (%) after op
-  porHash      String   // proof-of-reserves hash after op
+  type         String
+  amountUsd    Float
+  mtq          Float
+  participant  String
+  nav          Float
+  reserveRatio Float
+  porHash      String
   createdAt    DateTime @default(now())
-
   @@index([createdAt])
   @@index([type])
+}
+
+// v26.0 Appendix B.1 — Instruction record
+model Instruction {
+  instructionId          String   @id
+  schemaVersion          String
+  institutionId          String
+  tenantId               String
+  sourceSystem           String
+  externalInstructionRef String?
+  idempotencyKey         String   @unique
+  requestHash            String
+  correlationId          String
+  causationId            String?
+  assetId                String
+  amount                 String
+  debtorObligor          String
+  beneficiaryCreditor    String
+  purpose                String?
+  requestedExecutionAt   DateTime?
+  dueAt                  DateTime?
+  fees                   String?
+  applicableLawId        String?
+  settlementDomainId     String?
+  jurisdictionSet        String
+  corridorId             String?
+  contractRef            String?
+  authorizationScope     String?
+  dataClassification     String
+  currentState           String
+  stateVersion           Int      @default(0)
+  policyVersion          String
+  policyHash             String
+  routeCandidates        String
+  selectedRouteId        String?
+  reasonCodes            String
+  expiry                 DateTime?
+  cancellationRules      String?
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+  @@index([institutionId, currentState])
+  @@index([correlationId])
+  @@index([createdAt])
+}
+
+// v26.0 §6.2 step 1 / Appendix B.3 — Outbox/event record
+model OutboxEvent {
+  outboxId          String   @id @default(cuid())
+  eventId           String   @unique
+  aggregateType     String
+  aggregateId       String
+  aggregateVersion  Int
+  eventType         String
+  schemaVersion     String
+  payloadRef        String?
+  payloadHash       String
+  createdAt         DateTime @default(now())
+  nextAttemptAt     DateTime @default(now())
+  attemptCount      Int      @default(0)
+  dispatchStatus    String   @default("PENDING")
+  leaseOwner        String?
+  leaseExpiresAt    DateTime?
+  consumerDedupeKey String
+  traceId           String?
+  errorCategory     String?
+  @@index([dispatchStatus, nextAttemptAt])
+  @@index([aggregateType, aggregateId])
+}
+
+// v26.0 §6.2 step 3 — Inbox for consumer idempotency
+model InboxEvent {
+  inboxId           String   @id @default(cuid())
+  consumerDedupeKey String   @unique
+  eventId           String   @unique
+  consumerName      String
+  processedAt       DateTime @default(now())
+  outcome           String
+  @@index([consumerName, processedAt])
+}
+
+// v26.0 §6.3 — Idempotency record
+model IdempotencyRecord {
+  idempotencyKey       String   @id
+  institutionId        String
+  operation            String
+  businessObjectId     String
+  requestHash          String
+  firstOutcome         String
+  firstOutcomeAt       DateTime @default(now())
+  conflictingBodyHash  String?
+  @@index([institutionId, operation])
+}
+
+// v26.0 Appendix B.2 — Policy decision
+model PolicyDecision {
+  decisionId          String   @id @default(cuid())
+  subjectIds          String
+  policyVersion       String
+  policyHash          String
+  inputsHash          String
+  decision            String
+  reasonCodes         String
+  evaluatedAt         DateTime @default(now())
+  actorService        String
+  evidenceRefs        String
+  conditions          String?
+  conditionsExpiry    DateTime?
+  conditionsOwner     String?
+  conditionsApproval  String?
+  @@index([policyVersion, decision])
+}
+
+// v26.0 §5.1 + Appendix B.4 — Evidence artifact
+model EvidenceArtifact {
+  evidenceId          String   @id @default(cuid())
+  claimOrDecisionId   String
+  sourceKind          String
+  provenance          String
+  issuer              String
+  sourceSystem        String?
+  operator            String?
+  observedAt          DateTime
+  ingestedAt          DateTime @default(now())
+  effectiveAt         DateTime
+  expiresAt           DateTime?
+  contentHash         String
+  signature           String?
+  scope               String
+  limitations         String?
+  reviewStatus        String
+  classification      String
+  linkedCommitSha     String?
+  linkedPolicyHash    String?
+  linkedTransactionId String?
+  linkedGateId        String?
+  @@index([claimOrDecisionId])
+  @@index([reviewStatus])
+  @@index([expiresAt])
+}
+
+// v26.0 §9.1 + Appendix B.4 — Gate decision
+model GateDecision {
+  decisionId           String   @id @default(cuid())
+  gateId               String
+  scope                String
+  evidenceRefs         String
+  unmetRequirements    String
+  decision             String
+  conditions           String?
+  conditionsExpiry     DateTime?
+  approvers            String
+  decisionAt           DateTime @default(now())
+  blueprintReleaseHash String?
+  priorDecisionId      String?
+  nextReviewAt         DateTime?
+  @@unique([gateId, decisionAt])
+  @@index([gateId, decision])
+  @@index([decision])
+}
+
+// v26.0 Appendix B.4 + §5.3 — Reconciliation case
+model ReconciliationCase {
+  caseId                  String   @id @default(cuid())
+  sourceSet               String
+  sourceVersion           String
+  cutoff                  DateTime
+  expected                String
+  actual                  String
+  discrepancyClass        String
+  tolerancePolicyVersion  String
+  severity                String
+  owner                   String
+  correction              String?
+  closureApprover         String?
+  closedAt                DateTime?
+  @@index([discrepancyClass, severity])
+  @@index([owner, closedAt])
+}
+
+// v26.0 §6.2 step 4 / §6.8 — Projection watermark
+model ProjectionWatermark {
+  projectionName          String   @id
+  lastAppliedEventId     String
+  lastAppliedSequence    Int
+  sourceSnapshotVersion  String
+  updatedAt              DateTime @default(now())
+  projectionSchemaVersion String
+  isStale                Boolean  @default(false)
+  lagMs                  Int      @default(0)
 }

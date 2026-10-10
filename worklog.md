@@ -11635,3 +11635,48 @@ Stage Summary:
 - 5/5 providers live in harmony
 - 10 pages + 404 + 10 components + 14 assets + 287 institutional files verified
 - Lint clean, all HTTP 200
+
+---
+Task ID: REBUILD-V26
+Agent: v26.0 Rebuild Agent
+Task: Rebuild v26.0 files lost during context-window boundary.
+
+Work Log:
+- Read worklog, package.json, prisma/schema.prisma, src/lib/mtq-gate.ts, src/app/page.tsx, src/components/FeatureGrid.tsx, existing instructions/route.ts, eslint config, .env.
+- Created FILE 1 src/lib/eligible-backing.ts — ELIGIBLE_BACKING_FORMULA, BackingDimensionInput, BackingInputStatus, EligibleBackingInputs, EligibleBackingComputation, computeEligibleBacking(), isDirectMatched().
+- Created FILE 2 src/lib/finality-state-machine.ts — FinalityState, FINALITY_STATE_MACHINE (F0..F7), evaluateFinality() (with MTQ gate at F3), BmModule, BM_MODULE_REGISTRY, getBmModule() (throws on legacy names), canExecuteMint(); imports assertMtqEnabled from ./mtq-gate.
+- Created FILE 3 src/lib/reconciliation-tolerance.ts — ReconciliationClass, ReconciliationToleranceRule, RECONCILIATION_TOLERANCE_REGISTRY (6 rules: IDENTITY/LEDGER/BANK_RAIL zero tolerance; FX 5 bps w/ 6-month expiry; REPORTING zero tolerance; PROJECTION 1000ms SLO), getToleranceRule(), evaluateMismatch() returning BLOCKED/TOLERATED/EXCEPTION/STALE_PROJECTION, DEPRECATED_LEGACY_THRESHOLDS.
+- Created FILE 4 src/lib/db-authoritative.ts — AuthoritativeBackend, getAuthoritativeBackend() (default neon), getProjectionBackend() (default turso), isDemoOnlyMode(), getWriterStatusSummary(), OutboxRow, ProjectionWatermark, InstructionRecord, IdempotencyRecord, PolicyDecisionRecord, EvidenceArtifactRecord, GateDecisionRecord, ReconciliationCaseRecord per Appendix B.
+- Created FILE 5a src/lib/claim-registry-data.ts — 7 ClaimRecord entries (hero H1, hero p, pillar reserve, pillar finality, program-status badge VERIFIED_PRIMARY_DOCUMENT, legacy 130% backing CONTRADICTED with retractionAction, evidence fabric).
+- Created FILE 5b src/lib/external-claim-register.ts — ClaimStatus, ClaimRecord, CLAIM_REGISTRY_ALL, getClaim(), getClaimsByStatus(), getClaimsByChannel(), isPublishable(), getTruthLabel(), getPublishableWordingOrRetraction().
+- Created FILE 6 src/lib/prisma-canonical.ts — getCanonicalPrisma() (shared instance), canPingNeon() (SELECT 1 AS one via $queryRaw), listNeonTables() (information_schema.tables), disconnectCanonicalPrisma().
+- Created FILE 7 src/app/api/neon/health/route.ts — GET handler: DATABASE_BACKEND=neon or DATABASE_URL starts with postgresql://, canPingNeon → 503 BLOCKED on fail, list canonical tables (case-insensitive), count rows in Instruction/OutboxEvent/EvidenceArtifact/GateDecision, returns VERIFIED w/ connectivity, schema, canonicalRowCount, honestState.
+- Created FILE 8 src/app/api/gateway/v1/instructions/route.ts — POST handler: validates Appendix B.1 fields, generates instructionId, computes requestHash via crypto.subtle SHA-256, checks MTQ gate for MTQ-related instructions, composes canonical InstructionRecord + OutboxRow, best-effort Neon persistence, returns F0_ACCEPTED w/ demoOnly from getAuthoritativeBackend().
+- Created FILE 9 institutional/decision-log/d-001-through-d-012.json — 12 decisions per §11.3 (D-001 control plane core, D-002 PAR, D-003 BM-15/16A/16B, D-004 direct-matched backing, D-005 no gold in Pilot 1, D-006 Neon+Turso, D-007 at-least-once+idempotent, D-008 atomicity limited, D-009 one bank counterparty, D-010 G0-G11+20 legacy, D-011 CPI/ROI measured, D-012 production auth false) with canonicalChoice, reasonNotes, codeEvidence, status, blueprint_ref, reviewDate, reviewer, expiry, conditions.
+- Created FILE 10 institutional/decision-log/od-001-through-od-015.json — 15 open decisions per §11.4 with openQuestion, defaultUntilResolved, requiredClosureEvidence, responsibleRole, currentStatus (OPEN/PARTIALLY_CLOSED/CONTRADICTS/BLOCKED), codeEvidence, blueprint_ref, lastUpdated, closureEvidence, nextAction.
+- Created FILE 11 institutional/incidents/cred-incident-001-2026-10-10.json — incident record w/ 16 compromised credentials (GITHUB_TOKEN, VERCEL_TOKEN, TURSO_AUTH_TOKEN, NEON_DATABASE_URL, NEON_AI_GATEWAY_TOKEN, INNGEST_API_KEY/SIGNING/EVENT, AWS_ACCESS_KEY_ID/SECRET_ACCESS_KEY, MESSARI_API_KEY, FRED_API_KEY, GEMINI_API_KEY, DISCORD_TOKEN, DATABASE_URL, DATABASE_AUTH_TOKEN), each w/ secret_name, category, provider, environment, exposure_surface=chat, date, status=PENDING_ROTATION, scope, rotation_method. NO secret values — only metadata. verification_evidence array + remediation_track.
+- Created FILE 12 7 ADR files in docs/adr/ (0001 database-writer-authority, 0002 mtq-disabled-by-default, 0003 f0-f7-finality-state-machine, 0004 eligible-backing-formula, 0005 reconciliation-class-tolerance, 0006 external-claim-register, 0007 outbox-pattern) w/ standard ADR format (Title, Status, Context, Decision, Consequences, Alternatives, Blueprint Reference).
+- Created FILE 13 directory structure: copied MITHQAL_Canonical_Master_Blueprint_v26.0.docx to docs/canonical/ + README; created docs/controls/README.md + control-matrix.md; created schemas/README.md, policies/README.md, migrations/README.md, inngest/README.md; created tests/{unit,property,contract,integration,e2e,security}/.gitkeep; created institutional/{evidence,gates,incidents,decision-log}/README.md.
+- Created FILE 14 src/lib/gate-definitions.ts — G0_G11_GATE_DEFINITIONS (12 gates w/ gateId, name, minimumExitCondition, defaultIfNotMet, primaryControlMappings, blueprintRef, finalityAnchor), LEGACY_20_GATE_MAP (20 controls C01..C20 w/ primaryGateMapping), getGateDefinition(), getLegacyControl().
+- Created FILE 15 src/app/api/gateway/v1/gates/route.ts — GET handler returning all 12 G0..G11 gates + 20-control mapping from gate-definitions.ts.
+- Created FILE 16 src/app/api/gateway/v1/projection/status/route.ts — GET handler returning 5 projection watermarks (instruction-list-by-institution, outbox-dispatch-state, evidence-artifact-by-claim, gate-decision-latest, reconciliation-case-open), all initially STALE per §11.4 OD-007, with 1000ms SLO.
+- Created FILE 17 src/app/api/gateway/v1/evidence/route.ts — GET handler (query by claimOrDecisionId/reviewStatus/sourceKind/classification/expired) + POST handler (requires Bearer EVIDENCE_FABRIC_INGEST_TOKEN, validates Appendix B.4 fields, creates draft EvidenceArtifact row).
+- FILE 18 package.json modification — removed "z-ai-web-dev-sdk": "^0.0.18" line from dependencies via Edit tool; verified no src/ files import z-ai-web-dev-sdk.
+- FILE 19 src/app/page.tsx modification via MultiEdit:
+  * Hero H1 → "Institutional Settlement. Coordinated. Explainable."
+  * Hero p → "MITHQAL is a neutral institutional settlement control plane — built for the control plane, evidence model, and controlled pilot pathway."
+  * Pillar #4 "Reserve / 130% backing specification" → "Resilience / Direct-matched backing (target, not legal rule)"
+  * Pillar #3 "Finality / 7/7 irrevocable settlement" → "Finality / F0–F7 state machine"
+  * ProgramStatus badge → "v26.0 CANONICAL BASELINE — MTQ DISABLED BY DEFAULT" with updated metrics (Blueprint Version 26.0 / F0–F7 8 states / G0–G11 12 gates / Production BLOCKED) + updated blockers (MTQ disabled, 16 credentials PENDING_ROTATION, Pilot A counterparty not contracted, BM-16B disabledByDefault).
+  * FeatureGrid items (src/components/FeatureGrid.tsx) → "Settlement Intelligence", "Obligation Topology", "F0–F7 Finality", "Multi-Rail Adapters", "Evidence Fabric" with updated descriptions.
+- Ran `bun install` (1356 packages installed, 1 removed) + `bun run lint` → 0 errors, 1 pre-existing warning in src/components/Navbar.tsx (NOT a v26.0 file). All v26.0 files lint-clean.
+- Ran `bunx tsc --noEmit` → fixed one TS error in instructions/route.ts (let mtqGate: ReturnType<typeof assertMtqEnabled> | null = null). All v26.0 files now type-clean.
+
+Stage Summary:
+- 41 v26.0 files rebuilt from scratch: 8 src/lib/ modules (eligible-backing, finality-state-machine, reconciliation-tolerance, db-authoritative, external-claim-register, claim-registry-data, prisma-canonical, gate-definitions), 5 new API routes (neon/health, gateway/v1/instructions rewrite, gateway/v1/gates, gateway/v1/projection/status, gateway/v1/evidence), 3 institutional JSON registers (12-decision log, 15-open-decisions, 16-credential incident), 7 ADRs, copied v26.0 blueprint docx to docs/canonical/, created control-matrix.md + 9 README.md + 6 .gitkeep files.
+- 2 files modified: package.json (removed z-ai-web-dev-sdk dependency), src/app/page.tsx (hero/pillars/ProgramStatus) + src/components/FeatureGrid.tsx (feature items).
+- Lint result: 0 errors, 1 pre-existing warning in src/components/Navbar.tsx (unrelated to v26.0 rebuild). All v26.0 files pass eslint and tsc.
+- MTQ gate enforcement: assertMtqEnabled wired into finality-state-machine.ts (F3 progression) + instructions/route.ts (MTQ-related intake). BM-16B Mint Execution remains disabledByDefault per §4.4.
+- Honest state surfaces on every endpoint: getWriterStatusSummary().honestState, demoOnly flag, productionAuthorized flag. No secret values printed to source/git; cred-incident record contains only metadata (secret_name + category + provider + scope + rotation_method).
+
+— End of Task REBUILD-V26

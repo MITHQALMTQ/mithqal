@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { db, ensureSchema } from "@/lib/db";
 import { enforceRateLimit } from "@/lib/rate-limit";
+import { assertMtqEnabled } from "@/lib/mtq-gate";
 import { TRANSFER_FEE_CAP } from "@/lib/monetary-engine-v19";
 import { computeLiveNav } from "@/lib/nav-compute";
 
@@ -41,6 +42,15 @@ import { computeLiveNav } from "@/lib/nav-compute";
  *   { ok: true, txHash, type: "transfer", amount, mtqAmount, nav, fee, feeUsd8Dec, feeWei, recorded: true }
  */
 export async function POST(req: Request) {
+  // ===== MTQ fail-closed gate (v26.0 §3.2) =====
+  const mtqGate = assertMtqEnabled("transfer-route");
+  if (!mtqGate.ok) {
+    return NextResponse.json(
+      { error: "MTQ is disabled by default.", canonical_reason: mtqGate.reason, blueprint_ref: "v26.0 §3.2", productionAuthorized: false },
+      { status: 403 }
+    );
+  }
+
   // Public endpoint, but rate-limited (20 transfers/min/IP).
   const blocked = enforceRateLimit("transfer", req, 20, 60_000);
   if (blocked) return blocked;

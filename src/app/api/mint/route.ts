@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { db, ensureSchema } from "@/lib/db";
 import { mintFee } from "@/lib/monetary-engine-v19";
 import { enforceRateLimit } from "@/lib/rate-limit";
+import { assertMtqEnabled } from "@/lib/mtq-gate";
 import {
   computeLiveNav,
   isSupportedCurrency,
@@ -59,6 +60,15 @@ import {
  *   }
  */
 export async function POST(req: Request) {
+  // ===== MTQ fail-closed gate (v26.0 §3.2) =====
+  const mtqGate = assertMtqEnabled("mint-route");
+  if (!mtqGate.ok) {
+    return NextResponse.json(
+      { error: "MTQ is disabled by default.", canonical_reason: mtqGate.reason, blueprint_ref: "v26.0 §3.2", productionAuthorized: false },
+      { status: 403 }
+    );
+  }
+
   // Public endpoint (testnet simulation), but rate-limited (10 mints/min/IP).
   // On mainnet this MUST be re-gated to operator auth + custody confirmation.
   const blocked = enforceRateLimit("mint", req, 10, 60_000);

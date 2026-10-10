@@ -1,0 +1,245 @@
+{
+  "incident_id": "cred-incident-001-2026-10-10",
+  "recorded_at": "2026-10-10T22:00:00.000Z",
+  "blueprint_ref": "v26.0 §7.2 Credential Incident Records",
+  "exposure_surface": "chat",
+  "status": "PENDING_ROTATION",
+  "summary": "16 provider credentials were observed in chat during the v26.0 rebuild session. No secret values are recorded in this file — only metadata sufficient to track rotation. The credential values themselves have been redacted in the live .env (placeholders or RECALLED:secret_name markers) pending rotation. Each credential must be rotated through its provider's native rotation surface; rotation status is tracked here per credential.",
+  "compromised_credentials": [
+    {
+      "secret_name": "GITHUB_TOKEN",
+      "category": "version-control",
+      "provider": "GitHub",
+      "environment": "production",
+      "exposure_surface": "chat",
+      "date": "2026-10-10",
+      "status": "PENDING_ROTATION",
+      "scope": "repo:MITHQALMTQ/MITHQAL (write)",
+      "rotation_method": "GitHub Personal Access Token rotation (delete + recreate)"
+    },
+    {
+      "secret_name": "VERCEL_TOKEN",
+      "category": "deployment",
+      "provider": "Vercel",
+      "environment": "production",
+      "exposure_surface": "chat",
+      "date": "2026-10-10",
+      "status": "PENDING_ROTATION",
+      "scope": "project:MITHQAL deployment",
+      "rotation_method": "Vercel project access token rotation (revoke + recreate)"
+    },
+    {
+      "secret_name": "DATABASE_AUTH_TOKEN",
+      "category": "database",
+      "provider": "Turso",
+      "environment": "production",
+      "exposure_surface": "chat",
+      "date": "2026-10-10",
+      "status": "PENDING_ROTATION",
+      "scope": "Turso group:mtq-fortleem (read-write)",
+      "rotation_method": "Turso group token rotation (revoke + recreate via CLI)"
+    },
+    {
+      "secret_name": "TURSO_AUTH_TOKEN",
+      "category": "database",
+      "provider": "Turso",
+      "environment": "production",
+      "exposure_surface": "chat",
+      "date": "2026-10-10",
+      "status": "PENDING_ROTATION",
+      "scope": "Turso group:mtq-fortleem (read-write)",
+      "rotation_method": "Turso group token rotation (revoke + recreate via CLI)"
+    },
+    {
+      "secret_name": "NEON_DATABASE_URL",
+      "category": "database",
+      "provider": "Neon",
+      "environment": "production",
+      "exposure_surface": "chat",
+      "date": "2026-10-10",
+      "status": "PENDING_ROTATION",
+      "scope": "Neon project:shy-grass-38293780 (database:neondb, role:neondb_owner)",
+      "rotation_method": "Neon role password rotation (ALTER ROLE + DATABASE_URL update)"
+    },
+    {
+      "secret_name": "DATABASE_URL",
+      "category": "database",
+      "provider": "Neon",
+      "environment": "production",
+      "exposure_surface": "chat",
+      "date": "2026-10-10",
+      "status": "PENDING_ROTATION",
+      "scope": "Neon project:shy-grass-38293780 (database:neondb, role:neondb_owner)",
+      "rotation_method": "Neon role password rotation (ALTER ROLE + DATABASE_URL update)"
+    },
+    {
+      "secret_name": "NEON_AI_GATEWAY_TOKEN",
+      "category": "ai-gateway",
+      "provider": "Neon",
+      "environment": "production",
+      "exposure_surface": "chat",
+      "date": "2026-10-10",
+      "status": "PENDING_ROTATION",
+      "scope": "Neon AI Gateway",
+      "rotation_method": "Neon AI Gateway token rotation"
+    },
+    {
+      "secret_name": "INNGEST_API_KEY",
+      "category": "workflow-orchestration",
+      "provider": "Inngest",
+      "environment": "production",
+      "exposure_surface": "chat",
+      "date": "2026-10-10",
+      "status": "PENDING_ROTATION",
+      "scope": "Inngest workspace API access",
+      "rotation_method": "Inngest API key rotation (revoke + recreate)"
+    },
+    {
+      "secret_name": "INNGEST_SIGNING_KEY",
+      "category": "workflow-orchestration",
+      "provider": "Inngest",
+      "environment": "production",
+      "exposure_surface": "chat",
+      "date": "2026-10-10",
+      "status": "PENDING_ROTATION",
+      "scope": "Inngest webhook signature verification",
+      "rotation_method": "Inngest signing key rotation"
+    },
+    {
+      "secret_name": "INNGEST_EVENT_KEY",
+      "category": "workflow-orchestration",
+      "provider": "Inngest",
+      "environment": "production",
+      "exposure_surface": "chat",
+      "date": "2026-10-10",
+      "status": "PENDING_ROTATION",
+      "scope": "Inngest event ingress",
+      "rotation_method": "Inngest event key rotation"
+    },
+    {
+      "secret_name": "AWS_ACCESS_KEY_ID",
+      "category": "object-storage",
+      "provider": "Neon S3",
+      "environment": "production",
+      "exposure_surface": "chat",
+      "date": "2026-10-10",
+      "status": "PENDING_ROTATION",
+      "scope": "Neon S3 storage bucket:br-square-bird-b72dtsy4",
+      "rotation_method": "Neon S3 access key rotation (revoke + recreate)"
+    },
+    {
+      "secret_name": "AWS_SECRET_ACCESS_KEY",
+      "category": "object-storage",
+      "provider": "Neon S3",
+      "environment": "production",
+      "exposure_surface": "chat",
+      "date": "2026-10-10",
+      "status": "PENDING_ROTATION",
+      "scope": "Neon S3 storage bucket:br-square-bird-b72dtsy4",
+      "rotation_method": "Neon S3 secret key rotation (revoke + recreate)"
+    },
+    {
+      "secret_name": "MESSARI_API_KEY",
+      "category": "market-data",
+      "provider": "Messari",
+      "environment": "production",
+      "exposure_surface": "chat",
+      "date": "2026-10-10",
+      "status": "PENDING_ROTATION",
+      "scope": "Messari market data API",
+      "rotation_method": "Messari API key rotation"
+    },
+    {
+      "secret_name": "FRED_API_KEY",
+      "category": "market-data",
+      "provider": "FRED (St. Louis Fed)",
+      "environment": "production",
+      "exposure_surface": "chat",
+      "date": "2026-10-10",
+      "status": "PENDING_ROTATION",
+      "scope": "FRED economic data API",
+      "rotation_method": "FRED API key rotation"
+    },
+    {
+      "secret_name": "GEMINI_API_KEY",
+      "category": "ai-inference",
+      "provider": "Google Gemini",
+      "environment": "production",
+      "exposure_surface": "chat",
+      "date": "2026-10-10",
+      "status": "PENDING_ROTATION",
+      "scope": "Google Gemini API",
+      "rotation_method": "Gemini API key rotation"
+    },
+    {
+      "secret_name": "DISCORD_TOKEN",
+      "category": "community-ops",
+      "provider": "Discord",
+      "environment": "production",
+      "exposure_surface": "chat",
+      "date": "2026-10-10",
+      "status": "PENDING_ROTATION",
+      "scope": "Discord bot token (app id 1534862703007629385)",
+      "rotation_method": "Discord bot token reset (Reveal Token → Reset Token)"
+    }
+  ],
+  "verification_evidence": [
+    {
+      "step": "Detection",
+      "evidence": "Operator inspection of chat transcript revealed 16 secret values across database, deployment, version-control, workflow-orchestration, object-storage, market-data, ai-inference, and community-ops categories.",
+      "completed_at": "2026-10-10T22:00:00.000Z"
+    },
+    {
+      "step": "Containment",
+      "evidence": "Live .env redacted in-place to RECALLED:secret_name placeholders pending provider-side rotation.",
+      "completed_at": "2026-10-10T22:30:00.000Z"
+    },
+    {
+      "step": "Rotation planning",
+      "evidence": "This incident record opened; rotation_method assigned to each of the 16 credentials.",
+      "completed_at": "2026-10-10T23:00:00.000Z"
+    },
+    {
+      "step": "Rotation execution",
+      "evidence": null,
+      "completed_at": null
+    },
+    {
+      "step": "Post-rotation verification",
+      "evidence": null,
+      "completed_at": null
+    }
+  ],
+  "remediation_track": [
+    {
+      "task": "Rotate all 16 credentials at their respective providers",
+      "owner": "Security + Operations",
+      "due_date": "2026-10-24",
+      "status": "PENDING"
+    },
+    {
+      "task": "Update live .env with rotated values (no chat exposure)",
+      "owner": "Operations",
+      "due_date": "2026-10-24",
+      "status": "PENDING"
+    },
+    {
+      "task": "Re-encrypt .env (AES-256-CBC + PBKDF2)",
+      "owner": "Operations",
+      "due_date": "2026-10-24",
+      "status": "PENDING"
+    },
+    {
+      "task": "Verify no secret value exists in git history (git log -S scan)",
+      "owner": "Security",
+      "due_date": "2026-10-25",
+      "status": "PENDING"
+    },
+    {
+      "task": "Close incident: status=CLOSED_ROTATED",
+      "owner": "Security",
+      "due_date": "2026-10-26",
+      "status": "PENDING"
+    }
+  ]
+}

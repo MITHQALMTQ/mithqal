@@ -1,0 +1,303 @@
+[
+  {
+    "openDecisionId": "OD-001",
+    "openQuestion": "What is the canonical instruction-set schema version at Pilot A exit? (1.0.0 vs 1.1.0)",
+    "defaultUntilResolved": "schemaVersion=1.0.0; all Pilot A endpoints accept 1.0.0 only.",
+    "requiredClosureEvidence": [
+      "Schema review by Architecture Review Board",
+      "Sample instruction-set for at least 3 representative flows (mint, redeem, transfer)",
+      "Public schema diff vs v25.x"
+    ],
+    "responsibleRole": "Architecture Review Board",
+    "currentStatus": "OPEN",
+    "codeEvidence": [
+      "prisma/schema.prisma#Instruction.schemaVersion",
+      "src/app/api/gateway/v1/instructions/route.ts"
+    ],
+    "blueprint_ref": "v26.0 §11.4 OD-001",
+    "lastUpdated": "2026-10-10",
+    "closureEvidence": null,
+    "nextAction": "Schedule schema review session within 4 weeks of Pilot A entry."
+  },
+  {
+    "openDecisionId": "OD-002",
+    "openQuestion": "What is the exact PAR reason-code taxonomy? (closed set vs extensible enum)",
+    "defaultUntilResolved": "Reason codes are free-form strings; no closed enum is enforced.",
+    "requiredClosureEvidence": [
+      "Controller review",
+      "At least one full Pilot A instruction-set classified under the proposed taxonomy",
+      "Reconciliation tolerance test against the taxonomy"
+    ],
+    "responsibleRole": "Controller + Architecture",
+    "currentStatus": "OPEN",
+    "codeEvidence": [
+      "src/lib/reconciliation-tolerance.ts",
+      "prisma/schema.prisma#ReconciliationCase"
+    ],
+    "blueprint_ref": "v26.0 §11.4 OD-002",
+    "lastUpdated": "2026-10-10",
+    "closureEvidence": null,
+    "nextAction": "Draft taxonomy v0.1 and circulate to Controller."
+  },
+  {
+    "openDecisionId": "OD-003",
+    "openQuestion": "Which BM-16B execution path is taken when the MTQ gate denies mid-flight?",
+    "defaultUntilResolved": "BM-16B is disabledByDefault; no execution path is exercised.",
+    "requiredClosureEvidence": [
+      "Architecture decision (deny + safe-halt vs deny + retry vs deny + quarantine)",
+      "Test coverage in tests/contract",
+      "GateDecision row for the deny path"
+    ],
+    "responsibleRole": "Architecture + Operations",
+    "currentStatus": "OPEN",
+    "codeEvidence": [
+      "src/lib/finality-state-machine.ts#canExecuteMint",
+      "src/lib/mtq-gate.ts"
+    ],
+    "blueprint_ref": "v26.0 §11.4 OD-003",
+    "lastUpdated": "2026-10-10",
+    "closureEvidence": null,
+    "nextAction": "Decision required before Pilot B entry."
+  },
+  {
+    "openDecisionId": "OD-004",
+    "openQuestion": "How are EconomicBacking and LiquidBacking distinguished for a single-asset reserve (e.g. a T-bill ladder)?",
+    "defaultUntilResolved": "For Pilot A (USD only), EconomicBacking = LiquidBacking = SettlementAvailableBacking; LegalBacking is verified separately.",
+    "requiredClosureEvidence": [
+      "Treasury review",
+      "EligibleBacking computation test with a multi-instrument reserve",
+      "Documentation of the four dimensions for at least one production reserve"
+    ],
+    "responsibleRole": "Treasury + Architecture",
+    "currentStatus": "OPEN",
+    "codeEvidence": [
+      "src/lib/eligible-backing.ts",
+      "docs/adr/0004-eligible-backing-formula.md"
+    ],
+    "blueprint_ref": "v26.0 §11.4 OD-004",
+    "lastUpdated": "2026-10-10",
+    "closureEvidence": null,
+    "nextAction": "Treasury to propose a single-asset reserve example for review."
+  },
+  {
+    "openDecisionId": "OD-005",
+    "openQuestion": "Which jurisdiction's law applies to a Pilot A instruction when the receiving institution is outside the operator's home jurisdiction?",
+    "defaultUntilResolved": "applicableLawId is required at instruction intake; Pilot A accepts only US-Federal instructions.",
+    "requiredClosureEvidence": [
+      "Legal review (external counsel)",
+      "Cross-jurisdiction matrix",
+      "Update to D-005 conditions"
+    ],
+    "responsibleRole": "Legal + Architecture",
+    "currentStatus": "OPEN",
+    "codeEvidence": [
+      "src/app/api/gateway/v1/instructions/route.ts",
+      "prisma/schema.prisma#Instruction.applicableLawId"
+    ],
+    "blueprint_ref": "v26.0 §11.4 OD-005",
+    "lastUpdated": "2026-10-10",
+    "closureEvidence": null,
+    "nextAction": "Engage external counsel before any cross-jurisdictional instruction."
+  },
+  {
+    "openDecisionId": "OD-006",
+    "openQuestion": "What is the maximum acceptable Neon write latency for an F0_ACCEPTED response?",
+    "defaultUntilResolved": "No SLO is published; F0_ACCEPTED is returned even when persistence fails (best-effort write).",
+    "requiredClosureEvidence": [
+      "Platform Engineering review",
+      "Load test at Pilot A target TPS",
+      "Updated honestState when latency exceeds SLO"
+    ],
+    "responsibleRole": "Platform Engineering",
+    "currentStatus": "OPEN",
+    "codeEvidence": [
+      "src/app/api/neon/health/route.ts",
+      "src/lib/prisma-canonical.ts#canPingNeon"
+    ],
+    "blueprint_ref": "v26.0 §11.4 OD-006",
+    "lastUpdated": "2026-10-10",
+    "closureEvidence": null,
+    "nextAction": "Run a 7-day Neon latency baseline and propose an SLO."
+  },
+  {
+    "openDecisionId": "OD-007",
+    "openQuestion": "How is the OutboxEvent dispatcher leased and re-leased when a worker crashes mid-dispatch?",
+    "defaultUntilResolved": "OutboxEvent.leaseOwner + leaseExpiresAt exist; the dispatcher implementation is pending.",
+    "requiredClosureEvidence": [
+      "Platform Engineering design doc",
+      "Dead-letter queue policy",
+      "Tests for crash-recovery scenarios"
+    ],
+    "responsibleRole": "Platform Engineering",
+    "currentStatus": "PARTIALLY_CLOSED",
+    "codeEvidence": [
+      "prisma/schema.prisma#OutboxEvent.leaseOwner",
+      "prisma/schema.prisma#OutboxEvent.leaseExpiresAt"
+    ],
+    "blueprint_ref": "v26.0 §11.4 OD-007",
+    "lastUpdated": "2026-10-10",
+    "closureEvidence": "Schema fields present; dispatcher implementation pending.",
+    "nextAction": "Implement OutboxEvent dispatcher as an Inngest function."
+  },
+  {
+    "openDecisionId": "OD-008",
+    "openQuestion": "What is the exact set of jurisdictions in scope for Pilot A? (US-Federal only vs US-Federal + one state)",
+    "defaultUntilResolved": "US-Federal only.",
+    "requiredClosureEvidence": [
+      "Legal review",
+      "Update to D-005",
+      "ApplicableLaw registry"
+    ],
+    "responsibleRole": "Legal",
+    "currentStatus": "OPEN",
+    "codeEvidence": [
+      "src/lib/claim-registry-data.ts",
+      "src/lib/external-claim-register.ts"
+    ],
+    "blueprint_ref": "v26.0 §11.4 OD-008",
+    "lastUpdated": "2026-10-10",
+    "closureEvidence": null,
+    "nextAction": "Legal to confirm US-Federal scope in writing."
+  },
+  {
+    "openDecisionId": "OD-009",
+    "openQuestion": "Who is the single bank-facing counterparty for Pilot A, and what is the integration evidence?",
+    "defaultUntilResolved": "No counterparty is contracted; honestState.banksContracted=0.",
+    "requiredClosureEvidence": [
+      "Counterparty onboarding evidence (executed agreement)",
+      "Integration test against the counterparty's sandbox",
+      "Bank-rail transaction mapping reconciliation test"
+    ],
+    "responsibleRole": "Treasury + Architecture",
+    "currentStatus": "BLOCKED",
+    "codeEvidence": [
+      "src/app/api/gateway/v1/instructions/route.ts",
+      "institutional/banks/counterparty-pilot-a.md (planned)"
+    ],
+    "blueprint_ref": "v26.0 §11.4 OD-009",
+    "lastUpdated": "2026-10-10",
+    "closureEvidence": null,
+    "nextAction": "Treasury to surface 1-3 candidate counterparties for review."
+  },
+  {
+    "openDecisionId": "OD-010",
+    "openQuestion": "Are the G0..G11 gate decisions made by a single approver, or by committee?",
+    "defaultUntilResolved": "Gate decisions have an approvers string field; no rule enforces committee.",
+    "requiredClosureEvidence": [
+      "Governance decision",
+      "Update to §9.1 conditions",
+      "Tests for committee quorum"
+    ],
+    "responsibleRole": "Architecture + Compliance",
+    "currentStatus": "OPEN",
+    "codeEvidence": [
+      "prisma/schema.prisma#GateDecision.approvers",
+      "src/lib/gate-definitions.ts"
+    ],
+    "blueprint_ref": "v26.0 §11.4 OD-010",
+    "lastUpdated": "2026-10-10",
+    "closureEvidence": null,
+    "nextAction": "Draft governance matrix before Pilot B entry."
+  },
+  {
+    "openDecisionId": "OD-011",
+    "openQuestion": "What is the freshness policy version, and how is a freshness policy version bump communicated to consumers?",
+    "defaultUntilResolved": "freshnessPolicyVersion is a free-form string on BackingDimensionInput; no global version registry exists.",
+    "requiredClosureEvidence": [
+      "Treasury + Architecture review",
+      "Freshness policy version registry",
+      "Tests that stale inputs block EligibleBacking"
+    ],
+    "responsibleRole": "Treasury + Architecture",
+    "currentStatus": "OPEN",
+    "codeEvidence": [
+      "src/lib/eligible-backing.ts#BackingDimensionInput.freshnessPolicyVersion",
+      "src/lib/eligible-backing.ts#computeEligibleBacking"
+    ],
+    "blueprint_ref": "v26.0 §11.4 OD-011",
+    "lastUpdated": "2026-10-10",
+    "closureEvidence": null,
+    "nextAction": "Treasury to propose a v1 freshness policy."
+  },
+  {
+    "openDecisionId": "OD-012",
+    "openQuestion": "When is MITHQAL_PRODUCTION_AUTHORIZED promoted to true?",
+    "defaultUntilResolved": "false; promotion requires a GateDecision row with decision=PRODUCTION_AUTHORIZED and all G0..G11 gates satisfied.",
+    "requiredClosureEvidence": [
+      "Operations + Architecture sign-off",
+      "All G0..G11 GateDecision rows present",
+      "External audit pass"
+    ],
+    "responsibleRole": "Operations + Architecture Review Board",
+    "currentStatus": "BLOCKED",
+    "codeEvidence": [
+      "src/lib/db-authoritative.ts#getWriterStatusSummary",
+      "src/lib/mtq-gate.ts"
+    ],
+    "blueprint_ref": "v26.0 §11.4 OD-012",
+    "lastUpdated": "2026-10-10",
+    "closureEvidence": null,
+    "nextAction": "No promotion expected during Pilot A."
+  },
+  {
+    "openDecisionId": "OD-013",
+    "openQuestion": "How are CPI/ROI claims re-attested from SIMULATED to MEASURED?",
+    "defaultUntilResolved": "No re-attestation process is defined; all CPI/ROI claims remain SIMULATED.",
+    "requiredClosureEvidence": [
+      "CFO review",
+      "Measured input evidence for at least one CPI/ROI claim",
+      "External Claim Register update"
+    ],
+    "responsibleRole": "CFO + Architecture",
+    "currentStatus": "OPEN",
+    "codeEvidence": [
+      "src/lib/external-claim-register.ts#getTruthLabel",
+      "src/lib/claim-registry-data.ts"
+    ],
+    "blueprint_ref": "v26.0 §11.4 OD-013",
+    "lastUpdated": "2026-10-10",
+    "closureEvidence": null,
+    "nextAction": "CFO to identify the first CPI/ROI claim eligible for re-attestation."
+  },
+  {
+    "openDecisionId": "OD-014",
+    "openQuestion": "What is the credential rotation plan for the 16 credentials exposed on 2026-10-10?",
+    "defaultUntilResolved": "All 16 credentials are status=PENDING_ROTATION; no rotation has been completed.",
+    "requiredClosureEvidence": [
+      "Security review",
+      "Rotation of all 16 credentials (each credential with a new value, exposure_surface cleared)",
+      "Update to cred-incident-001-2026-10-10.json"
+    ],
+    "responsibleRole": "Security + Operations",
+    "currentStatus": "BLOCKED",
+    "codeEvidence": [
+      "institutional/incidents/cred-incident-001-2026-10-10.json",
+      ".env (redacted placeholders for PENDING_ROTATION credentials)"
+    ],
+    "blueprint_ref": "v26.0 §7.2 + §11.4 OD-014",
+    "lastUpdated": "2026-10-10",
+    "closureEvidence": null,
+    "nextAction": "Security to execute rotation within 14 days."
+  },
+  {
+    "openDecisionId": "OD-015",
+    "openQuestion": "How is the External Claim Register kept in sync with the home page copy?",
+    "defaultUntilResolved": "Manual review; no automated check exists.",
+    "requiredClosureEvidence": [
+      "Architecture review",
+      "CI check that compares src/app/page.tsx against claim-registry-data.ts",
+      "Tests/contract/claim-register-sync.test.ts"
+    ],
+    "responsibleRole": "Architecture + Marketing",
+    "currentStatus": "PARTIALLY_CLOSED",
+    "codeEvidence": [
+      "src/lib/external-claim-register.ts",
+      "src/lib/claim-registry-data.ts",
+      "src/app/page.tsx"
+    ],
+    "blueprint_ref": "v26.0 §5.5 + §11.4 OD-015",
+    "lastUpdated": "2026-10-10",
+    "closureEvidence": "Manual review completed on 2026-10-10; automated check pending.",
+    "nextAction": "Add CI check in next sprint."
+  }
+]

@@ -1,0 +1,253 @@
+[
+  {
+    "decisionId": "D-001",
+    "title": "Control Plane Core; MTQ Optional",
+    "canonicalChoice": "MITHQAL is a neutral institutional settlement control plane; the MITHQAL Token (MTQ) is optional and disabled by default. The control plane is the canonical surface; MTQ is one possible settlement instrument among many.",
+    "reasonNotes": "Reframing MITHQAL as a control plane rather than a token product removes the v25.x ambiguity about whether MITHQAL is a stablecoin, a CBDC, or a settlement network. Operators can use the control plane with or without MTQ; Pilot A never uses MTQ.",
+    "codeEvidence": [
+      "src/lib/mtq-gate.ts",
+      "src/lib/finality-state-machine.ts",
+      "docs/adr/0001-database-writer-authority.md",
+      "docs/adr/0002-mtq-disabled-by-default.md"
+    ],
+    "status": "IMPLEMENTED",
+    "blueprint_ref": "v26.0 §1 + §3.2 + §11.3 D-001",
+    "reviewDate": "2026-10-10",
+    "reviewer": "Architecture Review Board",
+    "expiry": "2027-01-10",
+    "conditions": [
+      "MTQ_ENABLED defaults to false in every environment",
+      "MTQ_PILOT_STAGE defaults to A in every environment",
+      "MITHQAL_PRODUCTION_AUTHORIZED defaults to false in every environment"
+    ]
+  },
+  {
+    "decisionId": "D-002",
+    "title": "PAR Accounting Reference",
+    "canonicalChoice": "MITHQAL uses Pay-As-Resolved (PAR) accounting: every ledger entry is resolved to a final-state classification at commit time. No float buckets, no suspense accounts, no implicit reversal lanes.",
+    "reasonNotes": "PAR was selected over accrual-basis and over dual-entry-suspense because it eliminates the 'pending state' that historically masked reconciliation gaps in v25.x. Every entry has a reason code at commit; reconciliation becomes a class-specific tolerance check, not a phase-of-flight heuristic.",
+    "codeEvidence": [
+      "src/lib/reconciliation-tolerance.ts",
+      "prisma/schema.prisma#ReconciliationCase",
+      "docs/adr/0005-reconciliation-class-tolerance.md"
+    ],
+    "status": "IMPLEMENTED",
+    "blueprint_ref": "v26.0 §5.3 + §11.3 D-002",
+    "reviewDate": "2026-10-10",
+    "reviewer": "Controller + Architecture Review Board",
+    "expiry": "2027-01-10",
+    "conditions": [
+      "All six reconciliation classes have an ACTIVE rule in RECONCILIATION_TOLERANCE_REGISTRY",
+      "Legacy 0.1% / 0.5% / 1% / 5% thresholds marked DEPRECATED"
+    ]
+  },
+  {
+    "decisionId": "D-003",
+    "title": "BM-15 Authorization; BM-16A Finality; BM-16B Mint",
+    "canonicalChoice": "Three canonical BM module ids: BM-15 Monetary Authorization, BM-16A Finality Verification, BM-16B Mint Execution. BM-16B is disabledByDefault=true.",
+    "reasonNotes": "v25.x used several inconsistent names ('BM-15-Mint', 'BM16', 'BM-16B-Mint'). v26.0 §4.4 locks the canonical names. getBmModule() throws on legacy names so callers must migrate.",
+    "codeEvidence": [
+      "src/lib/finality-state-machine.ts#BM_MODULE_REGISTRY",
+      "src/lib/finality-state-machine.ts#getBmModule",
+      "src/lib/finality-state-machine.ts#canExecuteMint",
+      "docs/adr/0003-f0-f7-finality-state-machine.md"
+    ],
+    "status": "IMPLEMENTED",
+    "blueprint_ref": "v26.0 §4.4 + §11.3 D-003",
+    "reviewDate": "2026-10-10",
+    "reviewer": "Architecture Review Board",
+    "expiry": "2027-01-10",
+    "conditions": [
+      "BM-16B disabledByDefault=true",
+      "Legacy BM module names cause getBmModule to throw",
+      "canExecuteMint requires finalityState=F4 + stateSatisfied=true + MTQ gate ok=true"
+    ]
+  },
+  {
+    "decisionId": "D-004",
+    "title": "Direct-Matched Backing + Risk Buffer Separate",
+    "canonicalChoice": "EligibleBacking = MIN(EconomicBacking, LegalBacking, LiquidBacking, SettlementAvailableBacking). Direct-matched backing covers the obligation in the same unit; the risk buffer is tracked separately and does NOT contribute to direct-match satisfaction.",
+    "reasonNotes": "Replaces the v25.x '130% backing specification' aspiration. The MIN captures the institutional principle that no dimension can substitute for another; the separate risk buffer prevents the buffer from being commingled into backing eligibility.",
+    "codeEvidence": [
+      "src/lib/eligible-backing.ts",
+      "src/lib/external-claim-register.ts",
+      "docs/adr/0004-eligible-backing-formula.md"
+    ],
+    "status": "IMPLEMENTED",
+    "blueprint_ref": "v26.0 §3.3 + §3.4 + §11.3 D-004",
+    "reviewDate": "2026-10-10",
+    "reviewer": "Architecture + Treasury",
+    "expiry": "2027-01-10",
+    "conditions": [
+      "CLAIM-LEGACY-RESERVE-130-PERCENT is CONTRADICTED in claim-registry-data.ts",
+      "Home page pillar wording replaced with 'Direct-matched backing (target, not legal rule)'"
+    ]
+  },
+  {
+    "decisionId": "D-005",
+    "title": "No Gold/Digital in Pilot 1",
+    "canonicalChoice": "Pilot 1 (Pilot A) does not include gold-backed or digital-asset-backed instruments. The pilot scope is USD-denominated institutional settlement only.",
+    "reasonNotes": "The v25.x pilot scope mixed USD, gold, and on-chain digital assets. v26.0 narrows Pilot A to USD only so that the reconciliation, evidence, and finality surface can be exercised end-to-end before adding asset-class complexity.",
+    "codeEvidence": [
+      ".env#MITHQAL_BLUEPRINT_VERSION=26.0",
+      "institutional/pilot/scope-usd-only.md (planned)"
+    ],
+    "status": "PARTIALLY_IMPLEMENTED",
+    "blueprint_ref": "v26.0 §2.2 + §11.3 D-005",
+    "reviewDate": "2026-10-10",
+    "reviewer": "Architecture Review Board",
+    "expiry": "2027-01-10",
+    "conditions": [
+      "Pilot A scope document must be added",
+      "Asset-class enablement gate G-ASSET-CLASS must remain CLOSED"
+    ]
+  },
+  {
+    "decisionId": "D-006",
+    "title": "Neon Authoritative; Turso Projection",
+    "canonicalChoice": "Neon Postgres is the single authoritative writer. Turso (libSQL) is the projection (eventually consistent, watermark-gated). There is exactly one writer per instruction; no dual-writes.",
+    "reasonNotes": "v25.x experimented with both Neon and Turso as 'writers' and relied on application-level reconciliation to merge them. v26.0 §6.1 + §6.8 + Appendix B make the relationship authoritative: Neon writes, Turso reads from the OutboxEvent stream.",
+    "codeEvidence": [
+      "src/lib/prisma-canonical.ts",
+      "src/lib/db-authoritative.ts",
+      "prisma/schema.prisma",
+      "src/app/api/neon/health/route.ts",
+      "docs/adr/0001-database-writer-authority.md",
+      "docs/adr/0007-outbox-pattern.md"
+    ],
+    "status": "IMPLEMENTED",
+    "blueprint_ref": "v26.0 §6.1 + §6.8 + §11.3 D-006",
+    "reviewDate": "2026-10-10",
+    "reviewer": "Architecture + Platform Engineering",
+    "expiry": "2027-01-10",
+    "conditions": [
+      "DATABASE_BACKEND=neon in production env",
+      "MITHQAL_AUTHORITATIVE_BACKEND=neon in production env",
+      "MITHQAL_PROJECTION_BACKEND=turso in production env"
+    ]
+  },
+  {
+    "decisionId": "D-007",
+    "title": "At-Least-Once + Idempotent Delivery",
+    "canonicalChoice": "OutboxEvent delivery is at-least-once with consumer-side idempotency via InboxEvent + consumerDedupeKey. No at-most-once; no exactly-once claims.",
+    "reasonNotes": "Exactly-once delivery across heterogeneous consumers (control plane, projection fans-out, reporting) is not provable. At-least-once with consumer idempotency is provable and matches institutional messaging practice (RTGS, SWIFT, FIX all use at-least-once + dedupe).",
+    "codeEvidence": [
+      "prisma/schema.prisma#OutboxEvent",
+      "prisma/schema.prisma#InboxEvent",
+      "prisma/schema.prisma#IdempotencyRecord",
+      "docs/adr/0007-outbox-pattern.md"
+    ],
+    "status": "IMPLEMENTED",
+    "blueprint_ref": "v26.0 §6.2 + §6.3 + §11.3 D-007",
+    "reviewDate": "2026-10-10",
+    "reviewer": "Platform Engineering",
+    "expiry": "2027-01-10",
+    "conditions": [
+      "Every authoritative write is accompanied by an OutboxEvent in the same transaction",
+      "Every consumer MUST write an InboxEvent before processing",
+      "IdempotencyRecord conflicts surface as conflictingBodyHash mismatches"
+    ]
+  },
+  {
+    "decisionId": "D-008",
+    "title": "Atomicity Limited to Validated Common Finality Domain",
+    "canonicalChoice": "Atomic operations are limited to the validated common finality domain (i.e. the F0..F7 path that has been policy-validated). Cross-domain atomicity is NOT promised; cross-jurisdictional atomicity is NOT promised.",
+    "reasonNotes": "v25.x made implicit atomicity claims across the bank leg, the operator leg, and the receiving leg. v26.0 narrows atomicity to the F0..F4 operator-side domain (where we own the writer) and explicitly disclaims cross-domain atomicity in §4.2.",
+    "codeEvidence": [
+      "src/lib/finality-state-machine.ts",
+      "src/app/api/gateway/v1/instructions/route.ts",
+      "docs/adr/0003-f0-f7-finality-state-machine.md"
+    ],
+    "status": "IMPLEMENTED",
+    "blueprint_ref": "v26.0 §4.2 + §11.3 D-008",
+    "reviewDate": "2026-10-10",
+    "reviewer": "Architecture Review Board",
+    "expiry": "2027-01-10",
+    "conditions": [
+      "Operator-side atomicity is per-instruction (one OutboxEvent per write)",
+      "Cross-domain progression is gated by external-rail evidence at F6",
+      "F7 (legal settlement final) requires an EXECUTED_EXTERNAL_DOCUMENT"
+    ]
+  },
+  {
+    "decisionId": "D-009",
+    "title": "One Bank-Facing Counterparty",
+    "canonicalChoice": "Pilot A has exactly one bank-facing counterparty. Multi-counterparty is deferred to Pilot B and beyond.",
+    "reasonNotes": "Multi-counterparty settlement introduces reconciliation, netting, and tail-risk questions that the v25.x pipeline was not prepared to answer. Pilot A narrows to one bank counterparty so the F0..F7 surface and the bank-rail mapping reconciliation can be exercised end-to-end.",
+    "codeEvidence": [
+      "institutional/banks/counterparty-pilot-a.md (planned)",
+      "src/app/api/gateway/v1/instructions/route.ts"
+    ],
+    "status": "PARTIALLY_IMPLEMENTED",
+    "blueprint_ref": "v26.0 §2.3 + §11.3 D-009",
+    "reviewDate": "2026-10-10",
+    "reviewer": "Treasury + Architecture",
+    "expiry": "2027-01-10",
+    "conditions": [
+      "Counterparty onboarding evidence must be added",
+      "Multi-counterparty enablement gate G-MULTI-BANK must remain CLOSED"
+    ]
+  },
+  {
+    "decisionId": "D-010",
+    "title": "G0..G11 Critical Path; 20 Legacy Gates",
+    "canonicalChoice": "v26.0 §9.1 defines the G0..G11 critical-path gate set. The 20-control mapping in §9.2 maps the legacy 20 gates onto the new 12 so historical audit references remain valid.",
+    "reasonNotes": "v25.x had a 20-control grid that did not align with finality state boundaries. v26.0 §9.1 replaces it with 12 state-aligned gates (G0..G11); §9.2 preserves a 20-control legacy mapping for audit traceability without re-introducing the 20-gate decision surface.",
+    "codeEvidence": [
+      "src/lib/gate-definitions.ts",
+      "src/app/api/gateway/v1/gates/route.ts",
+      "docs/controls/control-matrix.md"
+    ],
+    "status": "IMPLEMENTED",
+    "blueprint_ref": "v26.0 §9.1 + §9.2 + §11.3 D-010",
+    "reviewDate": "2026-10-10",
+    "reviewer": "Architecture + Compliance",
+    "expiry": "2027-01-10",
+    "conditions": [
+      "G0..G11 each have a GateDecision row in production",
+      "Legacy 20 controls have a primaryGateMapping onto the new 12"
+    ]
+  },
+  {
+    "decisionId": "D-011",
+    "title": "CPI/ROI Require Measured Inputs",
+    "canonicalChoice": "Cost-Payback Index (CPI) and Return-on-Investment (ROI) metrics require measured inputs (MEASURED claim status). Simulated inputs are not accepted for CPI/ROI attestation.",
+    "reasonNotes": "v25.x accepted simulated CPI/ROI figures in marketing material. v26.0 §5.5 requires MEASURED inputs for any CPI/ROI figure that appears externally, and the External Claim Register enforces this via the isPublishable check.",
+    "codeEvidence": [
+      "src/lib/external-claim-register.ts",
+      "src/lib/claim-registry-data.ts",
+      "docs/adr/0006-external-claim-register.md"
+    ],
+    "status": "IMPLEMENTED",
+    "blueprint_ref": "v26.0 §5.5 + §11.3 D-011",
+    "reviewDate": "2026-10-10",
+    "reviewer": "CFO + Architecture Review Board",
+    "expiry": "2027-01-10",
+    "conditions": [
+      "No CPI/ROI claim with status SIMULATED may be published",
+      "Any CPI/ROI claim currently published must be re-attested to MEASURED"
+    ]
+  },
+  {
+    "decisionId": "D-012",
+    "title": "Production Authorization False by Default",
+    "canonicalChoice": "MITHQAL_PRODUCTION_AUTHORIZED defaults to false in every environment. Promotion to true requires explicit operator action, a GateDecision row, and the G0..G11 gate ledger to be satisfied.",
+    "reasonNotes": "v25.x had environments in which production-authorized behavior was inferred from the absence of an explicit flag. v26.0 §11.3 D-012 makes false the explicit default; the flag is treated as a credential that must be set deliberately.",
+    "codeEvidence": [
+      ".env#MITHQAL_PRODUCTION_AUTHORIZED=false",
+      "src/lib/db-authoritative.ts#getWriterStatusSummary",
+      "src/lib/mtq-gate.ts",
+      "docs/adr/0002-mtq-disabled-by-default.md"
+    ],
+    "status": "IMPLEMENTED",
+    "blueprint_ref": "v26.0 §3.2 + §11.3 D-012",
+    "reviewDate": "2026-10-10",
+    "reviewer": "Architecture + Operations",
+    "expiry": "2027-01-10",
+    "conditions": [
+      "MITHQAL_PRODUCTION_AUTHORIZED=false in default env",
+      "All endpoints surface productionAuthorized in their honestState field",
+      "Promotion to true requires a GateDecision row with decision=PRODUCTION_AUTHORIZED"
+    ]
+  }
+]

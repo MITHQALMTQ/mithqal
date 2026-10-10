@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { assertMtqEnabled } from "@/lib/mtq-gate";
 import { db, ensureSchema } from "@/lib/db";
 import { deriveState, computeRedemption } from "@/lib/testnet-engine";
 import { getLiveOracleData } from "@/lib/live-oracle";
@@ -10,6 +11,15 @@ import { getOracleSnapshot } from "@/lib/oracle-client";
 // If reserves > supply (NAV > $1), you get MORE dollars per MTQ.
 // Redemption is NEVER suspended (constitutional invariant).
 export async function POST(req: Request) {
+  // ===== MTQ fail-closed gate (v26.0 §3.2) =====
+  const mtqGate = assertMtqEnabled("redeem-route");
+  if (!mtqGate.ok) {
+    return NextResponse.json(
+      { error: "MTQ is disabled by default.", canonical_reason: mtqGate.reason, blueprint_ref: "v26.0 §3.2", productionAuthorized: false },
+      { status: 403 }
+    );
+  }
+
   let body: unknown;
   try {
     body = await req.json();

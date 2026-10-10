@@ -52,28 +52,28 @@ const BoltIcon = () => (
 const FEATURES = [
   {
     icon: <BrainIcon />,
-    title: "AI-Powered",
-    desc: "Smarter decisions. Greater opportunities.",
+    title: "Settlement Intelligence",
+    desc: "MTQ-optional control plane for institutional settlement.",
   },
   {
     icon: <CoinsIcon />,
-    title: "DeFi & Finance",
-    desc: "Build, earn, and grow with confidence.",
+    title: "Obligation Topology",
+    desc: "Direct-matched backing across four verified dimensions.",
   },
   {
     icon: <ShieldIcon />,
-    title: "Digital Ownership",
-    desc: "Your assets. Your control.",
+    title: "F0–F7 Finality",
+    desc: "Eight-state finality machine; no inferred legal completion.",
   },
   {
     icon: <NodesIcon />,
-    title: "Global Ecosystem",
-    desc: "Connect. Collaborate. Create.",
+    title: "Multi-Rail Adapters",
+    desc: "Bank, correspondent, and on-chain rails under one gate.",
   },
   {
     icon: <BoltIcon />,
-    title: "Built for the Future",
-    desc: "Next-gen technology. Real-world impact.",
+    title: "Evidence Fabric",
+    desc: "Every claim, decision, and gate attested to a primary document.",
   },
 ];
 

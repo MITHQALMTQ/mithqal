@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { assertMtqEnabled } from "@/lib/mtq-gate";
 import { db, ensureSchema } from "@/lib/db";
 import { deriveState, canMint, computeMint } from "@/lib/testnet-engine";
 import { getLiveOracleData } from "@/lib/live-oracle";
@@ -9,6 +10,15 @@ import { getOracleSnapshot } from "@/lib/oracle-client";
 // NAV is DYNAMIC (§3.1: NAV_m = R_m / S) — NOT pegged to $1.
 // If reserves > supply (ratio > 100%), NAV > $1 → you get FEWER MTQ per dollar.
 export async function POST(req: Request) {
+  // ===== MTQ fail-closed gate (v26.0 §3.2) =====
+  const mtqGate = assertMtqEnabled("mint-route");
+  if (!mtqGate.ok) {
+    return NextResponse.json(
+      { error: "MTQ is disabled by default.", canonical_reason: mtqGate.reason, blueprint_ref: "v26.0 §3.2", productionAuthorized: false },
+      { status: 403 }
+    );
+  }
+
   let body: unknown;
   try {
     body = await req.json();

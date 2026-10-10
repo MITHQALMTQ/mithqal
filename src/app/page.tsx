@@ -54,9 +54,9 @@ export default function HomePage() {
             className="text-5xl md:text-7xl font-bold tracking-tight text-white leading-[1.05] mb-6"
             style={{ filter: "drop-shadow(0 4px 16px rgba(0,0,0,0.9))" }}
           >
-            Your Digital Capital. Unified. Intelligent.{" "}
+            Institutional Settlement.{" "}
             <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">
-              Limitless.
+              Coordinated. Explainable.
             </span>
           </h1>
 
@@ -64,9 +64,9 @@ export default function HomePage() {
             className="text-lg md:text-xl text-[#cbd5e1] max-w-2xl mx-auto mb-10 leading-relaxed"
             style={{ filter: "drop-shadow(0 2px 8px rgba(0,0,0,0.8))" }}
           >
-            Mithqal is the next-generation platform for AI, finance, and digital
-            ownership — built for creators, investors, and visionaries who see
-            beyond.
+            MITHQAL is a neutral institutional settlement control plane —
+            built for the control plane, evidence model, and controlled pilot
+            pathway.
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-4">
@@ -143,8 +143,8 @@ export default function HomePage() {
             {[
               { icon: "⚖", title: "Neutral", desc: "Non-sovereign infrastructure." },
               { icon: "🏦", title: "Wholesale", desc: "Built for institutions." },
-              { icon: "🔒", title: "Finality", desc: "7/7 irrevocable settlement." },
-              { icon: "📊", title: "Reserve", desc: "130% backing specification." },
+              { icon: "🔒", title: "Finality", desc: "F0–F7 state machine." },
+              { icon: "📊", title: "Resilience", desc: "Direct-matched backing (target, not legal rule)." },
               { icon: "🔍", title: "Evidence", desc: "Immutable audit by design." },
             ].map((p) => (
               <div key={p.title} className="text-center p-6 bg-white/5 border border-amber-500/10 rounded-2xl hover:border-amber-500/30 transition-all duration-300 card-lift">
@@ -177,7 +177,7 @@ export default function HomePage() {
       </section>
 
       
-      <ProgramStatus data={{"title": "PROGRAM STATUS OVERVIEW","badge": "BUILD_MODE = FROZEN — MTQ DISABLED","badgeColor": "amber","metrics": [{"label": "Latest Prompt","value": "77","status": "conditional"},{"label": "Pages Built","value": "10","status": "pass"},{"label": "Providers","value": "1/5","status": "blocked"},{"label": "Production","value": "BLOCKED","status": "blocked"}],"blockers": ["4 of 5 providers blocked (Vercel, Inngest, Turso, Neon)","5 credentials require operator rotation","G0 gate: FAIL (16 unresolved issues)","Pilot A: 18/18 conditions blocking"],"note": "MITHQAL is an institutional settlement control plane — designed, not deployed. The website is a public institutional facade documenting the architecture, evidence model, and controlled pilot pathway. NOT PRODUCTION-AUTHORIZED."}} />
+      <ProgramStatus data={{"title": "PROGRAM STATUS OVERVIEW","badge": "v26.0 CANONICAL BASELINE — MTQ DISABLED BY DEFAULT","badgeColor": "amber","metrics": [{"label": "Blueprint Version","value": "26.0","status": "pass"},{"label": "F0–F7 Gates","value": "8 states","status": "conditional"},{"label": "G0–G11 Gates","value": "12 gates","status": "conditional"},{"label": "Production","value": "BLOCKED","status": "blocked"}],"blockers": ["MTQ is disabled by default per §3.2 (MTQ_ENABLED=false, MTQ_PILOT_STAGE=A)","16 credentials require rotation per §7.2 (cred-incident-001-2026-10-10)","Pilot A bank-facing counterparty not yet contracted (§11.3 D-009)","BM-16B Mint Execution is disabledByDefault per §4.4"],"note": "MITHQAL is a neutral institutional settlement control plane — designed, not deployed. The website is a public institutional facade documenting the architecture, evidence model, and controlled pilot pathway. NOT PRODUCTION-AUTHORIZED."}} />
       <Footer />
     </main>
   );
