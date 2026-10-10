@@ -191,6 +191,71 @@ export default function ArchitecturePage() {
           </div>
         </section>
 
+        
+        {/* Currency Basket */}
+        <section className="max-w-[1440px] mx-auto px-6 md:px-12 py-32 border-t border-white/5 scroll-reveal">
+          <div className="text-center mb-20">
+            <div className="inline-flex items-center gap-3 mb-4"><span className="w-px h-4 bg-amber-400" /><span className="text-xs font-semibold tracking-[0.28em] uppercase text-amber-400">CURRENCY BASKET</span></div>
+            <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white">11-Currency <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Basket.</span></h2>
+            <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mt-8">The reserve basket is weighted across 11 currencies with individual caps to prevent concentration risk.</p>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
+            {[["USD","≤35%"],["EUR","≤20%"],["GBP","≤12%"],["JPY","≤10%"],["CNY","≤10%"],["AED","≤8%"],["SGD","≤8%"],["CHF","≤8%"],["CAD","≤8%"],["AUD","≤8%"],["Gold","≥10%"]].map(([c, cap]) => (
+              <div key={c} className="bg-white/5 border border-amber-500/10 rounded-xl p-6 text-center stagger-card">
+                <div className="text-lg font-bold text-amber-400 mb-2">{c}</div>
+                <div className="text-xs text-[#94a3b8]">{cap}</div>
+              </div>
+            ))}
+          </div>
+          <p className="text-sm text-[#94a3b8] text-center mt-8 max-w-2xl mx-auto leading-loose">Weights sum to 1.0. USD capped at 35% to prevent dollar dominance. Gold floor at 10% ensures commodity backing. All weights are target allocations, not pegs.</p>
+        </section>
+
+        {/* Tokenization Model */}
+        <section className="max-w-[1440px] mx-auto px-6 md:px-12 py-32 border-t border-white/5 scroll-reveal">
+          <div className="text-center mb-20">
+            <div className="inline-flex items-center gap-3 mb-4"><span className="w-px h-4 bg-amber-400" /><span className="text-xs font-semibold tracking-[0.28em] uppercase text-amber-400">TOKENIZATION MODEL</span></div>
+            <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white">Digitized <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Assets.</span></h2>
+            <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mt-8">MITHQAL supports 4 RWA asset classes and 3 digitized coin types. These are NOT stablecoins — separate regulatory class entirely.</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+            <div className="bg-white/5 border border-amber-500/10 rounded-2xl p-8 stagger-card">
+              <h3 className="text-xl font-semibold text-white mb-6">4 RWA Asset Classes</h3>
+              {[["Gold Bullion","Physical gold held by qualified custodian"],["Silver","Commodity reserve component"],["Sovereign Bonds","G7/G20 government securities"],["Bank Money","Regulated bank-issued digitized deposits"]].map(([t, d]) => (
+                <div key={t} className="flex items-start gap-3 py-3"><span className="text-amber-400 mt-1">▸</span><div><span className="text-sm font-medium text-white">{t}</span><p className="text-xs text-[#94a3b8] mt-1">{d}</p></div></div>
+              ))}
+            </div>
+            <div className="bg-white/5 border border-amber-500/10 rounded-2xl p-8 stagger-card">
+              <h3 className="text-xl font-semibold text-white mb-6">3 Digitized Coin Types</h3>
+              {[["Tokenized Bank Money","Bank-issued, regulated, NOT a stablecoin"],["Tokenized RWA","On-chain representation of real-world assets"],["MTQ (DISABLED)","Institutional settlement unit — currently disabled per governance"]].map(([t, d]) => (
+                <div key={t} className="flex items-start gap-3 py-3"><span className="text-amber-400 mt-1">▸</span><div><span className="text-sm font-medium text-white">{t}</span><p className="text-xs text-[#94a3b8] mt-1">{d}</p></div></div>
+              ))}
+            </div>
+          </div>
+          <div className="bg-red-500/5 border border-red-500/10 rounded-xl p-6 text-center">
+            <p className="text-sm text-[#cbd5e1]">⚠ Tokenized bank money ≠ stablecoins. MITHQAL does not issue, back, or support stablecoins. Digitized coins are a separate regulatory class with different legal treatment.</p>
+          </div>
+        </section>
+
+        {/* Reserve Rebalancing */}
+        <section className="max-w-[1440px] mx-auto px-6 md:px-12 py-32 border-t border-white/5 scroll-reveal">
+          <div className="text-center mb-20">
+            <div className="inline-flex items-center gap-3 mb-4"><span className="w-px h-4 bg-amber-400" /><span className="text-xs font-semibold tracking-[0.28em] uppercase text-amber-400">RESERVE REBALANCING</span></div>
+            <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white">Dynamic <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Rebalancing.</span></h2>
+            <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mt-8">The reserve basket is continuously rebalanced to maintain target allocations. The rebalancing engine is implemented with 7 API endpoints and 1,137 lines of production code.</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="bg-white/5 border border-amber-500/10 rounded-2xl p-8 text-center stagger-card"><div className="text-4xl mb-4">📊</div><h3 className="text-lg font-semibold text-white mb-3">Plan</h3><p className="text-sm text-[#cbd5e1] leading-loose">Generates a rebalancing plan based on current vs target allocations. Calculates the optimal trade sequence.</p><div className="text-xs text-amber-400 mt-4">/api/rebalance/plan</div></div>
+            <div className="bg-white/5 border border-amber-500/10 rounded-2xl p-8 text-center stagger-card"><div className="text-4xl mb-4">✅</div><h3 className="text-lg font-semibold text-white mb-3">Validate</h3><p className="text-sm text-[#cbd5e1] leading-loose">Validates the plan against invariants: 130% backing, 80/18/2 allocation, no concentration breach.</p><div className="text-xs text-amber-400 mt-4">/api/rebalance/validate</div></div>
+            <div className="bg-white/5 border border-amber-500/10 rounded-2xl p-8 text-center stagger-card"><div className="text-4xl mb-4">⚡</div><h3 className="text-lg font-semibold text-white mb-3">Execute</h3><p className="text-sm text-[#cbd5e1] leading-loose">Executes the validated plan — trades, transfers, and updates all three books with full evidence trail.</p><div className="text-xs text-amber-400 mt-4">/api/rebalance/execute</div></div>
+          </div>
+          <div className="flex flex-wrap items-center justify-center gap-3 mt-8">
+            <span className="text-xs px-3 py-1 rounded-full border border-amber-500/30 text-amber-400/80 bg-amber-500/5">7 API ENDPOINTS</span>
+            <span className="text-xs px-3 py-1 rounded-full border border-amber-500/30 text-amber-400/80 bg-amber-500/5">1,137 LINES OF CODE</span>
+            <span className="text-xs px-3 py-1 rounded-full border border-amber-500/30 text-amber-400/80 bg-amber-500/5">DASHBOARD COMPONENT</span>
+            <span className="text-xs px-3 py-1 rounded-full border border-red-500/30 text-red-400/80 bg-red-500/5">NOT PRODUCTION-AUTHORIZED</span>
+          </div>
+        </section>
+
         {/* CTA */}
         <section className="max-w-[1440px] mx-auto px-6 md:px-12 py-32 border-t border-white/5 text-center">
           <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white mb-6">Explore the Full <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Architecture.</span></h2>

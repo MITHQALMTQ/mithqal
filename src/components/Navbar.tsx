@@ -137,7 +137,7 @@ export default function Navbar() {
             href="/features"
             className="hidden md:flex border border-amber-500/60 rounded-full px-6 py-2 bg-transparent text-white hover:bg-amber-500/10 transition-all duration-300 text-sm font-medium tracking-wide items-center gap-2 flex-shrink-0"
           >
-            <span>Launch App</span>
+            <span>Explore Features</span>
             <span aria-hidden="true">→</span>
           </a>
 
@@ -176,7 +176,7 @@ export default function Navbar() {
             className="mt-8 px-8 py-3 rounded-full bg-gradient-to-r from-amber-400 to-amber-200 text-[#07090e] font-semibold text-sm tracking-wide"
             onClick={() => setMobileOpen(false)}
           >
-            Launch App →
+            Explore Features →
           </a>
         </div>
       )}

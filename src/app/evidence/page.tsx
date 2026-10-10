@@ -262,6 +262,27 @@ export default function EvidencePage() {
           </div>
         </section>
 
+        
+        {/* What MITHQAL Is NOT — 19 Prohibitions */}
+        <section className="max-w-[1440px] mx-auto px-6 md:px-12 py-32 border-t border-white/5 scroll-reveal">
+          <div className="text-center mb-20">
+            <div className="inline-flex items-center gap-3 mb-4"><span className="w-px h-4 bg-amber-400" /><span className="text-xs font-semibold tracking-[0.28em] uppercase text-amber-400">WHAT MITHQAL IS NOT</span></div>
+            <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white">19 <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Prohibitions.</span></h2>
+            <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mt-8">MITHQAL is defined as much by what it is NOT as by what it is. These prohibitions are constitutional — they cannot be overridden.</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {["A replacement for SWIFT","A replacement for core banking","A CBDC (Central Bank Digital Currency)","A stablecoin","A USD peg","A speculative asset","An unregulated instrument","A retail payment system","A replacement for sovereign currencies","A displacement of central bank money","An algorithmic currency","A lending platform","A credit facility","An exchange","A custodian","A market maker","An autonomous system (no human oversight)","A production system (BUILD_MODE = FROZEN)","Permissionless (access is controlled)"].map((p, i) => (
+              <div key={i} className="bg-red-500/5 border border-red-500/10 rounded-xl p-6 flex items-start gap-3 stagger-card">
+                <span className="text-red-400 text-lg mt-0.5">✕</span>
+                <div>
+                  <div className="text-xs font-semibold text-red-400/60 tracking-[0.1em] mb-1">PROHIBITION {(i+1).toString().padStart(2, '0')}</div>
+                  <p className="text-sm text-[#cbd5e1]">{p}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
         {/* CTA */}
         <section className="max-w-[1440px] mx-auto px-6 md:px-12 py-32 border-t border-white/5 text-center">
           <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white mb-6">Read the <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Architecture.</span></h2>
