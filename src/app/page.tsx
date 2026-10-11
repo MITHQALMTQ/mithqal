@@ -13,7 +13,7 @@ import {
   Landmark, Shield, Lock, Coins, Cpu, Scale, Network,
   AlertTriangle, CheckCircle2, XCircle, Activity, Building2,
   Layers, Zap, Globe, ArrowRight, Mail, RefreshCw, Gavel,
-  BarChart3,
+  BarChart3, LayoutDashboard,
 } from "lucide-react";
 import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid,
@@ -682,6 +682,10 @@ export default function Page() {
           </div>
           {/* Mobile-friendly nav */}
           <div className="flex items-center gap-1.5 sm:gap-2">
+            <Link href="/dashboard" className="flex items-center gap-1.5 rounded-lg bg-gradient-to-br from-[#d4af37] to-[#c9a227] px-3 py-1.5 text-xs font-bold text-black shadow-lg shadow-gold/30 transition hover:from-[#e0b842] hover:to-[#d4af37] sm:px-4">
+              <LayoutDashboard className="h-3.5 w-3.5" />
+              Enter Dashboard →
+            </Link>
             <Link href="/institutional-engagement" className="rounded-lg border border-gold/30 bg-gold/10 px-2.5 py-1.5 text-[10px] font-semibold text-gold transition hover:bg-gold/20 sm:px-3 sm:text-xs">
               Institutional Engagement
             </Link>
@@ -708,6 +712,10 @@ export default function Page() {
             </button>
           ))}
           <div className="my-2 border-t border-white/5" />
+          <Link href="/dashboard" className="flex items-center gap-2.5 rounded-lg border border-gold/40 bg-gradient-to-r from-gold/20 to-gold/5 px-3 py-2 text-xs font-bold text-gold transition hover:from-gold/30 hover:to-gold/10">
+            <LayoutDashboard className="h-3.5 w-3.5" />
+            Enter Dashboard →
+          </Link>
           <Link href="/institutional-engagement" className="flex items-center gap-2.5 rounded-lg border border-gold/20 bg-gold/5 px-3 py-2 text-xs font-medium text-gold transition hover:bg-gold/10">
             <Building2 className="h-3.5 w-3.5" />
             Institutional Engagement →
@@ -746,6 +754,10 @@ export default function Page() {
                 {item.label}
               </button>
             ))}
+            <Link href="/dashboard" className="flex shrink-0 items-center gap-1 rounded-lg bg-gradient-to-r from-[#d4af37] to-[#c9a227] px-2.5 py-1.5 text-[10px] font-bold text-black shadow-sm">
+              <LayoutDashboard className="h-3 w-3" />
+              Dashboard →
+            </Link>
             <Link href="/institutional-engagement" className="flex shrink-0 items-center gap-1 rounded-lg border border-gold/20 bg-gold/5 px-2.5 py-1.5 text-[10px] font-medium text-gold">
               Engagement →
             </Link>
