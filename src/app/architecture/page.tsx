@@ -1,0 +1,274 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import dynamic from "next/dynamic";
+import { motion } from "framer-motion";
+import Navbar from "@/components/Navbar";
+import FeatureGrid from "@/components/FeatureGrid";
+import { WaterCanvas } from "@/components/WaterShader";
+import Footer from "@/components/Footer";
+import ProgramStatus from "@/components/ProgramStatus";
+
+// 3D architecture explorer — WebGL canvas, must be client-only (no SSR).
+const Architecture3D = dynamic(() => import("@/components/Architecture3D"), { ssr: false });
+
+/**
+ * MITHQAL — Architecture Page (/architecture)
+ * v25.22: Cinematic hybrid architecture — same tech stack as home page.
+ *
+ * Landscape-only background (no baked-in text) + Framer Motion text stagger
+ * + WebGL water shader + page-specific content sections (four-layer architecture,
+ * three-book separation, finality control).
+ */
+
+const container = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.08, delayChildren: 0.3 } },
+};
+const wordVariant = {
+  hidden: { opacity: 0, y: 30, filter: "blur(8px)" },
+  visible: { opacity: 1, y: 0, filter: "blur(0px)", transition: { duration: 0.8, ease: [0.25, 0.1, 0.25, 1] as const } },
+};
+
+const LAYERS = [
+  { num: "01", icon: "🏦", title: "Participants Layer", desc: "Regulated institutions operate within their own ledger positions — each participant's identity, eligibility and authority are controlled and attributable." },
+  { num: "02", icon: "⚙", title: "Control Plane", desc: "MITHQAL orchestrates policy, authorization, finality gates and workflow coordination across all participants in a single institutional plane." },
+  { num: "03", icon: "🔗", title: "Settlement Rails", desc: "Multi-rail interoperability complements existing financial messaging and payment infrastructure — never replacing, only coordinating." },
+  { num: "04", icon: "🔍", title: "Evidence Layer", desc: "Every settlement state leaves attributable, verifiable, auditable evidence — evidence is a control layer, not a log." },
+];
+
+const BOOKS = [
+  { book: "A", title: "MITHQAL Corporate", desc: "MITHQAL's own institutional ledger — corporate obligations, treasury positions and operational accounts at the operator level." },
+  { book: "B", title: "Bank MTQ Obligations", desc: "Bank-side ledger of MTQ obligations — issued, redeemed, encumbered and reconciled positions held by participating institutions." },
+  { book: "C", title: "Participant Position", desc: "Per-participant ledger of holdings, eligibility, encumbrance and availability — the customer-facing position record." },
+];
+
+const FINALITY = [
+  { num: "01", title: "Technical Finality", desc: "Irreversible settlement state at the protocol level — once written, the state cannot be replayed, reverted or duplicated." },
+  { num: "02", title: "Legal / Institutional Finality", desc: "Finality recognized under applicable legal frameworks — the settlement state carries institutional and jurisdictional weight." },
+  { num: "03", title: "Required Control Conditions", desc: "Eligibility, encumbrance, authorization and policy conditions must be satisfied before any settlement can become final." },
+  { num: "04", title: "Execution Eligibility", desc: "Only positions that pass every evidence gate and policy check are eligible for execution — no silent settlement, no shortcuts." },
+];
+
+export default function ArchitecturePage() {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setMounted(true);
+  }, []);
+
+  return (
+    <main className="relative w-full min-h-screen overflow-x-hidden bg-[#07090e]">
+      {/* Full-page background — landscape-only image */}
+      <div className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat" style={{ backgroundImage: 'url("/assets/mithqal-architecture-landscape.png")', backgroundColor: "#07090e" }} aria-hidden="true" />
+
+      <Navbar />
+
+      {/* HERO */}
+      <section className="relative z-20 min-h-screen flex flex-col items-center justify-center text-center px-6">
+        <motion.div variants={container} initial="hidden" animate="visible" className="max-w-4xl hero-scrim" style={{ filter: "drop-shadow(0 4px 12px rgba(0,0,0,0.8))" }}>
+          <motion.div variants={wordVariant} className="inline-flex items-center gap-3 mb-6 bg-black/30 backdrop-blur-md px-4 py-2 rounded-full border border-amber-500/20">
+            <span className="w-px h-4 bg-amber-400" />
+            <span className="text-xs font-semibold tracking-[0.28em] uppercase text-amber-400">INSTITUTIONAL ARCHITECTURE</span>
+          </motion.div>
+          <motion.h1 variants={container} className="text-5xl md:text-7xl font-bold tracking-tight text-white leading-[1.05] mb-6" style={{ filter: "drop-shadow(0 4px 16px rgba(0,0,0,0.9))" }}>
+            <motion.span variants={wordVariant} className="inline-block mr-[0.25em]">The</motion.span>
+            <motion.span variants={wordVariant} className="inline-block mr-[0.25em]">Architecture</motion.span>
+            <motion.span variants={wordVariant} className="inline-block mr-[0.25em]">Behind</motion.span>
+            <motion.span variants={wordVariant} className="inline-block mr-[0.25em]">Institutional</motion.span>
+            <motion.span variants={wordVariant} className="inline-block bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Settlement.</motion.span>
+          </motion.h1>
+          <motion.p variants={wordVariant} className="text-lg md:text-xl text-white/90 max-w-2xl mx-auto mb-10 leading-relaxed" style={{ filter: "drop-shadow(0 2px 8px rgba(0,0,0,0.8))" }}>
+            MITHQAL's architecture is built on layered separation — participants, control plane, rails, and evidence — each layer auditable, reconcilable, and controlled.
+          </motion.p>
+          <motion.div variants={wordVariant} className="flex flex-wrap items-center justify-center gap-4">
+            <a href="#layers" className="px-8 py-3 rounded-full bg-gradient-to-r from-amber-400 to-amber-200 text-[#07090e] font-semibold text-sm tracking-wide hover:scale-105 transition-transform duration-300 btn-press shadow-lg shadow-amber-500/30 border-2 border-amber-300">Explore the Architecture →</a>
+            <a href="/evidence" className="px-8 py-3 rounded-full border-2 border-amber-400/70 bg-black/30 backdrop-blur-md text-white font-medium text-sm tracking-wide hover:bg-amber-500/20 transition-all duration-300">View Evidence Layer</a>
+          </motion.div>
+        </motion.div>
+      {mounted && <WaterCanvas assetPath="/assets/mithqal-architecture-landscape.png" />}
+        <FeatureGrid />
+      </section>
+
+      {/* CONTENT SECTIONS (below the fold) */}
+      <div className="relative z-20 bg-[#07090e]">
+        {/* Four-Layer Architecture */}
+        <section id="layers" className="max-w-[1440px] mx-auto px-6 md:px-12 py-32">
+          <div className="text-center mb-20 scroll-reveal">
+            <div className="inline-flex items-center gap-3 mb-4">
+              <span className="w-px h-4 bg-amber-400" />
+              <span className="text-xs font-semibold tracking-[0.28em] uppercase text-amber-400">FOUR-LAYER ARCHITECTURE</span>
+            </div>
+            <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white">Layered <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Separation.</span></h2>
+            <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mt-8">Each layer operates independently yet remains auditable, reconcilable and controlled as part of one institutional architecture.</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {LAYERS.map((layer) => (
+              <div key={layer.num} className="bg-white/5 backdrop-blur-sm border border-amber-500/10 rounded-2xl p-8 hover:border-amber-500/30 stagger-card transition-all duration-300 card-lift">
+                <div className="flex items-start gap-4">
+                  <div className="text-3xl">{layer.icon}</div>
+                  <div className="flex-1">
+                    <div className="text-xs font-semibold text-amber-400 tracking-[0.1em] mb-2">{layer.num}</div>
+                    <h3 className="text-xl font-semibold text-white mb-4">{layer.title}</h3>
+                    <p className="text-base text-[#cbd5e1] leading-loose">{layer.desc}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Phase 3 — Interactive 3D isometric architecture explorer (R3F) */}
+          <div className="mb-16 mt-20">
+            <div className="text-center mb-6">
+              <span className="text-xs font-semibold tracking-[0.28em] uppercase text-amber-400/80">INTERACTIVE 3D VIEW</span>
+              <p className="text-base text-[#94a3b8] mt-3">Orbit, zoom, and hover each layer to inspect its role in the architecture.</p>
+            </div>
+            <Architecture3D />
+          </div>
+        </section>
+
+        {/* Three-Book Separation */}
+        <section className="max-w-[1440px] mx-auto px-6 md:px-12 py-32 border-t border-white/5">
+          <div className="text-center mb-20 scroll-reveal">
+            <div className="inline-flex items-center gap-3 mb-4">
+              <span className="w-px h-4 bg-amber-400" />
+              <span className="text-xs font-semibold tracking-[0.28em] uppercase text-amber-400">THREE-BOOK SEPARATION</span>
+            </div>
+            <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white">Economic <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Separation.</span></h2>
+            <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mt-8">Three independent ledgers ensure MITHQAL's obligations, bank obligations, and participant positions remain economically separate. Settlement liquidity is separated from the strategic resilience reserve — operational liquidity must be available in the appropriate currency, while strategic reserves provide long-horizon stability, bank obligations, and participant positions remain economically separate and individually auditable.</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {BOOKS.map((book) => (
+              <div key={book.book} className="bg-white/5 backdrop-blur-sm border border-amber-500/10 rounded-2xl p-8 hover:border-amber-500/30 stagger-card transition-all duration-300 card-lift">
+                <div className="w-12 h-12 rounded-full border-2 border-amber-400/50 bg-amber-500/5 flex items-center justify-center text-amber-400 font-semibold text-lg mb-6">Book {book.book}</div>
+                <h3 className="text-xl font-semibold text-white mb-4">{book.title}</h3>
+                <p className="text-base text-[#cbd5e1] leading-loose">{book.desc}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Finality Control */}
+        <section className="max-w-[1440px] mx-auto px-6 md:px-12 py-32 border-t border-white/5">
+          <div className="text-center mb-20 scroll-reveal">
+            <div className="inline-flex items-center gap-3 mb-4">
+              <span className="w-px h-4 bg-amber-400" />
+              <span className="text-xs font-semibold tracking-[0.28em] uppercase text-amber-400">FINALITY CONTROL</span>
+            </div>
+            <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white">Finality by <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Design.</span></h2>
+            <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mt-8">Finality is not a single event — it is a layered chain of technical, legal and control conditions that must all be satisfied.</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {FINALITY.map((item) => (
+              <div key={item.num} className="bg-white/5 backdrop-blur-sm border border-amber-500/10 rounded-2xl p-8 hover:border-amber-500/30 stagger-card transition-all duration-300 card-lift">
+                <div className="text-xs font-semibold text-amber-400 tracking-[0.1em] mb-2">{item.num}</div>
+                <h3 className="text-lg font-semibold text-white mb-4">{item.title}</h3>
+                <p className="text-base text-[#cbd5e1] leading-loose">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+                {/* Key Metrics Strip */}
+        <section className="max-w-[1440px] mx-auto px-6 md:px-12 py-16 border-t border-white/5 scroll-reveal">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              <div className="bg-white/5 border border-amber-500/10 rounded-xl p-6 text-center stagger-card">
+                <div className="text-3xl font-bold text-amber-400 mb-2">4</div>
+                <div className="text-xs text-[#94a3b8] tracking-wide uppercase">Architecture Layers</div>
+              </div>
+              <div className="bg-white/5 border border-amber-500/10 rounded-xl p-6 text-center stagger-card">
+                <div className="text-3xl font-bold text-amber-400 mb-2">3</div>
+                <div className="text-xs text-[#94a3b8] tracking-wide uppercase">Book Separation</div>
+              </div>
+              <div className="bg-white/5 border border-amber-500/10 rounded-xl p-6 text-center stagger-card">
+                <div className="text-3xl font-bold text-amber-400 mb-2">3</div>
+                <div className="text-xs text-[#94a3b8] tracking-wide uppercase">Finality Layers</div>
+              </div>
+              <div className="bg-white/5 border border-amber-500/10 rounded-xl p-6 text-center stagger-card">
+                <div className="text-3xl font-bold text-amber-400 mb-2">20</div>
+                <div className="text-xs text-[#94a3b8] tracking-wide uppercase">Institutional Gates</div>
+              </div>
+          </div>
+        </section>
+
+        
+        {/* Currency Basket */}
+        <section className="max-w-[1440px] mx-auto px-6 md:px-12 py-32 border-t border-white/5 scroll-reveal">
+          <div className="text-center mb-20">
+            <div className="inline-flex items-center gap-3 mb-4"><span className="w-px h-4 bg-amber-400" /><span className="text-xs font-semibold tracking-[0.28em] uppercase text-amber-400">CURRENCY BASKET</span></div>
+            <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white">11-Currency <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Basket.</span></h2>
+            <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mt-8">The reserve basket is weighted across 11 currencies with individual caps to prevent concentration risk.</p>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
+            {[["USD","≤35%"],["EUR","≤20%"],["GBP","≤12%"],["JPY","≤10%"],["CNY","≤10%"],["AED","≤8%"],["SGD","≤8%"],["CHF","≤8%"],["CAD","≤8%"],["AUD","≤8%"],["Gold","≥10%"]].map(([c, cap]) => (
+              <div key={c} className="bg-white/5 border border-amber-500/10 rounded-xl p-6 text-center stagger-card">
+                <div className="text-lg font-bold text-amber-400 mb-2">{c}</div>
+                <div className="text-xs text-[#94a3b8]">{cap}</div>
+              </div>
+            ))}
+          </div>
+          <p className="text-sm text-[#94a3b8] text-center mt-8 max-w-2xl mx-auto leading-loose">Weights sum to 1.0. USD capped at 35% to prevent dollar dominance. Gold floor at 10% ensures commodity backing. All weights are target allocations, not pegs.</p>
+        </section>
+
+        {/* Tokenization Model */}
+        <section className="max-w-[1440px] mx-auto px-6 md:px-12 py-32 border-t border-white/5 scroll-reveal">
+          <div className="text-center mb-20">
+            <div className="inline-flex items-center gap-3 mb-4"><span className="w-px h-4 bg-amber-400" /><span className="text-xs font-semibold tracking-[0.28em] uppercase text-amber-400">TOKENIZATION MODEL</span></div>
+            <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white">Digitized <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Assets.</span></h2>
+            <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mt-8">MITHQAL supports 4 RWA asset classes and 3 digitized coin types. These are NOT stablecoins — separate regulatory class entirely.</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+            <div className="bg-white/5 border border-amber-500/10 rounded-2xl p-8 stagger-card">
+              <h3 className="text-xl font-semibold text-white mb-6">4 RWA Asset Classes</h3>
+              {[["Gold Bullion","Physical gold held by qualified custodian"],["Silver","Commodity reserve component"],["Sovereign Bonds","G7/G20 government securities"],["Bank Money","Regulated bank-issued digitized deposits"]].map(([t, d]) => (
+                <div key={t} className="flex items-start gap-3 py-3"><span className="text-amber-400 mt-1">▸</span><div><span className="text-sm font-medium text-white">{t}</span><p className="text-xs text-[#94a3b8] mt-1">{d}</p></div></div>
+              ))}
+            </div>
+            <div className="bg-white/5 border border-amber-500/10 rounded-2xl p-8 stagger-card">
+              <h3 className="text-xl font-semibold text-white mb-6">3 Digitized Coin Types</h3>
+              {[["Tokenized Bank Money","Bank-issued, regulated, NOT a stablecoin"],["Tokenized RWA","On-chain representation of real-world assets"],["MTQ — permissioned wholesale unit (DISABLED)","Institutional settlement unit — currently disabled per governance"]].map(([t, d]) => (
+                <div key={t} className="flex items-start gap-3 py-3"><span className="text-amber-400 mt-1">▸</span><div><span className="text-sm font-medium text-white">{t}</span><p className="text-xs text-[#94a3b8] mt-1">{d}</p></div></div>
+              ))}
+            </div>
+          </div>
+          <div className="bg-red-500/5 border border-red-500/10 rounded-xl p-6 text-center">
+            <p className="text-sm text-[#cbd5e1]">⚠ Tokenized bank money ≠ stablecoins. MITHQAL does not issue, back, or support stablecoins. Digitized coins are a separate regulatory class with different legal treatment.</p>
+          </div>
+        </section>
+
+        {/* Reserve Rebalancing */}
+        <section className="max-w-[1440px] mx-auto px-6 md:px-12 py-32 border-t border-white/5 scroll-reveal">
+          <div className="text-center mb-20">
+            <div className="inline-flex items-center gap-3 mb-4"><span className="w-px h-4 bg-amber-400" /><span className="text-xs font-semibold tracking-[0.28em] uppercase text-amber-400">RESERVE REBALANCING</span></div>
+            <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white">Dynamic <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Rebalancing.</span></h2>
+            <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mt-8">The reserve basket is continuously rebalanced to maintain target allocations. The rebalancing engine is implemented with 7 API endpoints and 1,137 lines of production code.</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="bg-white/5 border border-amber-500/10 rounded-2xl p-8 text-center stagger-card"><div className="text-4xl mb-4">📊</div><h3 className="text-lg font-semibold text-white mb-3">Plan</h3><p className="text-sm text-[#cbd5e1] leading-loose">Generates a rebalancing plan based on current vs target allocations. Calculates the optimal trade sequence.</p><div className="text-xs text-amber-400 mt-4">/api/rebalance/plan</div></div>
+            <div className="bg-white/5 border border-amber-500/10 rounded-2xl p-8 text-center stagger-card"><div className="text-4xl mb-4">✅</div><h3 className="text-lg font-semibold text-white mb-3">Validate</h3><p className="text-sm text-[#cbd5e1] leading-loose">Validates the plan against invariants: 130% backing, 80/18/2 allocation, no concentration breach.</p><div className="text-xs text-amber-400 mt-4">/api/rebalance/validate</div></div>
+            <div className="bg-white/5 border border-amber-500/10 rounded-2xl p-8 text-center stagger-card"><div className="text-4xl mb-4">⚡</div><h3 className="text-lg font-semibold text-white mb-3">Execute</h3><p className="text-sm text-[#cbd5e1] leading-loose">Executes the validated plan — trades, transfers, and updates all three books with full evidence trail.</p><div className="text-xs text-amber-400 mt-4">/api/rebalance/execute</div></div>
+          </div>
+          <div className="flex flex-wrap items-center justify-center gap-3 mt-8">
+            <span className="text-xs px-3 py-1 rounded-full border border-amber-500/30 text-amber-400/80 bg-amber-500/5">7 API ENDPOINTS</span>
+            <span className="text-xs px-3 py-1 rounded-full border border-amber-500/30 text-amber-400/80 bg-amber-500/5">1,137 LINES OF CODE</span>
+            <span className="text-xs px-3 py-1 rounded-full border border-amber-500/30 text-amber-400/80 bg-amber-500/5">DASHBOARD COMPONENT</span>
+            <span className="text-xs px-3 py-1 rounded-full border border-red-500/30 text-red-400/80 bg-red-500/5">NOT PRODUCTION-AUTHORIZED</span>
+          </div>
+        </section>
+
+        {/* CTA */}
+        <section className="max-w-[1440px] mx-auto px-6 md:px-12 py-32 border-t border-white/5 text-center">
+          <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white mb-6">Explore the Full <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Architecture.</span></h2>
+          <p className="text-lg text-[#cbd5e1] max-w-2xl mx-auto mb-10">Read how the evidence layer turns every settlement state into attributable, verifiable, auditable control.</p>
+          <div className="flex flex-wrap items-center justify-center gap-4">
+            <a href="/evidence" className="px-8 py-3 rounded-full bg-gradient-to-r from-amber-400 to-amber-200 text-[#07090e] font-semibold text-sm tracking-wide hover:scale-105 transition-transform duration-300 btn-press shadow-lg shadow-amber-500/30 border-2 border-amber-300">Explore the full architecture →</a>
+            <a href="/pilot" className="px-8 py-3 rounded-full border-2 border-amber-400/70 bg-black/30 backdrop-blur-md text-white font-medium text-sm tracking-wide hover:bg-amber-500/20 transition-all duration-300">View Pilot Model</a>
+          </div>
+        </section>
+      </div>
+      
+      <ProgramStatus data={{"title": "DEPLOYMENT CHAIN STATUS","badge": "CHAIN BLOCKED — 1 OF 5 VERIFIED","badgeColor": "red","metrics": [{"label": "GitHub","value": "VERIFIED","status": "pass"},{"label": "Vercel","value": "UNVERIFIABLE","status": "unknown"},{"label": "Inngest","value": "BLOCKED","status": "blocked"},{"label": "Turso/Neon","value": "BLOCKED","status": "blocked"}],"blockers": ["GITHUB to VERCEL: UNVERIFIABLE (no Vercel token verified)","VERCEL to INNGEST: BLOCKED (no Inngest keys)","INNGEST to TURSO: BLOCKED (no database auth)","INNGEST to NEON: BLOCKED (no database auth)","DATABASE to EVIDENCE: BLOCKED (no connectivity)"],"note": "Chain blocked reason: no secrets, no provider connectivity, deployment chain broken. Harmony score: 0.2 (1 of 5 verified)."}} />
+      <Footer />
+    </main>
+  );
+}

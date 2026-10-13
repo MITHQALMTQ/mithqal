@@ -1,13 +1,22 @@
 /**
- * GET / POST /api/v1/exceptions — MITHQAL-TECH-SPEC-001 §4.4.
+ * GET / POST /api/v1/exceptions — MITHQAL MASTER BLUEPRINT §16.1 + §5.2.C.
  *
- * GET: list exceptions (newest first, ?limit cap).
- * POST: create an exception (manual escalation only — Inngest writes
- *       the majority of exceptions automatically in Phase 3).
+ * GET:  list permitted exceptions (newest first, ?limit cap).
+ * POST: record an exception (manual escalation only — the Inngest
+ *       exception-router writes the majority of exceptions automatically
+ *       in Phase 3+). The exception is an auditable record; it does NOT
+ *       authorise a payment or correction.
  *
- * Truth state: WIRED. Writes are MTQ-disabled (synthetic). When the
- * Inngest `exception-router` function fires against a failing
- * instruction, the function (not this route) writes the row.
+ * Truth state: WIRED. Writes are MTQ-disabled (synthetic, auditable).
+ * Per §5.2.C, recommendations must be distinguishable from automated
+ * corrections — every row records its `reason_code` and `recommended_action`
+ * as suggestions requiring human approval.
+ *
+ * Field changes vs the legacy schema (§16.3 Table 5):
+ *   instructionId → validationCaseId
+ *   createdAt      → openedAt
+ *   closedAt       → resolvedAt
+ *   + reasonCode, recommendedAction (new)
  */
 
 import { desc } from "drizzle-orm";
@@ -20,16 +29,18 @@ import { authenticateRequest } from "@/lib/api-auth";
 import { dbErrorResponse, errorResponse, okResponse } from "@/lib/api-response";
 import { DbError } from "@/lib/db-errors";
 import { logger } from "@/lib/logger";
-import { POLICY_VERSION } from "@/lib/mtq-gate";
+import { evaluateMtqGate, POLICY_VERSION } from "@/lib/mtq-gate";
 
 export const dynamic = "force-dynamic";
 
 const createExceptionSchema = z.object({
-  instructionId: z.string().min(1).max(50),
+  validationCaseId: z.string().min(1).max(50),
   code: z.string().min(1).max(50),
   severity: z.enum(["LOW", "MEDIUM", "HIGH", "CRITICAL"]),
   owner: z.string().max(100).optional(),
   requiredEvidence: z.array(z.string()).optional(),
+  reasonCode: z.string().max(50).optional(),
+  recommendedAction: z.string().max(2000).optional(),
 });
 
 export async function GET(request: NextRequest) {
@@ -47,7 +58,7 @@ export async function GET(request: NextRequest) {
     const rows = await db
       .select()
       .from(exceptions)
-      .orderBy(desc(exceptions.createdAt))
+      .orderBy(desc(exceptions.openedAt))
       .limit(safeLimit);
 
     return okResponse(rows);
@@ -91,17 +102,20 @@ export async function POST(request: NextRequest) {
     });
   }
 
+  const gate = evaluateMtqGate();
   const db = requireDb();
   try {
     const [created] = await db
       .insert(exceptions)
       .values({
         id: crypto.randomUUID(),
-        instructionId: parsed.data.instructionId,
+        validationCaseId: parsed.data.validationCaseId,
         code: parsed.data.code,
         severity: parsed.data.severity,
         owner: parsed.data.owner ?? null,
         requiredEvidence: parsed.data.requiredEvidence ?? null,
+        reasonCode: parsed.data.reasonCode ?? null,
+        recommendedAction: parsed.data.recommendedAction ?? null,
         status: "OPEN",
       })
       .returning();
@@ -111,15 +125,20 @@ export async function POST(request: NextRequest) {
     }
 
     logger.info(
-      { id: created.id, instructionId: parsed.data.instructionId, code: parsed.data.code },
-      "exception/created (mtq-disabled, synthetic)",
+      {
+        id: created.id,
+        validationCaseId: parsed.data.validationCaseId,
+        code: parsed.data.code,
+        mtqDisabled: gate.mtqDisabled,
+      },
+      "exception/created (mtq-disabled, auditable record — no payment authorised)",
     );
 
     return okResponse(created, 201);
   } catch (err) {
     logger.error(
       {
-        instructionId: parsed.data.instructionId,
+        validationCaseId: parsed.data.validationCaseId,
         err: err instanceof Error ? err.message : String(err),
       },
       "exception/create failed",

@@ -9383,3 +9383,44 @@ Stage Summary:
 - Honest-state discipline: every dashboard page renders an Alert box stating SYNTHETIC data. The settings page displays the 8 MTQ gates with explicit NOT-HELD badges and the canonical honest-state paragraph. The home page CTAs route to `/dashboard` without claiming production authorization.
 - Lint result: `bun run lint` exits 0 (0 errors, 0 warnings). All new files also pass `biome check` with 0 errors and `tsc --noEmit` with 0 errors in the new file set.
 - Next: provision DATABASE_URL → `bun run db:push` to apply schema to Neon → submit a synthetic instruction via POST /api/v1/instructions → wire the Inngest `process-instruction` function (Phase 3 per spec §5) → replace synthetic seed rows in dashboard pages with live API responses when the queue has real data.
+
+---
+Task ID: ASSURANCE-IMPL
+Agent: MITHQAL Assurance Implementation Agent
+Task: Implement MITHQAL MASTER BLUEPRINT — Assurance API routes + dashboard updates + Drizzle schema push.
+
+Work Log:
+- Read MASTER BLUEPRINT (14,817 lines) key sections: §2.1 (identity), §5.2 (MVP capabilities A–G), §5.4 (10 source-specific evidence events), §5.5 (UI/Dashboard principles + DEMO DATA labeling), §8 (Evidence Gates 0–4), §9.1 (MTQ Σ research-only), §D.4 (5 truth states), §16.1 (11 API endpoints), §16.3 (11-table minimum logical data model).
+- Inspected existing project state: schema.ts already migrated to 11 tables per §16.3; layout.tsx already rebranded to "MITHQAL Assurance"; .env has Neon DATABASE_URL + credentials; Drizzle + @neondatabase/serverless installed.
+- Deleted deprecated routes that referenced the legacy `instructions` / `outbox` tables (no longer in schema.ts): /api/v1/instructions/route.ts, /api/v1/instructions/[id]/route.ts, /api/v1/replay/route.ts. Deleted orphaned /hooks/use-instructions.ts.
+- Created 11 new API routes per §16.1:
+  * POST/GET /api/v1/validation-cases — Zod-validated submit, idempotency_records dedup, single Drizzle transaction (validation_case + source_snapshot + RECORD_RECEIVED evidence_event + VALIDATION_CASE_RECEIVED outbox_event + idempotency_record), returns caseId + status "RECEIVED". Does NOT initiate payment.
+  * GET /api/v1/validation-cases/[id] — reads validation result/status with related source_snapshots, evidence_events, exceptions, policy_decisions, reconciliation_cases.
+  * GET /api/v1/validation-cases/[id]/timeline — reads the §5.4 event timeline (10 source-specific events). Reiterates the §5.4 critical rule that SETTLEMENT_CONFIRMATION_RECEIVED does not rename the case to "final".
+  * GET /api/v1/validation-cases/[id]/evidence — reads authorized evidence index (source_snapshots + evidence_events) with the §5.4 integrity note (hashes do not prove source truth).
+  * POST /api/v1/validation-cases/[id]/replay — reproduces the case with stored inputs/rule versions per §5.2.F. Identifies missing dependencies (never silently substitutes current rules). Read-only — no monetary state touched.
+  * POST /api/v1/exceptions/[id]/resolve — records authorized resolution per §16.1. Does NOT execute payment. Maker-checker pattern (§5.2.D) preserved.
+  * POST /api/v1/exceptions/[id]/escalate — escalates case per §16.1. Promotes severity/reassigns owner. Does NOT auto-trigger safe-halt.
+  * GET /api/v1/reconciliation-cases — reads reconciliation status. Reiterates §5.4 (RECONCILIATION_COMPLETED does not prove underlying transaction is complete).
+  * GET /api/v1/policies — reads policy versions per §16.1.
+  * POST /api/v1/safe-halt — stops new in-scope processing per §16.1 + §5.2.G. Requires authorization. Persists outbox_event (SAFE_HALTED) + access_audit_event. Recovery requires separate authorization.
+  * GET /api/v1/health — updated to return MITHQAL Assurance identity, 5 truth states (§D.4), MTQ Σ NOT AUTHORIZED status (§9.1), productionAuthorized=false.
+- Updated /api/v1/exceptions/route.ts to use new schema fields (validationCaseId, openedAt, reasonCode, recommendedAction) — was previously referencing legacy instructionId/createdAt.
+- Updated /hooks/use-exceptions.ts to mirror the new schema fields. Updated /hooks/use-replay.ts to call POST /api/v1/validation-cases/[id]/replay (the new endpoint).
+- Updated 4 dashboard pages per §5.5:
+  * dashboard/page.tsx — DEMO DATA banner ("DEMO DATA — NOT CUSTOMER OR MARKET PERFORMANCE"), 8 metric cards (Open Exceptions, Time to Resolution, Mismatch Rate, Evidence Completeness, System Health, Cases Received, Validation Pass Rate, Reconciliation Pass), exception status distribution + evidence completeness + 7-day resolution trend charts, §5.4 source-specific events table (10 events, NOT F0–F7), recent validation cases table, active exceptions table.
+  * timeline/page.tsx — VC-2027-0042 demo case (2,100,000 AED → INR). Renders all 10 source-specific events (RECORD_RECEIVED, SOURCE_AUTHENTICATED, VALIDATION_PASSED, EXCEPTION_OPENED, HUMAN_APPROVAL_RECORDED, PROVIDER_ACKNOWLEDGEMENT_RECEIVED, SETTLEMENT_CONFIRMATION_RECEIVED, RECONCILIATION_COMPLETED, EVIDENCE_CONFLICT_DETECTED, DISPUTE_OPENED). DEMO DATA banner.
+  * settings/page.tsx — MTQ Σ: NOT AUTHORIZED badge (§9.1), productionAuthorized=FALSE badge, 5 truth-state vocabulary table (§D.4), Gate 0–4 evidence gates (NOT G0–G11 per §8), 11 tables/3 enums in the Database card.
+  * replay/page.tsx — uses useReplayValidationCase hook, surfaces reproducible flag + missingDependencies list, DEMO DATA banner.
+- Updated exceptions/page.tsx (cascading update): switched from instructionId/createdAt to validationCaseId/openedAt, added DEMO DATA label.
+- Rewrote home page (src/app/page.tsx) per §2.1: hero copy is "An independent financial-operations assurance platform that helps institutions validate payment data, resolve operational exceptions, and produce reproducible evidence across authorized systems." Three honest-state cards (Production authorization: FALSE; MTQ Σ: NOT AUTHORIZED; Market validation: UNVALIDATED). "What MITHQAL Assurance IS / is NOT" section. Candidate capabilities (§2.1.1). 10 source-specific events row. 5 truth-state vocabulary row. DEMO DATA disclaimer section. "Enter Dashboard →" CTA (both in nav and hero).
+- Created scripts/push-mithqal-schema.ts — raw SQL via @neondatabase/serverless to push 11 tables to Neon. Idempotent. Drops legacy conflicting tables first, then creates 3 enums (validation_status, severity, event_type) and 11 tables, then seeds demo data (1 institution, 1 validation case, 1 source snapshot, 3 evidence events, 1 exception, 1 policy version, 1 policy decision).
+- Resolved runtime bug: Bun's auto-load of .env does NOT overwrite existing env vars, so a stale `DATABASE_URL=file:...` from a prior Turso session was winning against the .env Postgres URL. Updated loadEnvFile() to always overwrite process.env with .env values. Also discovered `sql.unsafe()` returns a query-builder object (not a Promise) in @neondatabase/serverless 1.2.0 — switched all raw SQL execution to `sql.query(text, [])`.
+- Ran schema push: all 11 tables created, seed data inserted (institutions=1, validation_cases=1, source_snapshots=1, evidence_events=3, exceptions=1, policy_versions=1, policy_decisions=1).
+- Lint result: `bun run lint` exits 0 (0 errors, 1 pre-existing warning in src/components/Navbar.tsx which was not touched by this task). TypeScript `tsc --noEmit` reports 0 errors in all files created/modified by this task (legacy Prisma-based files have pre-existing errors unrelated to this work).
+
+Stage Summary:
+- 12 new API routes created + 1 updated (health). 4 dashboard pages rewritten. 1 home page rewritten. 1 schema-push script created. 3 deprecated files removed (instructions routes + replay route + use-instructions hook).
+- All API routes use Zod validation, X-Idempotency-Key checks, Drizzle transactions for multi-table writes, the standardised `{ error: { code, message } }` envelope, and explicit "no payment initiated / mtq-disabled / productionAuthorized=false" honest-state re-statements in every write response.
+- Drizzle schema pushed to Neon: 11 tables (institutions, validation_cases, source_snapshots, evidence_events, exceptions, policy_versions, policy_decisions, reconciliation_cases, idempotency_records, outbox_events, access_audit_events) + 3 enums (validation_status, severity, event_type) + seed data.
+- Lint clean. TS clean for new files. The MITHQAL Assurance platform is now wired per §16.1 API boundary, §5.4 event vocabulary, §5.5 dashboard principles, §D.4 truth-state vocabulary, §8 evidence gates, and §9.1 MTQ Σ NOT AUTHORIZED discipline.

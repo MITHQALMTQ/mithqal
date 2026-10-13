@@ -1,0 +1,45 @@
+Based on a pixel-by-pixel comparison of the **Reference (Image 1)** and the **Current Implementation (Image 2)**, here is a detailed list of actionable fixes to align the implementation with the design:
+
+### 1. Hero Section Layout & Background
+*   **Background Image:** Replace the current "archway" image with the original "monolithic door/portal" image. The reference features a tall, rectangular glowing structure, not an arch.
+*   **Layout Structure:** Change the hero section from a **split-column layout** (text left, image right) to a **full-bleed overlay layout**. The text and buttons in the reference sit directly on top of the background image, not beside it.
+*   **Vertical Positioning:** Move the hero content block (Headline, Subhead, Buttons) significantly **downwards**. In the reference, the headline starts roughly 20-25% from the top of the viewport, whereas the current implementation pushes it too high up.
+*   **Content Width:** Expand the text container width. The reference headline ("Your Digital Capital...") spans a much wider area (approx. 45-50% of viewport width) compared to the narrower column in the current implementation.
+
+### 2. Typography & Copy (Hero)
+*   **Eyebrow Text:** Change `MITHQAL — NEUTRAL WHOLESALE SETTLEMENT` back to `THE INTELLIGENCE LAYER FOR A NEW ECONOMY`.
+*   **Main Headline:** Replace `A Neutral Infrastructure for a Limitless Financial Future.` with `Your Digital Capital. Unified. Intelligent. Limitless.` Ensure "Limitless." retains the **Gold Color** (`#D4AF37` or similar gold hex) while the rest is White.
+*   **Subheadline:** Replace the long institutional text with: *"Mithqal is the next-generation platform for AI, finance, and digital ownership — built for creators, investors, and visionaries who see beyond."*
+*   **Font Sizing:** Increase the Main Headline font size. The reference uses a massive display font (approx. `64px-72px`), whereas the current text appears smaller relative to the screen.
+
+### 3. Navigation Bar
+*   **Logo:** Replace the hexagon icon with the original stylized "M" logo.
+*   **Active State:** Ensure the "Home" link has the **gold underline** indicator as seen in the reference.
+
+### 4. Call-to-Action (CTA) Buttons
+*   **Primary Button:** Change text from `Explore the Architecture →` to `Get Started →`.
+*   **Secondary Button:** Change text from `View the Ecosystem` to `Explore Ecosystem`. Remove the arrow icon if present on this button (reference shows no arrow here).
+*   **Styling:** Adjust the Primary Button background color to match the specific **muted gold/beige** tone of the reference (approx. `#C5A065`), ensuring it's not too saturated yellow.
+
+### 5. Bottom Feature Strip (The 5 Icons)
+*   **Replace Entire Section:** Delete the "Five Institutional Pillars" card grid and the "Institutional Commitment" section currently visible.
+*   **Revert to Strip:** Reinstate the single-row feature strip at the bottom of the hero area.
+*   **Content & Icons:**
+    *   **Item 1:** Icon = Brain. Title = "AI-Powered". Desc = "Smarter decisions. Greater opportunities."
+    *   **Item 2:** Icon = Coins/Stack. Title = "DeFi & Finance". Desc = "Build, earn, and grow with confidence."
+    *   **Item 3:** Icon = Shield. Title = "Digital Ownership". Desc = "Your assets. Your control."
+    *   **Item 4:** Icon = Nodes/Network. Title = "Global Ecosystem". Desc = "Connect. Collaborate. Create."
+    *   **Item 5:** Icon = Lightning Bolt. Title = "Built for the Future". Desc = "Next-gen technology. Real-world impact."
+*   **Layout:** Ensure these are arranged horizontally with vertical dividers between them, sitting overlaid on the bottom-left of the hero image.
+
+### 6. Visual Elements & Spacing
+*   **Floating Action Button:** Remove the circular settings/theme toggle button visible on the right edge of the current implementation. It does not exist in the reference.
+*   **Footer/Bottom Bar:** Remove the "MITHQAL — Neutral Institutional Settlement Control Plane..." footer text visible at the very bottom of the second image.
+*   **Section Padding:** Drastically reduce the top padding of the main container. The reference is a "hero-first" design with minimal space above the headline, while the current implementation has excessive empty black space at the top.
+
+### Summary of Critical Changes
+1.  **Swap Hero Image** back to the Door/Portal.
+2.  **Change Layout** to Full-Bleed Overlay (Text on Image).
+3.  **Update all Text Content** to match the "Digital Capital" copy.
+4.  **Replace the Card Grid** with the **Icon Strip**.
+5.  **Fix Button Labels** and Logo.

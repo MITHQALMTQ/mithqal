@@ -1,0 +1,29 @@
+{
+  "providers": {
+    "github": {
+      "status": "BLOCKED",
+      "evidence": "GitHub repo name mismatch (expected MITHQALMTQ/MITHQAL, got MITHQALMTQ/mithqal)."
+    },
+    "vercel": {
+      "status": "VERIFIED",
+      "evidence": "HTTP 200 from api.vercel.com/v9/projects/mithqal; project name matches."
+    },
+    "neon": {
+      "status": "BLOCKED",
+      "evidence": "Neon SELECT 1 returned 1. Canonical tables present: 0/9 (none yet — run prisma migrate)."
+    },
+    "turso": {
+      "status": "VERIFIED",
+      "evidence": "Turso SELECT 1 returned 1. Legacy tables: 0/4 (none). Canonical v26.0 tables: 0/5 (run prisma db push)."
+    },
+    "inngest": {
+      "status": "BLOCKED",
+      "evidence": "Inngest API returned HTTP 404 on /v1/apps."
+    }
+  },
+  "harmonyScore": 0.4,
+  "endToEndStatus": "PARTIAL",
+  "timestamp": "2026-10-10T12:55:32.866Z",
+  "exitCode": 1,
+  "blueprintRef": "v26.0 §6.10 + OD-008"
+}

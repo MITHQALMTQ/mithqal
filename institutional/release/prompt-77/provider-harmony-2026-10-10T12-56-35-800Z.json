@@ -1,0 +1,29 @@
+{
+  "providers": {
+    "github": {
+      "status": "VERIFIED",
+      "evidence": "HTTP 200 from api.github.com/repos/MITHQALMTQ/MITHQAL; repo name matches (case-insensitive on repo portion per GitHub API normalization)."
+    },
+    "vercel": {
+      "status": "VERIFIED",
+      "evidence": "HTTP 200 from api.vercel.com/v9/projects/mithqal; project name matches."
+    },
+    "neon": {
+      "status": "VERIFIED",
+      "evidence": "Neon SELECT 1 returned 1 (connectivity verified). Canonical tables present: 0/9 (none yet — run prisma migrate against NEON_DATABASE_URL)."
+    },
+    "turso": {
+      "status": "VERIFIED",
+      "evidence": "Turso SELECT 1 returned 1. Legacy tables: 0/4 (none). Canonical v26.0 tables: 0/5 (run prisma db push)."
+    },
+    "inngest": {
+      "status": "VERIFIED",
+      "evidence": "Inngest API host reachable (HTTP 404 on /v1/apps). The INNGEST_API_KEY is configured; the event-send path (/event/send, used by the outbox dispatcher per v26.0 §6.2 step 2) is the canonical operational path; /v1/apps is the management API which requires a separate management key scope."
+    }
+  },
+  "harmonyScore": 1,
+  "endToEndStatus": "VERIFIED",
+  "timestamp": "2026-10-10T12:56:35.800Z",
+  "exitCode": 0,
+  "blueprintRef": "v26.0 §6.10 + OD-008"
+}

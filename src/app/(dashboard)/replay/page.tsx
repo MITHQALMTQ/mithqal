@@ -9,83 +9,96 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useReplayInstruction } from "@/hooks/use-replay";
+import { useReplayValidationCase } from "@/hooks/use-replay";
 
 /**
- * Replay page — MITHQAL-TECH-SPEC-001 §3.4.4.
+ * Replay page — MITHQAL MASTER BLUEPRINT §16.1 + §5.2.F.
  *
  * Search form + replay result. The replay endpoint reconstructs the
- * policy decision tree that selected the route for an instruction,
- * using the policyVersion that was active at decision time.
+ * policy decision tree using the policyVersion that was active at
+ * decision time. Replay is read-only — it does NOT touch monetary state
+ * or initiate a payment.
  *
  * Output fields:
- *   policyVersion — e.g. POLICY-v1.2.3
- *   decision      — e.g. "Route via RTGS"
- *   reason        — e.g. "Lowest cost (18 bps), acceptable time"
- *   finality      — current finality state (e.g. "F6 not received")
- *   reproducible  — boolean: did the replay match the original decision?
+ *   caseId              — validation case identifier
+ *   policyVersion       — historical policy version at decision time
+ *   currentPolicyVersion — current policy version (for comparison)
+ *   softwareVersion     — MITHQAL-ASSURANCE build tag
+ *   reproducible        — boolean: did the replay match the original?
+ *   decision            — the stored policy decision (or current rule output)
+ *   reason              — stored reason codes / decision trace
+ *   missingDependencies — list of missing inputs that prevent reproduction
  *
- * In pilot, the synthetic demo instruction INS-003 is the canonical
- * example. Submitting "INS-003" produces the documented synthetic replay.
+ * All demo data is labelled per §5.5.
  */
 
-const SYNTHETIC_REPLAY = {
-  instructionId: "INS-003",
+const DEMO_DATA_LABEL = "DEMO DATA — NOT CUSTOMER OR MARKET PERFORMANCE";
+
+const DEMO_REPLAY = {
+  caseId: "VC-2027-0042",
   policyVersion: "POLICY-v1.2.3",
-  decision: "Route via RTGS",
-  reason: "Lowest cost (18 bps), acceptable time, RTGS finality expected at T+6h.",
-  finality: "F6 not received — external rail timeout",
+  currentPolicyVersion: "POLICY-v1.2.3",
+  softwareVersion: "MITHQAL-ASSURANCE-1.0.3",
   reproducible: true,
-  replayedAt: "2026-10-11T14:30:00Z",
+  decision: "RECORDED",
+  reason: "Replay reproduced the stored policy decision; inputs and rules matched.",
+  missingDependencies: [] as string[],
+  sourceSnapshotCount: 1,
+  evidenceEventCount: 7,
+  exceptionCount: 1,
+  replayedAt: "2027-03-15T14:30:00Z",
+  mtqDisabled: true,
+  productionAuthorized: false,
+  note:
+    "Replay is read-only. No payment is initiated and no monetary state is touched.",
 };
 
 export default function ReplayPage() {
-  const [instructionId, setInstructionId] = useState("INS-003");
-  const replay = useReplayInstruction(instructionId);
+  const [caseId, setCaseId] = useState("VC-2027-0042");
+  const replay = useReplayValidationCase();
 
-  // Use the API result when available; fall back to the synthetic demo
-  // when the API is not provisioned.
-  const result = replay.data ?? SYNTHETIC_REPLAY;
+  // Use the API result when available; fall back to the demo data.
+  const result = replay.data ?? DEMO_REPLAY;
   const isFallback = !replay.data;
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    replay.mutate(instructionId);
+    replay.mutate(caseId);
   };
 
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Regulatory Replay"
-        description="Reconstruct historical decisions with policy version"
+        title="Operational Replay"
+        description="Reconstruct historical decisions with retained inputs and rule versions"
       />
 
       <Alert>
         <Info className="size-4" aria-hidden="true" />
-        <AlertTitle>Synthetic replay</AlertTitle>
+        <AlertTitle>{DEMO_DATA_LABEL}</AlertTitle>
         <AlertDescription>
-          The replay below uses a SYNTHETIC decision tree for INS-003. Real replay requires the
-          policy-version store (Phase 3) — until then, the synthetic output is the canonical pilot
-          demonstration.
+          The replay below uses the canonical demo for VC-2027-0042. Per §5.2.F, the system
+          identifies missing or non-reproducible dependencies rather than silently substituting
+          current data or current rules. Replay is read-only — no monetary state is touched.
         </AlertDescription>
       </Alert>
 
       <Card>
         <CardHeader>
-          <CardTitle>Search Instructions</CardTitle>
+          <CardTitle>Search Validation Cases</CardTitle>
           <CardDescription>
-            Enter an instruction ID to reconstruct its decision trace
+            Enter a validation case ID to reconstruct its decision trace
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={onSubmit} className="flex items-end gap-3">
             <div className="flex-1 space-y-1.5">
-              <Label htmlFor="instruction-id">Instruction ID</Label>
+              <Label htmlFor="case-id">Validation Case ID</Label>
               <Input
-                id="instruction-id"
-                value={instructionId}
-                onChange={(e) => setInstructionId(e.target.value)}
-                placeholder="INS-003"
+                id="case-id"
+                value={caseId}
+                onChange={(e) => setCaseId(e.target.value)}
+                placeholder="VC-2027-0042"
                 className="font-mono"
                 required
               />
@@ -106,13 +119,14 @@ export default function ReplayPage() {
         <CardHeader>
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
-              <CardTitle className="font-mono">Replay Result — {result.instructionId}</CardTitle>
+              <CardTitle className="font-mono">Replay Result — {result.caseId}</CardTitle>
               <CardDescription>
-                Policy {result.policyVersion} · replayed {result.replayedAt}
+                Policy {result.policyVersion} · software {result.softwareVersion} · replayed{" "}
+                {result.replayedAt}
               </CardDescription>
             </div>
             {isFallback ? (
-              <Badge variant="secondary">synthetic</Badge>
+              <Badge variant="secondary">demo data</Badge>
             ) : (
               <Badge variant="default">live</Badge>
             )}
@@ -129,8 +143,32 @@ export default function ReplayPage() {
               <dd className="text-sm">{result.reason}</dd>
             </div>
             <div className="space-y-1">
-              <dt className="text-xs uppercase tracking-wider text-muted-foreground">Finality</dt>
-              <dd className="text-sm font-mono">{result.finality}</dd>
+              <dt className="text-xs uppercase tracking-wider text-muted-foreground">
+                Current Policy Version
+              </dt>
+              <dd className="text-sm font-mono">{result.currentPolicyVersion}</dd>
+            </div>
+            <div className="space-y-1">
+              <dt className="text-xs uppercase tracking-wider text-muted-foreground">
+                Missing Dependencies
+              </dt>
+              <dd className="text-sm">
+                {result.missingDependencies.length === 0
+                  ? "none — replay reproducible"
+                  : result.missingDependencies.join(", ")}
+              </dd>
+            </div>
+            <div className="space-y-1">
+              <dt className="text-xs uppercase tracking-wider text-muted-foreground">
+                Source Snapshots
+              </dt>
+              <dd className="text-sm tabular-nums">{result.sourceSnapshotCount}</dd>
+            </div>
+            <div className="space-y-1">
+              <dt className="text-xs uppercase tracking-wider text-muted-foreground">
+                Evidence Events
+              </dt>
+              <dd className="text-sm tabular-nums">{result.evidenceEventCount}</dd>
             </div>
             <div className="space-y-1">
               <dt className="text-xs uppercase tracking-wider text-muted-foreground">
@@ -145,7 +183,7 @@ export default function ReplayPage() {
                 ) : (
                   <>
                     <XCircle className="size-4 text-rose-500" aria-hidden="true" />
-                    <span>No — replay diverges from original decision</span>
+                    <span>No — missing dependencies prevent reproduction</span>
                   </>
                 )}
               </dd>
@@ -153,7 +191,11 @@ export default function ReplayPage() {
           </dl>
           <div className="flex items-center gap-2 rounded-md bg-muted/50 p-3 text-xs text-muted-foreground">
             <ShieldCheck className="size-3.5" aria-hidden="true" />
-            <span>Replay is read-only and MTQ-disabled — no monetary state is touched.</span>
+            <span>
+              Replay is read-only and MTQ-disabled — no monetary state is touched. When the
+              historical policy version differs from the current one, the historical version is
+              used.
+            </span>
           </div>
         </CardContent>
       </Card>

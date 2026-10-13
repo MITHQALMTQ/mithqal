@@ -1,0 +1,52 @@
+Based on a pixel-by-pixel comparison of the **Reference Design (Image 1)** and the **Current Implementation (Image 2)**, here are the specific, actionable fixes required to align the implementation with the design:
+
+### **1. Hero Section Layout & Visuals**
+*   **Hero Image Replacement:** The reference uses a wide, cinematic landscape featuring a glowing rectangular portal/monolith on the right. The implementation uses a vertical, framed archway image. **Fix:** Replace the hero asset with the correct wide-aspect ratio portal image.
+*   **Layout Structure:** The reference is a split-screen layout (Text Left / Image Right). The implementation stacks text on top of the image. **Fix:** Change the Hero container to `display: flex` or `grid` with a 50/50 or 60/40 split.
+*   **Text Content Mismatch:**
+    *   **Headline:** Reference says "A Neutral Infrastructure for a More Connected Financial Future." Implementation text is broken awkwardly ("for a More" on new line).
+    *   **Body Copy:** The paragraph text in the implementation is completely different from the reference. **Fix:** Copy the exact text from Image 1.
+*   **Button Styling:**
+    *   "Explore the Architecture": Reference is a solid gold/yellow button (`#E5B86D` approx). Implementation matches this.
+    *   "View the Ecosystem": Reference has a thin border (`1px solid #E5B86D`) and transparent background. Implementation looks correct but verify border thickness.
+
+### **2. Section Ordering & Missing Sections**
+The implementation appears to be a long-scroll version with *different* content sections than the reference landing page view. To match the reference exactly:
+*   **Remove/Hide Extra Sections:** The implementation contains many sections not present in the reference top-fold (e.g., "Neutral Settlement...", "A Neutral Settlement Fabric...", "Between Monetary Systems...", "Seven Architectural Commitments", etc.). **Fix:** Remove these or ensure they are below the fold if this is meant to be the full site, but strictly speaking, they deviate from the reference screenshot provided.
+*   **Restore "Our Mission" & "Our Vision" Side-by-Side:**
+    *   **Reference:** Two distinct columns side-by-side.
+        *   Left: "Enable Institutional Settlement at Scale."
+        *   Right: "A More Connected Financial Ecosystem."
+    *   **Implementation:** Shows only one block titled "Neutral Settlement. Institutional Control." followed by a diagram. **Fix:** Restore the two-column text layout and original headlines.
+
+### **3. Icon Grid (The 6-Item Grid)**
+*   **Layout:** Reference shows a row of 6 items (Neutrality, Institutional Focus, Security & Control, Interoperability, Transparency, Human Oversight). Implementation is missing this specific grid entirely in the visible area.
+*   **Icons:** Ensure icons are outlined (stroke) style, gold color, inside a circle.
+*   **Typography:** Headings are bold white, body text is smaller grey.
+
+### **4. "Our Principles" Section**
+*   **Reference:** A 4-column grid (Integrity, Resilience, Collaboration, Impact) with large icons above the text.
+*   **Implementation:** This section is missing or replaced by other content. **Fix:** Add the 4-column Principles section back immediately after the Mission/Vision section.
+
+### **5. "Our Commitment" (Footer Hero)**
+*   **Visuals:** Reference has a full-width dark banner with a cityscape/mountain horizon image at the bottom. Text is on the left, buttons on the right.
+*   **Implementation:** This section exists near the bottom but uses the wrong image (the archway again instead of the city skyline). **Fix:** Swap the background image to the city skyline/horizon asset.
+*   **Buttons:** Reference has "Explore Ecosystem" (Gold) and "View Roadmap" (Outline). Implementation matches this layout well, but verify alignment.
+
+### **6. Header / Navigation**
+*   **Logo Spacing:** The "MITHQAL" logo in the reference has more breathing room. In the implementation, it feels slightly cramped or the font weight differs.
+*   **Active State:** The "About" link in the reference has a gold underline. Verify this exists in the implementation (it appears to).
+
+### **7. Footer**
+*   **Content:** Reference footer contains links for Platform, Features, Ecosystem, Roadmap, About (Col 1), Architecture, Evidence, Contact (Col 2), Legal/Status, Terms, Privacy, Disclosures (Col 3).
+*   **Implementation Footer:** Appears to be cut off or missing in the screenshot, or replaced by different content. **Fix:** Implement the 3-column link list as seen in Image 1.
+
+### **Summary of Critical Fixes for Developer:**
+1.  **Swap Hero Image** to the wide portal/monolith asset.
+2.  **Change Hero CSS** to `flex-direction: row` (Side-by-side).
+3.  **Update Hero Text** to match Reference copy exactly.
+4.  **Re-insert "Mission/Vision"** as a 2-column text block (remove the diagram currently there).
+5.  **Re-insert "Principles"** 4-column icon grid.
+6.  **Re-insert "Values"** 6-item icon grid (Neutrality, Security, etc.).
+7.  **Swap Commitment Banner Image** to the skyline asset.
+8.  **Delete** the extraneous text-heavy sections ("Between Monetary Systems", "Seven Architectural Commitments", etc.) that do not appear in the Reference Design.

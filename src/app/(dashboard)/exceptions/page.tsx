@@ -26,62 +26,88 @@ import {
 import { useExceptions } from "@/hooks/use-exceptions";
 
 /**
- * Exceptions page — MITHQAL-TECH-SPEC-001 §3.4.3.
+ * Exceptions page — MITHQAL MASTER BLUEPRINT §16.1 + §5.5.
  *
- * Exception queue with severity/severity/status filters. Live data is
- * loaded via /api/v1/exceptions (TanStack Query). When the API returns
- * no rows, the page shows SYNTHETIC rows so operators can validate the
- * filters and table surface.
+ * Exception queue with severity/status filters. Live data is loaded via
+ * /api/v1/exceptions (TanStack Query). When the API returns no rows, the
+ * page shows DEMO DATA rows so operators can validate the filters and
+ * table surface. All demo rows are labelled per §5.5.
+ *
+ * Schema (§16.3 Table 5):
+ *   validationCaseId  (was instructionId in legacy schema)
+ *   openedAt           (was createdAt)
+ *   resolvedAt         (was closedAt)
+ *   reasonCode         (new)
+ *   recommendedAction  (new)
  */
 
-const SYNTHETIC_EXCEPTIONS = [
-  {
-    id: "EXC-001",
-    instructionId: "INS-003",
-    code: "RAIL_FINAL_TIMEOUT",
-    severity: "HIGH" as Severity,
-    owner: "ops@mithqal",
-    status: "OPEN",
-    createdAt: "2026-10-11T10:24:10Z",
-  },
-  {
-    id: "EXC-002",
-    instructionId: "INS-007",
-    code: "BANK_FUNDING_DELAY",
-    severity: "MEDIUM" as Severity,
-    owner: "ops@mithqal",
-    status: "OPEN",
-    createdAt: "2026-10-11T11:05:00Z",
-  },
-  {
-    id: "EXC-003",
-    instructionId: "INS-009",
-    code: "POLICY_REVIEW_REQ",
-    severity: "CRITICAL" as Severity,
-    owner: "risk@mithqal",
-    status: "OPEN",
-    createdAt: "2026-10-11T11:20:00Z",
-  },
-  {
-    id: "EXC-004",
-    instructionId: "INS-012",
-    code: "FX_RATE_STALE",
-    severity: "LOW" as Severity,
-    owner: "ops@mithqal",
-    status: "CLOSED",
-    createdAt: "2026-10-11T09:30:00Z",
-  },
-] satisfies Array<{
+const DEMO_DATA_LABEL = "DEMO DATA — NOT CUSTOMER OR MARKET PERFORMANCE";
+
+interface DemoException {
   id: string;
-  instructionId: string;
+  validationCaseId: string;
   code: string;
   severity: Severity;
   owner: string;
+  reasonCode: string;
+  recommendedAction: string;
   status: string;
-  createdAt: string;
-}>;
+  openedAt: string;
+  resolvedAt: string | null;
+}
 
-const STATUS_FILTERS = ["ALL", "OPEN", "CLOSED"];
+const DEMO_EXCEPTIONS: DemoException[] = [
+  {
+    id: "EXC-001",
+    validationCaseId: "VC-2027-0042",
+    code: "RAIL_FINAL_TIMEOUT",
+    severity: "HIGH",
+    owner: "ops@mithqal",
+    reasonCode: "RAIL_TIMEOUT",
+    recommendedAction: "Retry with alternative rail (subject to approval)",
+    status: "OPEN",
+    openedAt: "2027-03-15T10:24:10Z",
+    resolvedAt: null,
+  },
+  {
+    id: "EXC-002",
+    validationCaseId: "VC-2027-0047",
+    code: "BANK_FUNDING_DELAY",
+    severity: "MEDIUM",
+    owner: "ops@mithqal",
+    reasonCode: "FUNDING_DELAY",
+    recommendedAction: "Await funding confirmation; do not retry",
+    status: "OPEN",
+    openedAt: "2027-03-15T11:05:00Z",
+    resolvedAt: null,
+  },
+  {
+    id: "EXC-003",
+    validationCaseId: "VC-2027-0049",
+    code: "POLICY_REVIEW_REQ",
+    severity: "CRITICAL",
+    owner: "risk@mithqal",
+    reasonCode: "POLICY_REVIEW",
+    recommendedAction: "Escalate to policy committee",
+    status: "OPEN",
+    openedAt: "2027-03-15T11:20:00Z",
+    resolvedAt: null,
+  },
+  {
+    id: "EXC-004",
+    validationCaseId: "VC-2027-0052",
+    code: "FX_RATE_STALE",
+    severity: "LOW",
+    owner: "ops@mithqal",
+    reasonCode: "STALE_RATE",
+    recommendedAction: "Refresh FX feed and revalidate",
+    status: "RESOLVED",
+    openedAt: "2027-03-15T09:30:00Z",
+    resolvedAt: "2027-03-15T10:12:00Z",
+  },
+];
+
+const STATUS_FILTERS = ["ALL", "OPEN", "RESOLVED"];
 const SEVERITY_FILTERS = ["ALL", "CRITICAL", "HIGH", "MEDIUM", "LOW"];
 
 export default function ExceptionsPage() {
@@ -89,8 +115,8 @@ export default function ExceptionsPage() {
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [severityFilter, setSeverityFilter] = useState<string>("ALL");
 
-  // Use live data when present; fall back to synthetic seed otherwise.
-  const source = query.data && query.data.length > 0 ? query.data : SYNTHETIC_EXCEPTIONS;
+  // Use live data when present; fall back to demo seed otherwise.
+  const source = query.data && query.data.length > 0 ? query.data : DEMO_EXCEPTIONS;
 
   const filtered = useMemo(
     () =>
@@ -106,14 +132,14 @@ export default function ExceptionsPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Exception Queue" description="Manage all settlement exceptions" />
+      <PageHeader title="Exception Queue" description="Permitted exceptions — auditable records" />
 
       <Alert>
         <Info className="size-4" aria-hidden="true" />
-        <AlertTitle>{isFallback ? "Synthetic exceptions" : "Live exceptions"}</AlertTitle>
+        <AlertTitle>{isFallback ? DEMO_DATA_LABEL : "Live exceptions"}</AlertTitle>
         <AlertDescription>
           {isFallback
-            ? "No live exceptions from /api/v1/exceptions — showing 4 synthetic seed rows. Real exceptions will appear once instructions are submitted and finality enforcement runs."
+            ? "No live exceptions from /api/v1/exceptions — showing 4 demo rows. Marking an exception RESOLVED is an auditable state transition; no payment is executed."
             : "Exceptions loaded from the API. Updates auto-refresh every 60 seconds."}
         </AlertDescription>
       </Alert>
@@ -124,7 +150,7 @@ export default function ExceptionsPage() {
             <div>
               <CardTitle>Open Exceptions</CardTitle>
               <CardDescription>
-                {filtered.length} rows ({isFallback ? "synthetic" : "live"})
+                {filtered.length} rows ({isFallback ? "demo" : "live"}) — {DEMO_DATA_LABEL}
               </CardDescription>
             </div>
             <div className="flex items-center gap-2">
@@ -163,12 +189,12 @@ export default function ExceptionsPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>ID</TableHead>
-                  <TableHead>Instruction</TableHead>
+                  <TableHead>Case</TableHead>
                   <TableHead>Code</TableHead>
                   <TableHead>Severity</TableHead>
                   <TableHead>Owner</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead>Created</TableHead>
+                  <TableHead>Opened</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -182,7 +208,7 @@ export default function ExceptionsPage() {
                   filtered.map((e) => (
                     <TableRow key={e.id}>
                       <TableCell className="font-mono text-xs">{e.id}</TableCell>
-                      <TableCell className="font-mono text-xs">{e.instructionId}</TableCell>
+                      <TableCell className="font-mono text-xs">{e.validationCaseId}</TableCell>
                       <TableCell className="font-mono text-xs">{e.code}</TableCell>
                       <TableCell>
                         <SeverityBadge severity={e.severity} />
@@ -192,7 +218,7 @@ export default function ExceptionsPage() {
                         <StatusBadge status={e.status} />
                       </TableCell>
                       <TableCell className="font-mono text-xs tabular-nums">
-                        {e.createdAt}
+                        {e.openedAt}
                       </TableCell>
                     </TableRow>
                   ))

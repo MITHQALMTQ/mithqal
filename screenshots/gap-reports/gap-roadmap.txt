@@ -1,0 +1,62 @@
+Based on a pixel-by-pixel comparison of the **Reference Design (Image 1)** and the **Current Implementation (Image 2)**, here is the comprehensive list of visual gaps and actionable fixes:
+
+### **1. Hero Section & Layout Structure**
+*   **Hero Background Image:** The reference uses a wide, cinematic landscape with glowing "M" portal gates and a timeline path. The current implementation uses a completely different image (light trails over water).
+    *   *Fix:* Replace the hero background image with the original "Mithqal Portal" asset.
+*   **Hero Layout:** The reference uses a **split layout** (Text on Left, Visual/Timeline on Right). The current implementation stacks them vertically (Text on Top, Image on Bottom).
+    *   *Fix:* Implement a CSS Grid or Flexbox row layout for the hero section. Text should occupy ~40-50% width on the left; the timeline graphic should occupy the right.
+*   **Timeline Visualization:** The reference displays a horizontal, connected timeline with 5 distinct stages (Foundation to Global Readiness) overlaid on the image. The current implementation removes this entirely.
+    *   *Fix:* Rebuild the horizontal timeline component with the 5 nodes, connecting lines, and labels (Foundation, Pilots, Expansion, Scale, Global Readiness).
+
+### **2. Navigation Bar**
+*   **Logo Icon:** The reference logo features a sharp, geometric "M" inside a hexagon/diamond shape. The current logo is a softer, rounded hexagon without the distinct "M" cutout.
+    *   *Fix:* Swap the SVG/PNG logo asset to match the sharp geometric reference design.
+*   **Active State:** In the reference, "Roadmap" has an underline indicating the active page. The current implementation also has this, but verify the underline weight matches (approx 2px solid).
+*   **"Launch App" Button:** The reference button has a specific border radius (pill shape) and hover state. Ensure the current button matches the `border-radius: 9999px` and border color (`#D4AF37` or similar gold).
+
+### **3. Typography & Content**
+*   **Headline Hierarchy:**
+    *   Reference: "**A Structured Path to Institutional Evolution.**" ("Institutional Evolution" is Gold).
+    *   Current: Matches text, but check font weight. Reference looks like `font-weight: 600` or `700` for a clean Sans-Serif (likely Inter or Satoshi).
+*   **Subheadline Text:** The text content differs significantly.
+    *   *Reference:* "MITHQAL’s roadmap outlines a phased approach..."
+    *   *Current:* "MITHQAL evolves through controlled build..."
+    *   *Fix:* Copy the exact subheadline text from the reference.
+*   **Button Labels:**
+    *   Reference Secondary Button: "**View the Features**".
+    *   Current Secondary Button: "**View the Architecture**".
+    *   *Fix:* Update button text to "View the Features".
+
+### **4. The Roadmap Steps (Major Structural Difference)**
+This section has been completely redesigned in the current implementation.
+*   **Visual Style:** Reference uses a **Horizontal Flow** with large circular icons (01-05), bold titles, and short descriptions. Current uses a **Grid of Cards** (3x2) with small yellow headers and bulleted lists.
+*   **Step Content:**
+    *   *Reference Step 02:* Title is "**Pilots**". Description mentions "Limited participants...".
+    *   *Current Step 02:* Title is "**Controlled Testing**". Content is a list including "Adversarial Tests", "Failure Scenarios", etc.
+*   **Missing Elements:** The reference includes graphical icons for each step (e.g., layers for Foundation, bank column for Pilots, nodes for Expansion, shield for Scale, globe for Global Readiness).
+    *   *Fix:* Revert the card grid back to the horizontal stepper layout. Restore the original 5 step titles and descriptions. Re-integrate the specific line icons.
+
+### **5. "Platform Architecture" Section**
+*   **Status:** This entire section (**Built for What's Next**) is **missing** from the current implementation.
+*   **Content:** It features a central 3D isometric graphic of layered platforms, surrounded by labels (Participants, Rails, Settlement) on the left and "Foundational Pillars" (Security, Compliance, etc.) on the right.
+*   *Fix:* Re-insert this section immediately following the Roadmap steps.
+
+### **6. Lower Page Sections (Ordering & Presence)**
+The current implementation contains many sections that do not exist in the reference image provided, or are ordered differently.
+*   **Extra Sections in Current:** "From Foundation to Institutional Readiness" (Card Grid), "Sequential Pilot Progression" (Vertical List), "Every Expansion Has a Gate" (Gate Grid), "Where MITHQAL Stands" (Status Table), "The Gate Sequence" (Flowchart), "Build Test Validate" (3 Cols), "Validation Is External" (Table), "Expansion Follows Evidence" (Button Row), "Optional Settlement Primitive" (Card).
+    *   *Action:* If these are required by new specs, keep them, but they represent a major deviation from the reference design which ends shortly after the Architecture section.
+*   **"A Stronger Future" Section:**
+    *   *Reference:* Located near the bottom. Background image is a cityscape/sunset reflecting on water. Buttons: "Explore Ecosystem" (Gold fill) and "View the Roadmap" (Outline).
+    *   *Current:* Located at the very bottom. Background image is a misty mountain landscape. Button text is "Read the Features".
+    *   *Fix:* Move this section up. Replace the mountain background with the city/water reflection background. Change "Read the Features" back to "View the Roadmap".
+
+### **7. Footer**
+*   **Layout:** Reference footer is a simple 4-column layout (Logo/Desc, Platform links, Architecture links, Legal links). Current footer appears to be missing or replaced by the bottom-most section's content.
+*   *Fix:* Restore the standard footer with the MITHQAL logo and link columns as seen in the reference.
+
+### **Summary of Critical Fixes**
+1.  **Restore Hero:** Split layout, Portal image, Horizontal Timeline.
+2.  **Fix Roadmap:** Switch from Card Grid back to Horizontal Stepper with Icons.
+3.  **Re-add Section:** Insert "Platform Architecture" (Isometric Graphic) section.
+4.  **Update Content:** Fix button labels ("View the Features", "View the Roadmap") and subheadline text.
+5.  **Assets:** Update Logo, Hero Image, and "Stronger Future" background image to match reference exactly.

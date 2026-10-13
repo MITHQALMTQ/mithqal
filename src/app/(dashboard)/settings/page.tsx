@@ -14,46 +14,94 @@ import { Switch } from "@/components/ui/switch";
 import { evaluateMtqGate } from "@/lib/mtq-gate";
 
 /**
- * Settings page — MITHQAL-TECH-SPEC-001 §3.4.6 (honest state display).
+ * Settings page — MITHQAL MASTER BLUEPRINT §D.4 + §8 + §16.
  *
- * Read-only configuration surface. No production toggles — the truth
- * state (mtqDisabled=true, productionAuthorized=false) is NOT a
- * switchable preference; it is the canonical gate state from
- * `mtq-gate.ts` and only changes via signed release commits.
+ * Read-only configuration surface. No production toggles — the truth state
+ * (mtqDisabled=true, productionAuthorized=false) is NOT a switchable
+ * preference; it is the canonical gate state from `mtq-gate.ts` and only
+ * changes via signed release commits.
  *
  * What this page does expose honestly:
  *   - Theme toggle (UI preference only, persists to localStorage)
  *   - API base URL (read from env at build time, never logged as secret)
- *   - MTQ gate status (8 gates, all not-held)
- *   - Inngest status (registered, no functions executed)
- *   - Database backend (Neon Postgres, schema defined, migrations NOT applied)
+ *   - MTQ Σ status: NOT AUTHORIZED (research-only per §9.1)
+ *   - Production authorization: FALSE
+ *   - Truth states: 5-state vocabulary per §D.4
+ *     (VERIFIED / HYPOTHESIS / DECISION / UNRESOLVED / NOT AUTHORIZED)
+ *   - Evidence gates: Gate 0–4 per §8 (NOT G0–G11)
  */
 
 const POLICY = evaluateMtqGate();
 
-function GateRow({ label, held, evidence }: { label: string; held: boolean; evidence: string }) {
-  return (
-    <li className="flex flex-col gap-1 py-2">
-      <div className="flex items-center gap-2">
-        <span
-          className={`size-1.5 rounded-full ${held ? "bg-emerald-500" : "bg-rose-500"}`}
-          aria-hidden="true"
-        />
-        <span className="text-sm font-medium">{label}</span>
-        {held ? (
-          <Badge variant="default" className="ml-auto">
-            HELD
-          </Badge>
-        ) : (
-          <Badge variant="destructive" className="ml-auto">
-            NOT HELD
-          </Badge>
-        )}
-      </div>
-      <p className="pl-3.5 text-xs text-muted-foreground">{evidence}</p>
-    </li>
-  );
-}
+const TRUTH_STATES: Array<{
+  name: string;
+  meaning: string;
+  permitted: string;
+}> = [
+  {
+    name: "VERIFIED",
+    meaning: "Supported by authoritative source, reproducible test, or established contractual fact",
+    permitted: "State the fact with source and date",
+  },
+  {
+    name: "HYPOTHESIS",
+    meaning: "Plausible but not established by adequate evidence",
+    permitted: '"Proposed," "candidate," "to be tested"',
+  },
+  {
+    name: "DECISION",
+    meaning: "Explicitly authorized by responsible decision-maker, with scope and date",
+    permitted: '"Approved for the defined scope"',
+  },
+  {
+    name: "UNRESOLVED",
+    meaning: "Conflicting, missing, stale, or insufficient evidence",
+    permitted: "State what must be produced to resolve it",
+  },
+  {
+    name: "NOT AUTHORIZED",
+    meaning: "The relevant activity has not been approved",
+    permitted: "Do not imply permission or readiness",
+  },
+];
+
+const EVIDENCE_GATES: Array<{
+  id: string;
+  title: string;
+  scope: string;
+  held: boolean;
+}> = [
+  {
+    id: "Gate 0",
+    title: "Problem Validation",
+    scope: "Interviews, workflow mapping, competitor research, sample-data analysis, narrowly scoped prototypes",
+    held: false,
+  },
+  {
+    id: "Gate 1",
+    title: "Controlled Product Pilot",
+    scope: "Baseline, metrics, permitted data, security boundaries, evaluation period, acceptance process",
+    held: false,
+  },
+  {
+    id: "Gate 2",
+    title: "Repeatable Commercialization",
+    scope: "Predictable implementation effort, support burden, security readiness, credible gross margins",
+    held: false,
+  },
+  {
+    id: "Gate 3",
+    title: "Optional Settlement Visibility",
+    scope: "Separate business case with named buyer, measurable benefit, willingness to pay, authorised data access",
+    held: false,
+  },
+  {
+    id: "Gate 4",
+    title: "Optional Asset Interoperability",
+    scope: "Identified eligible asset, institution, jurisdiction, permitted activity, operational responsibility",
+    held: false,
+  },
+];
 
 function ThemeToggle() {
   const { theme, setTheme } = useTheme();
@@ -125,18 +173,113 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Settings" description="Read-only configuration surface — pilot scope" />
+      <PageHeader title="Settings" description="Read-only configuration surface — MITHQAL Assurance" />
 
       <Alert>
         <Info className="size-4" aria-hidden="true" />
         <AlertTitle>Honest state — no production toggles</AlertTitle>
         <AlertDescription>
-          The MTQ gate state below is NOT a switchable preference. It is the canonical evaluation
-          from <code className="font-mono">src/lib/mtq-gate.ts</code> and only changes via a signed
-          release commit that updates the gate fields. No setting on this page can authorise
-          production.
+          The MTQ Σ status and production authorization flag below are NOT switchable
+          preferences. They are the canonical evaluation from
+          <code className="font-mono"> src/lib/mtq-gate.ts</code> and only change via a signed
+          release commit. No setting on this page can authorise production.
         </AlertDescription>
       </Alert>
+
+      {/* §9.1 — MTQ Σ NOT AUTHORIZED + Production authorization FALSE */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <ShieldCheck className="size-4" aria-hidden="true" /> Authorisation Status
+          </CardTitle>
+          <CardDescription>Per §9.1 + cover page — read-only</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="flex flex-wrap items-center gap-3 rounded-md bg-muted/50 p-3 text-sm">
+            <Badge variant="destructive">MTQ Σ: NOT AUTHORIZED</Badge>
+            <Badge variant="outline">research-only (§9.1)</Badge>
+            <Badge variant="destructive">productionAuthorized = FALSE</Badge>
+            <Badge variant="secondary">policyVersion = {POLICY.policyVersion}</Badge>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            MTQ Σ is research-only. No mainnet deployment, no issuance. MITHQAL Assurance is
+            commercially viable without MTQ Σ — the operating business must be able to deliver
+            value and earn revenue independent of any future MTQ Σ authorisation.
+          </p>
+        </CardContent>
+      </Card>
+
+      {/* §D.4 — Truth-state vocabulary */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <ShieldCheck className="size-4" aria-hidden="true" /> Truth-State Vocabulary (§D.4)
+          </CardTitle>
+          <CardDescription>
+            Every material claim carries one of five states — 5-state vocabulary, not G0–G11
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ul className="divide-y divide-border">
+            {TRUTH_STATES.map((t) => (
+              <li key={t.name} className="flex flex-col gap-1 py-2">
+                <div className="flex items-center gap-2">
+                  <span className="rounded bg-muted px-2 py-0.5 font-mono text-xs font-semibold">
+                    {t.name}
+                  </span>
+                </div>
+                <p className="pl-3.5 text-xs text-muted-foreground">
+                  <span className="font-medium text-foreground">Meaning:</span> {t.meaning}
+                </p>
+                <p className="pl-3.5 text-xs text-muted-foreground">
+                  <span className="font-medium text-foreground">Permitted wording:</span>{" "}
+                  {t.permitted}
+                </p>
+              </li>
+            ))}
+          </ul>
+          <Separator className="my-4" />
+          <div className="rounded-md bg-muted/30 p-3 text-xs text-muted-foreground">
+            Critical rule: a verified market statistic does not verify the commercial conclusion
+            drawn from it. A valid hash does not prove source truth. A testnet deployment does
+            not establish reserve backing or production readiness.
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* §8 — Evidence Gates 0-4 */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <ShieldCheck className="size-4" aria-hidden="true" /> Evidence Gates (§8)
+          </CardTitle>
+          <CardDescription>Gate 0–4 (not G0–G11) — all must pass before the next phase</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ul className="divide-y divide-border" aria-label="Evidence gate status">
+            {EVIDENCE_GATES.map((g) => (
+              <li key={g.id} className="flex flex-col gap-1 py-2">
+                <div className="flex items-center gap-2">
+                  <span
+                    className={`size-1.5 rounded-full ${g.held ? "bg-emerald-500" : "bg-rose-500"}`}
+                    aria-hidden="true"
+                  />
+                  <span className="text-sm font-medium">
+                    {g.id} — {g.title}
+                  </span>
+                  <Badge
+                    variant={g.held ? "default" : "destructive"}
+                    className="ml-auto"
+                  >
+                    {g.held ? "PASSED" : "NOT PASSED"}
+                  </Badge>
+                </div>
+                <p className="pl-3.5 text-xs text-muted-foreground">{g.scope}</p>
+              </li>
+            ))}
+          </ul>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>
@@ -190,7 +333,7 @@ export default function SettingsPage() {
           </div>
           <div className="flex items-center justify-between">
             <span className="text-muted-foreground">Schema</span>
-            <span className="font-mono text-xs">src/db/schema.ts (8 tables, 5 enums)</span>
+            <span className="font-mono text-xs">src/db/schema.ts (11 tables, 3 enums)</span>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-muted-foreground">Migrations applied</span>
@@ -198,72 +341,9 @@ export default function SettingsPage() {
           </div>
           <p className="text-xs text-muted-foreground">
             DATABASE_URL is loaded from .env (NEVER printed). Schema migrations are pending —
-            operators run <code className="font-mono">drizzle-kit push</code> to provision tables
-            before submitting the first instruction.
+            operators run <code className="font-mono">drizzle-kit push</code> or the
+            push script to provision tables before submitting the first validation case.
           </p>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <ShieldCheck className="size-4" aria-hidden="true" /> MTQ Gate
-          </CardTitle>
-          <CardDescription>8 canonical gates — all must be held for MTQ to enable</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="mb-4 flex flex-wrap items-center gap-3 rounded-md bg-muted/50 p-3 text-sm">
-            <Badge variant="destructive">MTQ disabled</Badge>
-            <Badge variant="outline">productionAuthorized = false</Badge>
-            <Badge variant="secondary">policyVersion = {POLICY.policyVersion}</Badge>
-          </div>
-          <ul className="divide-y divide-border" aria-label="MTQ gate status">
-            <GateRow
-              label="G1 — Legal opinion"
-              held={POLICY.gates.legalOpinion.held}
-              evidence={POLICY.gates.legalOpinion.evidence}
-            />
-            <GateRow
-              label="G2 — Bank design partner"
-              held={POLICY.gates.bankPartner.held}
-              evidence={POLICY.gates.bankPartner.evidence}
-            />
-            <GateRow
-              label="G3 — Regulatory license"
-              held={POLICY.gates.regulatoryLicense.held}
-              evidence={POLICY.gates.regulatoryLicense.evidence}
-            />
-            <GateRow
-              label="G4 — Custody arrangement"
-              held={POLICY.gates.custodyArrangement.held}
-              evidence={POLICY.gates.custodyArrangement.evidence}
-            />
-            <GateRow
-              label="G5 — Backing eligibility"
-              held={POLICY.gates.backingEligibility.held}
-              evidence={POLICY.gates.backingEligibility.evidence}
-            />
-            <GateRow
-              label="G6 — Accounting integration"
-              held={POLICY.gates.accountingIntegration.held}
-              evidence={POLICY.gates.accountingIntegration.evidence}
-            />
-            <GateRow
-              label="G7 — Reconciliation tolerance"
-              held={POLICY.gates.reconciliationTolerance.held}
-              evidence={POLICY.gates.reconciliationTolerance.evidence}
-            />
-            <GateRow
-              label="G8 — Production authorization"
-              held={POLICY.gates.productionAuthorization.held}
-              evidence={POLICY.gates.productionAuthorization.evidence}
-            />
-          </ul>
-          <Separator className="my-4" />
-          <div className="flex items-start gap-2 rounded-md bg-muted/30 p-3 text-xs text-muted-foreground">
-            <Key className="mt-0.5 size-3.5 shrink-0" aria-hidden="true" />
-            <p>{POLICY.honestState}</p>
-          </div>
         </CardContent>
       </Card>
 

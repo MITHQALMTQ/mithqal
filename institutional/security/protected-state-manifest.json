@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "manifest_id": "PSM-v25.7-final",
+  "date": "2026-10-03T23:30:00Z",
+  "description": "Documents what is protected, backed up, and hardened against rollback.",
+  "protections": {
+    "env_file": {
+      "status": "PROTECTED",
+      "gitignored": true,
+      "tracked_in_git": false,
+      "encrypted_backup": ".env.encrypted (2704 bytes, AES-256-CBC, key=SHA256(GitHub token))",
+      "decryption_method": "openssl enc -d -aes-256-cbc -salt -pbkdf2 -in .env.encrypted -pass pass:$(echo -n $GH_TOKEN | sha256sum | awk '{print $1}')",
+      "pre_push_hook_blocks_env": true,
+      "variables_count": 35,
+      "duplicates": 0,
+      "non_working_tokens_removed": ["TURSO_API_TOKEN", "AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", "AWS_ENDPOINT_URL_S3", "AWS_S3_BUCKET", "AWS_REGION", "NEON_AI_GATEWAY_TOKEN", "MESSARI_API_KEY"]
+    },
+    "git_rollback_prevention": {
+      "backup_branch": "backup/v25.7-hardened-final",
+      "tag": "v25.7-hardened-final",
+      "force_push_blocked": "by branch protection on GitHub",
+      "history_rewrite_blocked": "by branch protection on GitHub",
+      "tag_deletion_blocked": "by branch protection on GitHub",
+      "previous_backup_branches": ["backup/v25.7-hardened", "backup/pre-push-1788300030", "backup/v25.5-pre-push", "v25.2-hardened-backup", "v25.3-hardened-backup", "v25.3-hardened-backup-2"]
+    },
+    "providers_connected": {
+      "github": { "status": "VERIFIED", "evidence": "push succeeded" },
+      "turso": { "status": "VERIFIED", "evidence": "SELECT 1 returned {\"t\":1}" },
+      "neon": { "status": "VERIFIED", "evidence": "SELECT 1 returned {\"t\":1}" },
+      "inngest": { "status": "KEYS_PRESENT", "evidence": "API + Signing + Event keys in .env" },
+      "vercel": { "status": "TOKEN_PRESENT", "evidence": "VERCEL_TOKEN + auto-deploy on GitHub push" }
+    },
+    "institutional_files": {
+      "total": 287,
+      "status": "ALL_PRESENT_NOTHING_DELETED"
+    },
+    "homepage": {
+      "status": "IMPLEMENTED",
+      "commit": "MITHQAL-HOME-REFERENCE-FAITHFUL-UI"
+    }
+  },
+  "build_mode": "FROZEN",
+  "production_authorized": false,
+  "institutionally_validated": false,
+  "NOT_PRODUCTION_AUTHORIZED": true
+}
