@@ -1,0 +1,1319 @@
+check and give honest modifications to give top of line with lates technology tech stack and dependencies and UI design and structuring with top of line latest design andd user satisfaction: MITHQAL Platform — Full Rebuild Specification
+
+For Your AI Platform Developer
+
+Document ID: MITHQAL-TECH-SPEC-001
+Version: 1.0
+Date: 11 October 2026
+CEO: Mohamed Eltonsy
+Status: Design Stage — Pre-Pilot — Pre-Financing
+Production Authorization: FALSE
+
+PART 1 — ARCHITECTURE OVERVIEW
+
+1.1 The Golden Rule
+
+Build the simplest possible thing that proves the control plane works.
+
+No AI/ML in Pilot A. No Turso. No WebSockets. No microservices. No Kubernetes. One database. One runtime. One orchestration layer. One source of truth.
+
+Everything else is premature complexity.
+
+1.2 High-Level Architecture
+
+text
+┌─────────────────────────────────────────────────────────────────────┐
+│                         BANK SYSTEMS                                │
+│  Core Banking · KYC/KYB · AML/Sanctions · FX/Treasury               │
+│  (UNCHANGED — BANK KEEPS FULL RESPONSIBILITY)                       │
+└─────────────────────────────────────────────────────────────────────┘
+                                │
+                                │ mTLS + ISO 20022 / REST API
+                                ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                      MITHQAL CONTROL PLANE                          │
+│                                                                     │
+│  ┌─────────────────────────────────────────────────────────────┐   │
+│  │              NEXT.JS 15 (App Router)                        │   │
+│  │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐      │   │
+│  │  │   React 19   │  │  Server      │  │  API Routes  │      │   │
+│  │  │   Dashboard  │  │  Components  │  │  (REST)      │      │   │
+│  │  └──────────────┘  └──────────────┘  └──────────────┘      │   │
+│  │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐      │   │
+│  │  │  shadcn/ui   │  │  TanStack    │  │  Zustand     │      │   │
+│  │  │  Components  │  │  Query v5    │  │  Client      │      │   │
+│  │  └──────────────┘  └──────────────┘  └──────────────┘      │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+│                                │                                    │
+│                                ▼                                    │
+│  ┌─────────────────────────────────────────────────────────────┐   │
+│  │              NEON (PostgreSQL — Serverless)                 │   │
+│  │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐      │   │
+│  │  │  Instructions│  │  Evidence    │  │  Exceptions  │      │   │
+│  │  │  Obligations │  │  Policies    │  │  Outbox      │      │   │
+│  │  └──────────────┘  └──────────────┘  └──────────────┘      │   │
+│  │  ORM: Drizzle                                               │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+│                                │                                    │
+│                                ▼                                    │
+│  ┌─────────────────────────────────────────────────────────────┐   │
+│  │              INNGEST (Background Jobs)                      │   │
+│  │  Workflow Orchestration · Retries · Scheduling · DLQ        │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+│                                │                                    │
+│                                ▼                                    │
+│  ┌─────────────────────────────────────────────────────────────┐   │
+│  │              RAIL ADAPTERS                                  │   │
+│  │  SWIFT · ISO 20022 · RTGS · Tokenized Deposits · CBDC       │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────────────┘
+                                │
+                                ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                    EXTERNAL RAILS & PROVIDERS                       │
+│  SWIFT · ISO 20022 · RTGS · Tokenized Deposits · CBDC               │
+└─────────────────────────────────────────────────────────────────────┘
+PART 2 — TECHNOLOGY STACK
+
+2.1 Frontend Stack
+
+Layer	Technology	Version	Why
+Framework	Next.js	15.5+ (App Router)	Server components, streaming, edge-ready
+UI Library	React	19.1+	Concurrent features, use() hook, server actions
+Language	TypeScript	5.5+	Type safety across frontend and backend
+Styling	Tailwind CSS	v4+	CSS-first design tokens, OKLCH colors
+Components	shadcn/ui	Latest	Copy-paste components, full control, Radix primitives
+Data Fetching	TanStack Query	v5+	Server state management, caching, mutations
+Client State	Zustand	v5+	Lightweight global state
+Charts	Recharts	v3+	Declarative charts, React-native
+Icons	Lucide React	Latest	Consistent icon set
+Forms	React Hook Form + Zod	Latest	Type-safe forms
+Tables	TanStack Table	v8+	Headless table logic
+Date	date-fns	v4+	Modern date utilities
+Notifications	Sonner	Latest	Toast notifications
+2.2 Backend Stack
+
+Layer	Technology	Version	Why
+Runtime	Node.js	22 LTS	Long-term support
+API Framework	Next.js API Routes	15.5+	Co-located with frontend
+Database	Neon (PostgreSQL)	16+	Serverless, auto-scaling, branching
+ORM	Drizzle ORM	0.45+	Type-safe, edge-compatible, SQL-like
+Driver	@neondatabase/serverless	1.0+	HTTP driver for serverless
+Orchestration	Inngest	Latest	Durable workflows, retries, scheduling
+Auth	Auth.js (NextAuth v5)	5.0+	Native App Router, edge-compatible
+Validation	Zod	v3+	Runtime type validation
+Logging	Pino	v9+	Fast, structured logging
+Monitoring	OpenTelemetry	Latest	Vendor-neutral observability
+2.3 Infrastructure Stack
+
+Layer	Technology	Why
+Hosting	Vercel	Native Next.js, edge functions, preview deployments
+Database	Neon	Serverless PostgreSQL, branching for dev/test
+Orchestration	Inngest	Durable workflows, no infrastructure to manage
+Source Control	GitHub	Version control, CI/CD, code review
+CI/CD	GitHub Actions	Automated testing, deployment
+Secrets	Vercel Environment Variables	Encrypted, scoped by environment
+DNS	Cloudflare	DDoS protection, fast DNS
+Email	Resend	Transactional email
+Monitoring	Sentry	Error tracking
+2.4 Development Tools
+
+Tool	Purpose
+Biome	Linting + formatting (faster than ESLint + Prettier)
+Vitest	Unit testing
+Playwright	End-to-end testing
+MSW	API mocking
+Storybook	Component development
+Drizzle Studio	Database GUI
+Inngest Dev Server	Local workflow testing
+2.5 Package Dependencies
+
+json
+{
+  "dependencies": {
+    "next": "^15.5.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "typescript": "^5.5.0",
+    
+    "tailwindcss": "^4.0.0",
+    "shadcn-ui": "latest",
+    "@radix-ui/react-*": "latest",
+    "class-variance-authority": "^0.7.0",
+    "clsx": "^2.1.0",
+    "tailwind-merge": "^2.5.0",
+    "lucide-react": "latest",
+    
+    "@tanstack/react-query": "^5.0.0",
+    "@tanstack/react-table": "^8.0.0",
+    "zustand": "^5.0.0",
+    "recharts": "^3.0.0",
+    "react-hook-form": "^7.0.0",
+    "zod": "^3.23.0",
+    "@hookform/resolvers": "^3.0.0",
+    "sonner": "latest",
+    "date-fns": "^4.0.0",
+    
+    "next-auth": "^5.0.0",
+    "@auth/drizzle-adapter": "^1.0.0",
+    
+    "drizzle-orm": "^0.45.0",
+    "@neondatabase/serverless": "^1.0.0",
+    
+    "inngest": "latest",
+    
+    "pino": "^9.0.0",
+    "pino-pretty": "^11.0.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.0",
+    "vitest": "^2.0.0",
+    "@playwright/test": "^1.48.0",
+    "msw": "^2.0.0",
+    "storybook": "^8.0.0",
+    "drizzle-kit": "^0.31.0"
+  }
+}
+PART 3 — UI/UX ARCHITECTURE
+
+3.1 Design System
+
+3.1.1 Design Tokens
+
+All design tokens live in src/theme/tokens.css — the single source of truth for colors, typography, spacing, and radii.
+
+css
+/* src/theme/tokens.css */
+@import "tailwindcss";
+
+@theme {
+  /* Colors — OKLCH format for perceptual uniformity */
+  --color-primary-50: oklch(0.97 0.01 250);
+  --color-primary-100: oklch(0.94 0.02 250);
+  --color-primary-200: oklch(0.88 0.04 250);
+  --color-primary-300: oklch(0.80 0.06 250);
+  --color-primary-400: oklch(0.70 0.08 250);
+  --color-primary-500: oklch(0.60 0.10 250);
+  --color-primary-600: oklch(0.50 0.12 250);
+  --color-primary-700: oklch(0.40 0.10 250);
+  --color-primary-800: oklch(0.30 0.08 250);
+  --color-primary-900: oklch(0.20 0.06 250);
+  --color-primary-950: oklch(0.12 0.04 250);
+
+  /* Semantic colors */
+  --color-background: oklch(1.00 0 0);
+  --color-foreground: oklch(0.15 0.02 250);
+  --color-muted: oklch(0.96 0.01 250);
+  --color-muted-foreground: oklch(0.55 0.02 250);
+  --color-border: oklch(0.90 0.01 250);
+  --color-input: oklch(0.90 0.01 250);
+  --color-ring: oklch(0.60 0.10 250);
+
+  /* Status colors */
+  --color-success: oklch(0.65 0.15 145);
+  --color-warning: oklch(0.75 0.15 85);
+  --color-error: oklch(0.60 0.20 25);
+  --color-info: oklch(0.65 0.10 250);
+
+  /* Typography */
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+
+  /* Spacing */
+  --spacing: 0.25rem;
+
+  /* Radii */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+}
+
+@layer base {
+  :root {
+    --background: 1.00 0 0;
+    --foreground: 0.15 0.02 250;
+    --card: 1.00 0 0;
+    --card-foreground: 0.15 0.02 250;
+    --popover: 1.00 0 0;
+    --popover-foreground: 0.15 0.02 250;
+    --primary: 0.60 0.10 250;
+    --primary-foreground: 0.98 0 0;
+    --secondary: 0.96 0.01 250;
+    --secondary-foreground: 0.15 0.02 250;
+    --muted: 0.96 0.01 250;
+    --muted-foreground: 0.55 0.02 250;
+    --accent: 0.96 0.01 250;
+    --accent-foreground: 0.15 0.02 250;
+    --destructive: 0.60 0.20 25;
+    --destructive-foreground: 0.98 0 0;
+    --border: 0.90 0.01 250;
+    --input: 0.90 0.01 250;
+    --ring: 0.60 0.10 250;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 0.12 0.02 250;
+    --foreground: 0.95 0.01 250;
+    --card: 0.15 0.02 250;
+    --card-foreground: 0.95 0.01 250;
+    --popover: 0.15 0.02 250;
+    --popover-foreground: 0.95 0.01 250;
+    --primary: 0.70 0.08 250;
+    --primary-foreground: 0.12 0.02 250;
+    --secondary: 0.20 0.02 250;
+    --secondary-foreground: 0.95 0.01 250;
+    --muted: 0.20 0.02 250;
+    --muted-foreground: 0.65 0.02 250;
+    --accent: 0.20 0.02 250;
+    --accent-foreground: 0.95 0.01 250;
+    --destructive: 0.50 0.20 25;
+    --destructive-foreground: 0.95 0.01 250;
+    --border: 0.25 0.02 250;
+    --input: 0.25 0.02 250;
+    --ring: 0.70 0.08 250;
+  }
+}
+3.1.2 Typography Scale
+
+Token	Size	Weight	Usage
+text-display	3.5rem	700	Hero headlines
+text-h1	2.5rem	700	Page titles
+text-h2	2rem	600	Section titles
+text-h3	1.5rem	600	Card titles
+text-h4	1.25rem	600	Subsection titles
+text-body-lg	1.125rem	400	Lead paragraphs
+text-body	1rem	400	Body text
+text-body-sm	0.875rem	400	Secondary text
+text-caption	0.75rem	400	Labels, metadata
+text-overline	0.75rem	600	Section labels (uppercase)
+3.1.3 Spacing Scale
+
+Token	Value	Usage
+space-1	0.25rem	Tight spacing
+space-2	0.5rem	Small gaps
+space-3	0.75rem	Component padding
+space-4	1rem	Standard spacing
+space-6	1.5rem	Section gaps
+space-8	2rem	Large gaps
+space-12	3rem	Section padding
+space-16	4rem	Page padding
+3.2 Layout Architecture
+
+3.2.1 App Shell
+
+text
+┌─────────────────────────────────────────────────────────────────────┐
+│  TOP BAR                                                            │
+│  ┌─────────────┐  ┌─────────────────────────────┐  ┌────────────┐  │
+│  │  Logo       │  │  Breadcrumbs / Page Title   │  │  User Menu │  │
+│  └─────────────┘  └─────────────────────────────┘  └────────────┘  │
+├─────────────────────────────────────────────────────────────────────┤
+│  ┌─────────────┐  ┌─────────────────────────────────────────────┐  │
+│  │  SIDEBAR    │  │  MAIN CONTENT AREA                          │  │
+│  │             │  │                                             │  │
+│  │  Dashboard  │  │  ┌─────────────────────────────────────┐   │  │
+│  │  Timeline   │  │  │  Page-specific content              │   │  │
+│  │  Evidence   │  │  │                                     │   │  │
+│  │  Exceptions │  │  │                                     │   │  │
+│  │  Reconcile  │  │  │                                     │   │  │
+│  │  Replay     │  │  │                                     │   │  │
+│  │  Corridor   │  │  │                                     │   │  │
+│  │  Settings   │  │  └─────────────────────────────────────┘   │  │
+│  │             │  │                                             │  │
+│  └─────────────┘  └─────────────────────────────────────────────┘  │
+├─────────────────────────────────────────────────────────────────────┤
+│  STATUS BAR                                                         │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  ┌───────────┐  │
+│  │  System     │  │  API        │  │  Version    │  │  Support  │  │
+│  │  Healthy    │  │  Operational│  │  v1.0.0     │  │  Link     │  │
+│  └─────────────┘  └─────────────┘  └─────────────┘  └───────────┘  │
+└─────────────────────────────────────────────────────────────────────┘
+3.2.2 Sidebar Navigation
+
+tsx
+// src/components/layout/sidebar.tsx
+import { 
+  LayoutDashboard, 
+  Clock, 
+  FileCheck, 
+  AlertTriangle, 
+  GitCompare, 
+  RotateCcw, 
+  Map, 
+  Settings 
+} from "lucide-react";
+
+const navigation = [
+  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { name: "Timeline", href: "/timeline", icon: Clock },
+  { name: "Evidence", href: "/evidence", icon: FileCheck },
+  { name: "Exceptions", href: "/exceptions", icon: AlertTriangle, badge: 3 },
+  { name: "Reconciliation", href: "/reconciliation", icon: GitCompare },
+  { name: "Replay", href: "/replay", icon: RotateCcw },
+  { name: "Corridor", href: "/corridor", icon: Map },
+  { name: "Settings", href: "/settings", icon: Settings },
+];
+3.3 Component Library
+
+3.3.1 Core Components (shadcn/ui)
+
+Component	Usage
+Button	Actions, form submissions
+Input	Form fields
+Select	Dropdowns
+Table	Data display
+Card	Content containers
+Badge	Status indicators
+Dialog	Modals
+Sheet	Side panels
+Tabs	Content switching
+Toast	Notifications
+Tooltip	Hover information
+Dropdown	Menus
+Avatar	User representation
+Progress	Loading states
+Skeleton	Loading placeholders
+Alert	Important messages
+Calendar	Date selection
+Command	Command palette
+3.3.2 Custom Components
+
+Component	Purpose
+StatusBadge	Colored status indicator with dot
+MetricCard	KPI display with trend
+TimelineItem	Instruction timeline event
+EvidenceRow	Evidence table row
+ExceptionCard	Exception summary card
+RouteComparison	Route options comparison
+PolicyVersion	Policy version display
+ReplayResult	Replay output display
+CorridorMetrics	Corridor diagnostic metrics
+SafeHaltPanel	Emergency controls
+3.4 Page Specifications
+
+3.4.1 Dashboard (/dashboard)
+
+tsx
+// src/app/(dashboard)/dashboard/page.tsx
+export default function DashboardPage() {
+  return (
+    <div className="space-y-6">
+      {/* Metrics Row */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <MetricCard
+          title="Instructions Today"
+          value="12,450"
+          change="+12%"
+          trend="up"
+        />
+        <MetricCard
+          title="Value Today"
+          value="$245M"
+          change="+8%"
+          trend="up"
+        />
+        <MetricCard
+          title="Exception Rate"
+          value="5.6%"
+          change="-2.1%"
+          trend="down"
+        />
+        <MetricCard
+          title="Avg Settlement Time"
+          value="6h"
+          change="-1.5h"
+          trend="down"
+        />
+      </div>
+
+      {/* Charts Row */}
+      <div className="grid gap-4 md:grid-cols-2">
+        <RouteDistributionChart />
+        <CostDistributionChart />
+      </div>
+
+      {/* Tables Row */}
+      <div className="grid gap-4 md:grid-cols-2">
+        <RecentInstructionsTable />
+        <ActiveExceptionsList />
+      </div>
+    </div>
+  );
+}
+3.4.2 Instruction Timeline (/timeline)
+
+tsx
+// src/app/(dashboard)/timeline/page.tsx
+export default function TimelinePage() {
+  return (
+    <div className="space-y-6">
+      <PageHeader
+        title="Instruction Timeline"
+        description="Complete timeline of all settlement events"
+      />
+      
+      <Card>
+        <CardHeader>
+          <CardTitle>INS-003</CardTitle>
+          <CardDescription>
+            $2,100,000 USD → INR · UAE → India
+          </CardDescription>
+          <StatusBadge status="EXCEPTION" />
+        </CardHeader>
+        <CardContent>
+          <Timeline>
+            <TimelineItem
+              state="F0"
+              name="Instruction Accepted"
+              timestamp="10:23:15.000"
+              source="Bank A API"
+              evidence="HASH-001"
+              status="success"
+            />
+            <TimelineItem
+              state="F1"
+              name="Bank Funding Final"
+              timestamp="10:23:18.500"
+              source="Bank A Treasury"
+              evidence="HASH-002"
+              status="success"
+            />
+            {/* ... more items ... */}
+            <TimelineItem
+              state="F6"
+              name="External Rail Final"
+              timestamp="10:24:10.000"
+              source="RTGS"
+              evidence="HASH-007"
+              status="error"
+            />
+          </Timeline>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+3.4.3 Exception Queue (/exceptions)
+
+tsx
+// src/app/(dashboard)/exceptions/page.tsx
+export default function ExceptionsPage() {
+  return (
+    <div className="space-y-6">
+      <PageHeader
+        title="Exception Queue"
+        description="Manage all settlement exceptions"
+      />
+      
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle>Open Exceptions</CardTitle>
+            <ExceptionFilters />
+          </div>
+        </CardHeader>
+        <CardContent>
+          <ExceptionTable
+            columns={exceptionColumns}
+            data={exceptions}
+          />
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+3.4.4 Regulatory Replay (/replay)
+
+tsx
+// src/app/(dashboard)/replay/page.tsx
+export default function ReplayPage() {
+  return (
+    <div className="space-y-6">
+      <PageHeader
+        title="Regulatory Replay"
+        description="Reconstruct historical decisions with policy version"
+      />
+      
+      <Card>
+        <CardHeader>
+          <CardTitle>Search Instructions</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ReplaySearchForm />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Replay Result — INS-003</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ReplayResult
+            policyVersion="POLICY-v1.2.3"
+            decision="Route via RTGS"
+            reason="Lowest cost (18 bps), acceptable time"
+            finality="F6 not received"
+            reproducible={true}
+          />
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+3.4.5 Corridor Diagnostic (/corridor)
+
+tsx
+// src/app/(dashboard)/corridor/page.tsx
+export default function CorridorPage() {
+  return (
+    <div className="space-y-6">
+      <PageHeader
+        title="Corridor Diagnostic"
+        description="Analyze corridor cost, time, and readiness"
+      />
+      
+      <Card>
+        <CardHeader>
+          <CardTitle>UAE → India</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <CorridorMetrics
+            avgCost="28 bps"
+            avgTime="6 hours"
+            failureRate="5.6%"
+            providers="3 eligible"
+            readinessScore={78}
+          />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Provider Comparison</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ProviderTable />
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+3.5 Accessibility Requirements
+
+Requirement	Standard	Implementation
+Keyboard navigation	WCAG 2.1 AA	All interactive elements focusable
+Screen reader	WCAG 2.1 AA	Semantic HTML, ARIA labels
+Color contrast	WCAG 2.1 AA	4.5:1 for text, 3:1 for UI
+Focus indicators	WCAG 2.1 AA	Visible focus rings
+Reduced motion	WCAG 2.1 AA	Respect prefers-reduced-motion
+Touch targets	WCAG 2.1 AA	Minimum 44x44px
+Error identification	WCAG 2.1 AA	Clear error messages
+Status messages	WCAG 2.1 AA	ARIA live regions
+3.6 Responsive Breakpoints
+
+Breakpoint	Width	Layout
+sm	640px	1 column
+md	768px	2 columns
+lg	1024px	3 columns
+xl	1280px	4 columns
+2xl	1536px	6 columns
+PART 4 — BACKEND ARCHITECTURE
+
+4.1 Database Schema (Drizzle ORM)
+
+typescript
+// src/db/schema.ts
+import { 
+  pgTable, 
+  varchar, 
+  decimal, 
+  timestamp, 
+  integer, 
+  boolean, 
+  jsonb,
+  pgEnum,
+  index,
+  uniqueIndex
+} from "drizzle-orm/pg-core";
+
+// Enums
+export const statusEnum = pgEnum("status", [
+  "RECEIVED", "VALIDATED", "POLICY_APPROVED", 
+  "POLICY_BLOCKED", "ROUTE_SELECTED", "FINALITY_F0",
+  "FINALITY_F1", "FINALITY_F2", "FINALITY_F3",
+  "FINALITY_F4", "FINALITY_F5", "FINALITY_F6",
+  "FINALITY_F7", "SETTLED", "EXCEPTION", "SAFE_HALTED"
+]);
+
+export const severityEnum = pgEnum("severity", [
+  "LOW", "MEDIUM", "HIGH", "CRITICAL"
+]);
+
+// Institutions
+export const institutions = pgTable("institutions", {
+  id: varchar("id", { length: 50 }).primaryKey(),
+  legalName: varchar("legal_name", { length: 255 }).notNull(),
+  jurisdiction: varchar("jurisdiction", { length: 10 }).notNull(),
+  status: varchar("status", { length: 20 }).notNull().default("ACTIVE"),
+  participantType: varchar("participant_type", { length: 50 }).notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+}, (table) => ({
+  jurisdictionIdx: index("jurisdiction_idx").on(table.jurisdiction),
+}));
+
+// Instructions
+export const instructions = pgTable("instructions", {
+  id: varchar("id", { length: 50 }).primaryKey(),
+  institutionId: varchar("institution_id", { length: 50 })
+    .notNull()
+    .references(() => institutions.id),
+  corridor: varchar("corridor", { length: 50 }).notNull(),
+  sourceCurrency: varchar("source_currency", { length: 3 }).notNull(),
+  targetCurrency: varchar("target_currency", { length: 3 }).notNull(),
+  amount: decimal("amount", { precision: 20, scale: 2 }).notNull(),
+  debtorName: varchar("debtor_name", { length: 255 }).notNull(),
+  creditorName: varchar("creditor_name", { length: 255 }).notNull(),
+  purpose: varchar("purpose", { length: 50 }).notNull(),
+  status: statusEnum("status").notNull().default("RECEIVED"),
+  policyVersion: varchar("policy_version", { length: 20 }).notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+}, (table) => ({
+  institutionIdx: index("instruction_institution_idx").on(table.institutionId),
+  corridorIdx: index("instruction_corridor_idx").on(table.corridor),
+  statusIdx: index("instruction_status_idx").on(table.status),
+  createdAtIdx: index("instruction_created_at_idx").on(table.createdAt),
+}));
+
+// Evidence
+export const evidence = pgTable("evidence", {
+  id: varchar("id", { length: 50 }).primaryKey(),
+  instructionId: varchar("instruction_id", { length: 50 })
+    .notNull()
+    .references(() => instructions.id),
+  type: varchar("type", { length: 50 }).notNull(),
+  source: varchar("source", { length: 100 }).notNull(),
+  observedAt: timestamp("observed_at").notNull(),
+  ingestedAt: timestamp("ingested_at").notNull().defaultNow(),
+  hash: varchar("hash", { length: 255 }).notNull(),
+  scope: varchar("scope", { length: 255 }).notNull(),
+  status: varchar("status", { length: 20 }).notNull().default("ACTIVE"),
+}, (table) => ({
+  instructionIdx: index("evidence_instruction_idx").on(table.instructionId),
+  typeIdx: index("evidence_type_idx").on(table.type),
+}));
+
+// Exceptions
+export const exceptions = pgTable("exceptions", {
+  id: varchar("id", { length: 50 }).primaryKey(),
+  instructionId: varchar("instruction_id", { length: 50 })
+    .notNull()
+    .references(() => instructions.id),
+  code: varchar("code", { length: 50 }).notNull(),
+  severity: severityEnum("severity").notNull(),
+  owner: varchar("owner", { length: 100 }),
+  requiredEvidence: jsonb("required_evidence"),
+  clock: timestamp("clock"),
+  status: varchar("status", { length: 20 }).notNull().default("OPEN"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  closedAt: timestamp("closed_at"),
+}, (table) => ({
+  instructionIdx: index("exception_instruction_idx").on(table.instructionId),
+  statusIdx: index("exception_status_idx").on(table.status),
+  severityIdx: index("exception_severity_idx").on(table.severity),
+}));
+
+// Policy Decisions
+export const policyDecisions = pgTable("policy_decisions", {
+  id: varchar("id", { length: 50 }).primaryKey(),
+  instructionId: varchar("instruction_id", { length: 50 })
+    .notNull()
+    .references(() => instructions.id),
+  policyVersion: varchar("policy_version", { length: 20 }).notNull(),
+  decision: varchar("decision", { length: 20 }).notNull(),
+  reasonCodes: jsonb("reason_codes"),
+  evaluatedAt: timestamp("evaluated_at").notNull().defaultNow(),
+  actor: varchar("actor", { length: 100 }).notNull(),
+}, (table) => ({
+  instructionIdx: index("policy_instruction_idx").on(table.instructionId),
+}));
+
+// Outbox
+export const outbox = pgTable("outbox", {
+  id: varchar("id", { length: 50 }).primaryKey(),
+  aggregateType: varchar("aggregate_type", { length: 50 }).notNull(),
+  aggregateId: varchar("aggregate_id", { length: 50 }).notNull(),
+  eventType: varchar("event_type", { length: 50 }).notNull(),
+  payload: jsonb("payload").notNull(),
+  status: varchar("status", { length: 20 }).notNull().default("PENDING"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  deliveredAt: timestamp("delivered_at"),
+  retryCount: integer("retry_count").notNull().default(0),
+}, (table) => ({
+  statusIdx: index("outbox_status_idx").on(table.status),
+  createdAtIdx: index("outbox_created_at_idx").on(table.createdAt),
+}));
+4.2 API Routes
+
+4.2.1 Submit Instruction
+
+typescript
+// src/app/api/v1/instructions/route.ts
+import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
+import { db } from "@/db";
+import { instructions, outbox } from "@/db/schema";
+import { inngest } from "@/inngest/client";
+
+const submitInstructionSchema = z.object({
+  instructionId: z.string().min(1).max(50),
+  institutionId: z.string().min(1).max(50),
+  corridor: z.string().min(1).max(50),
+  sourceCurrency: z.string().length(3),
+  targetCurrency: z.string().length(3),
+  amount: z.number().positive(),
+  debtor: z.object({
+    name: z.string().min(1).max(255),
+    account: z.string().min(1).max(50),
+  }),
+  creditor: z.object({
+    name: z.string().min(1).max(255),
+    account: z.string().min(1).max(50),
+  }),
+  purpose: z.string().min(1).max(50),
+  requestedExecutionDate: z.string(),
+});
+
+export async function POST(request: NextRequest) {
+  // 1. Authenticate (mTLS + API key)
+  const auth = await authenticateRequest(request);
+  if (!auth.valid) {
+    return NextResponse.json(
+      { error: { code: "UNAUTHORIZED", message: auth.message } },
+      { status: 401 }
+    );
+  }
+
+  // 2. Validate request
+  const body = await request.json();
+  const parsed = submitInstructionSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: { code: "INVALID_SCHEMA", message: parsed.error.message } },
+      { status: 400 }
+    );
+  }
+
+  const data = parsed.data;
+
+  // 3. Check idempotency
+  const idempotencyKey = request.headers.get("X-Idempotency-Key");
+  if (!idempotencyKey) {
+    return NextResponse.json(
+      { error: { code: "MISSING_IDEMPOTENCY_KEY" } },
+      { status: 400 }
+    );
+  }
+
+  // 4. Write to database in a single transaction
+  const result = await db.transaction(async (tx) => {
+    // Insert instruction
+    const [instruction] = await tx
+      .insert(instructions)
+      .values({
+        id: data.instructionId,
+        institutionId: data.institutionId,
+        corridor: data.corridor,
+        sourceCurrency: data.sourceCurrency,
+        targetCurrency: data.targetCurrency,
+        amount: data.amount.toString(),
+        debtorName: data.debtor.name,
+        creditorName: data.creditor.name,
+        purpose: data.purpose,
+        status: "RECEIVED",
+        policyVersion: "POLICY-v1.2.3",
+      })
+      .returning();
+
+    // Insert outbox event
+    await tx.insert(outbox).values({
+      id: crypto.randomUUID(),
+      aggregateType: "INSTRUCTION",
+      aggregateId: data.instructionId,
+      eventType: "INSTRUCTION_RECEIVED",
+      payload: { instructionId: data.instructionId },
+      status: "PENDING",
+    });
+
+    return instruction;
+  });
+
+  // 5. Send event to Inngest (after transaction commits)
+  await inngest.send({
+    name: "instruction/received",
+    data: { instructionId: data.instructionId },
+  });
+
+  // 6. Return response
+  return NextResponse.json({
+    instructionId: result.id,
+    status: result.status,
+    policyVersion: result.policyVersion,
+    finalityState: "F0",
+    createdAt: result.createdAt.toISOString(),
+  });
+}
+4.2.2 Get Instruction
+
+typescript
+// src/app/api/v1/instructions/[id]/route.ts
+import { NextRequest, NextResponse } from "next/server";
+import { db } from "@/db";
+import { instructions, evidence } from "@/db/schema";
+import { eq } from "drizzle-orm";
+
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  const instruction = await db.query.instructions.findFirst({
+    where: eq(instructions.id, params.id),
+    with: {
+      evidence: true,
+      exceptions: true,
+      policyDecisions: true,
+    },
+  });
+
+  if (!instruction) {
+    return NextResponse.json(
+      { error: { code: "NOT_FOUND" } },
+      { status: 404 }
+    );
+  }
+
+  return NextResponse.json(instruction);
+}
+4.3 Inngest Workflows
+
+typescript
+// src/inngest/functions/process-instruction.ts
+import { inngest } from "../client";
+import { db } from "@/db";
+import { instructions, outbox, policyDecisions } from "@/db/schema";
+import { eq } from "drizzle-orm";
+
+export const processInstruction = inngest.createFunction(
+  {
+    id: "process-instruction",
+    retries: 3,
+    triggers: { event: "instruction/received" },
+  },
+  async ({ event, step }) => {
+    const { instructionId } = event.data;
+
+    // Step 1: Validate
+    const instruction = await step.run("validate", async () => {
+      const result = await db.query.instructions.findFirst({
+        where: eq(instructions.id, instructionId),
+      });
+      if (!result) throw new Error("Instruction not found");
+      return result;
+    });
+
+    // Step 2: Check policy
+    const policyResult = await step.run("check-policy", async () => {
+      const decision = await evaluatePolicy(instruction);
+      await db.insert(policyDecisions).values({
+        id: crypto.randomUUID(),
+        instructionId,
+        policyVersion: "POLICY-v1.2.3",
+        decision: decision.approved ? "APPROVED" : "BLOCKED",
+        reasonCodes: decision.reasonCodes,
+        actor: "MITHQAL-CORE",
+      });
+      return decision;
+    });
+
+    if (!policyResult.approved) {
+      await step.run("block-instruction", async () => {
+        await db
+          .update(instructions)
+          .set({ status: "POLICY_BLOCKED" })
+          .where(eq(instructions.id, instructionId));
+      });
+      return { status: "BLOCKED" };
+    }
+
+    // Step 3: Select route
+    const route = await step.run("select-route", async () => {
+      return selectBestRoute(instruction);
+    });
+
+    // Step 4: Update instruction
+    await step.run("update-instruction", async () => {
+      await db
+        .update(instructions)
+        .set({ status: "ROUTE_SELECTED" })
+        .where(eq(instructions.id, instructionId));
+    });
+
+    return { status: "ROUTE_SELECTED", route };
+  }
+);
+4.4 Authentication
+
+typescript
+// src/lib/auth.ts
+import NextAuth from "next-auth";
+import Credentials from "next-auth/providers/credentials";
+import { DrizzleAdapter } from "@auth/drizzle-adapter";
+import { db } from "@/db";
+
+export const { handlers, auth, signIn, signOut } = NextAuth({
+  adapter: DrizzleAdapter(db),
+  session: { strategy: "jwt" },
+  providers: [
+    Credentials({
+      name: "Credentials",
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" },
+      },
+      async authorize(credentials) {
+        // Validate credentials against database
+        const user = await validateUser(credentials.email, credentials.password);
+        if (!user) return null;
+        return {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          role: user.role,
+          institutionId: user.institutionId,
+        };
+      },
+    }),
+  ],
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user) {
+        token.role = user.role;
+        token.institutionId = user.institutionId;
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      session.user.role = token.role;
+      session.user.institutionId = token.institutionId;
+      return session;
+    },
+  },
+});
+4.5 Middleware
+
+typescript
+// src/middleware.ts
+import { NextResponse } from "next/server";
+import { auth } from "@/lib/auth";
+
+export default auth((req) => {
+  const { pathname } = req.nextUrl;
+  const isPublic = pathname.startsWith("/api/auth") || pathname === "/";
+
+  if (isPublic) return NextResponse.next();
+
+  if (!req.auth) {
+    return NextResponse.redirect(new URL("/login", req.url));
+  }
+
+  // RBAC check
+  const requiredRole = getRequiredRole(pathname);
+  if (requiredRole && req.auth.user.role !== requiredRole) {
+    return NextResponse.json(
+      { error: { code: "FORBIDDEN" } },
+      { status: 403 }
+    );
+  }
+
+  return NextResponse.next();
+});
+
+export const config = {
+  matcher: ["/((?!api/auth|_next/static|_next/image|favicon.ico).*)"],
+};
+PART 5 — IMPLEMENTATION PHASES
+
+Phase 1: Foundation (Weeks 1–2)
+
+Task	Output
+Initialize Next.js 15 project	Working app
+Configure Tailwind CSS v4 + design tokens	Theme system
+Install shadcn/ui components	Component library
+Set up Drizzle + Neon	Database connected
+Set up Auth.js	Authentication working
+Create base layout (sidebar, topbar, status bar)	App shell
+Phase 2: Core Pages (Weeks 3–4)
+
+Task	Output
+Dashboard page	Metrics + charts
+Instruction timeline page	Timeline component
+Evidence passport page	Evidence table
+Exception queue page	Exception table
+Navigation between pages	Working navigation
+Phase 3: Backend (Weeks 5–6)
+
+Task	Output
+Database schema (Drizzle)	Tables created
+API routes (instructions, evidence, exceptions)	Working endpoints
+Inngest workflows	Background processing
+Idempotency handling	Duplicate prevention
+Error handling	Standard error responses
+Phase 4: Integration (Weeks 7–8)
+
+Task	Output
+TanStack Query setup	Data fetching
+API client	Type-safe API calls
+Real-time updates (SSE)	Live updates
+Form handling	Instruction submission
+Loading states	Skeletons, spinners
+Phase 5: Polish (Weeks 9–10)
+
+Task	Output
+Accessibility audit	WCAG 2.1 AA
+Responsive design	Mobile support
+Dark mode	Theme toggle
+Error boundaries	Graceful failures
+Performance optimization	Fast load times
+Phase 6: Testing (Weeks 11–12)
+
+Task	Output
+Unit tests (Vitest)	Coverage >80%
+E2E tests (Playwright)	Critical paths
+Security tests	mTLS, RBAC
+Load tests	Performance validated
+Documentation	README, API docs
+PART 6 — DEPLOYMENT
+
+6.1 Vercel Configuration
+
+json
+// vercel.json
+{
+  "framework": "nextjs",
+  "buildCommand": "pnpm build",
+  "installCommand": "pnpm install",
+  "regions": ["iad1", "dxb1", "sin1"],
+  "env": {
+    "DATABASE_URL": "@neon-database-url",
+    "NEXTAUTH_SECRET": "@nextauth-secret",
+    "NEXTAUTH_URL": "@nextauth-url",
+    "INNGEST_EVENT_KEY": "@inngest-event-key",
+    "INNGEST_SIGNING_KEY": "@inngest-signing-key"
+  }
+}
+6.2 Environment Variables
+
+Variable	Purpose	Source
+DATABASE_URL	Neon connection string	Neon dashboard
+NEXTAUTH_SECRET	Auth.js encryption	Generated
+NEXTAUTH_URL	App URL	Vercel
+INNGEST_EVENT_KEY	Inngest event key	Inngest dashboard
+INNGEST_SIGNING_KEY	Inngest signing key	Inngest dashboard
+SENTRY_DSN	Error tracking	Sentry
+6.3 GitHub Actions CI/CD
+
+yaml
+# .github/workflows/ci.yml
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "pnpm"
+      - run: pnpm install
+      - run: pnpm biome check .
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm build
+PART 7 — INSTRUCTIONS FOR AI DEVELOPER
+
+7.1 Golden Rules
+
+No AI/ML in Pilot A. Deterministic rules only.
+No Turso. One database (Neon).
+No WebSockets. SSE only for real-time.
+No microservices. Monolith Next.js app.
+No custom auth. Use Auth.js.
+No custom ORM. Use Drizzle.
+No custom state management. Use TanStack Query + Zustand.
+No secrets in code. Environment variables only.
+No production authorization. All writes are MTQ-disabled.
+No fabricated evidence. Every claim carries a truth state.
+7.2 Development Workflow
+
+Read MITHQAL-SSOT-004 blueprint
+Check docs/decisions/ for ADRs
+Create feature branch
+Write tests first
+Implement feature
+Run pnpm biome check .
+Run pnpm typecheck
+Run pnpm test
+Submit PR with evidence
+7.3 End-of-Task Report Format
+
+Field	Content
+Task	What was built
+Files changed	List of files
+Tests	Commands, results, coverage
+Evidence	Screenshots, logs, hashes
+Truth state	IMPLEMENTED / TESTED / SIMULATED
+Gate impact	Which gate advanced
+Rollback	How to revert
+Next	What's next
+PART 8 — FILE STRUCTURE
+
+text
+mithqal-platform/
+├── src/
+│   ├── app/
+│   │   ├── (auth)/
+│   │   │   ├── login/page.tsx
+│   │   │   └── layout.tsx
+│   │   ├── (dashboard)/
+│   │   │   ├── dashboard/page.tsx
+│   │   │   ├── timeline/page.tsx
+│   │   │   ├── evidence/page.tsx
+│   │   │   ├── exceptions/page.tsx
+│   │   │   ├── reconciliation/page.tsx
+│   │   │   ├── replay/page.tsx
+│   │   │   ├── corridor/page.tsx
+│   │   │   ├── settings/page.tsx
+│   │   │   └── layout.tsx
+│   │   ├── api/
+│   │   │   ├── auth/[...nextauth]/route.ts
+│   │   │   ├── v1/
+│   │   │   │   ├── instructions/route.ts
+│   │   │   │   ├── instructions/[id]/route.ts
+│   │   │   │   ├── exceptions/route.ts
+│   │   │   │   ├── reconciliation/route.ts
+│   │   │   │   ├── replay/route.ts
+│   │   │   │   └── health/route.ts
+│   │   │   └── inngest/route.ts
+│   │   ├── layout.tsx
+│   │   ├── page.tsx
+│   │   └── globals.css
+│   ├── components/
+│   │   ├── ui/                    # shadcn/ui components
+│   │   ├── layout/                # Sidebar, Topbar, StatusBar
+│   │   ├── dashboard/             # MetricCard, Charts
+│   │   ├── timeline/              # Timeline, TimelineItem
+│   │   ├── evidence/              # EvidenceTable, EvidenceRow
+│   │   ├── exceptions/            # ExceptionTable, ExceptionCard
+│   │   ├── reconciliation/        # ReconciliationTable
+│   │   ├── replay/                # ReplayForm, ReplayResult
+│   │   ├── corridor/              # CorridorMetrics, ProviderTable
+│   │   └── shared/                # StatusBadge, PageHeader
+│   ├── db/
+│   │   ├── schema.ts              # Drizzle schema
+│   │   ├── index.ts               # Database client
+│   │   └── seed.ts                # Seed data
+│   ├── inngest/
+│   │   ├── client.ts              # Inngest client
+│   │   └── functions/             # Workflow functions
+│   ├── lib/
+│   │   ├── auth.ts                # Auth.js config
+│   │   ├── api-client.ts          # Type-safe API client
+│   │   ├── utils.ts               # Utilities
+│   │   └── constants.ts           # Constants
+│   ├── hooks/
+│   │   ├── use-instructions.ts    # TanStack Query hooks
+│   │   ├── use-exceptions.ts
+│   │   └── use-replay.ts
+│   ├── stores/
+│   │   └── use-app-store.ts       # Zustand store
+│   └── theme/
+│       └── tokens.css             # Design tokens
+├── public/
+│   └── assets/
+├── docs/
+│   ├── blueprint/                 # MITHQAL-SSOT-004
+│   ├── decisions/                 # ADRs
+│   └── api/                       # API docs
+├── tests/
+│   ├── unit/
+│   ├── integration/
+│   └── e2e/
+├── .github/
+│   └── workflows/
+│       └── ci.yml
+├── drizzle.config.ts
+├── next.config.ts
+├── tailwind.config.ts
+├── tsconfig.json
+├── package.json
+└── README.md
+PART 9 — CURRENT STATUS
+
+9.1 What Is Built
+
+Item	Status
+Design	Complete
+Code	Not written for production
+Bank contracts	0
+Legal opinions	0
+Licenses	0
+Live backing cells	0
+Pilot transactions	0
+Funding	$0
+MTQ	Disabled by default
+Production authorization	FALSE
+9.2 What We Need
+
+One bank design partner
+One paid Pilot A (MTQ disabled, synthetic data)
+One legal opinion
+One reproducible demonstration
+Seed funding ($2M)
+9.3 Honest Statement
+
+MITHQAL is a neutral institutional settlement control plane. It coordinates settlement across existing money and rails. MTQ is an optional, permissioned, closed-loop settlement module that remains disabled unless all legal, regulatory, custody, backing, accounting, and bank gates are satisfied. MITHQAL does not replace sovereign currencies, does not set monetary policy, and does not require banks to adopt a new token.
+
+Current status: design-stage, pre-pilot, pre-financing, productionAuthorized = false.
+
+Next milestone: one legal opinion, one bank design partner, one reproducible MTQ-disabled demonstration.
+
+PART 10 — FINAL CANONICAL STATEMENT
+
+MITHQAL advances as a neutral, institution-first settlement control plane that proves value through existing settlement assets, explicit institutional responsibilities, enforceable legal boundaries, reliable technical workflows, and auditable evidence.
+
+MTQ remains optional until its distinct legal and operational conditions pass.
+
+The next milestone is not a larger feature list. It is:
+
+The next valid external evidence
+A reproducible MTQ-disabled demonstration an institution can honestly evaluate
+One named bank
+One named corridor
+One signed contract
+No production authorization exists. No institutional validation exists. No bank partnership exists. No license exists. No legal opinion exists. No live backing exists.
+
+Every claim in this document carries a truth state. Every truth state must be earned, not asserted.
+
+CEO: Mohamed Eltonsy
+Email: meltonsy@icloud.com
