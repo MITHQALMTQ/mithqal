@@ -1,0 +1,136 @@
+{
+  "$schema": "https://mithqal.local/schemas/deployment-manifest.json",
+  "manifestVersion": "1.0.0",
+  "project": "mithqal-assurance",
+  "deployedAt": "TEMPLATE-REPLACE-AT-DEPLOY-TIME",
+  "deployedBy": "TEMPLATE-REPLACE-BY-ACTOR",
+  "tag": "TEMPLATE-REPLACE-WITH-SIGNED-TAG",
+  "commit": "TEMPLATE-REPLACE-WITH-COMMIT-SHA",
+  "productionUrl": "TEMPLATE-REPLACE-WITH-VERCEL-URL",
+  "truthState": {
+    "productionAuthorized": false,
+    "mtqDisabled": true,
+    "mtqStatus": "NOT AUTHORIZED",
+    "honestState": "design-stage · pre-pilot · MTQ disabled"
+  },
+  "stack": {
+    "runtime": "node@20",
+    "framework": "next@16",
+    "orm": "drizzle-orm@0.45",
+    "database": {
+      "authoritative": "neon-postgres-serverless",
+      "projection": "turso-libsql",
+      "orchestration": "inngest-cloud"
+    },
+    "ci": "github-actions",
+    "cd": "vercel-cli",
+    "logs": "pino@10"
+  },
+  "gates": {
+    "G1_legalOpinion": { "held": false, "evidence": "0 legal opinions on file." },
+    "G2_bankPartner": { "held": false, "evidence": "0 signed bank design-partner contracts." },
+    "G3_regulatoryLicense": { "held": false, "evidence": "0 regulatory licenses." },
+    "G4_custodyArrangement": { "held": false, "evidence": "0 live qualified-custodian arrangements." },
+    "G5_backingEligibility": { "held": false, "evidence": "0 eligible backing cells admitted." },
+    "G6_accountingIntegration": { "held": false, "evidence": "0 live accounting-integration feeds." },
+    "G7_reconciliationTolerance": { "held": false, "evidence": "0 production reconciliations executed." },
+    "G8_productionAuthorization": { "held": false, "evidence": "productionAuthorized = FALSE." }
+  },
+  "databases": {
+    "neon": {
+      "tables": [
+        "institutions",
+        "validation_cases",
+        "source_snapshots",
+        "evidence_events",
+        "exceptions",
+        "policy_versions",
+        "policy_decisions",
+        "reconciliation_cases",
+        "idempotency_records",
+        "outbox_events",
+        "access_audit_events"
+      ],
+      "tableCount": 11,
+      "writer": "drizzle-orm (single authoritative writer)",
+      "rls": "defined in db/rls/ (NOT applied to production yet — pending pilot)"
+    },
+    "turso": {
+      "tables": [
+        "dashboard_summary",
+        "recent_cases",
+        "active_exceptions",
+        "policy_cache",
+        "session_state",
+        "reference_lookups",
+        "rate_limit_counters"
+      ],
+      "tableCount": 7,
+      "writer": "inngest/functions/turso-projection.ts (rate_limit_counters is the app-written exception)",
+      "projectionPolicy": "docs/turso-policy.md"
+    }
+  },
+  "inngest": {
+    "client": "inngest/client.ts",
+    "functionCount": 12,
+    "functions": [
+      "validation-pipeline",
+      "replay-pipeline",
+      "reconciliation-pipeline",
+      "evidence-bundle",
+      "exception-lifecycle",
+      "safe-halt-trigger",
+      "outbox-dispatch",
+      "audit-export",
+      "policy-publish",
+      "health-sweep",
+      "turso-projection",
+      "turso-reconcile"
+    ],
+    "retryPolicy": "default 3 retries with exponential backoff; max 5; then DLQ (see docs/inngest-policy.md)"
+  },
+  "validationRules": {
+    "ruleVersion": "2026-11-14",
+    "ruleCount": 8,
+    "specification": "docs/validation-rules.md",
+    "implementation": "src/lib/validation-engine.ts"
+  },
+  "security": {
+    "mtls": "src/lib/security/mtls.ts (WIRED, NOT ENFORCED — pilot-permissive today)",
+    "signedRequests": "src/lib/security/signed-requests.ts (WIRED, NOT ENFORCED)",
+    "idempotency": "src/lib/security/idempotency.ts (24h TTL, WIRED)",
+    "replayProtection": "src/lib/security/replay-protection.ts (WIRED, NOT ENFORCED)",
+    "rateLimiter": "src/lib/rate-limiter.ts (Standard 100rps / Premium 500rps / Enterprise 2000rps)",
+    "incidentSeverity": "src/lib/incident-severity.ts (SEV-0..SEV-3)",
+    "dataClassification": "src/lib/data-classification.ts (PUBLIC..HIGHLY_RESTRICTED)",
+    "breachNotification": "src/lib/breach-notification.ts (24h bank / 72h regulator / 72h data subject)"
+  },
+  "ci": {
+    "pipeline": ".github/workflows/ci.yml",
+    "stages": ["lint", "typecheck", "unit", "integration", "constitutional", "security"]
+  },
+  "cd": {
+    "pipeline": ".github/workflows/deploy.yml",
+    "trigger": "signed git tag (refs/tags/v*)",
+    "rollback": "docs/vercel-rollback.md (tags NEVER deleted; rollback by redeploying an earlier signed tag)"
+  },
+  "docs": [
+    "docs/turso-policy.md",
+    "docs/github-policy.md",
+    "docs/validation-rules.md",
+    "docs/gap-register.md",
+    "docs/turbopack-crash-analysis.md",
+    "docs/inngest-policy.md",
+    "docs/vercel-rollback.md"
+  ],
+  "migrations": [
+    "migrations/2026-10-DROP-LEGACY.md"
+  ],
+  "seed": "db/seed.ts (DEMO DATA — not production)",
+  "schema": "db/schema.sql (audit reference dump)",
+  "rls": [
+    "db/rls/001-enable-rls.sql",
+    "db/rls/002-tenant-policies.sql"
+  ],
+  "demoDataLabels": "Every synthetic row + every API response carries `demoData: true` + `mtqDisabled: true` per §5.5."
+}

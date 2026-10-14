@@ -1,54 +1,101 @@
 # MITHQAL CODEOWNERS — Institutional Code Governance
+# FULL-PLATFORM-BUILD canonical version.
 #
 # Every file must have an owner who must approve changes.
 # Changes to constitutional/monetary files require CTO + COO approval.
 # Changes to smart contracts require Security Officer approval.
 # Changes to blueprint require Constitutional Council approval.
+# Changes to security modules require CISO approval.
+# Changes to Inngest functions require Tech Lead + Reliability Officer approval.
+# Changes to database schema require CTO + Database Officer approval.
 
 # === CONSTITUTIONAL FILES (highest governance) ===
 # Blueprint — requires Constitutional Council approval
-/docs/blueprint/                        @mohamed-eltonsys
+/docs/blueprint/                                @mohamed-eltonsys
 
 # Constitution data — requires CTO + COO approval
-/src/lib/constitution-data.ts           @mohamed-eltonsys
-/src/lib/v19-infrastructure.ts          @mohamed-eltonsys
-/src/lib/monetary-engine-v19.ts         @mohamed-eltonsys
+/src/lib/constitution-data.ts                  @mohamed-eltonsys
+/src/lib/v19-infrastructure.ts                 @mohamed-eltonsys
+/src/lib/monetary-engine-v19.ts                @mohamed-eltonsys
 
 # === SMART CONTRACTS (requires Security Officer) ===
-/foundry/src/                           @mohamed-eltonsys
-/foundry/test/                          @mohamed-eltonsys
-/foundry/certora/                       @mohamed-eltonsys
+/foundry/src/                                  @mohamed-eltonsys
+/foundry/test/                                 @mohamed-eltonsys
+/foundry/certora/                              @mohamed-eltonsys
+/src/contracts/                                @mohamed-eltonsys
+/src/*.sol                                     @mohamed-eltonsys
 
 # === RESERVE & FINANCIAL ENGINE (requires CTO) ===
-/src/lib/reserve-allocation.ts          @mohamed-eltonsys
-/src/lib/nav-compute.ts                 @mohamed-eltonsys
-/src/lib/ctac-engine.ts                 @mohamed-eltonsys
-/src/lib/dynamic-rebalancing.ts         @mohamed-eltonsys
-/src/lib/multi-custodian.ts             @mohamed-eltonsys
-/src/lib/commercial-governance.ts       @mohamed-eltonsys
-/src/lib/rebalance-fees.ts              @mohamed-eltonsys
-/src/lib/fixed-point.ts                 @mohamed-eltonsys
+/src/lib/reserve-allocation.ts                 @mohamed-eltonsys
+/src/lib/nav-compute.ts                        @mohamed-eltonsys
+/src/lib/ctac-engine.ts                        @mohamed-eltonsys
+/src/lib/dynamic-rebalancing.ts                @mohamed-eltonsys
+/src/lib/multi-custodian.ts                    @mohamed-eltonsys
+/src/lib/commercial-governance.ts              @mohamed-eltonsys
+/src/lib/rebalance-fees.ts                     @mohamed-eltonsys
+/src/lib/fixed-point.ts                        @mohamed-eltonsys
+/src/lib/mtq-gate.ts                           @mohamed-eltonsys
 
-# === DATABASE (requires CTO) ===
-/src/lib/db.ts                          @mohamed-eltonsys
-/prisma/                                @mohamed-eltonsys
+# === DATABASE (requires CTO + Database Officer) ===
+/src/db/                                       @mohamed-eltonsys
+/src/lib/db.ts                                @mohamed-eltonsys
+/src/lib/db-authoritative.ts                  @mohamed-eltonsys
+/prisma/                                       @mohamed-eltonsys
+/db/                                           @mohamed-eltonsys
+/db/schema.sql                                 @mohamed-eltonsys
+/db/seed.ts                                    @mohamed-eltonsys
+/db/rls/                                       @mohamed-eltonsys
+/migrations/                                   @mohamed-eltonsys
+/drizzle.config.ts                             @mohamed-eltonsys
+
+# === TURSO PROJECTION (requires CTO + Database Officer) ===
+/turso/                                        @mohamed-eltonsys
+/src/lib/turso-projector.ts                    @mohamed-eltonsys
+/src/lib/turso-neon-sync.ts                    @mohamed-eltonsys
 
 # === SECURITY (requires CISO) ===
-/src/lib/auth.ts                        @mohamed-eltonsys
-/src/lib/rate-limit.ts                  @mohamed-eltonsys
-/src/lib/totp.ts                        @mohamed-eltonsys
+/src/lib/auth.ts                               @mohamed-eltonsys
+/src/lib/totp.ts                               @mohamed-eltonsys
+/src/lib/rate-limit.ts                         @mohamed-eltonsys
+/src/lib/rate-limiter.ts                       @mohamed-eltonsys
+/src/lib/security/                             @mohamed-eltonsys
+/src/lib/incident-severity.ts                  @mohamed-eltonsys
+/src/lib/data-classification.ts                @mohamed-eltonsys
+/src/lib/breach-notification.ts                @mohamed-eltonsys
+
+# === INNGEST ORCHESTRATION (requires Tech Lead + Reliability Officer) ===
+/inngest/                                      @mohamed-eltonsys
+/src/lib/inngest-client.ts                     @mohamed-eltonsys
+/src/lib/inngest-workflow-consumer.ts          @mohamed-eltonsys
+/src/app/api/inngest/                          @mohamed-eltonsys
 
 # === API ROUTES (requires Tech Lead) ===
-/src/app/api/                           @mohamed-eltonsys
+/src/app/api/                                  @mohamed-eltonsys
 
-# === DEPLOYMENT & CONFIG ===
-/next.config.ts                         @mohamed-eltonsys
-/vercel.json                            @mohamed-eltonsys
-/Caddyfile                              @mohamed-eltonsys
-/.env.example                           @mohamed-eltonsys
+# === VALIDATION ENGINE (requires Tech Lead) ===
+/src/lib/validation-engine.ts                  @mohamed-eltonsys
 
-# === CI/CD ===
-/.github/                               @mohamed-eltonsys
+# === CI/CD + DEPLOYMENT ===
+/.github/                                      @mohamed-eltonsys
+/deployments/                                  @mohamed-eltonsys
+/next.config.ts                                @mohamed-eltonsys
+/vercel.json                                   @mohamed-eltonsys
+/Caddyfile                                     @mohamed-eltonsys
+/.env.example                                  @mohamed-eltonsys
+/eslint.config.mjs                             @mohamed-eltonsys
+/biome.json                                    @mohamed-eltonsys
+/tsconfig.json                                 @mohamed-eltonsys
+/package.json                                  @mohamed-eltonsys
+
+# === DOCS (policy + gap register require Constitutional Council) ===
+/docs/blueprint/                               @mohamed-eltonsys
+/docs/github-policy.md                         @mohamed-eltonsys
+/docs/turso-policy.md                          @mohamed-eltonsys
+/docs/validation-rules.md                      @mohamed-eltonsys
+/docs/gap-register.md                          @mohamed-eltonsys
+/docs/turbopack-crash-analysis.md              @mohamed-eltonsys
+/docs/inngest-policy.md                        @mohamed-eltonsys
+/docs/vercel-rollback.md                      @mohamed-eltonsys
 
 # === DEFAULT (catch-all) ===
-*                                       @mohamed-eltonsys
+*                                              @mohamed-eltonsys

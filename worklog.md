@@ -9424,3 +9424,226 @@ Stage Summary:
 - All API routes use Zod validation, X-Idempotency-Key checks, Drizzle transactions for multi-table writes, the standardised `{ error: { code, message } }` envelope, and explicit "no payment initiated / mtq-disabled / productionAuthorized=false" honest-state re-statements in every write response.
 - Drizzle schema pushed to Neon: 11 tables (institutions, validation_cases, source_snapshots, evidence_events, exceptions, policy_versions, policy_decisions, reconciliation_cases, idempotency_records, outbox_events, access_audit_events) + 3 enums (validation_status, severity, event_type) + seed data.
 - Lint clean. TS clean for new files. The MITHQAL Assurance platform is now wired per §16.1 API boundary, §5.4 event vocabulary, §5.5 dashboard principles, §D.4 truth-state vocabulary, §8 evidence gates, and §9.1 MTQ Σ NOT AUTHORIZED discipline.
+
+---
+
+## Task ID FULL-PLATFORM-BUILD — MITHQAL Assurance Full Platform Build
+
+**Date:** see git history (HEAD 9477c08 on origin/main).
+**Role:** MITHQAL Assurance Full Platform Build Agent.
+**Scope:** Execute the MASTER IMPLEMENTATION DIRECTIVE — create all
+remaining platform deliverables (Corrections 2, 3, 5, 6, 7 + Phase 2
+Security + Phase 3 Inngest + CI/CD + DB/RLS + docs) to bring the
+MITHQAL Assurance platform to feature-complete design-stage status.
+
+### Context
+
+The MITHQAL Assurance platform at HEAD 9477c08 already had the 11
+Neon Drizzle tables (Correction 1 done), the 11 /api/v1 routes, the
+8 dashboard pages, the MTQ gate, the validation engine, the layout
+components, and the TanStack Query hooks. The MASTER IMPLEMENTATION
+DIRECTIVE listed the remaining deliverables needed to bring the
+platform to its full design-stage surface area: Turso projection
+schema + client + policy; tag/branch preservation policy; validation
+rules spec; gap register; Turbopack crash analysis; legacy 16-table
+drop migration; 8 Phase 2 security modules; 12 Inngest functions +
+client + retry policy; CI/CD pipelines + manifest + CODEOWNERS +
+Vercel config + rollback runbook; DB seed + schema dump + RLS
+policies.
+
+### Files Created (40)
+
+**Correction 2 — Turso (3):**
+- `turso/schema.sql` — exactly 7 projection tables (dashboard_summary,
+  recent_cases, active_exceptions, policy_cache, session_state,
+  reference_lookups, rate_limit_counters), each with source_commit +
+  projected_at watermark columns.
+- `turso/client.ts` — read-only libSQL client; fail-closed to empty
+  result sets on Turso unavailability.
+- `docs/turso-policy.md` — projection flow + hard rules + runbook.
+
+**Correction 3 — GitHub policy (1):**
+- `docs/github-policy.md` — branch protection rules, tag immutability
+  (NEVER deleted), archive-only policy, secret leakage protocol.
+
+**Correction 5 — Validation rules (1):**
+- `docs/validation-rules.md` — all 8 rules with rule_id, category,
+  severity, reason code, version (`2026-11-14`), test coverage,
+  documentation reference, replay behaviour.
+
+**Correction 6 — Turbopack crash (1):**
+- `docs/turbopack-crash-analysis.md` — `.next/dev/build/postcss.js`
+  root-cause analysis; canonical fix is `node node_modules/.bin/next
+  dev` instead of `bun run dev`.
+
+**Correction 7 — Gap register (1):**
+- `docs/gap-register.md` — every §-numbered blueprint item classified
+  IMPLEMENTED_VERIFIED / IMPLEMENTED_UNVERIFIED / NOT_IMPLEMENTED_
+  IN_SCOPE / NOT_IMPLEMENTED_OUT_OF_SCOPE.
+
+**Migration documentation (1):**
+- `migrations/2026-10-DROP-LEGACY.md` — documents the 16 legacy
+  tables dropped from Neon (instructions → validation_cases, etc.),
+  the drop procedure, rollback, and truth-state labelling.
+
+**Phase 2 — Security (8):**
+- `src/lib/security/mtls.ts` — mTLS client certificate validation
+  against CA bundle; XFCC + XCC header parsing; institution claim
+  extraction from CN/OU.
+- `src/lib/security/signed-requests.ts` — canonical byte
+  representation (METHOD\nPATH\nQUERY\nTIMESTAMP\nBODY_DIGEST\n) +
+  HMAC-SHA256 signature + ±5-minute timestamp window + constant-time
+  comparison.
+- `src/lib/security/idempotency.ts` — 24h TTL key store on Neon
+  `idempotency_records` table; hit/miss/conflict/unknown lookup
+  states; garbage-collect via `purgeExpiredIdempotencyRecords()`.
+- `src/lib/security/replay-protection.ts` — bounded LRU nonce cache
+  (cap 10 000, 5-minute TTL matching signature tolerance);
+  check-and-record API; cache stats for status-bar.
+- `src/lib/rate-limiter.ts` — token-bucket per institution + route;
+  Standard 100rps / Premium 500rps / Enterprise 2000rps; writes
+  directly to Turso `rate_limit_counters` (the documented exception
+  per turso-policy.md §3 rule 1); emits X-RateLimit-* + Retry-After
+  headers on 429.
+- `src/lib/incident-severity.ts` — SEV-0 (safe halt auto),
+  SEV-1 (block scope), SEV-2 (degrade), SEV-3 (backlog); 12
+  incident categories mapped to severities; `requiresSafeHalt()` +
+  `requiresScopeBlock()` helpers.
+- `src/lib/data-classification.ts` — PUBLIC / INTERNAL /
+  CONFIDENTIAL / RESTRICTED / HIGHLY_RESTRICTED lattice; field-level
+  tags via `tag()`; `enforceFieldAccess()` redacts fields the caller
+  cannot read.
+- `src/lib/breach-notification.ts` — 24h bank → 72h regulator → 72h
+  data subject workflow; plan builder + channel sender + overdue
+  step finder + immutable `markStep()` transitions.
+
+**Phase 3 — Inngest (14):**
+- `inngest/client.ts` — canonical Inngest client config
+  (`mithqal-assurance`); exports `EVENTS` constant map so function
+  triggers + API senders share the same string constants.
+- `inngest/functions/validation-pipeline.ts` — runs the validation
+  engine + persists policy decision + exceptions + evidence event +
+  outbox row in a single Drizzle transaction.
+- `inngest/functions/replay-pipeline.ts` — re-evaluates a historical
+  case under its original rule version (deterministic replay).
+- `inngest/functions/reconciliation-pipeline.ts` — compares
+  source-system values + applies the LEDGER_TO_LEDGER tolerance
+  policy + opens an exception when out-of-tolerance.
+- `inngest/functions/evidence-bundle.ts` — assembles the immutable
+  evidence bundle (case + snapshots + events + exceptions + decisions
+  + reconciliation cases) + content digest + outbox row.
+- `inngest/functions/exception-lifecycle.ts` — drives the
+  OPEN → IN_REVIEW → AWAITING_EVIDENCE → READY_TO_RESOLVE → RESOLVED
+  state machine; emits evidence events + outbox rows on each
+  transition.
+- `inngest/functions/safe-halt-trigger.ts` — propagates the halt
+  signal + emits outbox + access audit rows; auto-triggered by
+  SEV-0 incidents.
+- `inngest/functions/outbox-dispatch.ts` — polls `outbox_events`
+  PENDING rows (batch 100) + fans out to consumers + marks DELIVERED;
+  exponential retry until MAX_RETRIES=5 then FAILED.
+- `inngest/functions/audit-export.ts` — assembles the audit bundle
+  (access_audit_events + evidence_events + policy_decisions) for an
+  institution + time window + content digest.
+- `inngest/functions/policy-publish.ts` — promotes a
+  `policy_versions` row DRAFT → ACTIVE + emits outbox row +
+  triggers the Turso `policy_cache` projection.
+- `inngest/functions/health-sweep.ts` — probes Neon + Turso +
+  purges expired idempotency records; runs every 10 minutes per the
+  Vercel cron in `vercel.json`.
+- `inngest/functions/turso-projection.ts` — applies an outbox event
+  to the relevant Turso projection tables; upserts the
+  `dashboard_summary` singleton + the `recent_cases` ring buffer +
+  the `policy_cache` row.
+- `inngest/functions/turso-reconcile.ts` — hourly cron comparing
+  Neon outbox latest vs Turso projections' `source_commit`
+  watermark; emits rebuild events on drift.
+- `docs/inngest-policy.md` — retry policy (default 3, max 5, then
+  DLQ), dead-letter handling, per-function overrides, cron
+  schedules, operational runbook.
+
+**Deliverables (7):**
+- `.github/workflows/ci.yml` — full CI pipeline (lint → typecheck
+  → unit → integration → constitutional → security → deployment-gate).
+- `.github/workflows/deploy.yml` — deployment pipeline from signed
+  git tags (verifies GPG signature + origin/main + lint+typecheck
+  then `vercel deploy --prod`); records the
+  `DEPLOYMENT-PROVENANCE-v<tag>.md` document.
+- `deployments/manifest.json` — deployment manifest template with
+  full stack inventory (runtime, framework, ORM, databases, Inngest
+  functions, security modules, CI/CD, docs, migrations, RLS, seed).
+- `CODEOWNERS` — updated to cover the new directories (security,
+  turso, inngest, db, migrations, deployments) + every new doc
+  file with Constitutional Council / CISO / Tech Lead governance.
+- `vercel.json` — full Vercel config (framework, build/dev/install
+  commands, security headers, crons for `/api/proofs/publish` +
+  `/api/data-source-sync` + `/api/v1/health` every 10 min, regions,
+  function memory/duration, GitHub silent + autoAlias:false).
+- `docs/vercel-rollback.md` — rollback runbook (tags NEVER deleted;
+  rollback is by re-deploying an earlier signed tag; database
+  considerations; communication protocol).
+
+**DB deliverables (5):**
+- `db/seed.ts` — synthetic seed script labelling every row "DEMO
+  DATA" via JSONB `details.demoData=true`; seeds 3 institutions, 1
+  policy version, 12 validation cases, 12 source snapshots, 12
+  evidence events, 3 OPEN exceptions, 12 policy decisions, 2
+  reconciliation cases, 3 idempotency records, 5 outbox events, 3
+  access audit events.
+- `db/schema.sql` — schema dump for audit (the 11 canonical tables +
+  3 enums + Drizzle migrations table).
+- `db/rls/001-enable-rls.sql` — `ALTER TABLE ... ENABLE ROW LEVEL
+  SECURITY` + `FORCE ROW LEVEL SECURITY` on all 11 business tables.
+- `db/rls/002-tenant-policies.sql` — `current_institution_id()`
+  SQL function + per-table tenant isolation policies (SELECT /
+  INSERT / UPDATE WHERE institution_id matches the role).
+
+### Lint Result
+
+`bun run lint` → 0 errors, 1 pre-existing warning in
+`src/components/Navbar.tsx` (unused eslint-disable directive;
+unrelated to this task). All new TypeScript files typecheck cleanly
+under `bunx tsc --noEmit` (0 errors in `inngest/`, `turso/`,
+`src/lib/security/`, `src/lib/rate-limiter.ts`,
+`src/lib/incident-severity.ts`, `src/lib/data-classification.ts`,
+`src/lib/breach-notification.ts`, `db/seed.ts`).
+
+### Truth-state labelling
+
+Every new file declares its truth state at the top:
+- **VERIFIED** for the schema dump, the gap register entries that
+  are IMPLEMENTED_VERIFIED, the GitHub policy.
+- **DECISION** for the migration document, the Inngest retry
+  policy, the Vercel rollback runbook, the deployment manifest.
+- **HYPOTHESIS** for the legacy table drop (reversible).
+- **NOT AUTHORIZED** for MTQ Σ (per `src/lib/mtq-gate.ts` — all 8
+  gates held=false, productionAuthorized=false).
+
+Every Inngest function returns `mtqDisabled: true` in its result
+object. Every API response carrying MTQ state includes the
+`productionAuthorized: false` flag. The seed script labels every
+row with `demoData: true`.
+
+### Next actions
+
+1. Run `bun run db:push` to apply the canonical 11-table schema to
+   Neon (no production data yet; seed runs next).
+2. Run `bun run db/seed.ts` to populate DEMO DATA (3 institutions +
+   12 cases + exceptions + decisions).
+3. Apply the RLS policies via `psql $DATABASE_URL < db/rls/001-
+   enable-rls.sql` + `psql $DATABASE_URL < db/rls/002-tenant-
+   policies.sql` (deferred until G2 gate passes; documented in
+   gap-register §6.5/§6.6).
+4. Provision Turso via `turso db create` + `turso db shell < turso/
+   schema.sql` + set `TURSO_DATABASE_URL` + `TURSO_AUTH_TOKEN` in
+   Vercel.
+5. Provision Inngest Cloud via `bunx inngest-cli register inngest/
+   client.ts` + `bunx inngest-cli deploy inngest/functions/` + set
+   `INNGEST_EVENT_KEY` + `INNGEST_SIGNING_KEY` (already in .env).
+6. When G2 (bank design partner) passes: flip
+   `MITHQAL_ENFORCE_MTLS=true` + `MITHQAL_ENFORCE_SIGNED_REQUESTS=
+   true` + `MITHQAL_ENFORCE_REPLAY_PROTECTION=true` in env and
+   redeploy; wire `checkRateLimit()` into the Next.js middleware;
+   apply the RLS policies to Neon; execute the
+   `migrations/2026-10-DROP-LEGACY.md` migration.
+

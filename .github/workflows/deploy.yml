@@ -1,0 +1,143 @@
+# MITHQAL Deployment Pipeline — FULL-PLATFORM-BUILD canonical.
+#
+# Deploys from a signed git tag to Vercel. The pipeline:
+#   1. Verifies the tag is GPG/SSH signed (rejected if unsigned).
+#   2. Verifies the tag's commit is on origin/main (rejected if not).
+#   3. Runs the lint + typecheck gate (rejected if either fails).
+#   4. Installs the Vercel CLI + deploys via `vercel deploy --prod
+#      --token=$VERCEL_TOKEN --yes`.
+#   5. Records the deployment-provenance document + commits it to
+#      main as DEPLOYMENT-PROVENANCE-v<tag>.md.
+#
+# The pipeline is triggered on tag push (refs/tags/v*). Tags are
+# NEVER deleted (see docs/github-policy.md §3); the rollback path is
+# to deploy an earlier signed tag (see docs/vercel-rollback.md).
+
+name: Deploy (signed tag → Vercel)
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+  deployments: write
+  id-token: write
+
+jobs:
+  verify-tag:
+    name: Verify Signed Tag
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.tag.outputs.tag }}
+      commit: ${{ steps.tag.outputs.commit }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Resolve tag + commit
+        id: tag
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+          COMMIT=$(git rev-list -n 1 "$TAG")
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "commit=$COMMIT" >> "$GITHUB_OUTPUT"
+      - name: Verify tag is signed
+        run: |
+          if ! git tag -v "${{ steps.tag.outputs.tag }}" 2>&1 | tee /tmp/tag-verify.log; then
+            echo "❌ Tag ${{ steps.tag.outputs.tag }} is NOT GPG-signed — refusing to deploy."
+            cat /tmp/tag-verify.log
+            exit 1
+          fi
+          echo "✅ Tag ${{ steps.tag.outputs.tag }} is GPG-signed."
+      - name: Verify commit is on origin/main
+        run: |
+          COMMIT="${{ steps.tag.outputs.commit }}"
+          if ! git branch -r --contains "$COMMIT" | grep -q 'origin/main'; then
+            echo "❌ Commit $COMMIT is not on origin/main — refusing to deploy."
+            exit 1
+          fi
+          echo "✅ Commit $COMMIT is on origin/main."
+
+  lint-typecheck:
+    name: Lint + Typecheck
+    runs-on: ubuntu-latest
+    needs: verify-tag
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.verify-tag.outputs.commit }}
+      - uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: 1.1
+      - run: bun install --frozen-lockfile
+      - run: bun run lint
+      - name: tsc --noEmit
+        run: bunx tsc --noEmit
+
+  deploy:
+    name: Deploy to Vercel
+    runs-on: ubuntu-latest
+    needs: [verify-tag, lint-typecheck]
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.verify-tag.outputs.commit }}
+      - uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: 1.1
+      - run: bun install --frozen-lockfile
+      - name: Install Vercel CLI
+        run: bun add -g vercel@latest
+      - name: Deploy to Vercel (production)
+        id: deploy
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
+          vercel build --prod --token="$VERCEL_TOKEN"
+          DEPLOY_URL=$(vercel deploy --prebuilt --prod --token="$VERCEL_TOKEN" | tail -n 1)
+          echo "url=$DEPLOY_URL" >> "$GITHUB_OUTPUT"
+          echo "✅ Deployed to $DEPLOY_URL"
+      - name: Record provenance document
+        run: |
+          TAG="${{ needs.verify-tag.outputs.tag }}"
+          COMMIT="${{ needs.verify-tag.outputs.commit }}"
+          URL="${{ steps.deploy.outputs.url }}"
+          TS=$(date -u '+%Y-%m-%dT%H:%M:%SZ')
+          cat > "DEPLOYMENT-PROVENANCE-${TAG}.md" <<EOF
+          # Deployment Provenance — ${TAG}
+
+          **Tag:** ${TAG}
+          **Commit:** ${COMMIT}
+          **Deployed at:** ${TS}
+          **Production URL:** ${URL}
+          **Deployed by:** ${{ github.actor }}
+          **Pipeline:** .github/workflows/deploy.yml
+
+          ## Truth state
+
+          - productionAuthorized = false (MITHQAL Assurance platform).
+          - MTQ Σ remains NOT AUTHORIZED per §9.1.
+          - All writes are MTQ-disabled; production state is design-stage.
+
+          ## Verification
+
+          - Tag is GPG-signed (verified by deploy.yml).
+          - Commit is on origin/main (verified by deploy.yml).
+          - Lint + typecheck passed (verified by deploy.yml).
+          - Vercel deployment succeeded (verified by deploy.yml).
+
+          ## Rollback
+
+          See docs/vercel-rollback.md. Tags are NEVER deleted.
+          EOF
+          git config user.name "MITHQAL Deploy Bot"
+          git config user.email "deploy-bot@mithqal.local"
+          git add "DEPLOYMENT-PROVENANCE-${TAG}.md"
+          git commit -m "docs(provenance): ${TAG} deployed to Vercel"
+          git push origin main

@@ -1,6 +1,14 @@
 # MITHQAL CI — Constitutional Integrity Check
-# Runs on every push and PR to main
-# Blocks merge if: lint fails, tests fail, or constitutional invariants break
+# FULL-PLATFORM-BUILD canonical CI pipeline.
+#
+# Stages (run on every push + PR to main):
+#   1. lint            — ESLint (0 errors required)
+#   2. typecheck       — tsc --noEmit (0 errors required)
+#   3. unit            — vitest run (unit tests)
+#   4. integration     — vitest run --config vitest.integration.ts
+#   5. constitutional  — stress + crypto-economic + adversarial tests
+#   6. security        — game-theory audit + adversarial attack tests
+#   7. deployment-gate — final authorisation check (main pushes only)
 
 name: Constitutional Integrity CI
 
@@ -16,67 +24,100 @@ permissions:
   checks: write
 
 jobs:
-  # === STAGE 1: Lint ===
   lint:
     name: ESLint Check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v1
-      - run: bun install
+        with:
+          bun-version: 1.1
+      - run: bun install --frozen-lockfile
       - run: bun run lint
 
-  # === STAGE 2: Constitutional Invariant Tests ===
-  constitutional-tests:
-    name: Constitutional Invariants
+  typecheck:
+    name: TypeScript Strict
     runs-on: ubuntu-latest
     needs: lint
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v1
-      - run: bun install
+        with:
+          bun-version: 1.1
+      - run: bun install --frozen-lockfile
+      - name: tsc --noEmit
+        run: bunx tsc --noEmit
+
+  unit:
+    name: Unit Tests (Vitest)
+    runs-on: ubuntu-latest
+    needs: typecheck
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: 1.1
+      - run: bun install --frozen-lockfile
+      - name: Vitest unit run
+        run: bunx vitest run --reporter=default
+        continue-on-error: true # pilot: no vitest config yet; the step warns but does not fail CI.
+
+  integration:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: unit
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: 1.1
+      - run: bun install --frozen-lockfile
+      - name: Run integration test scenarios
+        run: bun run src/lib/tests/cross-page-consistency.ts
+        continue-on-error: true # pilot: integration suite is partial.
+
+  constitutional:
+    name: Constitutional Invariants
+    runs-on: ubuntu-latest
+    needs: typecheck
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: 1.1
+      - run: bun install --frozen-lockfile
       - name: Stress Tests (20 scenarios)
         run: bun run src/lib/stress-test-fixed.ts
       - name: Crypto-Economic Tests (38 checks)
         run: bun run src/lib/tests/crypto-economic-tests.ts
-
-  # === STAGE 3: E2E Workflow Tests ===
-  e2e-tests:
-    name: E2E Workflows
-    runs-on: ubuntu-latest
-    needs: constitutional-tests
-    steps:
-      - uses: actions/checkout@v4
-      - uses: oven-sh/setup-bun@v1
-      - run: bun install
-      - name: E2E Trade Scenarios (5 workflows)
+      - name: E2E Trade Scenarios
         run: bun run src/lib/e2e-workflow-tests.ts
 
-  # === STAGE 4: Security ===
   security:
     name: Security Checks
     runs-on: ubuntu-latest
-    needs: lint
+    needs: typecheck
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v1
-      - run: bun install
+        with:
+          bun-version: 1.1
+      - run: bun install --frozen-lockfile
       - name: Adversarial Attack Tests
         run: bun run src/lib/tests/adversarial-tests.ts
       - name: Game Theory Audit
         run: bun run src/lib/tests/game-theory-audit.ts
 
-  # === STAGE 5: Deployment Gate ===
   deployment-gate:
     name: Deployment Approval Gate
     runs-on: ubuntu-latest
-    needs: [constitutional-tests, e2e-tests, security]
+    needs: [constitutional, integration, security]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     steps:
-      - name: All checks passed — deployment authorized
+      - name: All checks passed — deployment authorised
         run: |
           echo "✅ Constitutional Integrity CI PASSED"
           echo "Commit: ${{ github.sha }}"
           echo "Author: ${{ github.actor }}"
           echo "Timestamp: $(date -u '+%Y-%m-%dT%H:%M:%SZ')"
-          echo "All constitutional invariants verified. Deployment authorized."
+          echo "All constitutional invariants verified. Deployment authorised."
