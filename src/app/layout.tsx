@@ -7,7 +7,7 @@ const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"]
 const fraunces = Fraunces({ variable: "--font-fraunces", subsets: ["latin"], weight: ["400", "500", "600", "700"], style: ["normal"] });
 
 export const metadata: Metadata = {
-  title: "MITHQAL — §V25.3 Institutional Command Center",
+  title: "MITHQAL Assurance — Financial-Operations Assurance Platform",
   description: "Neutral wholesale settlement infrastructure. §V25.3 Final Reserve Mathematical Specification — 130% backing, 80/18/2 allocation, 11-currency basket, 7/7 finality enforcement.",
 };
 
