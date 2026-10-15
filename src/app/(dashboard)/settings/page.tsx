@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * MITHQAL Assurance — Settings (/settings).
+ * MITHQAL Assurance — Settings (/settings).  [LIVE]
  *
  * Configuration surface for the assurance engine — threshold tuning,
  * toggle gates, and on-call rotation. Every config item carries an
@@ -9,30 +9,49 @@
  * governs.
  *
  * Layout:
- *   • PageHeader w/ breadcrumbs
+ *   • PageHeader w/ breadcrumbs + Live · 30s indicator + "Back to Dashboard"
  *   • 5 StatCards (Thresholds, Integrations, On-Call, Policies, Audit)
  *     wrapped in `.stagger-in`
  *   • Three sections of config items, each with a Switch + aria-label
+ *   • NEW: "Last Stress Test Run" section at the bottom — pulls live KPI
+ *     data from `useStressMetrics()` + `useStressResults()` (polls every
+ *     30s) and surfaces cross-tab "Run Stress Test" + "View Results"
+ *     buttons that deep-link into /dashboard
  *
  * A11y: every interactive control has a descriptive aria-label; each
  * config row is wrapped in a labelled <fieldset> for grouping.
  */
 
 import * as React from "react";
+import Link from "next/link";
 import {
+  ArrowLeft,
   BellRing,
   Boxes,
+  CheckCircle2,
+  Clock,
   GitBranch,
+  Activity,
+  Gauge,
+  PlayCircle,
   Scale,
   ShieldCheck,
   SlidersHorizontal,
 } from "lucide-react";
+import { toast } from "sonner";
 
 import { PageHeader } from "@/components/shared/page-header";
 import { StatCard } from "@/components/shared/stat-card";
+import { CountUp } from "@/components/shared/count-up";
+import { StatCardSkeleton } from "@/components/shared/skeleton";
+import { EmptyState } from "@/components/shared/empty-state";
+import { RelativeTime } from "@/components/shared/relative-time";
+import { useStressMetrics, useStressResults } from "@/hooks/use-demo-data";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
 /* ──────────────────────────────────────────────────────────────
@@ -45,6 +64,10 @@ const SPARK_INT = [3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6];
 const SPARK_ONCALL = [1, 2, 1, 2, 2, 3, 2, 3, 3, 4, 3, 4];
 const SPARK_POLICIES = [6, 6, 7, 7, 7, 8, 8, 8, 9, 9, 9, 10];
 const SPARK_AUDIT = [4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 7, 8];
+
+const SPARK_CASES = [16, 17, 18, 18, 19, 20, 20, 20, 21, 20, 20, 20];
+const SPARK_PASSED = [8, 9, 9, 10, 10, 10, 10, 10, 11, 10, 10, 10];
+const SPARK_EXC = [10, 10, 9, 9, 10, 10, 10, 9, 9, 10, 10, 10];
 
 type ToggleRow = {
   id: string;
@@ -199,6 +222,38 @@ function Section({
 }
 
 export default function SettingsPage() {
+  /* Live stress-test metrics + results — both hooks poll every 30s. */
+  const {
+    data: metrics,
+    isLoading: metricsLoading,
+    error: metricsError,
+    dataUpdatedAt: metricsUpdatedAt,
+  } = useStressMetrics();
+  const {
+    data: results,
+    isLoading: resultsLoading,
+    error: resultsError,
+    dataUpdatedAt: resultsUpdatedAt,
+  } = useStressResults();
+
+  /* Toast on successful refetch (skip the initial load). We toast once
+   * per round — keyed off the metrics timestamp (both hooks refetch in
+   * lockstep via the shared 30s refetchInterval). */
+  const initialFetchRef = React.useRef(true);
+  React.useEffect(() => {
+    if (!metricsUpdatedAt) return;
+    if (initialFetchRef.current) {
+      initialFetchRef.current = false;
+      return;
+    }
+    toast.success("Stress test run data refreshed");
+  }, [metricsUpdatedAt]);
+
+  const stressLoading = metricsLoading || resultsLoading;
+  const stressError = metricsError ?? resultsError;
+  const hasStressData = !!metrics && !!results;
+  const lastRunIso = new Date(Math.max(metricsUpdatedAt, resultsUpdatedAt) || Date.now()).toISOString();
+
   return (
     <div className="flex flex-col gap-8">
       <PageHeader
@@ -206,8 +261,23 @@ export default function SettingsPage() {
         description="Configuration surface for the assurance engine. Threshold tuning, integration toggles, and policy gates — every change is audit-logged."
         breadcrumbs={[
           { label: "Assurance", href: "/" },
+          { label: "Dashboard", href: "/dashboard" },
           { label: "Settings" },
         ]}
+        actions={
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="flex items-center gap-1.5 text-xs text-emerald-400">
+              <span className="pulse-dot" aria-hidden="true" />
+              Live · 30s
+            </span>
+            <Button asChild variant="outline" size="sm">
+              <Link href="/dashboard">
+                <ArrowLeft className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
+                Back to Dashboard
+              </Link>
+            </Button>
+          </div>
+        }
       />
 
       {/* ── Headline StatCards ── */}
@@ -368,6 +438,283 @@ export default function SettingsPage() {
             <ConfigToggle key={row.id} row={row} />
           ))}
         </Section>
+      </section>
+
+      {/* ── Last Stress Test Run (LIVE) ── */}
+      <section
+        aria-label="Last stress test run"
+        className="flex flex-col gap-3"
+      >
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="font-display text-lg font-semibold text-foreground">
+              Last Stress Test Run
+            </h2>
+            <p className="text-xs text-fg-muted">
+              Live KPI snapshot from{" "}
+              <code className="rounded bg-ink-card px-1 py-0.5 font-mono text-[10px] text-gold">
+                /api/v1/metrics
+              </code>{" "}
+              +{" "}
+              <code className="rounded bg-ink-card px-1 py-0.5 font-mono text-[10px] text-gold">
+                /api/v1/results
+              </code>{" "}
+              · refreshes every 30s
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-xs text-fg-muted">
+              Last run:{" "}
+              <span className="font-mono text-gold-soft">
+                <RelativeTime timestamp={lastRunIso} />
+              </span>
+            </span>
+            <Button asChild variant="default" size="sm">
+              <Link href="/dashboard" aria-label="Run a fresh stress test on the dashboard">
+                <Activity className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
+                Run Stress Test
+              </Link>
+            </Button>
+            <Button asChild variant="outline" size="sm">
+              <Link href="/dashboard" aria-label="View full stress test results on the dashboard">
+                <Gauge className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
+                View Results
+              </Link>
+            </Button>
+          </div>
+        </div>
+
+        {/* Live KPI StatCard grid — or skeletons while loading. */}
+        <div className="stagger-in grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+          {stressLoading ? (
+            <>
+              <StatCardSkeleton />
+              <StatCardSkeleton />
+              <StatCardSkeleton />
+              <StatCardSkeleton />
+              <StatCardSkeleton />
+              <StatCardSkeleton />
+              <StatCardSkeleton />
+              <StatCardSkeleton />
+            </>
+          ) : stressError || !hasStressData ? (
+            // EmptyState fills the grid cell; spanning 4 cols so the
+            // empty state reads as a single banner, not 8 small holes.
+            <div className="col-span-2 sm:col-span-3 lg:col-span-4">
+              <EmptyState
+                title="Stress test data unavailable"
+                description="The live metrics / results stream is unreachable. The next 30s poll will retry."
+                icon={Activity}
+                action={
+                  <Button asChild variant="outline" size="sm">
+                    <Link href="/dashboard">Open Dashboard</Link>
+                  </Button>
+                }
+              />
+            </div>
+          ) : (
+            <>
+              <StatCard
+                label="Total Cases"
+                value={metrics!.totalCases}
+                icon={Boxes}
+                color="gold"
+                sparklineData={SPARK_CASES}
+                sub="processed this run"
+              />
+              <StatCard
+                label="Cases Passed"
+                value={results!.casesPassed}
+                icon={CheckCircle2}
+                color="emerald"
+                sparklineData={SPARK_PASSED}
+                sub={`of ${results!.casesProcessed} processed`}
+              />
+              <StatCard
+                label="Exceptions Opened"
+                value={results!.exceptionsOpened}
+                icon={BellRing}
+                color="amber"
+                sparklineData={SPARK_EXC}
+                sub={`${results!.exceptionsResolved} resolved`}
+              />
+              <StatCard
+                label="Open Exceptions"
+                value={metrics!.openExceptions}
+                icon={BellRing}
+                color="red"
+                sparklineData={SPARK_EXC}
+                sub="currently in-flight"
+              />
+              <StatCard
+                label="Total Value"
+                value={metrics!.totalValue}
+                icon={Scale}
+                color="cyan"
+                sub="aggregate case value"
+              />
+              <StatCard
+                label="Exception Rate"
+                value={metrics!.exceptionRate}
+                icon={SlidersHorizontal}
+                color="amber"
+                sub="cases-with-exceptions / total"
+              />
+              <StatCard
+                label="Avg Resolution"
+                value={metrics!.avgResolutionTime}
+                icon={Clock}
+                color="purple"
+                sub={`P95 ${metrics!.p95ResolutionTime}`}
+              />
+              <StatCard
+                label="Scenarios Covered"
+                value={metrics!.scenariosCovered}
+                icon={GitBranch}
+                color="gold"
+                sparklineData={SPARK_POLICIES}
+                sub={`across ${metrics!.institutions} institutions`}
+              />
+            </>
+          )}
+        </div>
+
+        {/* Detailed stress-test summary card. */}
+        {stressLoading ? (
+          <div className="glass-depth rounded-xl border border-line/60 p-5">
+            <StatCardSkeleton />
+          </div>
+        ) : stressError || !hasStressData ? null : (
+          <div className="glass-depth rounded-xl border border-line/60 p-5">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="min-w-0 flex-1">
+                <h3 className="font-display text-sm font-semibold text-foreground">
+                  {results!.testName}
+                </h3>
+                <p className="mt-1 text-xs text-fg-muted">
+                  Duration: {results!.duration} · Result:{" "}
+                  <span className="font-mono text-emerald-300">
+                    {results!.result}
+                  </span>
+                </p>
+              </div>
+              <Badge
+                variant="outline"
+                className="border-emerald-400/30 bg-emerald-400/10 font-mono text-[10px] uppercase tracking-wider text-emerald-300"
+              >
+                {results!.result.includes("PASS") ? "PASS" : "REVIEW"}
+              </Badge>
+            </div>
+
+            <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-2 text-xs sm:grid-cols-3 lg:grid-cols-4">
+              <div>
+                <dt className="text-fg-muted">Cases Processed</dt>
+                <dd className="font-mono text-foreground">
+                  <CountUp value={results!.casesProcessed} />
+                </dd>
+              </div>
+              <div>
+                <dt className="text-fg-muted">Cases Passed</dt>
+                <dd className="font-mono text-emerald-300">
+                  <CountUp value={results!.casesPassed} />
+                </dd>
+              </div>
+              <div>
+                <dt className="text-fg-muted">Cases w/ Exceptions</dt>
+                <dd className="font-mono text-amber-300">
+                  <CountUp value={results!.casesWithExceptions} />
+                </dd>
+              </div>
+              <div>
+                <dt className="text-fg-muted">Exceptions Opened</dt>
+                <dd className="font-mono text-foreground">
+                  <CountUp value={results!.exceptionsOpened} />
+                </dd>
+              </div>
+              <div>
+                <dt className="text-fg-muted">Exceptions Resolved</dt>
+                <dd className="font-mono text-emerald-300">
+                  <CountUp value={results!.exceptionsResolved} />
+                </dd>
+              </div>
+              <div>
+                <dt className="text-fg-muted">Safe Halts Triggered</dt>
+                <dd className="font-mono text-red-300">
+                  <CountUp value={results!.safeHaltsTriggered} />
+                </dd>
+              </div>
+              <div>
+                <dt className="text-fg-muted">Replays Executed</dt>
+                <dd className="font-mono text-purple-300">
+                  <CountUp value={results!.replaysExecuted} />
+                </dd>
+              </div>
+              <div>
+                <dt className="text-fg-muted">Reconciliation Cases</dt>
+                <dd className="font-mono text-cyan-300">
+                  <CountUp value={results!.reconciliationCases} />
+                </dd>
+              </div>
+              <div>
+                <dt className="text-fg-muted">Evidence Events</dt>
+                <dd className="font-mono text-foreground">
+                  <CountUp value={results!.evidenceEventsGenerated} />
+                </dd>
+              </div>
+              <div>
+                <dt className="text-fg-muted">Idempotency Keys</dt>
+                <dd className="font-mono text-foreground">
+                  <CountUp value={results!.idempotencyKeysChecked} />
+                </dd>
+              </div>
+              <div>
+                <dt className="text-fg-muted">Duplicate Prevention</dt>
+                <dd className="font-mono text-emerald-300">
+                  {results!.duplicatePrevention}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-fg-muted">Corridors · Scenarios</dt>
+                <dd className="font-mono text-foreground">
+                  {metrics!.corridors} · {metrics!.scenariosCovered}
+                </dd>
+              </div>
+            </dl>
+
+            <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-line/40 pt-4">
+              <Button asChild variant="default" size="sm">
+                <Link href="/dashboard" aria-label="Run a fresh stress test from the dashboard">
+                  <PlayCircle className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
+                  Run Stress Test
+                </Link>
+              </Button>
+              <Button asChild variant="outline" size="sm">
+                <Link href="/dashboard" aria-label="View full results on the dashboard">
+                  <Gauge className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
+                  View Results
+                </Link>
+              </Button>
+              <Button asChild variant="ghost" size="sm">
+                <Link
+                  href="/timeline"
+                  aria-label="View the live timeline of stress test events"
+                >
+                  <Activity className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
+                  View Timeline
+                </Link>
+              </Button>
+              <Button asChild variant="ghost" size="sm">
+                <Link
+                  href="/replay"
+                  aria-label="View the replay log for stress test scenarios"
+                >
+                  <Activity className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
+                  View Replay Log
+                </Link>
+              </Button>
+            </div>
+          </div>
+        )}
       </section>
 
       <p
