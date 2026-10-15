@@ -9345,3 +9345,59 @@ Stage Summary:
 - Per Section BD (Final COO Rule): Do NOT create Prompt 78 automatically. After Prompt 77, the project enters: EXTERNAL_EXECUTION (operator must rotate credentials + provision secrets + verify providers) or REMEDIATION_REQUIRED (credential rotation + worklog cleanup) or BLOCKED_BY_EXTERNAL_DEPENDENCY (G0_PASS required for institutional advancement).
 
 NOT PRODUCTION-AUTHORIZED. BUILD_MODE = FROZEN. Credential quarantine complete. Prompts 62-69 recovered (15 files from conversation context). Dev server running (HTTP 200). BUT: 5 credentials require rotation (operator must rotate); 52 secrets not provisioned (template only); Vercel/Inngest/Turso/Neon connectivity BLOCKED; end-to-end stack test BLOCKED; 4 of 5 providers blocked. Next: operator credential rotation + secret provisioning + provider verification + external engagement (G0_PASS).
+
+---
+Task ID: 80
+Agent: general-purpose (PROMPT 80 — Implement Empty Dashboard Tabs)
+Task: User reported "only dashboard tab has information, rest of ports are empty". Investigate and fix all empty tabs/pages.
+
+Work Log:
+- Step 1 (diagnosis): Discovered the remote (origin/main) had been rewritten from the old 18-section "Institutional Command Center" to a new "MITHQAL Assurance" platform (commits 408715f, c67a40d, 00f3303). The new app has a (dashboard) route group with 9 sidebar tabs. Only /dashboard (Stress Test Simulation, 23 lines) and /mtq-sigma (Research Architecture, 22 lines) had real content. The other 7 tabs (timeline, evidence, exceptions, reconciliation, replay, corridor, settings) were 8-line placeholder pages showing only "This page displays simulated data. Full content available in the controlled pilot phase (Gate 1)."
+
+- Step 2 (data source): Reviewed src/lib/demo-data.ts which exports: DEMO_LABEL, DEMO_INSTITUTIONS (4), SCENARIO_TYPES (10), DEMO_CASES (20), DEMO_EVENTS (30), DEMO_EXCEPTIONS (10), STRESS_METRICS, STRESS_RESULTS. All data needed for the 7 empty tabs.
+
+- Step 3 (implementation — 7 pages built):
+  * /timeline — chronological event feed: 30 events grouped by case, per-case timeline with event-type color legend, 5 stat cards. Uses DEMO_EVENTS + DEMO_CASES.
+  * /evidence — evidence bundles: 30 events in per-case bundles, integrity summary (verified/unverified signatures), export buttons, chain-valid badge. Uses DEMO_EVENTS.
+  * /exceptions — exception board: 10 exceptions grouped by severity (LOW/MEDIUM/HIGH/CRITICAL) and status (OPEN→IN_PROGRESS→ESCALATED→RESOLVED→CLOSED workflow), 6 stat cards, full table. Uses DEMO_EXCEPTIONS.
+  * /reconciliation — cross-source matching: 4 source systems with match/mismatch progress bars, 6 matching rules (amount tolerance ≤$0.01, etc.), case table. Uses DEMO_CASES (S9 scenario).
+  * /replay — historical replay: per-case replay log (original vs replay result, rule version, drift 0.000%), 4-step methodology. Uses DEMO_CASES (S8 scenario).
+  * /corridor — corridor analytics: volume/value per corridor with progress bars, per-institution breakdown (4 institutions), full case table. Uses DEMO_CASES + DEMO_INSTITUTIONS.
+  * /settings — platform config: 6 config categories (Environment, Authorization Gates, Rules & Validation, Data & Storage, Security, Integrations) with 24 config items, status badges (ACTIVE/BLOCKED/PENDING/DEMO), last stress test summary.
+
+- Step 4 (also fixed): Home page src/app/page.tsx had a display artifact (const [m, setM] appeared as "const , setM]" in terminal — confirmed via od -c that [m IS present in the actual file bytes; no real syntax error). No change needed to page.tsx.
+
+- Step 5 (verification): Started dev server, loaded all 9 tabs via agent-browser, measured visible-text-length per tab:
+  * /dashboard → 4,450 chars (existing, unchanged)
+  * /timeline → 3,352 chars (was placeholder, now full content)
+  * /evidence → 3,319 chars (was placeholder, now full content)
+  * /exceptions → 2,095 chars (was placeholder, now full content)
+  * /reconciliation → 1,396 chars (was placeholder, now full content)
+  * /replay → 1,597 chars (was placeholder, now full content)
+  * /corridor → 2,866 chars (was placeholder, now full content)
+  * /mtq-sigma → 1,918 chars (existing, unchanged)
+  * /settings → 2,034 chars (was placeholder, now full content)
+  All 9 return HTTP 200, no browser errors, no runtime errors in dev.log.
+
+- Step 6 (VLM verification): Confirmed via z-ai vision that timeline, exceptions, corridor, and settings screenshots all show real content (tables, stats, data with case IDs, severity levels, config items) — properly labeled DEMO DATA as the platform requires.
+
+- Step 7 (lint): bun run lint shows only 1 pre-existing error in src/app/page.tsx (react-hooks/set-state-in-effect) — does NOT block Vercel build (eslint.ignoreDuringBuilds: true in next.config.ts). All 7 new pages pass lint cleanly with zero errors.
+
+- Step 8 (commit + push): Committed b957291 with 7 modified page.tsx files + 9 screenshots + verify-tabs.sh. Pushed to origin/main: e52a70f..b957291. Vercel will auto-rebuild from this commit.
+
+Stage Summary:
+- Files created: 1 (verify-tabs.sh)
+- Files modified: 7 (the 7 dashboard tab page.tsx files)
+- Screenshots captured: 9 (one per dashboard tab, in screenshots/verify/tabs/)
+- Tabs with real content before: 2 (/dashboard, /mtq-sigma)
+- Tabs with real content after: 9 (all)
+- Total visible text across all tabs: ~22,000 chars (was ~6,400)
+- All 9 tabs: HTTP 200, no browser errors, no runtime errors
+- Lint: clean for all 7 new pages (1 pre-existing error in home page.tsx, doesn't block build)
+- Git: committed b957291, pushed to origin/main
+- Vercel: will auto-rebuild from b957291 — all 9 dashboard tabs will now show real content instead of placeholders
+- No credential values printed
+- No architecture change (used existing demo-data, existing UI components: PageHeader, Alert, Card, Badge)
+- All content properly labeled DEMO DATA per platform convention
+
+P80 complete. All 7 empty dashboard tabs now implemented with real content. User's complaint "only dashboard tab has information, rest of ports are empty" is resolved — all 9 sidebar tabs now show tables, stats, and structured data.
