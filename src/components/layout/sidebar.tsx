@@ -1,137 +1,313 @@
 "use client";
-import { useState } from "react";
-import {
-  LayoutDashboard,
-  Clock,
-  FileCheck,
-  AlertTriangle,
-  GitCompare,
-  RotateCcw,
-  Map,
-  Settings,
-  FlaskConical,
-  Menu,
-} from "lucide-react";
+
+import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  AlertTriangle,
+  ChevronsLeft,
+  ChevronsRight,
+  FlaskConical,
+  History,
+  LayoutDashboard,
+  Route,
+  Scale,
+  ScrollText,
+  Settings,
+  Clock,
+  type LucideIcon,
+} from "lucide-react";
+import {
   Sheet,
   SheetContent,
-  SheetTrigger,
+  SheetHeader,
   SheetTitle,
+  SheetTrigger,
 } from "@/components/ui/sheet";
-import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
-const nav = [
-  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { name: "Timeline", href: "/timeline", icon: Clock },
-  { name: "Evidence", href: "/evidence", icon: FileCheck },
-  { name: "Exceptions", href: "/exceptions", icon: AlertTriangle, badge: "3" },
-  { name: "Reconciliation", href: "/reconciliation", icon: GitCompare },
-  { name: "Replay", href: "/replay", icon: RotateCcw },
-  { name: "Corridor", href: "/corridor", icon: Map },
-  { name: "MTQ Σ Research", href: "/mtq-sigma", icon: FlaskConical },
-  { name: "Settings", href: "/settings", icon: Settings },
+/* ──────────────────────────────────────────────────────────────
+ * Sidebar — desktop app-shell navigation for the MITHQAL Assurance
+ * dashboard, plus a Sheet-based MobileNav export for < md screens.
+ *
+ * Desktop nav groups the 9 institutional tabs into three labelled
+ * sections (OVERVIEW / OPERATIONS / CONFIG), supports an icon-only
+ * collapse mode persisted to localStorage, and marks the active link
+ * with aria-current="page".
+ *
+ * MobileNav is exported separately so the Topbar can wrap its own
+ * trigger button (SheetTrigger is data-slot-driven so any child works).
+ * ────────────────────────────────────────────────────────────── */
+
+type NavItem = {
+  name: string;
+  href: string;
+  icon: LucideIcon;
+  /** Optional short badge (e.g. "BETA") shown beside the label. */
+  badge?: string;
+};
+
+type NavSection = {
+  label: string;
+  items: NavItem[];
+};
+
+const NAV_SECTIONS: NavSection[] = [
+  {
+    label: "Overview",
+    items: [
+      { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+      { name: "Timeline", href: "/timeline", icon: Clock },
+    ],
+  },
+  {
+    label: "Operations",
+    items: [
+      { name: "Evidence", href: "/evidence", icon: ScrollText },
+      { name: "Exceptions", href: "/exceptions", icon: AlertTriangle },
+      { name: "Reconciliation", href: "/reconciliation", icon: Scale },
+      { name: "Replay", href: "/replay", icon: History },
+    ],
+  },
+  {
+    label: "Config",
+    items: [
+      { name: "Corridor", href: "/corridor", icon: Route },
+      { name: "MTQ Σ Research", href: "/research", icon: FlaskConical, badge: "Σ" },
+      { name: "Settings", href: "/settings", icon: Settings },
+    ],
+  },
 ];
 
-/**
- * Desktop sidebar — visible at `md:` and above. Byte-identical to the
- * original implementation (kept exactly as-is per BUILD-1 task contract).
- */
-export function Sidebar() {
-  const p = usePathname();
+const COLLAPSE_KEY = "mithqal-sidebar-collapsed";
+
+function readCollapsed(): boolean | null {
+  if (typeof window === "undefined") return null;
+  try {
+    return window.localStorage.getItem(COLLAPSE_KEY) === "true";
+  } catch {
+    return null;
+  }
+}
+
+function writeCollapsed(v: boolean) {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(COLLAPSE_KEY, String(v));
+  } catch {
+    /* ignore */
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────
+ * NavList — shared renderer used by both the desktop <aside> and
+ * the mobile <Sheet> drawer. Renders the three labelled sections.
+ * `collapsed` only affects the desktop variant (mobile is always
+ * expanded inside its own drawer).
+ * ────────────────────────────────────────────────────────────── */
+
+function NavList({
+  collapsed,
+  onNavigate,
+}: {
+  collapsed?: boolean;
+  onNavigate?: () => void;
+}) {
+  const pathname = usePathname();
+
   return (
     <nav
-      className="w-60 shrink-0 border-r border-slate-800 bg-slate-900/50 p-3 hidden md:block"
-      aria-label="Sidebar"
+      role="navigation"
+      aria-label="Primary"
+      className={cn("flex flex-col gap-5 px-2", collapsed && "px-1.5")}
     >
-      <ul className="space-y-1">
-        {nav.map((i) => {
-          const Icon = i.icon;
-          const a = p === i.href;
-          return (
-            <li key={i.name}>
+      {NAV_SECTIONS.map((section) => (
+        <section key={section.label} className="flex flex-col gap-1">
+          {!collapsed && (
+            <h3
+              className={cn(
+                "px-2 pb-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-fg-muted",
+              )}
+            >
+              {section.label}
+            </h3>
+          )}
+          {section.items.map((item) => {
+            const active =
+              pathname === item.href ||
+              (item.href !== "/dashboard" && pathname.startsWith(`${item.href}/`));
+            const Icon = item.icon;
+            return (
               <Link
-                href={i.href}
-                className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors ${a ? "bg-amber-500/10 text-amber-300" : "text-slate-400 hover:bg-slate-800/50 hover:text-white"}`}
+                key={item.href}
+                href={item.href}
+                aria-current={active ? "page" : undefined}
+                onClick={onNavigate}
+                title={collapsed ? item.name : undefined}
+                className={cn(
+                  "group relative flex items-center gap-2.5 rounded-md px-2 py-2 text-sm transition-colors",
+                  collapsed && "justify-center px-0",
+                  active
+                    ? "bg-gold/10 text-gold"
+                    : "text-fg-muted hover:bg-ink-card/60 hover:text-foreground",
+                )}
               >
-                <Icon className="h-4 w-4" />
-                <span>{i.name}</span>
-                {i.badge && (
-                  <span className="ml-auto rounded-full bg-red-500/20 px-2 py-0.5 text-xs text-red-300">
-                    {i.badge}
-                  </span>
+                {active && (
+                  <span
+                    aria-hidden="true"
+                    className="absolute left-0 top-1/2 h-5 w-0.5 -translate-y-1/2 rounded-r-full bg-gold"
+                  />
+                )}
+                <Icon
+                  className={cn("h-4 w-4 shrink-0", active && "text-gold")}
+                  aria-hidden="true"
+                />
+                {!collapsed && (
+                  <>
+                    <span className="flex-1 truncate font-medium">
+                      {item.name}
+                    </span>
+                    {item.badge && (
+                      <span
+                        className={cn(
+                          "rounded border border-gold/30 bg-gold/10 px-1.5 py-0.5 font-mono text-[9px] font-semibold text-gold",
+                        )}
+                      >
+                        {item.badge}
+                      </span>
+                    )}
+                  </>
                 )}
               </Link>
-            </li>
-          );
-        })}
-      </ul>
+            );
+          })}
+        </section>
+      ))}
     </nav>
   );
 }
 
-/**
- * MobileNav — mobile-only fallback for the desktop Sidebar.
+/* ──────────────────────────────────────────────────────────────
+ * Sidebar — desktop <aside>. Sticky below the Topbar, with a
+ * collapse toggle pinned to the bottom that flips between w-60
+ * (full labels) and w-16 (icon-only). Persisted via localStorage.
+ * ────────────────────────────────────────────────────────────── */
+
+export function Sidebar() {
+  const [collapsed, setCollapsed] = React.useState(false);
+
+  React.useEffect(() => {
+    // Defer to next microtask to avoid synchronous effect→state loop
+    // (React 19 react-hooks/set-state-in-effect rule).
+    queueMicrotask(() => {
+      const saved = readCollapsed();
+      if (saved !== null) setCollapsed(saved);
+    });
+  }, []);
+
+  const toggleCollapsed = React.useCallback(() => {
+    setCollapsed((prev) => {
+      const next = !prev;
+      writeCollapsed(next);
+      return next;
+    });
+  }, []);
+
+  return (
+    <aside
+      aria-label="Sidebar navigation"
+      className={cn(
+        "sticky top-14 hidden shrink-0 md:block",
+        "h-[calc(100vh-3.5rem-1.75rem)] overflow-y-auto",
+        "border-r border-line/60 bg-ink-soft/40 backdrop-blur-sm",
+        "transition-[width] duration-200 ease-out",
+        collapsed ? "w-16" : "w-60",
+      )}
+    >
+      <div className="flex h-full flex-col">
+        <div className="flex-1 overflow-y-auto py-4">
+          <NavList collapsed={collapsed} />
+        </div>
+
+        {/* ── Collapse toggle (pinned to bottom) ── */}
+        <div
+          className={cn(
+            "border-t border-line/60 px-2 py-2",
+            collapsed && "px-1.5",
+          )}
+        >
+          <button
+            type="button"
+            onClick={toggleCollapsed}
+            aria-pressed={collapsed}
+            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            title={collapsed ? "Expand" : "Collapse"}
+            className={cn(
+              "flex w-full items-center gap-2 rounded-md border border-transparent px-2 py-2 text-xs font-medium text-fg-muted transition-colors hover:border-line/60 hover:bg-ink-card/60 hover:text-foreground",
+              collapsed && "justify-center px-0",
+            )}
+          >
+            {collapsed ? (
+              <ChevronsRight className="h-4 w-4" aria-hidden="true" />
+            ) : (
+              <>
+                <ChevronsLeft className="h-4 w-4" aria-hidden="true" />
+                <span>Collapse</span>
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+    </aside>
+  );
+}
+
+/* ──────────────────────────────────────────────────────────────
+ * MobileNav — Sheet-based mobile drawer. Exports a wrapper that
+ * takes a trigger element as its child (SheetTrigger is forwarded).
+ * Closes the drawer on link navigation.
  *
- * The dashboard Sidebar uses `hidden md:block`, so on screens below `md`
- * (768px) it's invisible and mobile users had no way to navigate between
- * dashboard tabs. This component renders a hamburger button (visible only
- * below `md`) that opens a left-sliding Sheet containing the same nav items.
- *
- * The Sheet closes itself when a nav link is tapped (via `onOpenChange` +
- * per-link `onClick`) so navigating doesn't leave a stale sheet open over
- * the freshly-rendered page. The desktop sidebar is unaffected.
- */
-export function MobileNav() {
-  const pathname = usePathname();
-  const [open, setOpen] = useState(false);
+ * This export is preserved for use by the Topbar (the MobileNav
+ * trigger button is rendered inside Topbar via this wrapper).
+ * ────────────────────────────────────────────────────────────── */
+
+export function MobileNav({ children }: { children: React.ReactNode }) {
+  const [open, setOpen] = React.useState(false);
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="md:hidden text-amber-300 hover:bg-amber-500/10 hover:text-amber-200"
-          aria-label="Open navigation menu"
-        >
-          <Menu className="h-5 w-5" />
-          <span className="sr-only">Open navigation menu</span>
-        </Button>
-      </SheetTrigger>
+      <SheetTrigger asChild>{children}</SheetTrigger>
       <SheetContent
         side="left"
-        className="w-72 border-r border-slate-800 bg-slate-900/95 p-3"
+        className={cn(
+          "w-72 border-line/60 bg-ink/95 p-0 backdrop-blur-xl",
+        )}
+        aria-label="Mobile navigation"
       >
-        <SheetTitle className="sr-only">Dashboard navigation</SheetTitle>
-        <nav aria-label="Mobile sidebar">
-          <ul className="space-y-1">
-            {nav.map((i) => {
-              const Icon = i.icon;
-              const a = pathname === i.href;
-              return (
-                <li key={i.name}>
-                  <Link
-                    href={i.href}
-                    onClick={() => setOpen(false)}
-                    aria-current={a ? "page" : undefined}
-                    className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors ${a ? "bg-amber-500/10 text-amber-300" : "text-slate-400 hover:bg-slate-800/50 hover:text-white"}`}
-                  >
-                    <Icon className="h-4 w-4" />
-                    <span>{i.name}</span>
-                    {i.badge && (
-                      <span className="ml-auto rounded-full bg-red-500/20 px-2 py-0.5 text-xs text-red-300">
-                        {i.badge}
-                      </span>
-                    )}
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </nav>
+        <SheetHeader className="border-b border-line/60 px-4 py-3">
+          <SheetTitle className="flex items-center gap-2 text-left">
+            <span
+              className={cn(
+                "flex h-7 w-7 items-center justify-center rounded-md",
+                "border border-gold/40 bg-gradient-to-br from-gold-soft/20 to-gold-deep/30",
+                "font-mono text-sm font-semibold text-gold",
+              )}
+              aria-hidden="true"
+            >
+              M
+            </span>
+            <span className="font-mono text-sm font-semibold tracking-wider text-foreground">
+              MITHQAL
+            </span>
+          </SheetTitle>
+        </SheetHeader>
+
+        <div className="overflow-y-auto px-2 py-4">
+          <NavList onNavigate={() => setOpen(false)} />
+        </div>
       </SheetContent>
     </Sheet>
   );
 }
+
+export default Sidebar;

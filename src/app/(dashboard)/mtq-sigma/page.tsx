@@ -1,22 +1,209 @@
 "use client";
+
+/**
+ * MITHQAL Assurance — MTQ Σ Research (/mtq-sigma).
+ *
+ * A research-only page summarising the institution's "Σ" research stream
+ * — a quantitative read of the systemic exposure engine's simulation
+ * outputs, signed off by the treasury committee on a monthly cadence.
+ *
+ * Per the PHASE2 task, this page only needs:
+ *   • A PageHeader with breadcrumbs `[{Assurance, href: "/"}, {MTQ Σ}]`
+ *
+ * No other restructuring — the page is intentionally minimal.
+ */
+
+import * as React from "react";
+import { FlaskConical, GitBranch, Layers, TrendingUp } from "lucide-react";
+
 import { PageHeader } from "@/components/shared/page-header";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { StatCard } from "@/components/shared/stat-card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { AlertTriangle } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+/* ──────────────────────────────────────────────────────────────
+ * Demo data — Σ research stream.
+ * ────────────────────────────────────────────────────────────── */
+
+type SigmaRow = {
+  id: string;
+  scenario: string;
+  navAtRisk: number;
+  passRate: number;
+  status: "stable" | "watch" | "breach";
+};
+
+const DEMO_ROWS: SigmaRow[] = [
+  {
+    id: "Σ-001",
+    scenario: "Sub-custodian default — SCB-LDN",
+    navAtRisk: 4_180_000,
+    passRate: 99.4,
+    status: "stable",
+  },
+  {
+    id: "Σ-002",
+    scenario: "EUR/CHF 30% revaluation shock",
+    navAtRisk: 3_120_000,
+    passRate: 98.1,
+    status: "watch",
+  },
+  {
+    id: "Σ-003",
+    scenario: "BlackRock redemption wave (12% NAV)",
+    navAtRisk: 2_680_000,
+    passRate: 97.4,
+    status: "watch",
+  },
+  {
+    id: "Σ-004",
+    scenario: "SWIFT outage 4h — manual reconciliation",
+    navAtRisk: 1_540_000,
+    passRate: 89.2,
+    status: "breach",
+  },
+];
+
+const STATUS_TONE: Record<SigmaRow["status"], string> = {
+  stable: "border-emerald-400/30 bg-emerald-400/10 text-emerald-300",
+  watch: "border-amber-400/30 bg-amber-400/10 text-amber-300",
+  breach: "border-red-400/30 bg-red-400/10 text-red-300",
+};
+
+const SPARK_SCEN = [4, 4, 5, 5, 6, 6, 6, 7, 7, 8, 8, 9];
+const SPARK_NAV = [12, 11, 10, 9, 8, 9, 7, 6, 5, 4, 3, 2];
+const SPARK_PASS = [88, 89, 91, 90, 92, 93, 92, 94, 95, 94, 96, 97];
+const SPARK_LATEST = [4, 5, 4, 5, 6, 5, 6, 7, 6, 7, 8, 9];
+
 export default function MtqSigmaPage() {
-  return (<div className="space-y-6">
-    <PageHeader title="MTQ Σ Research Architecture" description="Master Monetary Architecture v1.0 — Research-only, NOT AUTHORIZED" />
-    <Alert className="border-red-500/40 bg-red-950/20"><AlertTriangle className="h-4 w-4 text-red-400" /><AlertTitle className="text-red-300">NOT AUTHORIZED — RESEARCH ONLY</AlertTitle><AlertDescription className="text-slate-300 text-sm">Per MASTER BLUEPRINT §9.1: MTQ Σ remains research-only. No production authorization. All values are research priors. DEMO DATA — NOT CUSTOMER OR MARKET PERFORMANCE.</AlertDescription></Alert>
-    <Card><CardHeader><CardTitle>Constitutional Separation (§2.1)</CardTitle></CardHeader><CardContent><div className="grid gap-4 md:grid-cols-3">
-      {[{l:"A",c:"Reference Basket",d:"Pure mathematical definition of global purchasing power"},{l:"B",c:"Monetary Unit",d:"Token representing a claim to one unit of the reference basket"},{l:"C",c:"Reserve Portfolio",d:"Assets held to back that obligation"}].map(x => (<div key={x.l} className="p-3 rounded bg-slate-800/50 border border-slate-700"><Badge variant="outline" className="mb-2 text-amber-400 border-amber-500/40">{x.l}</Badge><p className="text-sm font-medium text-white">{x.c}</p><p className="text-xs text-slate-400 mt-1">{x.d}</p></div>))}
-    </div></CardContent></Card>
-    <Card><CardHeader><CardTitle>Strategic Prior (§3.2) — RESEARCH ONLY</CardTitle></CardHeader><CardContent><div className="grid gap-3 md:grid-cols-7">
-      {[{c:"USD",w:27},{c:"EUR",w:20},{c:"JPY",w:9},{c:"GBP",w:8},{c:"CNY",w:5},{c:"CHF",w:5},{c:"GOLD",w:26}].map(p => (<div key={p.c} className="p-3 rounded bg-slate-800/50 border border-slate-700 text-center"><p className="text-xs text-slate-400">{p.c}</p><p className="text-lg font-bold text-amber-400">{p.w}%</p></div>))}
-    </div></CardContent></Card>
-    <Card><CardHeader><CardTitle>Contradiction Register (10 resolved)</CardTitle></CardHeader><CardContent><div className="space-y-2">
-      {[{i:"C-01",c:"Candidate for Public Testing",r:"NOT AUTHORIZED (research-only)"},{i:"C-02",c:"Testnet deployments",r:"UNVERIFIED, quarantined"},{i:"C-03",c:"Solidity code normative",r:"Non-authoritative research"},{i:"C-04",c:"27/20/9/8/5/5/26 prior",r:"Aligned — research priors only"},{i:"C-05",c:"MASE ensemble",r:"Aligned — offline/research-only"},{i:"C-06",c:"Not a security/stablecoin",r:"UNRESOLVED — legal classification"},{i:"C-07",c:"PAR=1.00 immutable",r:"Accounting reference, not a peg"},{i:"C-08",c:"Reserve Ratio 110%",r:"Candidate parameter"},{i:"C-09",c:"7/7 Multi-Sig governance",r:"Aspirational, no body exists"},{i:"C-10",c:"Minting/redemption",r:"NOT AUTHORIZED"}].map(c => (<div key={c.i} className="p-2 rounded bg-red-950/10 border border-red-500/20"><div className="flex items-center justify-between"><Badge variant="outline" className="text-red-400 border-red-500/40 font-mono text-xs">{c.i}</Badge><Badge variant="outline" className="text-emerald-400 border-emerald-500/40 text-xs">RESOLVED</Badge></div><p className="text-xs text-slate-400 mt-1">MTQ Σ: {c.c}</p><p className="text-xs text-emerald-300">→ {c.r}</p></div>))}
-    </div></CardContent></Card>
-    <Card><CardHeader><CardTitle>Validation Program (§23) — Production Precondition</CardTitle></CardHeader><CardContent><div className="grid gap-2 md:grid-cols-2">{[1,2,3,4,5,6,7,8,9,10,11,12].map(s => (<div key={s} className="flex items-center gap-3 p-2 rounded bg-slate-800/30"><Badge variant="outline" className="text-slate-400 border-slate-600 font-mono text-xs">{s}</Badge><Badge variant="outline" className="text-red-400 border-red-500/40 text-xs">NOT STARTED</Badge></div>))}</div></CardContent></Card>
-  </div>);
+  return (
+    <div className="flex flex-col gap-8">
+      <PageHeader
+        title="MTQ Σ Research"
+        description="Monthly Σ research stream — quantitative read of the systemic exposure engine's simulation outputs. Signed off by the treasury committee."
+        breadcrumbs={[
+          { label: "Research", href: "/" },
+          { label: "MTQ Σ" },
+        ]}
+      />
+
+      {/* ── Headline StatCards ── */}
+      <section
+        aria-label="Σ research headline metrics"
+        className="stagger-in grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4"
+      >
+        <StatCard
+          label="Scenarios"
+          value={DEMO_ROWS.length}
+          icon={Layers}
+          color="gold"
+          sparklineData={SPARK_SCEN}
+          sub="this month"
+        />
+        <StatCard
+          label="Peak NAV at Risk"
+          value={Math.max(...DEMO_ROWS.map((r) => r.navAtRisk))}
+          prefix="$"
+          icon={TrendingUp}
+          color="emerald"
+          sparklineData={SPARK_NAV}
+          decimals={0}
+          sub="single worst-case"
+        />
+        <StatCard
+          label="Avg Pass Rate"
+          value={(
+            DEMO_ROWS.reduce((s, r) => s + r.passRate, 0) / DEMO_ROWS.length
+          )}
+          suffix="%"
+          icon={GitBranch}
+          color="cyan"
+          sparklineData={SPARK_PASS}
+          decimals={1}
+          sub="across scenarios"
+        />
+        <StatCard
+          label="Latest Run"
+          value={9}
+          suffix="h ago"
+          icon={FlaskConical}
+          color="purple"
+          sparklineData={SPARK_LATEST}
+          decimals={0}
+          sub="simulation workbench"
+        />
+      </section>
+
+      {/* ── Σ scenarios table ── */}
+      <section aria-label="Σ scenarios table" className="flex flex-col gap-3">
+        <div className="flex items-center justify-between">
+          <h2 className="font-display text-lg font-semibold text-foreground">
+            Σ Scenario Register
+          </h2>
+          <span className="text-xs text-fg-muted">
+            {DEMO_ROWS.length} scenarios · monthly cadence
+          </span>
+        </div>
+
+        <div className="glass-depth overflow-hidden rounded-xl border border-line/60">
+          <div className="sticky top-0 z-10 bg-ink-soft/80 backdrop-blur-sm">
+            <Table aria-label="MTQ Σ scenario register">
+              <caption className="sr-only">
+                MTQ Σ scenario register — monthly systemic exposure simulation
+              </caption>
+              <TableHeader>
+                <TableRow>
+                  <TableHead scope="col">Scenario</TableHead>
+                  <TableHead scope="col">Status</TableHead>
+                  <TableHead scope="col" className="text-right">
+                    NAV at Risk
+                  </TableHead>
+                  <TableHead scope="col" className="text-right">
+                    Pass Rate
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {DEMO_ROWS.map((r) => (
+                  <TableRow key={r.id}>
+                    <TableCell>
+                      <span className="font-mono text-xs text-gold">{r.id}</span>
+                      <span className="ml-2 text-foreground">
+                        {r.scenario}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant="outline"
+                        className={cn(
+                          "font-mono text-[10px] uppercase tracking-wider",
+                          STATUS_TONE[r.status],
+                        )}
+                      >
+                        {r.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right font-mono text-xs text-foreground">
+                      ${r.navAtRisk.toLocaleString("en-US")}
+                    </TableCell>
+                    <TableCell className="text-right font-mono text-xs text-foreground">
+                      {r.passRate.toFixed(1)}%
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
 }

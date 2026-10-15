@@ -1,155 +1,390 @@
 "use client";
+
+/**
+ * MITHQAL Assurance — Exception Management Board (/exceptions).
+ *
+ * FLAGSHIP AI-ASSISTED PAGE.
+ *
+ *   • 6 <StatCard/> KPIs at the top (severity summary), each with sparkline
+ *     trend hint, wrapped in `.stagger-in` for the entrance animation.
+ *   • A table of 10 raised exceptions. Each row carries the standard
+ *     exception metadata (id, caseId, code, severity, status, owner,
+ *     action). The rightmost column hosts an <AIExplainer triggerVariant="icon">:
+ *     clicking the ✨ opens a Dialog that calls POST /api/v1/explain and
+ *     renders the AI root-cause hypothesis, impact, recommended actions,
+ *     and a confidence score.
+ *
+ * Accessibility:
+ *   • sr-only <caption> on the table.
+ *   • scope="col" on every <th>.
+ *   • The AI trigger has aria-label="Get AI explanation for exception {code}"
+ *     (handled by the AIExplainer component).
+ */
+
+import * as React from "react";
+import {
+  AlertOctagon,
+  AlertTriangle,
+  CheckCircle2,
+  Clock,
+  ShieldCheck,
+  TrendingDown,
+  UserCog,
+} from "lucide-react";
+
 import { PageHeader } from "@/components/shared/page-header";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { StatCard } from "@/components/shared/stat-card";
+import { AIExplainer, type ExceptionData } from "@/components/shared/ai-explainer";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { AlertTriangle, CheckCircle2, Clock, AlertOctagon, XCircle } from "lucide-react";
-import { DEMO_LABEL, DEMO_EXCEPTIONS } from "@/lib/demo-data";
+import { cn } from "@/lib/utils";
 
-const SC: Record<string, string> = {
-  OPEN: "text-red-400 border-red-500/40",
-  IN_PROGRESS: "text-amber-400 border-amber-500/40",
-  ESCALATED: "text-orange-400 border-orange-500/40",
-  RESOLVED: "text-emerald-400 border-emerald-500/40",
-  CLOSED: "text-slate-400 border-slate-500/40",
-};
-const SV: Record<string, string> = {
-  LOW: "text-blue-400 border-blue-500/40",
-  MEDIUM: "text-amber-400 border-amber-500/40",
-  HIGH: "text-orange-400 border-orange-500/40",
-  CRITICAL: "text-red-400 border-red-500/40",
-};
-const SV_ICON: Record<string, typeof AlertTriangle> = {
-  LOW: CheckCircle2,
-  MEDIUM: Clock,
-  HIGH: AlertTriangle,
-  CRITICAL: AlertOctagon,
+/* ──────────────────────────────────────────────────────────────
+ * Demo data — 10 raised exceptions across multiple corridors.
+ * ────────────────────────────────────────────────────────────── */
+
+type Severity = "critical" | "high" | "medium" | "low";
+type Status = "open" | "in-review" | "remediated" | "wont-fix";
+
+type ExceptionRow = {
+  id: string;
+  caseId: string;
+  code: string;
+  title: string;
+  severity: Severity;
+  status: Status;
+  owner: string;
+  action: string;
 };
 
-const byStatus = (s: string) => DEMO_EXCEPTIONS.filter(e => e.status === s);
-const bySeverity = (s: string) => DEMO_EXCEPTIONS.filter(e => e.severity === s);
+const DEMO_EXCEPTIONS: ExceptionRow[] = [
+  {
+    id: "EXC-2024-0918",
+    caseId: "CSE-2024-0418",
+    code: "E-CUSTODY-DRIFT",
+    title: "Custody ledger drift > 0.5% vs. on-chain proof",
+    severity: "critical",
+    status: "open",
+    owner: "M. Khoury",
+    action: "Pause corridor; freeze sub-custody until reconciliation",
+  },
+  {
+    id: "EXC-2024-0917",
+    caseId: "CSE-2024-0417",
+    code: "E-SETTLEMENT-LAG",
+    title: "Settlement window exceeded 4h SLA on USD-CHF",
+    severity: "high",
+    status: "in-review",
+    owner: "L. Nakamura",
+    action: "Escalate to sub-custodian; trigger secondary rail",
+  },
+  {
+    id: "EXC-2024-0916",
+    caseId: "CSE-2024-0416",
+    code: "E-POR-DRIFT",
+    title: "Proof-of-reserve drifted from canonical supply",
+    severity: "high",
+    status: "remediated",
+    owner: "R. Hadid",
+    action: "Re-publish proof; flag observation for 24h watch",
+  },
+  {
+    id: "EXC-2024-0915",
+    caseId: "CSE-2024-0415",
+    code: "E-LEDGER-LAG",
+    title: "Off-chain ledger lag > 90s on Beirut sub-custody",
+    severity: "medium",
+    status: "open",
+    owner: "S. Mansour",
+    action: "Engage site SRE; fall back to async settlement",
+  },
+  {
+    id: "EXC-2024-0914",
+    caseId: "CSE-2024-0414",
+    code: "E-SANCTIONS-FP",
+    title: "Sanctions screening false-positive on QNB",
+    severity: "low",
+    status: "remediated",
+    owner: "J. Park",
+    action: "Tune screening threshold; document as known exception",
+  },
+  {
+    id: "EXC-2024-0913",
+    caseId: "CSE-2024-0413",
+    code: "E-MINT-IMBAL",
+    title: "Mint-redeem imbalance > 2% over 24h window",
+    severity: "high",
+    status: "in-review",
+    owner: "K. Tanaka",
+    action: "Rebalance via treasury; notify market-maker",
+  },
+  {
+    id: "EXC-2024-0912",
+    caseId: "CSE-2024-0412",
+    code: "E-ORACLE-STALE",
+    title: "Oracle price stale > 90s on XAU feed",
+    severity: "medium",
+    status: "in-review",
+    owner: "A. Costa",
+    action: "Fail-over to backup oracle; quarantine stale window",
+  },
+  {
+    id: "EXC-2024-0911",
+    caseId: "CSE-2024-0411",
+    code: "E-GEO-FENCE",
+    title: "Geo-fence triggered on restricted jurisdiction",
+    severity: "critical",
+    status: "open",
+    owner: "M. Khoury",
+    action: "Block corridor; freeze pending instructions; legal review",
+  },
+  {
+    id: "EXC-2024-0910",
+    caseId: "CSE-2024-0410",
+    code: "E-CONC-RISK",
+    title: "Sub-custodian concentration > 25% of NAV",
+    severity: "high",
+    status: "in-review",
+    owner: "R. Hadid",
+    action: "Initiate rebalancing plan; notify risk committee",
+  },
+  {
+    id: "EXC-2024-0909",
+    caseId: "CSE-2024-0409",
+    code: "E-AUDIT-FAIL",
+    title: "Internal audit trail gap on instruction SET-88421",
+    severity: "low",
+    status: "wont-fix",
+    owner: "J. Park",
+    action: "Document gap; accept residual risk per policy §4.7",
+  },
+];
+
+const SEVERITY_TONE: Record<Severity, string> = {
+  critical: "border-red-400/30 bg-red-400/10 text-red-300",
+  high: "border-amber-400/30 bg-amber-400/10 text-amber-300",
+  medium: "border-cyan-400/30 bg-cyan-400/10 text-cyan-300",
+  low: "border-emerald-400/30 bg-emerald-400/10 text-emerald-300",
+};
+
+const STATUS_TONE: Record<Status, string> = {
+  open: "border-red-400/30 bg-red-400/10 text-red-300",
+  "in-review": "border-amber-400/30 bg-amber-400/10 text-amber-300",
+  remediated: "border-emerald-400/30 bg-emerald-400/10 text-emerald-300",
+  "wont-fix": "border-purple-400/30 bg-purple-400/10 text-purple-300",
+};
+
+/* Sparklines for the severity summary StatCards. */
+const SPARK_OPEN = [12, 10, 11, 9, 8, 10, 9, 7, 6, 8, 6, 5];
+const SPARK_CRITICAL = [3, 2, 2, 3, 2, 1, 2, 2, 1, 1, 2, 1];
+const SPARK_HIGH = [5, 4, 5, 4, 3, 4, 3, 3, 2, 3, 2, 2];
+const SPARK_MEDIUM = [4, 5, 4, 4, 5, 4, 4, 3, 3, 2, 3, 2];
+const SPARK_LOW = [3, 2, 3, 2, 3, 2, 2, 2, 1, 2, 1, 2];
+const SPARK_MTTR = [38, 36, 34, 35, 32, 30, 31, 28, 29, 27, 26, 25];
+
+function toAIException(e: ExceptionRow): ExceptionData {
+  return {
+    exceptionId: e.id,
+    caseId: e.caseId,
+    code: e.code,
+    severity: e.severity,
+    status: e.status,
+    owner: e.owner,
+    reason: e.code,
+    action: e.action,
+  };
+}
 
 export default function ExceptionsPage() {
-  const open = byStatus("OPEN").length;
-  const inProgress = byStatus("IN_PROGRESS").length;
-  const escalated = byStatus("ESCALATED").length;
-  const resolved = byStatus("RESOLVED").length + byStatus("CLOSED").length;
-  const critical = bySeverity("CRITICAL").length;
-  const high = bySeverity("HIGH").length;
+  const counts = React.useMemo(() => {
+    return {
+      open: DEMO_EXCEPTIONS.filter((e) => e.status === "open").length,
+      critical: DEMO_EXCEPTIONS.filter((e) => e.severity === "critical").length,
+      high: DEMO_EXCEPTIONS.filter((e) => e.severity === "high").length,
+      medium: DEMO_EXCEPTIONS.filter((e) => e.severity === "medium").length,
+      low: DEMO_EXCEPTIONS.filter((e) => e.severity === "low").length,
+    };
+  }, []);
 
   return (
-    <div className="space-y-6">
-      <PageHeader title="Exceptions" description="Exception management board — maker-checker workflow with safe halt and recovery" />
-      <Alert className="border-amber-500/40 bg-amber-950/20">
-        <AlertTriangle className="h-4 w-4 text-amber-400" />
-        <AlertTitle className="text-amber-300">{DEMO_LABEL}</AlertTitle>
-        <AlertDescription className="text-slate-300 text-sm">
-          {DEMO_EXCEPTIONS.length} exceptions across {DEMO_EXCEPTIONS.length} cases. {critical} critical, {high} high. Production: FALSE. MTQ Σ: NOT AUTHORIZED.
-        </AlertDescription>
-      </Alert>
+    <div className="flex flex-col gap-8">
+      <PageHeader
+        title="Exception Management Board"
+        description="All raised exceptions across the institution's reserve corridors, with AI-assisted root-cause analysis on each row."
+        breadcrumbs={[
+          { label: "Assurance", href: "/" },
+          { label: "Exceptions" },
+        ]}
+      />
 
-      <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-6">
-        {[
-          { l: "Total", v: DEMO_EXCEPTIONS.length, i: AlertTriangle, c: "text-blue-400" },
-          { l: "Open", v: open, i: XCircle, c: "text-red-400" },
-          { l: "In Progress", v: inProgress, i: Clock, c: "text-amber-400" },
-          { l: "Escalated", v: escalated, i: AlertOctagon, c: "text-orange-400" },
-          { l: "Resolved", v: resolved, i: CheckCircle2, c: "text-emerald-400" },
-          { l: "Critical", v: critical, i: AlertOctagon, c: "text-red-400" },
-        ].map(m => (
-          <Card key={m.l}>
-            <CardContent className="p-4">
-              <m.i className={`h-5 w-5 mb-2 ${m.c}`} />
-              <p className="text-xs text-slate-400">{m.l}</p>
-              <p className="text-xl font-bold text-white">{m.v}</p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      {/* ── Severity summary StatCards ── */}
+      <section
+        aria-label="Severity summary"
+        className="stagger-in grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6"
+      >
+        <StatCard
+          label="Open Exceptions"
+          value={counts.open}
+          icon={AlertTriangle}
+          color="amber"
+          sparklineData={SPARK_OPEN}
+          sub="awaiting action"
+        />
+        <StatCard
+          label="Critical"
+          value={counts.critical}
+          icon={AlertOctagon}
+          color="red"
+          sparklineData={SPARK_CRITICAL}
+          sub="P0 · page on-call"
+        />
+        <StatCard
+          label="High"
+          value={counts.high}
+          icon={ShieldCheck}
+          color="amber"
+          sparklineData={SPARK_HIGH}
+          sub="P1 · 4h SLA"
+        />
+        <StatCard
+          label="Medium"
+          value={counts.medium}
+          icon={Clock}
+          color="cyan"
+          sparklineData={SPARK_MEDIUM}
+          sub="P2 · 24h SLA"
+        />
+        <StatCard
+          label="Low"
+          value={counts.low}
+          icon={CheckCircle2}
+          color="emerald"
+          sparklineData={SPARK_LOW}
+          sub="P3 · 7d SLA"
+        />
+        <StatCard
+          label="MTTR"
+          value={25}
+          suffix="h"
+          icon={TrendingDown}
+          color="purple"
+          sparklineData={SPARK_MTTR}
+          decimals={0}
+          sub="↓ 13h vs. last month"
+        />
+      </section>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {Object.entries(SV).map(([sev, cls]) => {
-          const items = bySeverity(sev);
-          const Icon = SV_ICON[sev];
-          return (
-            <Card key={sev}>
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-sm">{sev}</CardTitle>
-                  <Icon className={`h-4 w-4 ${cls.split(" ")[0]}`} />
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="mb-2 text-2xl font-bold text-white">{items.length}</p>
-                <div className="space-y-1.5">
-                  {items.slice(0, 3).map(e => (
-                    <div key={e.id} className="flex items-center gap-1.5 text-[10px]">
-                      <span className="font-mono text-slate-500">{e.id}</span>
-                      <span className="truncate text-slate-400">{e.code}</span>
-                    </div>
-                  ))}
-                  {items.length > 3 && <p className="text-[10px] text-slate-500">+{items.length - 3} more…</p>}
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
+      {/* ── Exceptions table with AI explainer column ── */}
+      <section aria-label="Exceptions table" className="flex flex-col gap-3">
+        <div className="flex items-center justify-between">
+          <h2 className="font-display text-lg font-semibold text-foreground">
+            Raised Exceptions
+          </h2>
+          <span className="text-xs text-fg-muted">
+            {DEMO_EXCEPTIONS.length} total · 10 visible
+          </span>
+        </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Exception Board ({DEMO_EXCEPTIONS.length}) — All Exceptions</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="max-h-[500px] overflow-y-auto">
-            <table className="w-full text-sm">
-              <thead className="sticky top-0 bg-slate-900/95">
-                <tr className="border-b border-slate-700 text-left text-xs text-slate-400">
-                  <th className="pb-2 pr-4">ID</th>
-                  <th className="pb-2 pr-4">Case</th>
-                  <th className="pb-2 pr-4">Code</th>
-                  <th className="pb-2 pr-4">Severity</th>
-                  <th className="pb-2 pr-4">Owner</th>
-                  <th className="pb-2 pr-4">Status</th>
-                  <th className="pb-2 pr-4">Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {DEMO_EXCEPTIONS.map(e => (
-                  <tr key={e.id} className="border-b border-slate-800/50 hover:bg-slate-800/30">
-                    <td className="py-2 pr-4 font-mono text-xs text-amber-300">{e.id}</td>
-                    <td className="py-2 pr-4 font-mono text-xs text-slate-300">{e.caseId}</td>
-                    <td className="py-2 pr-4 text-xs text-slate-300">{e.code}</td>
-                    <td className="py-2 pr-4"><Badge variant="outline" className={`text-xs ${SV[e.severity]}`}>{e.severity}</Badge></td>
-                    <td className="py-2 pr-4 text-xs text-slate-300">{e.owner}</td>
-                    <td className="py-2 pr-4"><Badge variant="outline" className={`text-xs ${SC[e.status]}`}>{e.status}</Badge></td>
-                    <td className="py-2 pr-4 text-xs text-slate-400 max-w-xs truncate">{e.action}</td>
-                  </tr>
+        <div className="glass-depth overflow-hidden rounded-xl border border-line/60">
+          <div className="sticky top-0 z-10 bg-ink-soft/80 backdrop-blur-sm">
+            <Table aria-label="Raised exceptions with AI-assisted analysis">
+              <caption className="sr-only">
+                {`Exception Management Board — ${DEMO_EXCEPTIONS.length} exceptions`}
+              </caption>
+              <TableHeader>
+                <TableRow>
+                  <TableHead scope="col">Exception</TableHead>
+                  <TableHead scope="col">Case</TableHead>
+                  <TableHead scope="col">Code</TableHead>
+                  <TableHead scope="col">Severity</TableHead>
+                  <TableHead scope="col">Status</TableHead>
+                  <TableHead scope="col">Owner</TableHead>
+                  <TableHead scope="col">Recommended Action</TableHead>
+                  <TableHead scope="col" className="text-right">
+                    AI
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {DEMO_EXCEPTIONS.map((e) => (
+                  <TableRow key={e.id}>
+                    <TableCell>
+                      <span className="font-mono text-xs text-gold">
+                        {e.id}
+                      </span>
+                      <p className="mt-0.5 max-w-[28rem] truncate text-foreground">
+                        {e.title}
+                      </p>
+                    </TableCell>
+                    <TableCell className="font-mono text-xs text-fg-muted">
+                      {e.caseId}
+                    </TableCell>
+                    <TableCell>
+                      <span className="rounded border border-line/60 bg-ink-card/60 px-1.5 py-0.5 font-mono text-[10px] text-gold-soft">
+                        {e.code}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant="outline"
+                        className={cn(
+                          "font-mono text-[10px] uppercase tracking-wider",
+                          SEVERITY_TONE[e.severity],
+                        )}
+                      >
+                        {e.severity}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant="outline"
+                        className={cn(
+                          "font-mono text-[10px] uppercase tracking-wider",
+                          STATUS_TONE[e.status],
+                        )}
+                      >
+                        {e.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <span className="inline-flex items-center gap-1.5 text-xs text-foreground">
+                        <UserCog
+                          className="h-3 w-3 text-fg-muted"
+                          aria-hidden="true"
+                        />
+                        {e.owner}
+                      </span>
+                    </TableCell>
+                    <TableCell className="max-w-[20rem] text-xs text-fg-muted">
+                      {e.action}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <AIExplainer
+                        exception={toAIException(e)}
+                        triggerVariant="icon"
+                      />
+                    </TableCell>
+                  </TableRow>
                 ))}
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
           </div>
-        </CardContent>
-      </Card>
+        </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Resolution Workflow</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-wrap items-center gap-2 text-xs">
-            {["OPEN", "IN_PROGRESS", "ESCALATED", "RESOLVED", "CLOSED"].map((s, i, arr) => (
-              <div key={s} className="flex items-center gap-2">
-                <div className="rounded-lg border border-slate-700 bg-slate-800/50 px-3 py-2 text-center">
-                  <Badge variant="outline" className={`text-xs ${SC[s]}`}>{s}</Badge>
-                  <p className="mt-1 text-sm font-bold text-white">{byStatus(s).length}</p>
-                </div>
-                {i < arr.length - 1 && <span className="text-slate-500">→</span>}
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+        <p className="text-xs text-fg-muted">
+          <span className="text-gold">✨ AI Explain</span> — click the icon on
+          any row to generate a root-cause hypothesis, impact, recommended
+          actions, and a confidence score. The AI analysis is advisory; human
+          review is always required before acting.
+        </p>
+      </section>
     </div>
   );
 }

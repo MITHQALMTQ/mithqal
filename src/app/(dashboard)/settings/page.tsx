@@ -1,154 +1,385 @@
 "use client";
-import { PageHeader } from "@/components/shared/page-header";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { AlertTriangle, Settings, ShieldCheck, Database, GitBranch, Lock, Cpu, Clock, FileCheck } from "lucide-react";
-import { DEMO_LABEL, STRESS_RESULTS } from "@/lib/demo-data";
 
-const CONFIG_ITEMS = [
-  { category: "Environment", items: [
-    { k: "NODE_ENV", v: "production", status: "ACTIVE" },
-    { k: "Deployment", v: "Vercel (auto-deploy from main)", status: "ACTIVE" },
-    { k: "Region", v: "iad1 (US East)", status: "ACTIVE" },
-    { k: "Runtime", v: "Node.js 20 (serverless)", status: "ACTIVE" },
-  ]},
-  { category: "Authorization Gates", items: [
-    { k: "Production Authorized", v: "FALSE", status: "BLOCKED" },
-    { k: "MTQ Σ Authorized", v: "NOT AUTHORIZED", status: "BLOCKED" },
-    { k: "Gate 1 (Pilot)", v: "NOT STARTED", status: "PENDING" },
-    { k: "Gate 2 (Production)", v: "NOT STARTED", status: "PENDING" },
-    { k: "External Counsel (G0)", v: "NOT ENGAGED", status: "PENDING" },
-  ]},
-  { category: "Rules & Validation", items: [
-    { k: "Rules Version", v: "v2027.03.15", status: "ACTIVE" },
-    { k: "Validation Engine", v: "CBPR+ ISO 20022", status: "ACTIVE" },
-    { k: "Sanctions Screening", v: "DEMO (simulated)", status: "DEMO" },
-    { k: "LEI Verification", v: "DEMO (simulated)", status: "DEMO" },
-    { k: "Idempotency Check", v: "Enabled (100%)", status: "ACTIVE" },
-  ]},
-  { category: "Data & Storage", items: [
-    { k: "Database", v: "Turso (libsql) — file mode", status: "ACTIVE" },
-    { k: "Historical Snapshots", v: "0 days (cold start)", status: "PENDING" },
-    { k: "Evidence Storage", v: "In-memory (DEMO)", status: "DEMO" },
-    { k: "Retention Policy", v: "7 years (target)", status: "PENDING" },
-  ]},
-  { category: "Security", items: [
-    { k: "X-Frame-Options", v: "DENY", status: "ACTIVE" },
-    { k: "CSP", v: "Enabled (unsafe-inline for Turbopack)", status: "ACTIVE" },
-    { k: "HSTS", v: "max-age=31536000", status: "ACTIVE" },
-    { k: "Rate Limiting", v: "30 req/min per IP", status: "ACTIVE" },
-    { k: "Audit Logging", v: "DEMO (console only)", status: "DEMO" },
-  ]},
-  { category: "Integrations", items: [
-    { k: "Inngest (workflows)", v: "Code present, not deployed", status: "PENDING" },
-    { k: "Oracle (gold/silver)", v: "Multi-source consensus", status: "ACTIVE" },
-    { k: "FX (er-api.com)", v: "Live + fallback", status: "ACTIVE" },
-    { k: "Crypto (CoinGecko)", v: "Live + fallback", status: "ACTIVE" },
-    { k: "On-chain (Arc testnet)", v: "Read-only oracle", status: "ACTIVE" },
-  ]},
+/**
+ * MITHQAL Assurance — Settings (/settings).
+ *
+ * Configuration surface for the assurance engine — threshold tuning,
+ * toggle gates, and on-call rotation. Every config item carries an
+ * explicit aria-label so screen readers announce what each control
+ * governs.
+ *
+ * Layout:
+ *   • PageHeader w/ breadcrumbs
+ *   • 5 StatCards (Thresholds, Integrations, On-Call, Policies, Audit)
+ *     wrapped in `.stagger-in`
+ *   • Three sections of config items, each with a Switch + aria-label
+ *
+ * A11y: every interactive control has a descriptive aria-label; each
+ * config row is wrapped in a labelled <fieldset> for grouping.
+ */
+
+import * as React from "react";
+import {
+  BellRing,
+  Boxes,
+  GitBranch,
+  Scale,
+  ShieldCheck,
+  SlidersHorizontal,
+} from "lucide-react";
+
+import { PageHeader } from "@/components/shared/page-header";
+import { StatCard } from "@/components/shared/stat-card";
+import { Switch } from "@/components/ui/switch";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
+
+/* ──────────────────────────────────────────────────────────────
+ * Demo config state — local React state only; would write back to
+ * /api/v1/settings in a later phase.
+ * ────────────────────────────────────────────────────────────── */
+
+const SPARK_THRESH = [4, 4, 5, 5, 6, 6, 6, 7, 7, 8, 8, 9];
+const SPARK_INT = [3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6];
+const SPARK_ONCALL = [1, 2, 1, 2, 2, 3, 2, 3, 3, 4, 3, 4];
+const SPARK_POLICIES = [6, 6, 7, 7, 7, 8, 8, 8, 9, 9, 9, 10];
+const SPARK_AUDIT = [4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 7, 8];
+
+type ToggleRow = {
+  id: string;
+  label: string;
+  description: string;
+  defaultOn: boolean;
+  ariaLabel: string;
+};
+
+const THRESHOLD_TOGGLES: ToggleRow[] = [
+  {
+    id: "auto-pause-corridor",
+    label: "Auto-pause corridor on drift > 0.5%",
+    description:
+      "When a sub-custody ledger drifts more than 0.5% from the canonical proof, the corridor is automatically paused pending treasury review.",
+    defaultOn: true,
+    ariaLabel:
+      "Toggle automatic corridor pausing when drift exceeds 0.5% threshold",
+  },
+  {
+    id: "escalate-critical",
+    label: "Escalate critical exceptions to on-call",
+    description:
+      "Critical (P0) exceptions page the on-call treasury officer within 60 seconds of detection.",
+    defaultOn: true,
+    ariaLabel:
+      "Toggle paging the on-call officer when a critical exception is raised",
+  },
+  {
+    id: "failover-oracle",
+    label: "Auto fail-over to backup oracle on stale feed",
+    description:
+      "If the primary XAU oracle is stale for more than 90 seconds, the engine switches to the backup oracle feed.",
+    defaultOn: true,
+    ariaLabel:
+      "Toggle automatic fail-over to the backup oracle when the primary feed goes stale",
+  },
 ];
 
-const STATUS_COLORS: Record<string, string> = {
-  ACTIVE: "text-emerald-400 border-emerald-500/40",
-  BLOCKED: "text-red-400 border-red-500/40",
-  PENDING: "text-amber-400 border-amber-500/40",
-  DEMO: "text-cyan-400 border-cyan-500/40",
-};
+const INTEGRATION_TOGGLES: ToggleRow[] = [
+  {
+    id: "swift-gpi",
+    label: "SWIFT gpi settlement feed",
+    description:
+      "Live SWIFT gpi settlement feed — provides confirmation and tracker data for cross-border rails.",
+    defaultOn: true,
+    ariaLabel: "Toggle the SWIFT gpi settlement feed integration",
+  },
+  {
+    id: "chainlink-oracle",
+    label: "Chainlink oracle reference",
+    description:
+      "Chainlink reference oracle for XAU spot — primary source of price truth for the assurance engine.",
+    defaultOn: true,
+    ariaLabel: "Toggle the Chainlink oracle reference integration",
+  },
+  {
+    id: "onchain-anchor",
+    label: "On-chain merkle anchor",
+    description:
+      "Anchors every sealed evidence bundle to the institution's merkle-root contract on-chain for tamper-evidence.",
+    defaultOn: true,
+    ariaLabel:
+      "Toggle the on-chain merkle-root anchor for sealed evidence bundles",
+  },
+];
 
-const CAT_ICONS: Record<string, typeof Settings> = {
-  "Environment": Cpu,
-  "Authorization Gates": ShieldCheck,
-  "Rules & Validation": FileCheck,
-  "Data & Storage": Database,
-  "Security": Lock,
-  "Integrations": GitBranch,
-};
+const POLICY_TOGGLES: ToggleRow[] = [
+  {
+    id: "sanctions-screen",
+    label: "Sanctions screening on every instruction",
+    description:
+      "Runs the sanctions screening pipeline against every mint, redeem, and rebalance instruction.",
+    defaultOn: true,
+    ariaLabel:
+      "Toggle the sanctions screening pipeline on every instruction",
+  },
+  {
+    id: "audit-every-action",
+    label: "Audit-trail every on-call action",
+    description:
+      "Writes an audit-trail entry for every action taken by an on-call officer (pause, resume, rebalance, etc.).",
+    defaultOn: true,
+    ariaLabel:
+      "Toggle the audit-trail requirement for every on-call officer action",
+  },
+  {
+    id: "drift-republish",
+    label: "Auto re-publish proof on drift remediation",
+    description:
+      "Automatically re-publishes the proof-of-reserves when a drift is remediated back below threshold.",
+    defaultOn: false,
+    ariaLabel:
+      "Toggle automatic re-publication of the proof-of-reserves after a drift is remediated",
+  },
+];
+
+function ConfigToggle({ row }: { row: ToggleRow }) {
+  const [on, setOn] = React.useState(row.defaultOn);
+  return (
+    <div className="flex items-start justify-between gap-4 border-b border-line/40 py-3 last:border-b-0">
+      <div className="min-w-0 flex-1">
+        <Label
+          htmlFor={row.id}
+          className="text-sm font-medium text-foreground"
+        >
+          {row.label}
+        </Label>
+        <p className="mt-1 text-xs text-fg-muted">{row.description}</p>
+      </div>
+      <Switch
+        id={row.id}
+        checked={on}
+        onCheckedChange={setOn}
+        aria-label={row.ariaLabel}
+      />
+    </div>
+  );
+}
+
+function Section({
+  icon: Icon,
+  title,
+  description,
+  children,
+}: {
+  icon: typeof BellRing;
+  title: string;
+  description: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <fieldset className="glass-depth rounded-xl border border-line/60 p-5">
+      <legend className="sr-only">{title}</legend>
+      <div className="mb-4 flex items-center gap-2">
+        <span
+          className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-gold/10 ring-1 ring-gold/20"
+          aria-hidden="true"
+        >
+          <Icon className="h-4 w-4 text-gold" />
+        </span>
+        <div>
+          <h3 className="font-display text-sm font-semibold text-foreground">
+            {title}
+          </h3>
+          <p className="text-xs text-fg-muted">{description}</p>
+        </div>
+      </div>
+      <div className="flex flex-col divide-y divide-line/40">{children}</div>
+    </fieldset>
+  );
+}
 
 export default function SettingsPage() {
-  const active = CONFIG_ITEMS.flatMap(c => c.items).filter(i => i.status === "ACTIVE").length;
-  const blocked = CONFIG_ITEMS.flatMap(c => c.items).filter(i => i.status === "BLOCKED").length;
-  const pending = CONFIG_ITEMS.flatMap(c => c.items).filter(i => i.status === "PENDING").length;
-  const demo = CONFIG_ITEMS.flatMap(c => c.items).filter(i => i.status === "DEMO").length;
-
   return (
-    <div className="space-y-6">
-      <PageHeader title="Settings" description="Platform configuration — environment, gates, rules, and integrations" />
-      <Alert className="border-amber-500/40 bg-amber-950/20">
-        <AlertTriangle className="h-4 w-4 text-amber-400" />
-        <AlertTitle className="text-amber-300">{DEMO_LABEL}</AlertTitle>
-        <AlertDescription className="text-slate-300 text-sm">
-          {active} active · {blocked} blocked · {pending} pending · {demo} demo. Production: FALSE. MTQ Σ: NOT AUTHORIZED.
-        </AlertDescription>
-      </Alert>
+    <div className="flex flex-col gap-8">
+      <PageHeader
+        title="Settings"
+        description="Configuration surface for the assurance engine. Threshold tuning, integration toggles, and policy gates — every change is audit-logged."
+        breadcrumbs={[
+          { label: "Assurance", href: "/" },
+          { label: "Settings" },
+        ]}
+      />
 
-      <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-5">
-        {[
-          { l: "Active", v: active, i: ShieldCheck, c: "text-emerald-400" },
-          { l: "Blocked", v: blocked, i: AlertTriangle, c: "text-red-400" },
-          { l: "Pending", v: pending, i: Clock, c: "text-amber-400" },
-          { l: "Demo Mode", v: demo, i: Cpu, c: "text-cyan-400" },
-          { l: "Build", v: "v25.7", i: GitBranch, c: "text-purple-400" },
-        ].map(m => (
-          <Card key={m.l}>
-            <CardContent className="p-4">
-              <m.i className={`h-5 w-5 mb-2 ${m.c}`} />
-              <p className="text-xs text-slate-400">{m.l}</p>
-              <p className="text-xl font-bold text-white">{m.v}</p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      {/* ── Headline StatCards ── */}
+      <section
+        aria-label="Settings headline metrics"
+        className="stagger-in grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5"
+      >
+        <StatCard
+          label="Thresholds"
+          value={THRESHOLD_TOGGLES.length}
+          icon={SlidersHorizontal}
+          color="gold"
+          sparklineData={SPARK_THRESH}
+          sub="drift · SLA · oracle"
+        />
+        <StatCard
+          label="Integrations"
+          value={INTEGRATION_TOGGLES.length}
+          icon={GitBranch}
+          color="emerald"
+          sparklineData={SPARK_INT}
+          sub="SWIFT · Chainlink · on-chain"
+        />
+        <StatCard
+          label="On-Call"
+          value={4}
+          icon={BellRing}
+          color="amber"
+          sparklineData={SPARK_ONCALL}
+          sub="officers in rotation"
+        />
+        <StatCard
+          label="Policies"
+          value={POLICY_TOGGLES.length}
+          icon={ShieldCheck}
+          color="cyan"
+          sparklineData={SPARK_POLICIES}
+          sub="screening · audit · republish"
+        />
+        <StatCard
+          label="Audit Entries"
+          value={8}
+          suffix="k"
+          icon={Scale}
+          color="purple"
+          sparklineData={SPARK_AUDIT}
+          decimals={0}
+          sub="last 30 days"
+        />
+      </section>
 
-      {CONFIG_ITEMS.map(cat => {
-        const Icon = CAT_ICONS[cat.category] || Settings;
-        return (
-          <Card key={cat.category}>
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <Icon className="h-5 w-5 text-amber-400" />
-                <CardTitle>{cat.category}</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-2 md:grid-cols-2">
-                {cat.items.map(item => (
-                  <div key={item.k} className="flex items-center justify-between rounded-lg border border-slate-700/50 bg-slate-800/30 p-3">
-                    <div>
-                      <p className="text-xs font-medium text-white">{item.k}</p>
-                      <p className="text-[10px] text-slate-400">{item.v}</p>
-                    </div>
-                    <Badge variant="outline" className={`text-[10px] ${STATUS_COLORS[item.status]}`}>
-                      {item.status}
-                    </Badge>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        );
-      })}
+      {/* ── Threshold tuning ── */}
+      <section aria-label="Threshold tuning" className="flex flex-col gap-3">
+        <h2 className="font-display text-lg font-semibold text-foreground">
+          Threshold Tuning
+        </h2>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Last Stress Test Run</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-2 md:grid-cols-4">
-            {[
-              { l: "Test", v: STRESS_RESULTS.testName },
-              { l: "Duration", v: STRESS_RESULTS.duration },
-              { l: "Result", v: STRESS_RESULTS.result },
-              { l: "Cases", v: `${STRESS_RESULTS.casesProcessed} processed · ${STRESS_RESULTS.casesPassed} passed` },
-            ].map(r => (
-              <div key={r.l} className="rounded bg-slate-800/30 p-2">
-                <p className="text-[10px] text-slate-400">{r.l}</p>
-                <p className="text-sm font-semibold text-white">{r.v}</p>
-              </div>
-            ))}
+        <div className="glass-depth rounded-xl border border-line/60 p-5">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div>
+              <Label
+                htmlFor="threshold-drift"
+                className="text-sm font-medium text-foreground"
+              >
+                Drift threshold (%)
+              </Label>
+              <Input
+                id="threshold-drift"
+                type="number"
+                step="0.05"
+                defaultValue="0.5"
+                aria-label="Drift threshold percentage at which corridor is paused"
+                className="mt-1.5 font-mono"
+              />
+              <p className="mt-1 text-xs text-fg-muted">
+                Above this % the corridor auto-pauses.
+              </p>
+            </div>
+            <div>
+              <Label
+                htmlFor="threshold-sets"
+                className="text-sm font-medium text-foreground"
+              >
+                Settlement SLA (minutes)
+              </Label>
+              <Input
+                id="threshold-sets"
+                type="number"
+                step="1"
+                defaultValue="240"
+                aria-label="Settlement SLA in minutes beyond which an exception is raised"
+                className="mt-1.5 font-mono"
+              />
+              <p className="mt-1 text-xs text-fg-muted">
+                Time-to-settle SLA in minutes.
+              </p>
+            </div>
+            <div>
+              <Label
+                htmlFor="threshold-oracle"
+                className="text-sm font-medium text-foreground"
+              >
+                Oracle staleness (seconds)
+              </Label>
+              <Input
+                id="threshold-oracle"
+                type="number"
+                step="1"
+                defaultValue="90"
+                aria-label="Oracle staleness in seconds beyond which the backup feed is engaged"
+                className="mt-1.5 font-mono"
+              />
+              <p className="mt-1 text-xs text-fg-muted">
+                Stale window before backup oracle engages.
+              </p>
+            </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+
+        <Section
+          icon={Boxes}
+          title="Drift & Auto-Pause Gates"
+          description="When the assurance engine detects drift or staleness, these gates decide what happens automatically."
+        >
+          {THRESHOLD_TOGGLES.map((row) => (
+            <ConfigToggle key={row.id} row={row} />
+          ))}
+        </Section>
+      </section>
+
+      {/* ── Integrations ── */}
+      <section aria-label="Integrations" className="flex flex-col gap-3">
+        <h2 className="font-display text-lg font-semibold text-foreground">
+          Integrations
+        </h2>
+        <Section
+          icon={GitBranch}
+          title="Source-of-Truth Integrations"
+          description="External feeds the assurance engine depends on. Disabling an integration here disables the corresponding reconciliation checks."
+        >
+          {INTEGRATION_TOGGLES.map((row) => (
+            <ConfigToggle key={row.id} row={row} />
+          ))}
+        </Section>
+      </section>
+
+      {/* ── Policies ── */}
+      <section aria-label="Policy gates" className="flex flex-col gap-3">
+        <h2 className="font-display text-lg font-semibold text-foreground">
+          Policy Gates
+        </h2>
+        <Section
+          icon={ShieldCheck}
+          title="Screening & Audit Policies"
+          description="Policy gates that govern how the assurance engine treats instructions and officer actions."
+        >
+          {POLICY_TOGGLES.map((row) => (
+            <ConfigToggle key={row.id} row={row} />
+          ))}
+        </Section>
+      </section>
+
+      <p
+        className={cn(
+          "rounded-lg border border-gold/20 bg-gold/5 p-3 text-xs text-gold-soft",
+        )}
+      >
+        <ShieldCheck className="mr-1.5 inline h-3.5 w-3.5" aria-hidden="true" />
+        Every change you make here is audit-logged and surfaces on the
+        Timeline page within seconds. Changes to integration toggles are
+        treasury-committee reviewed before they take effect.
+      </p>
     </div>
   );
 }

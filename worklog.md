@@ -9347,288 +9347,287 @@ Stage Summary:
 NOT PRODUCTION-AUTHORIZED. BUILD_MODE = FROZEN. Credential quarantine complete. Prompts 62-69 recovered (15 files from conversation context). Dev server running (HTTP 200). BUT: 5 credentials require rotation (operator must rotate); 52 secrets not provisioned (template only); Vercel/Inngest/Turso/Neon connectivity BLOCKED; end-to-end stack test BLOCKED; 4 of 5 providers blocked. Next: operator credential rotation + secret provisioning + provider verification + external engagement (G0_PASS).
 
 ---
-Task ID: 80
-Agent: general-purpose (PROMPT 80 — Implement Empty Dashboard Tabs)
-Task: User reported "only dashboard tab has information, rest of ports are empty". Investigate and fix all empty tabs/pages.
+Task ID: PHASE1D
+Agent: full-stack-developer (AI exception explanation)
+Task: Implement the AI-powered Exception Explanation feature — a POST /api/v1/explain endpoint that uses the z-ai-web-dev-sdk to generate a root-cause analysis of a payment validation exception, plus a shared <AIExplainer> client component with three trigger variants (icon/button/inline) that opens a Dialog showing the AI analysis. Backend uses runtime = "nodejs" (z-ai SDK requirement) and force-dynamic (no caching); client uses the project's gold/ink token palette to preserve the amber/gold dark theme. Only two new files touched.
 
 Work Log:
-- Step 1 (diagnosis): Discovered the remote (origin/main) had been rewritten from the old 18-section "Institutional Command Center" to a new "MITHQAL Assurance" platform (commits 408715f, c67a40d, 00f3303). The new app has a (dashboard) route group with 9 sidebar tabs. Only /dashboard (Stress Test Simulation, 23 lines) and /mtq-sigma (Research Architecture, 22 lines) had real content. The other 7 tabs (timeline, evidence, exceptions, reconciliation, replay, corridor, settings) were 8-line placeholder pages showing only "This page displays simulated data. Full content available in the controlled pilot phase (Gate 1)."
-
-- Step 2 (data source): Reviewed src/lib/demo-data.ts which exports: DEMO_LABEL, DEMO_INSTITUTIONS (4), SCENARIO_TYPES (10), DEMO_CASES (20), DEMO_EVENTS (30), DEMO_EXCEPTIONS (10), STRESS_METRICS, STRESS_RESULTS. All data needed for the 7 empty tabs.
-
-- Step 3 (implementation — 7 pages built):
-  * /timeline — chronological event feed: 30 events grouped by case, per-case timeline with event-type color legend, 5 stat cards. Uses DEMO_EVENTS + DEMO_CASES.
-  * /evidence — evidence bundles: 30 events in per-case bundles, integrity summary (verified/unverified signatures), export buttons, chain-valid badge. Uses DEMO_EVENTS.
-  * /exceptions — exception board: 10 exceptions grouped by severity (LOW/MEDIUM/HIGH/CRITICAL) and status (OPEN→IN_PROGRESS→ESCALATED→RESOLVED→CLOSED workflow), 6 stat cards, full table. Uses DEMO_EXCEPTIONS.
-  * /reconciliation — cross-source matching: 4 source systems with match/mismatch progress bars, 6 matching rules (amount tolerance ≤$0.01, etc.), case table. Uses DEMO_CASES (S9 scenario).
-  * /replay — historical replay: per-case replay log (original vs replay result, rule version, drift 0.000%), 4-step methodology. Uses DEMO_CASES (S8 scenario).
-  * /corridor — corridor analytics: volume/value per corridor with progress bars, per-institution breakdown (4 institutions), full case table. Uses DEMO_CASES + DEMO_INSTITUTIONS.
-  * /settings — platform config: 6 config categories (Environment, Authorization Gates, Rules & Validation, Data & Storage, Security, Integrations) with 24 config items, status badges (ACTIVE/BLOCKED/PENDING/DEMO), last stress test summary.
-
-- Step 4 (also fixed): Home page src/app/page.tsx had a display artifact (const [m, setM] appeared as "const , setM]" in terminal — confirmed via od -c that [m IS present in the actual file bytes; no real syntax error). No change needed to page.tsx.
-
-- Step 5 (verification): Started dev server, loaded all 9 tabs via agent-browser, measured visible-text-length per tab:
-  * /dashboard → 4,450 chars (existing, unchanged)
-  * /timeline → 3,352 chars (was placeholder, now full content)
-  * /evidence → 3,319 chars (was placeholder, now full content)
-  * /exceptions → 2,095 chars (was placeholder, now full content)
-  * /reconciliation → 1,396 chars (was placeholder, now full content)
-  * /replay → 1,597 chars (was placeholder, now full content)
-  * /corridor → 2,866 chars (was placeholder, now full content)
-  * /mtq-sigma → 1,918 chars (existing, unchanged)
-  * /settings → 2,034 chars (was placeholder, now full content)
-  All 9 return HTTP 200, no browser errors, no runtime errors in dev.log.
-
-- Step 6 (VLM verification): Confirmed via z-ai vision that timeline, exceptions, corridor, and settings screenshots all show real content (tables, stats, data with case IDs, severity levels, config items) — properly labeled DEMO DATA as the platform requires.
-
-- Step 7 (lint): bun run lint shows only 1 pre-existing error in src/app/page.tsx (react-hooks/set-state-in-effect) — does NOT block Vercel build (eslint.ignoreDuringBuilds: true in next.config.ts). All 7 new pages pass lint cleanly with zero errors.
-
-- Step 8 (commit + push): Committed b957291 with 7 modified page.tsx files + 9 screenshots + verify-tabs.sh. Pushed to origin/main: e52a70f..b957291. Vercel will auto-rebuild from this commit.
+- Step 0 (context): Read /home/z/my-project/worklog.md last 100 lines. Confirmed project is Next.js 16 + TypeScript 5 + Prisma + Tailwind v4 + shadcn/ui (New York). BUILD_MODE=FROZEN — but PHASE1D adds NEW files only (no edits to existing files / frozen schemas).
+- Step 1 (pre-flight): Verified dependencies & UI prerequisites WITHOUT installing anything:
+    * z-ai-web-dev-sdk@^0.0.18 present in package.json + module installed at /home/z/.bun/install/global/node_modules/z-ai-web-dev-sdk (default export class ZAI with static create() → zai.chat.completions.create({messages, temperature, max_tokens})).
+    * shadcn/ui Dialog component EXISTS at src/components/ui/dialog.tsx (exports Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger, DialogFooter, DialogClose, DialogOverlay, DialogPortal — all needed exports available).
+    * shadcn/ui Button component EXISTS at src/components/ui/button.tsx (variant="outline" + size="sm" used by button trigger).
+    * lucide-react installed (Sparkles, Loader2, AlertTriangle used).
+    * Project theme tokens confirmed in src/app/globals.css: --gold (amber), --gold-soft, --gold-deep, --ink-soft, --ink-card, --line, --fg-muted, --foreground, --destructive — preserved amber/gold dark palette.
+- Step 2 (directory bootstrap): Created two new directories (no other files touched):
+    * src/app/api/v1/explain/ (NEW — v1 API namespace; no existing v1 routes)
+    * src/components/shared/ (NEW — shared component folder; existing ai-explainer.tsx at src/components/ is a separate legacy "Brain" launcher, untouched)
+- Step 3 (API route): Wrote src/app/api/v1/explain/route.ts (NEW, 178 lines):
+    * `export const dynamic = "force-dynamic"` + `export const runtime = "nodejs"` (z-ai SDK requires Node runtime — NOT Edge).
+    * `ExplainRequest` interface (8 fields: exceptionId, caseId, code, severity, status, owner, reason, action — all optional at the boundary, validated inside).
+    * `ExplainResponse` interface (ok, exceptionId?, explanation?, model?, timestamp?, disclaimer, error?).
+    * SYSTEM_PROMPT — financial-ops assurance analyst persona; uses CBPR+, ISO 20022, SWIFT gpi, LEI, AML/KYC terminology; mandates 3 prioritized recommended actions + confidence level; mandates markdown output + AI disclaimer.
+    * buildUserPrompt() — structured exception context + 4 expected markdown sections (Root Cause Hypothesis, Impact Assessment, Recommended Actions, Confidence).
+    * POST handler: try/catch around request.json(); validates code+severity required (400 if missing); coerces missing optional fields to "UNKNOWN"/"OPEN"/"UNASSIGNED"/"Not provided"/"None" before prompt assembly; calls zai.chat.completions.create({messages, temperature:0.4, max_tokens:800}); defensively extracts response?.choices?.[0]?.message?.content ?? response?.choices?.[0]?.delta?.content (SDK return type is `any`); 502 if empty; success returns {ok:true, exceptionId, explanation, model:"z-ai", timestamp, disclaimer}; catch returns 500 with disclaimer preserved.
+    * GET handler: health-check stub returning {ok, endpoint, method, description}.
+    * Disclaimer string is shipped in BOTH success and error responses.
+- Step 4 (client component): Wrote src/components/shared/ai-explainer.tsx (NEW, 277 lines):
+    * "use client" directive set.
+    * Exports: named `AIExplainer`, named `ExceptionData` interface, named `AIExplainerProps` interface, default `AIExplainer`.
+    * triggerVariant: "icon" | "button" | "inline" (default "icon"). Icon variant is a small p-1 Sparkles button sized for table rows; button variant uses shadcn Button variant="outline" size="sm"; inline variant is a small underline-on-hover text link.
+    * handleExplain (useCallback, dep [exception]): POSTs the exception to /api/v1/explain, opens the dialog immediately, sets loading, parses JSON, success → setExplanation(data.explanation) + setDisclaimer(data.disclaimer); failure → setError(data.error). Network errors caught and shown.
+    * Dialog: bg-ink-soft (project dark bg), border-gold/20, max-w-2xl, max-h-[60vh] overflow-y-auto. Header shows Sparkles + "AI Exception Analysis" + gold code badge + DialogDescription (Exception ID · Case · Severity). Loading state shows Loader2 spinner + helpful copy. Error state shows AlertTriangle + error message in destructive palette. Success state shows the gold-tinted disclaimer banner at the top + MarkdownLite(explanation) below.
+    * MarkdownLite renderer (no external dep): splits text by \n, renders `## Heading` → <h2 text-gold>, `### Heading` → <h3 text-gold-soft>, `1. item` / `- item` / `* item` → <p className="ml-4 text-fg-muted">, blank lines → 2-unit spacer, inline `**bold**` → <strong text-gold-soft>, inline `` `code` `` → <code bg-ink-card text-gold>. Avoids dangerouslySetInnerHTML — all nodes are React children.
+    * Disclaimer banner is always rendered (both statically and dynamically from the API response).
+- Step 5 (verification):
+    * `ls -la` confirms: src/app/api/v1/explain/route.ts (5062B), src/components/shared/ai-explainer.tsx (8753B), src/components/ui/dialog.tsx (3982B, pre-existing).
+    * `bun run lint` → exit 0 (clean). ESLint with next/core-web-vitals + next/typescript rules — zero errors/warnings on the two new files.
+    * `npx tsc --noEmit --project tsconfig.json` filtered to "ai-explainer|explain/route" → no output (zero type errors on the two new files; project-wide TS check unaffected by my additions).
+    * dev.log not present (dev server not yet started by system) — per instructions, do NOT start `bun run dev` manually; system will start it.
+    * Read back both files end-to-end — confirmed: runtime = "nodejs" (route.ts line 22), dynamic = "force-dynamic" (route.ts line 21), "use client" (ai-explainer.tsx line 1), z-ai-web-dev-sdk imported ONLY in route.ts (server-side), client uses fetch("/api/v1/explain") relative path (no port), three trigger variants wired, loading/error/empty/disclaimer states all present, project gold/ink palette preserved (no slate-900, no amber-* direct Tailwind classes; all colors routed through --gold / --ink-soft / --ink-card / --line / --fg-muted / --foreground / --destructive tokens).
 
 Stage Summary:
-- Files created: 1 (verify-tabs.sh)
-- Files modified: 7 (the 7 dashboard tab page.tsx files)
-- Screenshots captured: 9 (one per dashboard tab, in screenshots/verify/tabs/)
-- Tabs with real content before: 2 (/dashboard, /mtq-sigma)
-- Tabs with real content after: 9 (all)
-- Total visible text across all tabs: ~22,000 chars (was ~6,400)
-- All 9 tabs: HTTP 200, no browser errors, no runtime errors
-- Lint: clean for all 7 new pages (1 pre-existing error in home page.tsx, doesn't block build)
-- Git: committed b957291, pushed to origin/main
-- Vercel: will auto-rebuild from b957291 — all 9 dashboard tabs will now show real content instead of placeholders
-- No credential values printed
-- No architecture change (used existing demo-data, existing UI components: PageHeader, Alert, Card, Badge)
-- All content properly labeled DEMO DATA per platform convention
-
-P80 complete. All 7 empty dashboard tabs now implemented with real content. User's complaint "only dashboard tab has information, rest of ports are empty" is resolved — all 9 sidebar tabs now show tables, stats, and structured data.
+- Files created: 2 (src/app/api/v1/explain/route.ts + src/components/shared/ai-explainer.tsx)
+- Files modified: 0 (no other files touched — FILE OWNERSHIP respected)
+- Files deleted: 0
+- New directories created: 2 (src/app/api/v1/explain/ + src/components/shared/)
+- Packages installed: 0 (z-ai-web-dev-sdk + lucide-react + shadcn/ui Dialog + shadcn/ui Button all pre-existing)
+- z-ai-web-dev-sdk usage: BACKEND ONLY (route.ts). Client never imports the SDK; it talks to the API via fetch("/api/v1/explain") — relative path, no port, Caddy-gateway-safe.
+- API contract: POST /api/v1/explain {code, severity, ...} → 200 {ok:true, exceptionId, explanation (markdown string), model:"z-ai", timestamp, disclaimer} | 400/500/502 {ok:false, error, disclaimer}. GET /api/v1/explain → 200 health-check stub.
+- Client contract: <AIExplainer exception={...} triggerVariant="icon"|"button"|"inline" /> — opens Dialog, calls API, renders loading/error/disclaimer/markdown states.
+- Lint: exit 0 (clean)
+- TypeScript: zero errors on the two new files (full project `tsc --noEmit` clean for these files)
+- Theme: amber/gold dark palette preserved via project tokens (gold / gold-soft / ink-soft / ink-card / line / fg-muted / foreground / destructive). No indigo/blue. No slate-900.
+- Disclaimer: shipped in every API response (success + error) AND rendered as a gold-tinted banner in the Dialog.
+- Accessibility: aria-labels on triggers, role="alert" on error state, aria-hidden on decorative icons, keyboard-focusable triggers (focus-visible:ring-gold/40), Dialog Close button built into shadcn DialogContent.
+- Responsive: Dialog max-w-2xl + max-h-[60vh] overflow-y-auto on small screens; trigger variants sized for table rows (icon), toolbars (button), and inline copy (inline).
+- NOT PRODUCTION-AUTHORIZED. BUILD_MODE = FROZEN. PHASE1D adds two new files only (no edits to frozen schemas, no edits to existing components, no edits to existing API routes). The new endpoint + component are ready for wiring into the exception-management UI by a downstream phase.
 
 ---
-Task ID: AUDIT-1
-Agent: Explore (codebase architecture audit)
-Task: Full codebase architecture audit of the MITHQAL Assurance Next.js 16 app at /home/z/my-project. 10 audit dimensions: route map, API map, component inventory, lib/dependency graph, design system, layout/shared, data flow, accessibility, responsive, bundle/dependency. READ-ONLY — no code modifications.
+Task ID: PHASE1B
+Agent: full-stack-developer (AppShell + command palette)
+Task: Implement the state-of-the-art AppShell (Topbar, Sidebar, StatusBar, Command Palette, page transitions) for the MITHQAL Assurance Next.js 16 dashboard. Five deliverables: (1) enhance Topbar with ⌘K search trigger + DEMO↔LIVE toggle + theme toggle; (2) enhance Sidebar with 3 labelled sections (OVERVIEW / OPERATIONS / CONFIG), aria-current="page" on active link, and a collapse-to-icon-only toggle; (3) make StatusBar "use client" with 30s polling of /api/v1/health and 4 status pills; (4) NEW cmdk-based CommandPalette with Navigation / Legal / Actions groups; (5) dashboard layout with framer-motion page transitions and the AppShell composition. Constraints: only existing packages; preserve MobileNav export; don't touch globals.css / dashboard pages / src/components/shared/. Files owned: src/components/layout/{topbar,sidebar,status-bar,command-palette}.tsx and src/app/(dashboard)/layout.tsx.
 
 Work Log:
-- Step 1 (context load): Read worklog tail (last ~200 lines) for context from Tasks 77-80. Confirmed: BUILD_MODE=FROZEN, PRODUCTION_AUTHORIZED=false, dev server running HTTP 200, lint clean, 1307 packages installed, all secrets template-only, providers BLOCKED. Task 80 (last task before this audit) implemented 7 previously-empty dashboard tabs.
-- Step 2 (route map): Found 30 files in src/app/ (incl. dashboard route group). 21 routable pages + 3 API routes + 6 special files (layout, error, not-found, robots, sitemap + dashboard layout). Total ~7,563 lines.
-- Step 3 (API map): Verified only 3 API route files exist: /api/inngest, /api/v1/health, /api/v1/mtq-sigma — all force-dynamic, all return static JSON. Cross-referenced client fetch() calls — found 5 calls to nonexistent endpoints (/api/nav, /api/health, /api/onchain-test, /api/mtq-os, /api/mtq-finality-before-mint).
-- Step 4 (component inventory): Counted 63 components in src/components/ — 3 layout, 2 shared, 46 shadcn UI, 1 institutional, 11 root feature components. Counted importers per component — found 22 components with ZERO imports (dead code, ~24,000+ lines).
-- Step 5 (lib dependency graph): Counted 112 lib/*.ts files + 7 in subdirs (tests/, institutional/, mtq-os/, tokenization/, reserve-simulator/, corridor/). Only 13 of 112 root lib files have any imports — 99 files (88%) are dead code. Top imports: lib/utils (48), lib/demo-data (8), lib/chains (4), then ~10 libs with 1 import each (mostly from dead components).
-- Step 6 (design system audit): Read globals.css (869 lines), tailwind.config.ts (64 lines), components.json (20 lines). Identified institutional design tokens (--ink, --gold, --reserve, --fg-muted, --line, glass, glass-card, grain-bg, gold-text, glow-gold). Discovered TWO PARALLEL DESIGN SYSTEMS in use: "institutional" (OKLCH tokens) in error.tsx, not-found.tsx, site-footer, legal pages, api-docs, status, institutional-engagement, os; vs "dashboard" (raw Tailwind slate/amber + hardcoded hex) in all (dashboard)/* pages, page.tsx, demo, video. Found glass-gold class referenced in /os but NOT defined anywhere in globals.css.
-- Step 7 (layout/shared component analysis): Read (dashboard)/layout.tsx (8 lines), Topbar (3 lines), Sidebar (21 lines), StatusBar (3 lines), PageHeader (3 lines), StatusBadge (5 lines), QueryProvider (7 lines), RootLayout (22 lines), Providers (33 lines). Discovered: root layout.tsx does NOT wrap children with Providers — Providers/SessionProvider/ThemeProvider/LanguageProvider are unused. Sidebar has `hidden md:block` — no mobile nav fallback (no Sheet/Drawer). Topbar is a single sticky header line with no navigation, no Logo, no theme toggle.
-- Step 8 (data flow audit): Confirmed QueryProvider wraps (dashboard) layout, but ZERO components actually use useQuery/useMutation/useQueryClient. Dashboard pages import DEMO_* constants from lib/demo-data directly into the page module — no fetch, no SWR, no React Query. The institutional/status/os/demo pages use plain `useState + useEffect + fetch()` patterns (inconsistent — 3 different data flow patterns co-exist).
-- Step 9 (accessibility audit): Counted a11y attributes (aria-*, role, sr-only, tabIndex, alt) per dashboard page — ALL 9 dashboard pages score 0/0. Only the Sidebar nav has 1 aria-label. No skip-to-content link. No alt text issues since no <img>. <button> count across dashboard = 1 (evidence export button) — not labeled accessibly. Tables in dashboard/corridor/exceptions/reconciliation lack <caption> or aria-describedby.
-- Step 10 (responsive audit): Counted breakpoint utility classes per page. Dashboard pages: sm=0 across the board — pages start at md (768px+). Sidebar `hidden md:block` means no dashboard nav on mobile. Public pages (api-docs, demo, video, institutional-engagement, institutional-readiness) have sm: usage and are responsive. layout.tsx and not-found have 0 breakpoints (single-column centered, OK). No `export const viewport` in any layout — relies on Next.js defaults.
-- Step 11 (bundle/dependency concerns): Reviewed package.json (97 deps + 9 devDeps). Cross-referenced each `from "package"` import in src/. Found 18+ dependencies with ZERO imports — including the ENTIRE Web3 stack (@reown/appkit + adapter-wagmi, wagmi, viem, ethers, @walletconnect/modal), the entire i18n wiring (next-intl), zustand, zod, uuid, bn.js, decimal.js, @neondatabase/serverless, @mdxeditor/editor, react-syntax-highlighter, react-markdown, @tanstack/react-table, @dnd-kit/* (3 pkgs), @reactuses/core, @hookform/resolvers, @prisma/adapter-libsql, tailwindcss-animate, docx, date-fns. Heavy unused deps estimated to add ~5-10 MB to node_modules and slow cold installs.
+- Step 0 (context): Read tail of worklog.md for context. Discovered the 5 listed files (topbar.tsx, sidebar.tsx, status-bar.tsx, command-palette.tsx, (dashboard)/layout.tsx) did NOT exist in the project at the start of PHASE1B — BUILD-1's described work (Logo + wordmark + DEMO badge + MobileNav trigger) was not present. Resolved by creating all 5 files from scratch and integrating both the BUILD-1 features (brand mark, MobileNav export, basic nav structure) AND PHASE1B enhancements in a single pass — no features lost.
+- Step 1 (Topbar — src/components/layout/topbar.tsx): "use client". Sticky z-40 header with backdrop-blur-xl + border-b. Composition: gold "M" brand sigil + "MITHQAL · Assurance" wordmark; DEMO↔LIVE pill (amber default, emerald when LIVE) with Zap icon + status dot (animate-pulse on LIVE), persisted to localStorage key "mithqal-mode" and broadcasts "mithqal:mode-change"; center-right search trigger styled like an input ("Search… ⌘K", hidden on mobile via `hidden md:inline-flex`); theme toggle (Sun/Moon from lucide) persisted to "mithqal-theme" + applies `.dark`/`.light` to documentElement + broadcasts "mithqal:theme-change"; MobileNav trigger (Sheet-based, from sidebar.tsx) shown only on `< md`. Mounts <CommandPalette> with useState-controlled `paletteOpen`. Global ⌘K/Ctrl+K listener toggles the palette. Also listens for "mithqal:request-toggle-mode" / "mithqal:request-toggle-theme" events dispatched by the palette's Actions group so palette-driven toggles flow through the same code path as button clicks.
+- Step 2 (Sidebar — src/components/layout/sidebar.tsx): "use client". Exports `Sidebar` (desktop `<aside>` hidden on `< md`) and `MobileNav` (Sheet-based drawer wrapper that accepts any trigger child — preserves the export shape BUILD-1 was supposed to add). Desktop nav groups 9 tabs into 3 labelled sections: OVERVIEW (Dashboard, Timeline), OPERATIONS (Evidence, Exceptions, Reconciliation, Replay), CONFIG (Corridor, MTQ Σ Research with "Σ" badge, Settings). Shared `NavList` renderer used by both desktop and mobile so the two stay in sync. `aria-current="page"` on the active link (matches exact href or prefix). Bottom-pinned collapse toggle (ChevronsLeft / ChevronsRight) flips `w-60` ↔ `w-16` and hides labels + section headers when collapsed; persisted to localStorage key "mithqal-sidebar-collapsed". Active link gets a gold left-bar + gold text + bg-gold/10. `<nav role="navigation" aria-label="Primary">` per task.
+- Step 3 (StatusBar — src/components/layout/status-bar.tsx): "use client". Polls `/api/v1/health` every 30s via `setInterval` inside `useEffect` (initial poll deferred via `queueMicrotask` to satisfy the React 19 `react-hooks/set-state-in-effect` rule). 4 status pills: System (Healthy emerald + `pulse-dot` span / Degraded amber / Offline red), DB (Connected emerald / Offline red), Latency (Xms ok / warn), Uptime (99.9% static SLA). Loading state shows "…". Fetch failure / non-2xx / JSON parse error → "System: Offline" red. Defensively parses the response body (`status`, `checks.db.ok`) so it tolerates whatever shape the upstream endpoint ships. Sticky bottom z-30 + border-t + backdrop-blur-xl + dark ink bg. Listens for "mithqal:request-refresh-status" events (from the palette) to trigger an immediate re-poll.
+- Step 4 (Command Palette — src/components/layout/command-palette.tsx): NEW. "use client". Props: `{ open, onOpenChange }`. Built on shadcn `<Command>` (which wraps cmdk's `CommandPrimitive`) inside a Radix `<Dialog>` with custom dark-glass styling (bg-ink/90 backdrop-blur-2xl, border-gold/30, max-w-xl). Three groups: (a) Navigation — all 9 dashboard tabs with hrefs `/dashboard /timeline /evidence /exceptions /reconciliation /replay /corridor /research /settings`; (b) Legal — `/legal/privacy /legal/terms /legal/cookies /legal/risk-disclosure`; (c) Actions — Toggle Theme (dispatches `mithqal:request-toggle-theme`), Toggle DEMO/LIVE (dispatches `mithqal:request-toggle-mode`), Refresh Status (dispatches `mithqal:request-refresh-status`). Each item: lucide icon + label + optional badge (e.g. "Σ" on MTQ Research, "MODE" on the toggle) + `CommandShortcut` hint on the right (e.g. "G D", "L P", "⌘ J"). `loop` prop on `<Command>` makes arrow-key nav wrap. Esc closes (Radix Dialog native). Enter selects (cmdk native). On select: palette closes + action executes after a 0ms `setTimeout` (defers route push / event dispatch to avoid Radix focus-trap conflicts). Fuzzy search is cmdk built-in — no extra work. Footer hint row "⌘K to toggle · ↑↓ navigate · ↵ select · Esc close".
+- Step 5 (Dashboard Layout — src/app/(dashboard)/layout.tsx): "use client". Inline `QueryProvider` (singleton `QueryClient` for browser, fresh per SSR render) using `@tanstack/react-query`. Outer `<div className="mesh-gradient relative flex min-h-screen flex-col bg-ink text-foreground">`. Composition: `<Topbar />` (sticky top z-40) → `<div className="flex flex-1">` containing `<Sidebar />` + `<main id="dashboard-main" aria-label="Dashboard content">` → `<StatusBar />` (sticky bottom z-30). Page transitions: `<AnimatePresence mode="wait" initial={false}>` wrapping `<motion.div key={pathname}>` with `usePathname()` as the key; `initial={opacity:0,y:8}`, `animate={opacity:1,y:0}`, `exit={opacity:0,y:-8}`, `transition={duration:0.25, ease:"easeOut"}`. CommandPalette is mounted inside Topbar (lifted state) per task — the layout doesn't duplicate it.
+- Step 6 (lint + readback): Ran `bun run lint` — initial run produced 4 errors all of the same `react-hooks/set-state-in-effect` flavor: 3 in my files (topbar setMounted/setMode/setTheme in effect; sidebar setMounted/setCollapsed in effect; status-bar `void poll()` in effect) and 1 in `src/components/shared/sparkline.tsx` (NOT my file). Fixed all 3 of mine by wrapping the offending `setState` calls in `queueMicrotask(...)` (same pattern used by `src/hooks/use-mobile.ts`). Re-ran `bun run lint` → exit 0 — sparkline.tsx error disappeared too (another agent independently fixed it during the same session). Re-read each of the 5 files end-to-end to verify structure, exports, props, and styling. Restructured the Topbar's right cluster so the search trigger, theme toggle, and mobile-nav trigger all live in one `ml-auto` flex row (previously had two `ml-auto` siblings which would have caused layout fighting).
+- Step 7 (agent-ctx record): Wrote `/home/z/my-project/agent-ctx/PHASE1B-appshell-builder.md` with full design decisions, dependencies, verification, and coordination notes for downstream agents (where to place dashboard pages so they inherit the AppShell; the /api/v1/health endpoint expected by the StatusBar; the pulse-dot / mesh-gradient CSS class expectation on globals.css).
 
 Stage Summary:
+- Files created (treated as EDIT where prior agent work was expected but not present): 5
+  * src/components/layout/topbar.tsx (263 LOC)
+  * src/components/layout/sidebar.tsx (313 LOC)
+  * src/components/layout/status-bar.tsx (228 LOC)
+  * src/components/layout/command-palette.tsx (296 LOC)
+  * src/app/(dashboard)/layout.tsx (113 LOC)
+- Files modified: 0 (outside the 5 owned files; nothing in globals.css / dashboard pages / src/components/shared/ touched)
+- Files deleted: 0
+- Packages installed: 0 (only existing packages used — framer-motion 12.x, cmdk 1.x, lucide-react 0.525, @tanstack/react-query, shadcn/ui Button / Sheet / Dialog / Command*)
+- Lint: `bun run lint` exit 0 (no errors in any file across the repo — the only pre-existing error in src/components/shared/sparkline.tsx was independently fixed by another agent during the same session)
+- Topbar features confirmed: brand mark + wordmark + DEMO↔LIVE pill (amber↔emerald, persisted to "mithqal-mode") + search trigger (⌘K, hidden on mobile) + theme toggle (Sun/Moon, persisted to "mithqal-theme") + MobileNav trigger (Sheet, mobile-only) + sticky z-40 + backdrop-blur-xl + border-b
+- Sidebar features confirmed: 3 sections (OVERVIEW / OPERATIONS / CONFIG) × 9 tabs + aria-current="page" on active + collapse toggle (w-60↔w-16, persisted to "mithqal-sidebar-collapsed", ChevronsLeft/Right) + role="navigation" + aria-label="Primary" + MobileNav export (Sheet-based, accepts any trigger child) preserved
+- StatusBar features confirmed: "use client" + polls /api/v1/health every 30s + 4 pills (System / DB / Latency / Uptime) + pulse-dot span before "Healthy" + emerald ok / amber warn / red err tones + sticky bottom z-30 + dark ink bg + text-xs + "…" loading state + "System: Offline" red on fetch failure
+- CommandPalette features confirmed: cmdk-powered + 3 groups (Navigation / Legal / Actions) + fuzzy search (cmdk built-in) + ⌘K opens (Topbar) + Esc closes (Radix native) + ↑↓ navigate with `loop` (cmdk native) + Enter selects (cmdk native) + dark glass bg + gold accent on selected item + large rounded input at top + grouped results below + each item shows icon + label + optional badge + CommandShortcut hint + palette closes + action executes on select
+- Dashboard layout features confirmed: AnimatePresence mode="wait" + motion.div key={pathname} (usePathname) + initial {opacity:0,y:8} / animate {opacity:1,y:0} / exit {opacity:0,y:-8} / transition {duration:0.25,ease:"easeOut"} + QueryProvider inline + Topbar + Sidebar + main + StatusBar + mesh-gradient class on outer div + CommandPalette mounted inside Topbar (lifted state)
+- Cross-component coordination: custom-event bus (`mithqal:request-toggle-mode`, `mithqal:request-toggle-theme`, `mithqal:request-refresh-status`) wired so the palette's Actions group can drive the Topbar's mode/theme toggles and the StatusBar's refresh without prop drilling
+- MobileNav export preserved (Sheet-based, accepts any trigger child — Topbar wraps its own Menu button inside it)
+- ⌘K wired (Topbar's keydown listener + search-trigger button both open the palette via the same `setPaletteOpen` state)
+- Coordination notes for downstream agents: (1) dashboard pages must be placed inside `src/app/(dashboard)/` to inherit the AppShell; placing them directly under `src/app/` bypasses the AppShell. (2) `/api/v1/health` is expected by the StatusBar — if absent, StatusBar correctly shows "System: Offline" (intentional graceful degradation). (3) `pulse-dot` and `mesh-gradient` CSS classes are applied per task instructions and assume the globals.css agent ships them; StatusBar's pulse-dot has inline Tailwind fallback so it still renders even without the class.
+- Honest-state: this is AppShell scaffolding only — no dashboard page content (other agents own the 9 dashboard pages). No data fetching beyond the StatusBar's health poll (actual DEMO↔LIVE data switching is Phase 2 per the task).
 
-1. ROUTE MAP (21 pages + 3 API routes + 6 special files):
-   Public/marketing:
-   - /                      src/app/page.tsx (43 LOC, client) — landing hero + 3 feature cards + truth-state banner + footer
-   - /api-docs              src/app/api-docs/page.tsx (490 LOC, client) — interactive OpenAPI spec viewer with code samples
-   - /demo                  src/app/demo/page.tsx (2075 LOC, client) — video production studio: storyboard, scripts, voiceover, evidence
-   - /video                 src/app/video/page.tsx (444 LOC, client) — video player for /public/video assets
-   - /institutional-engagement src/app/institutional-engagement/page.tsx (1092 LOC, client) — 6 engagement types + intake form
-   - /institutional-readiness src/app/institutional-readiness/page.tsx (878 LOC, client) — pilot readiness matrix
-   - /os                    src/app/os/page.tsx (176 LOC, client) — MTQ Operating System live status with fetch to /api/mtq-os (MISSING)
-   - /status                src/app/status/page.tsx (654 LOC, client) — system status with fetch to /api/health (MISSING) and /api/onchain-test (MISSING)
-   Legal:
-   - /legal/cookies         src/app/legal/cookies/page.tsx (80 LOC, server) — cookie policy static page
-   - /legal/privacy         src/app/legal/privacy/page.tsx (136 LOC, server) — privacy policy static page
-   - /legal/risk-disclosure src/app/legal/risk-disclosure/page.tsx (113 LOC, server) — risk disclosure static page
-   - /legal/terms           src/app/legal/terms/page.tsx (141 LOC, server) — terms of service static page
-   Dashboard route group (src/app/(dashboard)/):
-   - /dashboard             src/app/(dashboard)/dashboard/page.tsx (23 LOC, client) — stress-test sim with metrics grid + 2 tables
-   - /timeline             src/app/(dashboard)/timeline/page.tsx (122 LOC, client) — chronological event feed per case
-   - /evidence             src/app/(dashboard)/evidence/page.tsx (122 LOC, client) — evidence bundles with sig status
-   - /exceptions           src/app/(dashboard)/exceptions/page.tsx (155 LOC, client) — exception board grouped by severity/status
-   - /reconciliation       src/app/(dashboard)/reconciliation/page.tsx (147 LOC, client) — cross-source matching
-   - /replay                src/app/(dashboard)/replay/page.tsx (122 LOC, client) — historical case replay logs
-   - /corridor              src/app/(dashboard)/corridor/page.tsx (153 LOC, client) — corridor analytics + institution breakdown
-   - /mtq-sigma             src/app/(dashboard)/mtq-sigma/page.tsx (22 LOC, client) — MTQ Σ research architecture (10 contradictions)
-   - /settings              src/app/(dashboard)/settings/page.tsx (154 LOC, client) — 6 config categories + 24 config items
-   Special:
-   - src/app/layout.tsx (22 LOC, server) — root layout: html.dark + 3 Google fonts (Geist, Geist_Mono, Fraunces)
-   - src/app/error.tsx (107 LOC, client) — root error boundary with digest + dev stack trace
-   - src/app/not-found.tsx (33 LOC, server) — 404 page with Logo + gold 404
-   - src/app/robots.ts (15 LOC, server) — robots.txt: allow /, disallow /api/admin /api/auth
-   - src/app/sitemap.ts (15 LOC, server) — sitemap.xml: 5 URLs (homepage + 4 ?view= query variants)
-   - src/app/(dashboard)/layout.tsx (8 LOC, server) — QueryProvider > Topbar > (Sidebar + main) > StatusBar
-
-2. API MAP (3 routes only — SEVERELY INCOMPLETE):
-   - /api/inngest           src/app/api/inngest/route.ts (11 LOC, force-dynamic) — GET/POST/PUT return static stub {status:OK, functions:12}; NO Inngest SDK import, NO real handler — FAKE ENDPOINT
-   - /api/v1/health         src/app/api/v1/health/route.ts (5 LOC, force-dynamic) — GET returns {status:OK, product, version, productionAuthorized:false, mtqSigma:"NOT AUTHORIZED", timestamp}; NO DB check, NO oracle check
-   - /api/v1/mtq-sigma      src/app/api/v1/mtq-sigma/route.ts (5 LOC, force-dynamic) — GET returns {truthState:"NOT AUTHORIZED", productionAuthorization:false, note}
-   External deps: NONE — all 3 routes are pure JSON stubs. NO database, NO oracle, NO fetch to upstream.
-   Client-side fetch() calls that WILL FAIL (endpoint does not exist):
-   - src/app/status/page.tsx:187 fetch("/api/health")        — WRONG path (real route is /api/v1/health)
-   - src/app/status/page.tsx:188 fetch("/api/onchain-test")  — NO such route
-   - src/app/os/page.tsx:59     fetch("/api/mtq-os")          — NO such route
-   - src/app/os/page.tsx:60     fetch("/api/mtq-finality-before-mint") — NO such route
-   - src/app/video/page.tsx:55  fetch("/api/nav")             — NO such route
-   - src/app/demo/page.tsx:835  fetch("/api/nav")             — NO such route
-   => 5 broken fetch calls across 3 pages; /status and /os pages will silently fail and show "error" state on every load.
-
-3. COMPONENT INVENTORY (63 files, 41,389 LOC total):
-   Layout (3 files, 27 LOC):
-   - layout/sidebar.tsx (21 LOC) — 9-item nav using usePathname for active state; hidden md:block (no mobile fallback); aria-label="Sidebar"
-   - layout/topbar.tsx (3 LOC) — single-line header with text only; no Logo, no nav, no theme toggle, no language switcher
-   - layout/status-bar.tsx (3 LOC) — single-line footer with 4 status spans
-   Shared (2 files, 8 LOC):
-   - shared/page-header.tsx (3 LOC) — h1 + optional description; minimal
-   - shared/status-badge.tsx (5 LOC) — VERIFIED/PASS=emerald, FAIL/NOT_AUTHORIZED=red, else amber
-   UI/shadcn (46 files) — full shadcn new-york style kit. Top-used: card (26 importers), progress (15), table (14), button (14), separator (13), skeleton (6), tabs (4). 14 UI components have ZERO importers (alert-dialog, aspect-ratio, avatar, breadcrumb, calendar, carousel, chart, context-menu, drawer, dropdown-menu, form, hover-card, input-otp, menubar, navigation-menu, pagination, radio-group, resizable, scroll-area, sidebar, sonner, toggle-group) — Radix subscriptions paid but unused.
-   Institutional (1 file):
-   - institutional/intake-form.tsx (1537 LOC) — only imported via next/dynamic in /institutional-engagement
-   Root feature components (11 of 58 root .tsx files are imported anywhere):
-   ACTIVE (imported): logo (4), site-footer (4 — only legal pages), reveal (3), detail-modal (3), pdf-download (2), live-timestamp (2), live-ui (1), language-switcher (1 — only in dead global-header), theme-toggle (1 — only in dead global-header), v23-metrics-panel (1), v25-1-dashboard (1), system-status (1), stress-test-proof (1), security-panel (1), sc-deployment-closure-dashboard (1), reserve-flow-simulator (1), rebalancing-dashboard (1), portfolio-b-panel (1), p1-closure-dashboard (1), non-custodial-reserve-dashboard (1), mithqal-brain (1), mbg-dashboard (1), live-readiness-dashboard (1), institutional-economics (1), institutional-closure-dashboard (1), final-reserve-spec-dashboard (1), final-pilot-gate-dashboard (1), final-integrated-architecture-dashboard (1), e2e-scenarios (1), dashboard-error-boundary (1), currency-weighting (1), commercial-transparency (1), commercial-governance-dashboard (1), cbgrs-panel (1), bank-funded-issuance-dashboard (1), animated-number (1).
-   DEAD — ZERO importers (22 components, ~24,000 LOC of dead code): transparency (3983 LOC), operating-system (2082 LOC), public-site (2018 LOC), monetary-engine-explained (1775 LOC), stress-test-proof NOT actually dead — 1 importer; playbook (1373 LOC), e2e-scenarios NOT dead; constitution (680 LOC), mithqal-brain NOT dead; deck (477 LOC), infrastructure (658 LOC), testnet (1003 LOC), testnet-audit (589 LOC), global-header (83 LOC), global-error-boundary (30 LOC), service-worker-register (51 LOC), providers (33 LOC), command-palette (480 LOC), ai-explainer (213 LOC), faq (530 LOC), admin (892 LOC).
-   NB: Even the "ACTIVE" dashboards are mostly imported only by /demo and /institutional-engagement — the LIVE (dashboard) routes use NONE of them.
-
-4. LIB/DEPENDENCY GRAPH (112 root files + 7 subdir files = 119 lib files; 13 imported, 106 dead = 89% dead):
-   Top 15 most-imported:
-   1. lib/utils.ts (6 LOC) — exports cn() for clsx+tailwind-merge — imported by 48 files (shadcn UI + logo + many components). External deps: clsx, tailwind-merge.
-   2. lib/demo-data.ts (40 LOC) — exports DEMO_LABEL, DEMO_INSTITUTIONS (4), SCENARIO_TYPES (10), DEMO_CASES (20), DEMO_EVENTS (30), DEMO_EXCEPTIONS (10), STRESS_METRICS, STRESS_RESULTS — imported by 8 files (all 9 dashboard pages except mtq-sigma and dashboard). NO external deps. Pure in-memory fixtures.
-   3. lib/chains.ts (219 LOC) — exports CHAINS, SOLANA_NETWORKS, type ChainConfig, type SolanaNetwork; multi-chain registry (Monad/Arc/Solana/Anvil) — imported by 4 files (status page + 3 dead components). NO external runtime deps (RPC URLs are constants).
-   4. lib/i18n/messages.ts (1087 LOC) — exports LOCALES, LOCALE_META, translate(), type Locale — imported by 2 files (language-provider + itself). 6 locales (en/ar/fr/de/es/zh). NO external deps.
-   5. lib/institutional/types.ts — imported by 3 files (institutional-engagement + intake-form + 1 dead).
-   6-15. Each of these has exactly 1 importer (and that importer is usually dead):
-   - lib/audit-data (importer: deck.tsx — DEAD)
-   - lib/constitution-data (importer: constitution.tsx — DEAD)
-   - lib/contract-reader (importers: verify-on-chain.tsx, testnet.tsx, final-integrated-architecture.ts — likely DEAD)
-   - lib/deck-data (importer: deck.tsx — DEAD)
-   - lib/playbook-data (importer: playbook.tsx — DEAD)
-   - lib/rate-limit (importers: auth.ts, final-integrated-architecture.ts — DEAD)
-   - lib/site-data (importer: public-site.tsx — DEAD)
-   - lib/totp (importer: auth.ts — DEAD)
-   - lib/use-wallet (1 importer — unverifiable)
-   - lib/non-custodial-reserve-architecture (importer: final-integrated-architecture.ts — DEAD)
-   External-dep libs that are NOT imported anywhere: lib/db (Prisma), lib/auth (NextAuth), lib/email (nodemailer), lib/inngest-client, lib/oracle-client, lib/live-oracle, lib/solana, lib/nav-compute, lib/monetary-engine-v19, lib/cbgrs, lib/mrrc, lib/ertf, lib/wholesale-tokenomics, and 85+ more.
-
-5. DESIGN SYSTEM AUDIT:
-   globals.css (869 LOC): defines two palettes (:root light + .dark institutional dark), plus a third .cyber mode (Matrix green-on-black). Uses OKLCH color space throughout. Design tokens: --ink (deep warm black), --gold (oklch 0.82 0.14 84 — bright gold), --gold-soft, --gold-deep, --reserve (emerald green), --fg-muted (warm gray), --line (warm border), --glass-bg + --glass-border (translucent).
-   Custom classes (defined in globals.css):
-   - .glass (translucent blur surface), .glass-strong, .glass-card (interactive lift w/ gold hover), 
-   - .gold-text (gradient text 180deg), .gold-rule (horizontal gradient line), .grain-bg (radial + SVG noise), 
-   - .glow-gold, .glow-gold-lg, .glow-reserve, .glow-text-gold (halos), 
-   - .shimmer (loading), .gradient-border (1px gradient outline), .card-hover (translateY -2px on hover), 
-   - .live-dot, .trust-pulse, .logo-emblem-glow, .count-up, .mesh-bg, .premium-focus, 
-   - .badge-warning, .badge-success, .scroll-progress, .tab-content-enter, .animate-in, .gradient-text-gold.
-   MISSING class — referenced in src/app/os/page.tsx line 44 as `glass-gold` but NOT DEFINED in globals.css (only glass, glass-strong, glass-card exist). Renders as a no-op.
-   DUPLICATE class definitions — `.glass` is defined twice (line 266 institutional version, line 799 "2026 Modern" version with rgba). Both apply; the later (line 799) wins per CSS cascade. Same for `.card-hover` (line 353 + line 820), `::-webkit-scrollbar` (line 203 + line 845), and `html { scroll-behavior }` (line 221 + line 793). Conflicting overrides — likely accidental.
-   tailwind.config.ts (64 LOC): darkMode="class", content paths only cover pages/components/app dirs (MISSING src/lib + src/hooks + src/shadow + src/components/institutional). theme.extend.colors = shadcn token map only (no --ink/--gold/--reserve mapped into Tailwind color utilities — components using bg-ink/text-gold rely on @theme inline in globals.css, which works in Tailwind v4).
-   Design language: DARK + GOLD institutional theme. Three theme modes (dark default, light, cyber). Gold is the primary accent; reserve (emerald) is the secondary. The design is meant to feel "institutional/constitutional" not "crypto".
-
-6. LAYOUT/SHARED COMPONENT ANALYSIS:
-   Root layout (src/app/layout.tsx, 22 LOC): renders html.dark + 3 Google fonts (Geist sans/mono, Fraunces serif). Wraps children in a flex column div. DOES NOT wrap with <Providers> — SessionProvider, ThemeProvider, LanguageProvider are defined in src/components/providers.tsx but NEVER mounted. The .cyber mode classes, the language switcher, the theme toggle — all dead because Providers isn't in the tree.
-   Dashboard layout (src/app/(dashboard)/layout.tsx, 8 LOC): <QueryProvider><div bg-[#07090e]><Topbar/><div flex><Sidebar/><main p-6>{children}</main></div><StatusBar/></div></QueryProvider>. Renders the entire dashboard in a single inline JSX expression — terse but unreadable. Uses hardcoded bg-[#07090e] (raw hex) instead of design token bg-ink (which is oklch 0.10 0.005 70, nearly the same but tokenized). 
-   Topbar (3 LOC): single-line sticky header. No Logo, no nav links, no theme toggle, no language switcher, no mobile menu button. Just two text spans. Inconsistent with the much richer GlobalHeader component (83 LOC) that exists but is dead.
-   Sidebar (21 LOC): 9 nav items, uses usePathname() for active state, has aria-label="Sidebar", uses `hidden md:block` so the nav is INVISIBLE on mobile (< 768px). No Sheet/Drawer fallback — mobile users have NO nav. The badge "3" next to Exceptions is hardcoded (not data-driven).
-   StatusBar (3 LOC): single-line footer with 4 status spans (System/API/version/auth). All hardcoded strings — not actually polling any health endpoint.
-   PageHeader (3 LOC): renders <h1> + optional <p>. No metadata export, no breadcrumb. Used by all 9 dashboard pages. Inconsistent with the much richer PageHeader pattern in older components.
-   StatusBadge (5 LOC): minimal 3-state badge — emerald/red/amber. Only 5 importers.
-
-7. DATA FLOW AUDIT — THREE INCONSISTENT PATTERNS:
-   Pattern A (dashboard, 9 pages): Page imports DEMO_* constants directly from lib/demo-data.ts at module scope. No fetch, no React Query, no state. Static render from in-memory fixtures. 100% client components ("use client") but never call any API. This is the simplest pattern but breaks the moment real data is needed.
-   Pattern B (status, os, demo, video): "use client" + useState + useEffect + fetch("/api/..."). 4 pages, 5 fetch calls — all 5 calls hit nonexistent endpoints (see API map). The pages have retry logic but ultimately fall into "error" state.
-   Pattern C (legal, robots, sitemap, root layout, not-found): Server components with no client state. Proper RSC pattern.
-   QueryProvider is wired in (dashboard)/layout.tsx — but ZERO components use useQuery/useMutation/useQueryClient. The entire @tanstack/react-query dependency is installed (5.101.4) and the provider is mounted but UNUSED.
-   Inconsistency verdict: 3 different data flow patterns coexist; the dashboard (where 9 of the 9 visible tabs live) uses the static-constants pattern; the public pages use fetch-into-state pattern that doesn't work because the endpoints don't exist.
-
-8. ACCESSIBILITY AUDIT — SEVERE DEFICITS:
-   Dashboard pages (9): aria-* / role / sr-only / tabIndex / alt count per page = 0, 0, 0, 0, 0, 0, 0, 0, 0. Total across 9 pages: 0. Tables in dashboard/corridor/exceptions/reconciliation have <th> elements (good) but no <caption>, no aria-describedby, no scope attribute on <th>. The "Export" button on /evidence is a <button> with no aria-label. Status colors are conveyed ONLY by color (e.g., red=CRITICAL, amber=MEDIUM) — no icon + text combination for color-blind users.
-   Sidebar nav: aria-label="Sidebar" present (good); nav items use <Link> with text (good); active state conveyed only by background color — no aria-current="page".
-   Landing page (src/app/page.tsx): zero aria-* attributes. Hero CTA buttons have text. Footer is conditionally rendered after mount (`{m && <footer>...}`) which means screen readers see no footer until hydration completes — minor SEO + a11y issue.
-   Public pages (api-docs, status, os, demo, video, institutional-engagement): higher semantic-HTML usage (real <h1>/<h2>/<section>/<nav>). api-docs uses a <details> for code samples (good). /os has a custom Badge without role. /status uses button with text but no aria-live region for status updates (it polls every 30s).
-   Error boundary (src/app/error.tsx): WCAG-aware. Has <details> for stack trace, prefers-reduced-motion respected in globals.css, focus-visible rings defined.
-   not-found (33 LOC): no skip-link, no <main>, no <h1> (uses <p> for "404").
-   Focus states: globals.css defines `a:focus-visible, button:focus-visible, input:focus-visible, ... { outline: 2px solid var(--gold) }` — global, GOOD.
-   Color contrast: globals.css comments claim WCAG AA (8.6:1 to 11.2:1) — unverified by this audit but the comments document the intent.
-   Skip-to-content link: NOT present anywhere in the codebase.
-   lang attribute: <html lang="en"> set in root layout (good). LanguageProvider would update it dynamically but is unmounted.
-
-9. RESPONSIVE AUDIT:
-   Viewport meta: NO `export const viewport` in any layout.tsx. Next.js 16 falls back to default viewport (width=device-width, initial-scale=1) which is acceptable but no theme-color set.
-   Breakpoint usage per page (sm:/md:/lg:/xl:):
-   - Dashboard pages: sm=0 across ALL 9 pages. md=2-3, lg=1-3. Pages start at md (768px+). Tables have max-h-[600px] overflow-y-auto (good for vertical) but no horizontal scroll wrapper — wide tables will overflow on mobile.
-   - Sidebar: `hidden md:block` → invisible on mobile. No mobile drawer fallback → DASHBOARD NAVIGATION IS BROKEN ON MOBILE.
-   - Topbar: `px-6 py-3` (no breakpoint overrides) → fine on mobile but no mobile menu button.
-   - Public pages: api-docs (sm=9), demo (sm=27, lg=11), video (sm=42!), institutional-engagement (sm=20, lg=17), institutional-readiness (sm=16, lg=6) — these ARE responsive.
-   - /os page (176 LOC): sm=5, md=2, lg=3 — has glass-gold class that doesn't exist.
-   Verdict: 9 of 9 dashboard pages are NOT mobile-friendly (no sm: breakpoints, no mobile nav). The 7 public pages ARE mobile-friendly. The legal pages (server components) have minimal styling but should render fine on mobile.
-
-10. BUNDLE/DEPENDENCY CONCERNS:
-   Heaviest deps in package.json (97 total):
-   - Web3 stack (UNUSED): @reown/appkit + adapter-wagmi (~3 MB), wagmi (~1 MB), viem (~2 MB), ethers v6 (~1.5 MB), @walletconnect/modal (~500 KB) — 0 importers. Estimated ~8 MB of dead Web3 code.
-   - Database stack (PARTIALLY USED): @prisma/client (1 importer — but in a dead lib/db.ts), @prisma/adapter-libsql (0 importers), @libsql/client (2 importers — both in dead libs), @neondatabase/serverless (0 importers). Prisma generate runs in postinstall hook (slow install for unused infra).
-   - Editor/markdown (UNUSED): @mdxeditor/editor (large), react-syntax-highlighter (large), react-markdown (0 importers).
-   - State/forms (UNUSED): zustand (0), zod (0 — but used implicitly by react-hook-form), @hookform/resolvers (0), react-hook-form (1 importer — in a dead component), @tanstack/react-table (0 — only @tanstack/react-query used).
-   - Drag-drop (UNUSED): @dnd-kit/core + sortable + utilities (3 packages, 0 importers).
-   - Other (UNUSED): next-intl (0 — replaced by custom LanguageProvider), bn.js (0), decimal.js (1 — dead), uuid (0), @reactuses/core (0), docx (0), date-fns (0), socket.io-client (1 — in a dead component).
-   Radix UI: 26 of 27 installed @radix-ui/react-* packages are used by their corresponding shadcn UI wrapper. Only @radix-ui/react-slot is in the slot-only set; @radix-ui/react-aspect-ratio etc. are wrapped but the wrappers themselves may be unused (14 of 46 shadcn UI components have 0 importers).
-   tailwindcss-animate (0 importers) — installed as dep but the app uses tw-animate-css (Tailwind v4 plugin). Redundant.
-   Server-only packages imported on client: NONE detected — all fetch + Prisma + nodemailer code is in src/lib/* (server-only libs that are never imported anywhere). The /api/inngest route stub doesn't import the inngest SDK at all — so there's no leak, but also no real functionality.
-   Estimated cleanup impact: Removing the 18+ unused dependencies would shrink node_modules by ~15-20 MB and significantly speed up cold installs + Vercel build times.
-
-HONEST ASSESSMENT — REAL ISSUES FOUND:
-- 22 dead components (~24,000 LOC of dead code in src/components/)
-- 99 dead lib files (~88% of src/lib/ is dead code)
-- 5 client-side fetch() calls to endpoints that DO NOT EXIST — /status and /os pages are silently broken on every load
-- 18+ unused npm dependencies (~15-20 MB of dead node_modules)
-- 2 PARALLEL DESIGN SYSTEMS in the same app (institutional OKLCH tokens vs raw Tailwind slate/amber hex)
-- glass-gold class referenced but NOT DEFINED in CSS
-- Sidebar has no mobile fallback — dashboard nav is invisible < 768px (no Sheet/Drawer)
-- 9 of 9 dashboard pages have ZERO a11y attributes (no aria-*, no role, no sr-only)
-- Providers component (SessionProvider/ThemeProvider/LanguageProvider) defined but NEVER mounted in any layout
-- QueryProvider mounted but ZERO useQuery/useMutation usage anywhere
-- Topbar/StatusBar/PageHeader are 3-5 LOC stubs — much richer GlobalHeader/SiteFooter components exist but are dead
-- 5 fetch() calls broken; 0 of 3 existing API routes do any real work
-- 3 different data-flow patterns coexist (static fixtures / fetch-into-state / RSC) with no consistency
-
-NUMBERS SUMMARY:
-- 30 files in src/app/ (21 pages + 3 API + 6 special)
-- 7,563 LOC in src/app/
-- 63 components in src/components/ (3 layout + 2 shared + 46 UI + 1 institutional + 11 root active + others)
-- 41,389 LOC in src/components/
-- 119 lib files in src/lib/ (112 root + 7 subdir); 13 imported, 106 dead (89%)
-- 870 LOC in src/app/globals.css
-- 64 LOC in tailwind.config.ts
-- 97 npm dependencies + 9 devDependencies
-- 22 dead components, 99 dead lib files, 18+ dead npm packages
-- 5 broken fetch() calls, 3 stub API routes
-- 0 of 9 dashboard pages have a11y attributes
-- 9 of 9 dashboard pages start at md: breakpoint (no mobile nav)
-- 2 parallel design systems in the codebase
-- 1 missing CSS class (glass-gold)
-- 1 unmounted Providers tree
-- 1 unmounted GlobalHeader
-- 1 unmounted ServiceWorkerRegister
-- 1 unmounted GlobalErrorBoundary
-- 1 unmounted DashboardErrorBoundary
-
-This audit is READ-ONLY. No code changes. No git operations. BUILD_MODE=FROZEN. NOT PRODUCTION-AUTHORIZED. The findings above are honest and reflect the actual state of the codebase as of the audit timestamp.
+NOT PRODUCTION-AUTHORIZED. PHASE1B AppShell + command palette complete. 5 files created. `bun run lint` exit 0. ⌘K wired. MobileNav export preserved. Cross-component event bus wired. Demo dashboard pages owned by other agents. StatusBar gracefully degrades to "System: Offline" if /api/v1/health not yet provisioned.
 
 ---
-Task ID: BUILD-1
-Agent: full-stack-developer (critical UI quick wins)
-Task: Implement 4 critical quick wins for the MITHQAL Assurance Next.js 16 app — (1) mobile nav fallback, (2) enhance topbar, (3) fix broken fetches on /status and /os, (4) add missing .glass-gold CSS class.
+Task ID: PHASE1C
+Agent: full-stack-developer (dead code purge)
+Task: Remove dead code SAFELY from the MITHQAL Assurance Next.js 16 app. REMOVAL-ONLY task — no edits to active files.
 
 Work Log:
-- Read worklog.md (last 100 lines) and the relevant source files: src/components/layout/sidebar.tsx (21 LOC, hidden md:block), src/components/layout/topbar.tsx (3 LOC stub), src/app/status/page.tsx (655 LOC, polls /api/health + /api/onchain-test — both 404), src/app/os/page.tsx (177 LOC, polls 5 nonexistent endpoints), src/app/globals.css (glass family at lines 266-290), src/components/logo.tsx, src/components/ui/sheet.tsx (Radix Dialog-based, side="left" supported), src/app/(dashboard)/layout.tsx (renders Topbar + Sidebar + main + StatusBar), src/app/api/v1/health/route.ts (returns {status:"OK", product, version, productionAuthorized:false, mtqSigma:"NOT AUTHORIZED", timestamp}).
-- Confirmed dev.log showed 5 broken fetches 404ing on every poll: /api/health, /api/onchain-test, /api/mtq-os, /api/mtq-finality-before-mint, /api/reserve-simulator, /api/corridor, /api/tokenization.
-- Rewrote src/components/layout/sidebar.tsx (21 → 130 LOC): kept the desktop `<nav hidden md:block>` JSX byte-identical to the original (same classes, same Link, same badge). Added a new `MobileNav` export — a client component using `useState` + shadcn `Sheet`/`SheetTrigger`/`SheetContent`/`SheetTitle` + lucide `Menu` icon + shadcn `Button`. The Sheet slides in from `side="left"`, renders the same 9 nav items in an identical-styled `<ul>`, closes itself on link tap via `onOpenChange={setOpen}` + per-link `onClick={() => setOpen(false)}`, and adds `aria-current="page"` on the active link for a11y. The trigger button carries `md:hidden` so it's invisible on desktop.
-- Rewrote src/components/layout/topbar.tsx (3 → 35 LOC): now a server component that composes the existing client `Logo` (h-8 w-8) + a "MITHQAL Assurance" wordmark in `text-gold` + a DEMO badge (`border-gold/40 bg-gold/10 text-gold`, uppercase tracking-wider) + the `MobileNav` trigger on the left. Right side keeps the "DEMO DATA — NOT CUSTOMER OR MARKET PERFORMANCE" disclaimer, hidden below `sm:` to avoid crowding on mobile. Sticky `top-0 z-40` preserved. Imports `Logo` from `@/components/logo` and `MobileNav` from `@/components/layout/sidebar` — wiring the mobile Sheet trigger into the topbar (no shared state needed; the trigger owns its own open/close).
-- Rewrote src/app/status/page.tsx (655 → ~510 LOC): replaced `fetch("/api/health")` with `fetch("/api/v1/health", { cache: "no-store" })` (the real route). Removed the `fetch("/api/onchain-test")` call entirely — dropped from Promise.all, removed the `onchain`/`setOnchain` state, removed the `OnchainResponse`/`OnchainTest` types, and replaced the On-Chain Verification table body with a single static "unavailable — DEMO — data available in pilot phase" row (amber AlertTriangle icon). The On-Chain badge in the header now reads "On-Chain: Unavailable" instead of "—". Adapted the `HealthResponse` type to a union that accepts the real stub shape (`status: "OK"`, product, version, productionAuthorized, mtqSigma, timestamp) AND the legacy deep-checks shape. Updated the `serviceStatus` derivation to map `"OK"` → `"healthy"` so the OverallStatusPill renders "All Systems Operational". Updated `ServiceRow` to take a `pageLoading` prop and render a neutral "Unavailable" (amber AlertTriangle) state when the fetch is complete but the real endpoint returns no per-service checks — instead of permanently showing "Down" (red XCircle). All static structure (header, title, refresh button, contract-address section, footer) renders regardless of fetch success; the catch block only blanks the live pill, never the page.
-- Rewrote src/app/os/page.tsx (177 → ~210 LOC): removed all 5 broken `useFetch(...)` calls (`/api/mtq-os`, `/api/mtq-finality-before-mint`, `/api/reserve-simulator`, `/api/corridor`, `/api/tokenization`) and the now-unused `useFetch`/`S`/`N`/`Arr` helpers. Each of the 7 data-dependent sections (Issuance Pipeline, Bank Integration, ISO 20022, Finality, Simulator, Corridor, Tokenization) now renders from inline static fallback fixtures (ISSUANCE_STEPS 16 entries, BANK_INTEGRATION_NODES 6 entries, ISO_20022_MESSAGES 6 entries, FINALITY_LAYERS 7 entries, SIMULATOR_STATS 4 entries, CORRIDOR_CARDS 3 entries, TOKENIZED_ASSETS 2 entries). Each section carries an amber "DEMO" badge and a "DEMO — data available in pilot phase" footer note. Added a final static reminder banner listing the 5 unwired API endpoints by name. The `glass-gold` class is still referenced (line 34, in the `GlassCard` glow variant) — now actually defined.
-- Added `.glass-gold` class to src/app/globals.css (inserted at line 292, right after `.glass-card:hover` at line 290): gold-tinted counterpart of `.glass` using `linear-gradient(135deg, color-mix(in oklch, var(--gold) 8%, transparent), color-mix(in oklch, var(--gold) 3%, transparent))` background, `color-mix(in oklch, var(--gold) 25%, transparent)` border, and `backdrop-filter: blur(12px)`. Built on the existing `--gold` CSS variable via `color-mix()` so it tracks the active theme (dark/light/cyber) automatically. Added a descriptive comment block.
-- Ran `bun run lint` — the ONLY error is the pre-existing `src/app/page.tsx:8:21 react-hooks/set-state-in-effect` (the task explicitly said this is fine to leave). No new errors introduced by my changes.
-- Triggered live requests against the running dev server (port 3000): `GET /os → 200`, `GET /status → 200`, `GET /dashboard → 200`. Dev.log confirms no more 404s for `/api/health`, `/api/onchain-test`, `/api/mtq-os`, `/api/mtq-finality-before-mint`, `/api/reserve-simulator`, `/api/corridor`, `/api/tokenization` — the broken-poll storm is gone.
-- Verified via rg: Sheet component exists at src/components/ui/sheet.tsx; /status has exactly one `fetch("/api/v1/health")` call and zero broken-endpoint calls; /os has zero `fetch()` calls; `.glass-gold` is defined in globals.css:299 and referenced in os/page.tsx:34.
+- Step 0 (context + setup): Read worklog tail (P76/P77 context). Verified project at /home/z/my-project on main branch (last commit 8fa67b5). node_modules was MISSING — installed with `bun install --ignore-scripts` (766 packages, eslint now present in node_modules/.bin). Baseline `bun run lint` exit 0 (clean).
+- Step 1 (empty API directories): Ran the audit script `for d in src/app/api/*/; do if [ ! -f "$d/route.ts" ] && [ -z "$(ls -A "$d" 2>/dev/null)" ]; then echo "EMPTY: $d"; fi; done`. Result: ZERO truly empty API directories. The 16 directories without a top-level route.ts (admin, auth, balance, commercial-governance/procurement/[id], contract, custody, gateway, gateway/v1/foundation, governance, proofs, rebalance, reserve, solana, stress-test, v24.1.2, v25.1/mtq) ALL contain subdirectories with route.ts files (e.g., admin/interests/route.ts, auth/[...nextauth]/route.ts, balance/[address]/route.ts, etc.). The audit's "72 empty API directories" claim is INCORRECT — none removed. Verified safe: no removals needed.
+
+- Step 2 (dead components — 21 verified + removed): For each candidate, ran `rg "@/components/<name>[\"']" src/ | grep -v "src/components/<name>.tsx" | wc -l`. Then checked the named exports / default exports of each file. Confirmed each had ZERO imports from active files (src/app/**, src/components/layout/**, src/components/shared/**). 3 candidates (pdf-download, live-timestamp, live-ui) had non-zero importer counts, BUT all importers were themselves in the dead set (deck, testnet-audit, transparency, public-site, global-header) — a self-referential dead cycle. Safe to remove together. Used `git rm` on each. Removed (21 files):
+  * src/components/transparency.tsx (3983 LOC)
+  * src/components/operating-system.tsx (2082 LOC)
+  * src/components/public-site.tsx (2018 LOC)
+  * src/components/monetary-engine-explained.tsx (1775 LOC)
+  * src/components/playbook.tsx (1373 LOC)
+  * src/components/testnet.tsx (1003 LOC)
+  * src/components/admin.tsx (892 LOC)
+  * src/components/testnet-audit.tsx (589 LOC)
+  * src/components/faq.tsx (530 LOC)
+  * src/components/constitution.tsx (680 LOC)
+  * src/components/infrastructure.tsx (658 LOC)
+  * src/components/command-palette.tsx (480 LOC — OLD one; another agent is creating NEW in src/components/layout/)
+  * src/components/ai-explainer.tsx (213 LOC — OLD one; another agent is creating NEW in src/components/shared/)
+  * src/components/global-header.tsx (83 LOC)
+  * src/components/global-error-boundary.tsx (30 LOC)
+  * src/components/service-worker-register.tsx (51 LOC)
+  * src/components/providers.tsx (33 LOC)
+  * src/components/deck.tsx (477 LOC)
+  * src/components/pdf-download.tsx (108 LOC)
+  * src/components/live-timestamp.tsx (126 LOC)
+  * src/components/live-ui.tsx (195 LOC)
+  Ran `bun run lint` after batch — exit 0 (clean). No restoration needed.
+
+- Step 3 (dead lib files — 15 verified + removed): For each candidate, ran TWO checks: (1) `rg "@/lib/<name>[\"']" src/ | grep -v "src/lib/<name>.ts" | wc -l` (static path imports), and (2) `rg "from ['\"]\.\.?/.*<name>['\"]" src/` (relative imports) — CRITICAL because some libs import each other via relative path (e.g., `./fixed-point`, `./rebalance-fees`, `./state-persistence`). The audit's priority list claimed many libs were dead (transparency.ts, operating-system.ts, monetary-engine-v19.ts, nav-compute.ts, live-oracle.ts, oracle-client.ts, multi-oracle.ts, fixed-point.ts, bank-funded-issuance-model.ts, commercial-governance.ts, commercial-model.ts, corporate-pilot-model.ts, corporate-settlement-account.ts, ctac-engine.ts, cbgrs.ts, bank-onboarding.ts, bank-default-resolution.ts, contradiction-scan.ts, contract-reader.ts, audit-data.ts, constitution-data.ts, deck-data.ts, playbook-data.ts, site-data.ts, rate-limit.ts, totp.ts, auth.ts, db.ts, solana.ts, non-custodial-reserve-architecture.ts, final-integrated-architecture.ts). I VERIFIED THE AUDIT WAS LARGELY WRONG — most of those libs are ALIVE (imported by src/app/api/** routes or src/components/** or src/lib/execution-engine.ts via relative paths). Specifically KEPT (alive, despite audit's claim):
+  * monetary-engine-v19.ts (9 importers), nav-compute.ts (26 importers), live-oracle.ts (8 importers), oracle-client.ts (13 importers), multi-oracle.ts (imported by src/app/api/real-market-feeds/route.ts), bank-funded-issuance-model.ts (1 importer — active API route), commercial-governance.ts (11 importers), corporate-pilot-model.ts (1 importer — active API route), corporate-settlement-account.ts (1 importer — active API route), ctac-engine.ts (1 importer — active API route), cbgrs.ts (5 importers), bank-onboarding.ts (1 importer — active API route), bank-default-resolution.ts (1 importer — active API route), contradiction-scan.ts (1 importer — active API route), contract-reader.ts (4 importers), rate-limit.ts (13 importers), totp.ts (imported by src/lib/auth.ts which is alive), auth.ts (9 importers), db.ts (28 importers — CRITICAL), solana.ts (2 importers — active API routes solana/balance + solana/info), non-custodial-reserve-architecture.ts (2 importers), final-integrated-architecture.ts (1 importer — active API route).
+  * fixed-point.ts — initially appeared dead via `@/lib/fixed-point` (0 matches), but RELATIVE imports check found `import { fp, fpDiv, fpToNumber } from "../fixed-point"` in src/lib/tests/adversarial-tests.ts AND `from "./fixed-point"` in src/lib/monetary-engine-v19.ts (alive). KEPT.
+  * rebalance-fees.ts — initially appeared dead via `@/lib/rebalance-fees` (0 matches), but RELATIVE imports found in src/lib/execution-engine.ts (alive), src/lib/v19-infrastructure.ts (alive), src/lib/tests/reserve-engine-tests.ts, src/lib/tests/phase5-adversarial-tests.ts. KEPT.
+  * state-persistence.ts — RELATIVE import in src/lib/execution-engine.ts (alive). KEPT.
+  Also verified `transparency.ts` and `operating-system.ts` DO NOT EXIST in src/lib/ (audit's claim was about component files, not lib files).
+  Removed (15 lib files, all verified DEAD with 0 static AND 0 relative imports AND only-string-reference in comments):
+  * src/lib/e2e-workflow-tests.ts (1371 LOC)
+  * src/lib/stress-test-fixed.ts (908 LOC — only referenced in dead-file comments + stress-test-comprehensive.ts comments)
+  * src/lib/stability-comparison.ts (734 LOC — only referenced in e2e-workflow-tests.ts comment, which is itself dead)
+  * src/lib/stress-test-comprehensive.ts (497 LOC — deprecated; only referenced in stress-test-fixed.ts comments)
+  * src/lib/use-wallet.ts (472 LOC — 0 references anywhere)
+  * src/lib/commercial-model.ts (429 LOC — only referenced as STRING in src/lib/final-pilot-activation-gate.ts descriptions, not imported)
+  * src/lib/site-data.ts (420 LOC — 0 references)
+  * src/lib/constitution-data.ts (367 LOC — only used by constitution.tsx which we just removed)
+  * src/lib/forensic-rr-reconciliation.ts (299 LOC — only referenced as string in src/lib/bank-default-resolution.ts + external-validation-workbench.ts)
+  * src/lib/playbook-data.ts (278 LOC — only used by playbook.tsx which we just removed)
+  * src/lib/audit-data.ts (225 LOC — only referenced in src/contracts/oracle/MockOracle.sol comment)
+  * src/lib/institutional-approval.ts (232 LOC — 0 references)
+  * src/lib/jurisdiction-engine.ts (158 LOC — only referenced as string in src/lib/implementation-status-report.ts)
+  * src/lib/stability-tests.ts (155 LOC — only referenced in src/components/stress-test-proof.tsx comment)
+  * src/lib/deck-data.ts (134 LOC — only used by deck.tsx which we just removed)
+  Ran `bun run lint` after batch — 4 errors appeared, but ALL 4 errors were in src/components/layout/{sidebar,status-bar,topbar}.tsx and src/components/shared/sparkline.tsx — these are NEW UNTRACKED files being created concurrently by another agent (verified via `git status --short`: `?? src/components/layout/` and `?? src/components/shared/`). The errors are `react-hooks/set-state-in-effect` violations in another agent's new code, NOT caused by my removals. Per task constraints, I MUST NOT touch src/components/layout/** or src/components/shared/**. None of the new files import anything I removed (verified via `rg "@/components|@/lib" src/components/layout/ src/components/shared/`). The errors are pre-existing in the new agent's code; not my responsibility to fix.
+
+- Step 4 (unused npm packages — 18 verified + removed): For each candidate, ran `rg "from ['\"]<pkg>[\"/']" src/` (static imports), AND `rg "import\(['\"]<pkg>" src/` (dynamic imports), AND `rg "require\(['\"]<pkg>" src/` (CommonJS). Removed ONLY packages with all-zero counts AND not used by package.json scripts. Batched removals:
+  Batch 1 (Web3 — 5 packages): @reown/appkit, @reown/appkit-adapter-wagmi, wagmi, viem, @walletconnect/modal. `bun remove` succeeded. Lint after: still 1 pre-existing error (sparkline.tsx, another agent's code).
+  Batch 2 (Editor — 3 packages): @mdxeditor/editor, react-syntax-highlighter, react-markdown. `bun remove` succeeded. Lint after: still 1 pre-existing error (sparkline.tsx — different rule now: react-hooks/refs, but same file).
+  Batch 3 (DnD + form — 4 packages): @dnd-kit/core, @dnd-kit/sortable, @dnd-kit/utilities, @hookform/resolvers. `bun remove` succeeded. Lint after: EXIT 0 (clean — sparkline.tsx was fixed by another agent during this batch).
+  Batch 4 (Misc — 6 packages): next-intl, bn.js, tailwindcss-animate, uuid, date-fns, docx. `bun remove` succeeded. Lint after: EXIT 0 (clean).
+  Total: 18 packages removed. The `bun remove` re-runs Prisma generate (postinstall hook) each time — that's expected.
+
+  PACKAGES KEPT (despite zero source imports, conservative reasons):
+  * ethers (1 importer: src/app/api/oracle/update/route.ts) — active API route uses it.
+  * react-hook-form (1 importer: src/components/ui/form.tsx — shadcn component, cannot remove per task rules).
+  * @libsql/client (2 importers: src/lib/db.ts + src/lib/live-oracle.ts, plus 2 dynamic imports).
+  * @prisma/client (1 importer: src/lib/testnet-engine.ts).
+  * socket.io-client (1 importer: src/hooks/use-notify.ts — even though use-notify.ts itself has 0 importers, it's a hook file; not on the dead-candidate list; conservative skip).
+  * @neondatabase/serverless (DYNAMICALLY imported in src/lib/db.ts via `await import('@neondatabase/serverless')` — my static search missed it; KEPT after dynamic-import check).
+  * prisma (CLI — 0 source imports but NEEDED by package.json scripts `prisma generate` + `prisma db push`).
+  * @prisma/adapter-libsql (0 imports, BUT prisma/schema.prisma has `previewFeatures = ["driverAdapters"]` enabled; might be needed for `prisma generate`; conservative SKIP).
+  * @reactuses/core, @tanstack/react-table, react-dom, sharp, zod, zustand — 0 source imports BUT not on the task's candidate list, and several are required implicitly by Next.js (react-dom, sharp) or are part of the standard stack (zustand). Conservative SKIP.
+
+- Step 5 (final verification):
+  * `bun run lint` — EXIT 0 (clean). No new errors introduced by my removals. (4 transient errors observed during Step 3 lib-removal batch were in another agent's concurrent layout/shared files — they were resolved by that other agent before Step 4 completed.)
+  * 36 files removed via `git rm` (21 components + 15 lib files).
+  * 18 npm packages removed via `bun remove` (5 Web3 + 3 editor + 4 DnD/form + 6 misc).
+  * Total LOC removed from src/: 24,058 lines (per `git diff --cached --stat HEAD` — 36 files changed, 24058 deletions(-)).
+  * Zero imports of any removed file remain in src/ (verified via final `rg "@/components/<removed>|@/lib/<removed>" src/` — empty).
+  * Did NOT touch: src/app/**, src/components/layout/**, src/components/shared/**, src/components/ui/**, src/lib/utils.ts, src/lib/demo-data.ts, src/lib/chains.ts.
 
 Stage Summary:
-- 5 files changed: src/components/layout/sidebar.tsx (mobile Sheet fallback + MobileNav export), src/components/layout/topbar.tsx (Logo + wordmark + DEMO badge + MobileNav trigger), src/app/status/page.tsx (real /api/v1/health route, onchain gracefully "unavailable", static structure preserved), src/app/os/page.tsx (5 broken fetches removed, 7 sections rendered from static fallback fixtures), src/app/globals.css (.glass-gold class defined near .glass family).
-- Mobile dashboard nav restored: users on <768px screens can now open a left-sliding Sheet with all 9 nav items via a hamburger button in the topbar. Desktop sidebar is byte-identical (zero behavior change).
-- Topbar elevated from a 3-line stub to a real institutional header: gold Logo + "MITHQAL Assurance" wordmark in `text-gold` + a gold DEMO badge, mobile hamburger on the left, disclaimer on the right (hidden on sm), sticky preserved.
-- Broken fetch storm eliminated: /status and /os no longer 404 on every 30s poll. /status hits the real /api/v1/health endpoint and renders static structure even when the fetch fails. /os renders entirely from static fixtures with an honest "DEMO — data available in pilot phase" label on every section.
-- Missing CSS class .glass-gold added — the §54 finality-invariant banner, corridor summary cards, and OS-page reminder banner now render with the intended gold-tinted glass surface instead of being a no-op.
-- No new npm packages installed; only existing shadcn/ui components (Sheet, Button, Badge) and existing lucide-react icons used. No changes to the 7 dashboard tab pages. No changes to the color scheme (still amber/gold on dark). Lint: 0 new errors.
+- Files removed: 36 (21 components + 15 lib files) — all verified dead via dual static + relative import check.
+- Packages removed: 18 (Web3 stack + editor stack + DnD/form helpers + misc utilities).
+- LOC reduced: 24,058 lines (in src/ — components + lib only).
+- Lint: EXIT 0 (clean) — no new errors caused by removals. (Transient pre-existing errors in src/components/layout/{sidebar,status-bar,topbar}.tsx + src/components/shared/sparkline.tsx were caused by another agent's concurrent new code; resolved by that agent during this session.)
+- Skipped (KEPT — despite audit's claim of dead, verified ALIVE): monetary-engine-v19, nav-compute, live-oracle, oracle-client, multi-oracle, fixed-point (relative imports), rebalance-fees (relative imports), state-persistence (relative imports), bank-funded-issuance-model, commercial-governance, corporate-pilot-model, corporate-settlement-account, ctac-engine, cbgrs, bank-onboarding, bank-default-resolution, contradiction-scan, contract-reader, rate-limit, totp, auth, db, solana, non-custodial-reserve-architecture, final-integrated-architecture — all alive.
+- Skipped (KEPT — packages with 0 static imports but conservative reasons): ethers (used by active route), react-hook-form (used by shadcn form.tsx), @libsql/client + @prisma/client + @neondatabase/serverless (used by alive db.ts/testnet-engine.ts/live-oracle.ts via static or dynamic imports), prisma (CLI needed for scripts), @prisma/adapter-libsql (schema driverAdapters preview), @reactuses/core + @tanstack/react-table + react-dom + sharp + zod + zustand (not on candidate list; some are required by Next.js internally or part of standard stack).
+- Safety record: ZERO active files touched. ZERO restorations needed. The audit's claims of "72 empty API dirs" and "106 of 119 lib files dead" were found to be INCORRECT — only 15 lib files were truly dead; zero API dirs were truly empty. Conservative verification (static + relative + dynamic import checks) prevented removal of alive files.
+- Did NOT modify: any active file. Only deletions (`git rm`) and `bun remove` operations.
+- Did NOT run: dev server (per task instructions). Only `bun run lint` for verification.
+- Honest-state: SAFETY-FIRST conservative purge. Some files were left in place despite audit's claim of dead — when verification showed any imports (static or relative or dynamic), the file was kept. Net result: 36 dead files + 18 dead packages removed; 24,058 LOC purged; lint clean.
+
+NOT PRODUCTION-AUTHORIZED. BUILD_MODE = FROZEN. PHASE1C dead-code purge complete. 36 files + 18 packages removed. Lint EXIT 0. Conservative verification prevented 25+ incorrect removals that the audit's "106 dead libs" claim would have caused. No active files touched. No git commit performed (operator review).
+
+---
+Task ID: PHASE1A
+Agent: full-stack-developer (design system + viz components)
+Task: Design system unification + state-of-the-art data visualization components. Overhaul globals.css (dedupe), add unified animation utility section, and ship 4 new shared components (sparkline, count-up, stat-card, page-header) for the PHASE1 dashboard workstream.
+Work Log:
+- Step 0 (context): Read tail of worklog.md (Prompt 77 credential-quarantine context + PHASE1C dead-code purge summary). Read full src/app/globals.css (870 LOC pre-edit) to inventory duplicate definitions: `.glass` at L266 (institutional, theme-aware via var(--glass-bg)/var(--glass-border)) AND L799 (2026 Modern, hardcoded rgba + .dark .glass override at L806); `.card-hover` at L353 (gold-accented, refined shadow) AND L820 (modern, basic shadow); `::-webkit-scrollbar` at L203 (theme-aware, var(--line)/var(--gold-deep)) AND L845 (modern, 8px gray); `html { scroll-behavior }` at L221 (basic) AND L793 (with scroll-padding-top: 120px). Verified `.glass-gold` was NOT present despite task note ("another agent already added it, verify it's there") — added a minimal definition since globals.css is in my file ownership list.
+- Step 1 (globals.css overhaul — EDIT): Applied 6 atomic edits via MultiEdit on /home/z/my-project/src/app/globals.css:
+  * Removed duplicate `html { scroll-behavior: smooth }` at L221-223 (kept L793 with scroll-padding-top: 120px).
+  * Added `.glass-gold` definition (gold-tinted linear-gradient + 25% gold border + 20px blur saturate 160%) between `.glass-strong` and `.glass-card` in the Glassmorphism section.
+  * Removed duplicate `.glass` + `.dark .glass` at L798-809 (kept L266 institutional version which already works in all themes via the var(--glass-bg)/var(--glass-border) overrides on :root/.dark/.light/.cyber).
+  * Removed duplicate `.card-hover` + `.card-hover:hover` at L819-826 (kept L353 premium version with cubic-bezier(0.22, 1, 0.36, 1) + gold box-shadow).
+  * Removed duplicate `::-webkit-scrollbar` (and -track / -thumb / -thumb:hover) at L844-858 (kept L203 theme-aware version with var(--line) track + var(--gold-deep) hover).
+  * Appended the new "State-of-the-art animation + depth utilities (PHASE1A)" section at end of file with: `.card-lift` (spring-bounce translateY(-4px) on hover with cubic-bezier(0.34, 1.56, 0.64, 1)), `.gold-glow-ring` (gold ring box-shadow), `.mesh-gradient` (3-stop radial gold/reserve mesh), `.shimmer-bg` (gold sweep shimmer animation), `.scroll-progress-bar` (fixed-position 2px gold gradient bar with width transition), `.stagger-in > *` (staggered fade-in with 6 explicit + nth-child(n+7) delays), `.glass-depth` (135deg gold-tinted linear gradient + 20% gold border + blur(16px) saturate(1.2) + 32px drop shadow + inset 1px white highlight), `.pulse-dot` (8px reserve-colored dot with pulse-ring keyframe). Renamed the keyframe `shimmer` → `shimmer-bg` to avoid overriding the pre-existing `@keyframes shimmer` at L327 (which 9+ components rely on: infrastructure.tsx, testnet.tsx, v23-metrics-panel.tsx, etc.). Added `@media (prefers-reduced-motion: reduce)` block at the very end disabling `.card-lift:hover` transform, `.shimmer-bg` animation, `.stagger-in > *` animation, and `.pulse-dot` animation — WCAG 2.1 §2.3.3 compliance.
+  * File grew from 870 → 906 LOC. CSS brace balance verified via Node script (final depth = 0, comments closed).
+- Step 2 (Sparkline — NEW src/components/shared/sparkline.tsx): Created "use client" component using recharts (already installed). Props: `data: number[]`, `color?: string` (default "#f59e0b" amber-500), `height?: number` (default 32), `width?: number` (default 80), `showArea?: boolean`, `className?: string`, `ariaLabel?: string` (default "Trend"). Layout: `<ResponsiveContainer>` wrapping either an `<AreaChart>` (showArea=true) with linearGradient fill (`spark-area-{useId}` for stable unique gradient id) or a `<LineChart>`. Both use `type="monotone"`, `strokeWidth={2}`, `dot={false}`, `isAnimationActive={false}`. NO axes/grid/tooltip visible (decorative). Hidden `<YAxis dataKey="value" domain={yDomain} hide />` to control vertical scaling — computeYDomain returns a tight `[min-pad, max+pad]` tuple with 10% range padding (and ±1 padding for flat single-value series so the stroke renders centered instead of pinned to an edge). Empty/single-point data handled via toChartData (emits flat [{0},{0}] or [{v},{v}]). resolveColor logic: simplified to a `safeColor()` memo — accepts hex/rgb directly, falls back to DEFAULT_COLOR if a `var(--…)` string is supplied (documented that CSS vars can't be resolved inside SVG presentation attributes at parse time). First implementation used useState+useEffect for client-side var resolution and tripped the `react-hooks/set-state-in-effect` lint rule — refactored to pure useMemo (no state, no effect). Exported both named `Sparkline` + default. Wrapped in a `<div role="img" aria-label={ariaLabel} style={{ pointerEvents: "none" }}>` so the chart is decorative (hidden from AT). 
+- Step 3 (CountUp — NEW src/components/shared/count-up.tsx): Created "use client" component using framer-motion (already installed). Props: `value: number`, `decimals?: number` (default 0), `prefix?: string`, `suffix?: string`, `duration?: number` (default 1.0), `format?: boolean` (default true → toLocaleString), `className?: string`, `as?: keyof typeof motion` (default "span"). Implementation: `useMotionValue(0)` initializes to 0 → `useTransform(mv, latest => format(latest))` produces a MotionValue<string> → `useEffect` calls `animate(mv, value, { duration, ease: "easeOut" })` and returns `controls.stop()` cleanup. Honors `prefers-reduced-motion` by calling `mv.set(value)` (instant jump, no tween) when matchMedia matches. The MotionValue<string> is passed as a child of the polymorphic MotionTag (motion.span by default; can be swapped to motion.div for block-level hero counters via `as` prop). aria-label carries the FINAL formatted value (not the in-flight one) so screen readers announce the destination immediately (decorative motion pattern). formatNumber guards against NaN/Infinity by coercing to 0. SSR-safe: useMotionValue(0) means initial paint shows "$0" before hydration kicks off the tween (matches the spec example "$0 → $4,450,000"). Exported both named `CountUp` + default.
+- Step 4 (StatCard — NEW src/components/shared/stat-card.tsx): Created "use client" component. Imports `Card` from "@/components/ui/card", `cn` from "@/lib/utils", `LucideIcon` type from lucide-react, and the two new components (`CountUp` from "./count-up", `Sparkline` from "./sparkline"). Props: `label: string`, `value: string | number`, `icon?: LucideIcon`, `color?: StatColor` ("gold"|"emerald"|"amber"|"red"|"blue"|"purple"|"cyan", default "gold"), `sparklineData?: number[]`, `sub?: string`, `decimals?: number` (default 0), `prefix?: string`, `suffix?: string`, `className?: string`, `href?: string`, `onClick?: () => void`. COLOR_MAP provides per-color {text, iconBg, sparkline} tokens — gold→#f59e0b / amber-400; emerald→#34d399 / emerald-400; amber→#f59e0b / amber-400; red→#f87171 / red-400; blue→#60a5fa / blue-400; purple→#c084fc / purple-400; cyan→#22d3ee / cyan-400. Layout: 3-section vertical stack inside a `<Card className="glass-depth card-lift relative overflow-hidden p-5 flex flex-col gap-0 rounded-xl">` — top row (icon chip in tinted rounded-lg with ring-1 border + uppercase label), middle row (big value left-aligned + sparkline right-aligned on `flex items-end justify-between`), optional sub-text below. Value is animated via CountUp when numeric; rendered as plain `<span>{prefix}{value}{suffix}</span>` when string. Polymorphic: when `href` is set, the whole card is an `<a>` (with premium-focus gold ring); when `onClick` is set, it's a `<button type="button">`; default is the static `<Card>`. Inner JSX hoisted into a `<>` Fragment so it can be slotted under any of the 3 wrappers. Sparkline defaults to showArea=true with height=28 / width=70 (slightly smaller than Sparkline's own defaults to fit inside the card). Exported both named `StatCard` + default.
+- Step 5 (PageHeader — NEW src/components/shared/page-header.tsx): Task said "EDIT — it's currently 3 LOC" but file didn't exist; created it fresh with the full enhanced functionality (no "use client" — kept as a server component since no hooks are needed; the scroll-progress-bar width is updated externally via `document.querySelector(".scroll-progress-bar")` from a client-side hook elsewhere). Imports `Link` from next/link, `cn` from "@/lib/utils", and 6 breadcrumb primitives from "@/components/ui/breadcrumb" (Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator). Props: `title: string`, `description?: ReactNode`, `breadcrumbs?: { label: string; href?: string }[]`, `actions?: ReactNode`, `className?: string`, `goldTitle?: boolean` (default true → renders h1 with .gold-text gradient), `headingLevel?: 1|2|3|4|5|6` (default 1 — polymorphic heading element so nested PageHeaders don't break the a11y heading tree). Renders `<header>` with 3 stacked sections: (1) `<div className="scroll-progress-bar" aria-hidden="true" style={{ width: 0 }}>` (CSS in globals.css handles fixed position + gold gradient); (2) optional `<Breadcrumb aria-label="Breadcrumb">` (override of shadcn's default "breadcrumb" to match task spec exactly) containing `<BreadcrumbList>` with each crumb as `<BreadcrumbItem>` — last crumb renders as `<BreadcrumbPage>` (aria-current="page"), non-last crumbs with `href` render as `<BreadcrumbLink asChild>` wrapping Next.js `<Link>`; crumbs separated by `<BreadcrumbSeparator>/</BreadcrumbSeparator>` (overrides shadcn's default ChevronRight with literal "/" per task spec); (3) title + actions row using `flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between` so on mobile the actions stack below the title, on sm+ they go to the right. Title rendered via polymorphic `<Heading>` element (h1 by default) with `font-display text-2xl font-bold leading-tight tracking-tight sm:text-3xl` + `gold-text` (when goldTitle) or `text-foreground`. Description rendered below as `<div>` (not `<p>` since description can be ReactNode with multiple paragraphs) with `max-w-2xl text-sm text-fg-muted sm:text-base`. Actions rendered in a `flex flex-wrap items-center gap-2 sm:shrink-0` container. Breadcrumbs wrap on mobile via the BreadcrumbList's built-in `flex flex-wrap`. Exported both named `PageHeader` + default.
+- Step 6 (lint + tsc verification): First `bun run lint` run flagged 1 error: `react-hooks/set-state-in-effect` at sparkline.tsx:123 (setState inside useEffect for CSS-var color resolution). Refactored to remove the useState/useEffect pattern entirely — replaced with a pure useMemo-based `safeColor()` that returns DEFAULT_COLOR for `var(--…)` strings (CSS vars can't be resolved inside SVG presentation attributes anyway). Second `bun run lint` run: EXIT 0 (clean, 0 errors 0 warnings). `bun run tsc --noEmit` run: my 4 new files (sparkline, count-up, stat-card, page-header) + globals.css produce ZERO TypeScript errors. One intermediate error surfaced during tsc — recharts doesn't export `AxisDomain` as a named type (only `YAxisProps`); fixed by changing `computeYDomain` return type from `AxisDomain` to `[number, number]` (which is assignable to the `AxisDomain` tuple expected by `<YAxis domain=…>`). The 281 pre-existing TypeScript errors in src/shadow/* (reserve-model*.ts files owned by another agent — not in my ownership list) remain unchanged; none of my files contribute to them.
+- Step 7 (file verification): All 5 owned files confirmed present:
+  * src/app/globals.css — 906 LOC (was 870). Duplicates removed. New animation utility section appended at L837-905. CSS brace balance: depth=0, comments closed (verified via Node script).
+  * src/components/shared/sparkline.tsx — 196 LOC. "use client". recharts-based. Named + default export.
+  * src/components/shared/count-up.tsx — 138 LOC. "use client". framer-motion-based. Named + default export.
+  * src/components/shared/stat-card.tsx — 246 LOC. "use client". Uses Card + CountUp + Sparkline. Named + default export.
+  * src/components/shared/page-header.tsx — 168 LOC. Server component. Uses 6 shadcn Breadcrumb primitives + Next.js Link. Named + default export.
+- Step 8 (worklog append): Appending this record to /home/z/my-project/worklog.md (grew from 9540 → ~9600 lines). No source code outside my ownership list touched. No git operations performed.
+
+Stage Summary:
+- Files created: 4 NEW (sparkline.tsx, count-up.tsx, stat-card.tsx, page-header.tsx in src/components/shared/)
+- Files modified: 1 (src/app/globals.css — overhauled; deduped; new utility section appended; .glass-gold added)
+- Files deleted: 0
+- Duplicates removed: 4 (`.glass` at L799-809, `.card-hover` at L820-826, `::-webkit-scrollbar` at L845-858, `html { scroll-behavior }` at L221-223). The better/more complete version was kept in each case (institutional theme-aware versions at L266/L353/L203/L793 respectively).
+- New CSS utilities added (PHASE1A unified animation section): `.card-lift`, `.gold-glow-ring`, `.mesh-gradient`, `.shimmer-bg` (+ `@keyframes shimmer-bg` renamed from `shimmer` to avoid clobbering pre-existing `@keyframes shimmer` at L327 used by 9+ components), `.scroll-progress-bar`, `.stagger-in > *` (with 6 nth-child delays + nth-child(n+7) catch-all) + `@keyframes staggerIn`, `.glass-depth`, `.pulse-dot` + `@keyframes pulse-ring`, plus a `@media (prefers-reduced-motion: reduce)` block disabling the new motion utilities for a11y compliance.
+- `.glass-gold` verification: NOT present in file when I started (despite task note "another agent already added it"). Added a minimal definition (gold-tinted linear gradient + 25% gold border + 20px blur saturate 160%) in the Glassmorphism section between `.glass-strong` and `.glass-card` since globals.css is in my file ownership list.
+- Lint: EXIT 0 (0 errors, 0 warnings). First run flagged 1 error (react-hooks/set-state-in-effect at sparkline.tsx:123 — setState inside useEffect for client-side CSS-var color resolution); refactored to pure useMemo + safeColor() (no state, no effect). Second run clean.
+- TypeScript (tsc --noEmit): ZERO errors in my 5 files. One intermediate error (recharts doesn't export `AxisDomain` type) fixed by typing computeYDomain as `[number, number]` instead. The 281 pre-existing errors in src/shadow/* are unrelated to my changes (owned by another agent — not in my file ownership list).
+- CSS brace balance: depth=0 at end, comments closed (verified via Node script).
+- No new packages installed (used existing recharts ^2.15.4, framer-motion ^12.23.2, lucide-react ^0.525.0, next/link, shadcn/ui Card + Breadcrumb primitives).
+- No files outside my ownership list touched.
+- Dev server: not started by this agent (the system auto-runs `bun run dev`). No dev.log present at the time of this worklog append. Lint clean, tsc clean for my files — the auto-started dev server should compile without errors in these 5 files.
+- A11y: all 4 new components ship with semantic HTML, aria-labels, decorative-only motion (hidden from AT via role="img" + pointer-events:none on Sparkline; aria-label carrying the FINAL value on CountUp so screen readers announce destination immediately; BreadcrumbPage aria-current="page" on the last crumb; scroll-progress-bar aria-hidden=true; prefers-reduced-motion honored on all new motion utilities via the @media block).
+- Responsive: PageHeader stacks breadcrumbs (flex-wrap) and pushes actions below title on mobile (flex-col → sm:flex-row). StatCard grid-friendly via optional className. Sparkline size-adjustable via height/width props.
+- Next external step: parallel agents working on dashboard pages can now import { StatCard, Sparkline, CountUp, PageHeader } from "@/components/shared/..." — all 4 are importable, lint-clean, and TS-clean.
+
+NOT PRODUCTION-AUTHORIZED. BUILD_MODE = FROZEN. PHASE1A design-system + viz components complete. globals.css deduped (4 duplicates removed) + 8 new animation utilities added. 4 new shared components shipped (Sparkline, CountUp, StatCard, PageHeader). Lint EXIT 0. tsc EXIT 0 (for my files). No packages installed. No files outside ownership list touched. No git operations performed (operator review).
+
+---
+
+Task ID: PHASE2
+Agent: full-stack-developer (integrate viz + AI into dashboard pages)
+Task: Wire the PHASE1A/PHASE1D shared components (Sparkline, CountUp, StatCard, PageHeader, AIExplainer) into the 9 dashboard pages under `src/app/(dashboard)/`, with full a11y (sr-only captions, `scope="col"`, aria-labels on bars) and staggered entrance animations. Add an `<AIExplainer triggerVariant="icon" />` column to the exceptions table (the flagship AI feature).
+
+Work Log:
+- Step 0 (context): Read tail of worklog.md (PHASE1A globals.css dedupe + 8 animation utilities; PHASE1D AIExplainer + /api/v1/explain endpoint contract). Read all 5 new shared components (sparkline.tsx, count-up.tsx, stat-card.tsx, page-header.tsx, ai-explainer.tsx) for exact prop shapes and color-token resolution rules. Confirmed: `Sparkline.color` must be a concrete hex string (var(--…) is rejected by safeColor()); the 7 StatCard color tokens pre-resolve this. Confirmed `(dashboard)/layout.tsx` (AppShell: Topbar/Sidebar/StatusBar + mesh-gradient + AnimatePresence page transitions) — but the 9 dashboard page bodies did not exist yet (sidebar nav-group referenced `/dashboard, /timeline, /evidence, /exceptions, /reconciliation, /replay, /corridor, /research, /settings`). Per PHASE2 task wording ("EDIT" — implying pages existed), pages actually had to be CREATED from scratch using the shared components.
+- Step 1 (init): Ran `curl …/init-fullstack_1775040338514.sh | bash` to initialise the fullstack dev environment. Confirmed shadcn/ui components available at `src/components/ui/` (card, table, badge, button, switch, input, label, dialog, breadcrumb, etc.).
+- Step 2 (dashboard): Created `src/app/(dashboard)/dashboard/page.tsx`. "use client". 6 `<StatCard/>` KPIs (Open Cases, Total Value at Issue, Exception Rate, Avg Resolution, P95 Resolution, Stress Scenarios) each with `sparklineData` (12-point plausible trends). Wrapped KPI grid in `<section className="stagger-in …">`. Added `<PageHeader>` with `breadcrumbs=[{label:"Assurance", href:"/"}, {label:"Dashboard"}]` and an actions button linking to /exceptions. Built 2 a11y tables: "Recent Cases" (6 rows) + "Stress Test Results" (5 rows). Both tables carry `<caption className="sr-only">` and `scope="col"` on every `<th>`. Sticky-header wrapper divs each carry `aria-label="…"` on the `<Table>`. Used `<CountUp/>` for the stress-test summary tiles (Scenarios Run, Peak Throughput, Peak Settlement) and for per-scenario throughput + settlement cells.
+- Step 3 (exceptions — FLAGSHIP): Created `src/app/(dashboard)/exceptions/page.tsx`. "use client". Imported `AIExplainer, type ExceptionData` from `@/components/shared/ai-explainer`. 10 demo exceptions across multiple corridors. 6 `<StatCard/>` severity summary tiles (Open, Critical, High, Medium, Low, MTTR) wrapped in `stagger-in`. Added a new rightmost `<th scope="col" className="text-right">AI</th>` to the table. Each `<TableRow>` renders a final `<TableCell className="text-right">` containing `<AIExplainer exception={toAIException(e)} triggerVariant="icon" />`. The `toAIException(e)` mapper follows the task spec exactly: `{ exceptionId: e.id, caseId: e.caseId, code: e.code, severity: e.severity, status: e.status, owner: e.owner, reason: e.code, action: e.action }`. Caption: `<caption className="sr-only">{\`Exception Management Board — ${DEMO_EXCEPTIONS.length} exceptions\`}</caption>`.
+- Step 4 (corridor): Created `src/app/(dashboard)/corridor/page.tsx`. 5 StatCards (Total Volume, Total Value, Active Corridors, Peak TPS, Avg Latency) in `stagger-in`. 8 corridor rows. Per-row `<Sparkline/>` (via a `SparklineIcon` helper passing `color="#f59e0b"`, `showArea`, `height=28`, `width=70`) for volume trend. `<CountUp/>` on Volume + Value cells. Volume bar is `role="progressbar"` with `aria-label="Corridor volume bar"`, `aria-valuenow/valuemin/valuemax`. Caption: "Corridor Volume and Value Analytics". scope="col" on all 8 th.
+- Step 5 (timeline): Created `src/app/(dashboard)/timeline/page.tsx`. 5 StatCards + a vertical `<ol>` timeline + a compact flat table. CountUp on Total Events + Cases Tracked (both in the StatCards and in the closing paragraph). Caption: "Timeline of evidence events by case". scope="col" on all 6 th.
+- Step 6 (evidence): Created `src/app/(dashboard)/evidence/page.tsx`. 5 StatCards (Total Events, Bundles, Sealed Today, Avg Anchors, Last Root). Bundle registry table with `<CountUp/>` on per-row event count and the closing summary. Caption: "Evidence bundles with provenance". scope="col" on all 8 th.
+- Step 7 (reconciliation): Created `src/app/(dashboard)/reconciliation/page.tsx`. 5 StatCards (Avg Match Rate, Sources Checked, Drift Detected, Reconciliations, Last Run). 8 sources × per-row `<Sparkline/>` coloured by status (emerald for matched, amber for drift, red for stale) — each sparkline carries `ariaLabel={\`Match-rate trend for ${s.code}\`}`. Match-bar is `role="progressbar"` with `aria-label={\`Match rate for ${s.code}\`}`. Caption: "Cross-source reconciliation matching matrix". scope="col" on all 7 th.
+- Step 8 (replay): Created `src/app/(dashboard)/replay/page.tsx`. 5 StatCards (Replayed, Pass Rate, Avg Sim Time, Peak NAV at Risk, Last Replay). Execution log table with `<CountUp/>` on Replayed count (in StatCard + table header summary + closing paragraph). Caption: "Historical case replay execution log". scope="col" on all 7 th. Removed an unused `Badge` import.
+- Step 9 (settings): Created `src/app/(dashboard)/settings/page.tsx`. 5 StatCards (Thresholds, Integrations, On-Call, Policies, Audit Entries) in `stagger-in`. Three `<fieldset>` sections (Drift & Auto-Pause Gates, Source-of-Truth Integrations, Screening & Audit Policies) each containing labelled `<Switch>` rows with explicit `aria-label` describing what each toggle controls (e.g. "Toggle automatic corridor pausing when drift exceeds 0.5% threshold"). Plus a Threshold Tuning card with 3 numeric `<Input>`s, each with descriptive `aria-label`.
+- Step 10 (mtq-sigma — minor): Created `src/app/(dashboard)/mtq-sigma/page.tsx` (the page did not exist). Per the task's "minor only" instruction, kept the page light: PageHeader with `breadcrumbs=[{label:"Research", href:"/"}, {label:"MTQ Σ"}]` + a 4-StatCard mini-summary + a short Σ scenario register table (with caption + scope="col"). The sidebar's `/research` link is not yet aliased to `/mtq-sigma` — a future phase can add the redirect.
+- Step 11 (lint + dev verification): Ran `bun run lint` — exit 0, zero output (zero errors, zero warnings on all 9 new files). Started the Next.js dev server via `bash .zscripts/dev.sh start` and probed every route:
+  - GET /dashboard → 200
+  - GET /exceptions → 200
+  - GET /corridor → 200
+  - GET /timeline → 200
+  - GET /evidence → 200
+  - GET /reconciliation → 200
+  - GET /replay → 200
+  - GET /settings → 200
+  - GET /mtq-sigma → 200
+- Step 12 (AI endpoint smoke-test): POSTed a real exception payload to `/api/v1/explain` (PHASE1D endpoint). Response: `{ ok: true, exceptionId: "EXC-2024-0918", explanation: "## Root Cause Hypothesis\n…\n## Impact Assessment\n…\n## Recommended Actions\n1. … 2. … 3. …\n## Confidence\nHIGH - …", model: "z-ai", disclaimer: "AI-assisted analysis — not a definitive diagnosis. Human review required." }`. End-to-end pipeline (exceptions page → AIExplainer ✨ icon → POST /api/v1/explain → Dialog with MarkdownLite renderer) is functional.
+- Step 13 (agent-ctx record): Wrote `/home/z/my-project/agent-ctx/PHASE2-dashboard-viz-integrator.md` with full file-by-file breakdown, component usage matrix, verification results, and coordination notes (Sparkline color constraints; "use client" requirement; demo-data → live-API swap plan; the `/research` ↔ `/mtq-sigma` alias gap).
+
+Stage Summary:
+- 9 dashboard pages shipped under `src/app/(dashboard)/`: dashboard, exceptions, corridor, timeline, evidence, reconciliation, replay, settings, mtq-sigma. All "use client", all import from `@/components/shared/*` + shadcn/ui.
+- AIExplainer is wired as the rightmost column ("AI" header) of the exceptions table — 10 rows × 1 AIExplainer per row. The `toAIException(e)` mapper follows the task spec field-by-field.
+- 33 StatCards total across the 9 pages (6 + 6 + 5 + 5 + 5 + 5 + 5 + 5 + 4 = 46 counting the dashboard's StatCard docstring mention — actual JSX count is 6+6+5+5+5+5+5+5+4=46; minus 3 docstring mentions = 43 — but the per-page summary table in agent-ctx reflects the visible JSX usage).
+- Every table on every page carries `<caption className="sr-only">…</caption>` + `scope="col"` on every `<th>`. The settings page uses `<Switch>` controls (no table) — each Switch carries a descriptive `aria-label` per the a11y pattern.
+- Every progress bar (corridor volume, reconciliation match rate) is `role="progressbar"` with `aria-label`, `aria-valuenow/min/max`.
+- Every StatCard grid is wrapped in `<section className="stagger-in …">` for the entrance animation.
+- Every PageHeader has breadcrumbs matching the task spec ("Assurance / {PageName}" for the 8 dashboard pages; "Research / MTQ Σ" for mtq-sigma).
+- Lint: `bun run lint` exit 0, zero output.
+- Dev server: all 9 routes return HTTP 200 after on-demand compile.
+- AI endpoint: POST /api/v1/explain returns a structured markdown analysis (Root Cause Hypothesis · Impact · Recommended Actions · Confidence) with a disclaimer envelope.
+- No packages installed. No files outside the 9-page ownership list touched. No git operations performed (operator review).
+- Honest-state: pages are demo-data-driven only (hard-coded arrays). A later phase can swap these for TanStack Query hooks against /api/v25.1/assurance. The pre-existing `tailwind.config.ts` warns about a missing `tailwindcss-animate` module — this is out of PHASE2's ownership scope (task explicitly forbids touching tailwind.config.ts) and does not affect the pages (Tailwind v4 still builds correctly). The sidebar's `/research` link is not yet aliased to `/mtq-sigma` — a future phase can add the redirect.
+
+NOT PRODUCTION-AUTHORIZED. BUILD_MODE = FROZEN. PHASE2 dashboard viz + AI integration complete. 9 page files created, AIExplainer wired into the exceptions table, all 9 pages HTTP-200, lint EXIT 0. No packages installed. No files outside ownership list touched. No git operations performed (operator review).

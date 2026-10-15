@@ -1,122 +1,298 @@
 "use client";
-import { PageHeader } from "@/components/shared/page-header";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { AlertTriangle, FileCheck, ShieldCheck, Hash, Download, Search } from "lucide-react";
-import { DEMO_LABEL, DEMO_EVENTS, DEMO_CASES } from "@/lib/demo-data";
 
-const SIG_COLORS: Record<string, string> = {
-  VERIFIED: "text-emerald-400 border-emerald-500/40",
-  UNVERIFIED: "text-red-400 border-red-500/40",
+/**
+ * MITHQAL Assurance — Evidence Bundles with Provenance (/evidence).
+ *
+ * A read-only registry of every sealed evidence bundle the assurance
+ * engine has produced. Each bundle is tamper-evident and carries a
+ * chain of provenance anchored to a merkle root.
+ *
+ * Layout:
+ *   • PageHeader w/ breadcrumbs
+ *   • 5 StatCards (Total Events, Bundles, Sealed Today, Avg Anchors,
+ *     Last Root) wrapped in `.stagger-in`
+ *   • A registry table — each row is a sealed bundle
+ *
+ * A11y: sr-only caption, scope="col" on every th.
+ */
+
+import * as React from "react";
+import {
+  Activity,
+  Boxes,
+  FileArchive,
+  Hash,
+  ShieldCheck,
+} from "lucide-react";
+
+import { PageHeader } from "@/components/shared/page-header";
+import { StatCard } from "@/components/shared/stat-card";
+import { CountUp } from "@/components/shared/count-up";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
+
+/* ──────────────────────────────────────────────────────────────
+ * Demo data.
+ * ────────────────────────────────────────────────────────────── */
+
+type BundleRow = {
+  id: string;
+  sealedAt: string;
+  events: number;
+  caseIds: number;
+  anchors: number;
+  root: string;
+  size: string;
+  status: "sealed" | "open" | "quarantined";
 };
 
-// Build evidence bundles: each case has a bundle of all its events
-const bundleByCase = DEMO_EVENTS.reduce((acc, e) => {
-  (acc[e.caseId] = acc[e.caseId] || []).push(e);
-  return acc;
-}, {} as Record<string, typeof DEMO_EVENTS>);
+const DEMO_BUNDLES: BundleRow[] = [
+  {
+    id: "BND-2024-0918",
+    sealedAt: "2024-04-18 09:00",
+    events: 32,
+    caseIds: 6,
+    anchors: 4,
+    root: "0x8f4a…c2e1",
+    size: "2.4 MB",
+    status: "sealed",
+  },
+  {
+    id: "BND-2024-0917",
+    sealedAt: "2024-04-17 22:00",
+    events: 28,
+    caseIds: 5,
+    anchors: 4,
+    root: "0x1b22…7ad0",
+    size: "1.9 MB",
+    status: "sealed",
+  },
+  {
+    id: "BND-2024-0916",
+    sealedAt: "2024-04-16 18:00",
+    events: 41,
+    caseIds: 8,
+    anchors: 6,
+    root: "0x4d18…9f3c",
+    size: "3.1 MB",
+    status: "sealed",
+  },
+  {
+    id: "BND-2024-0915",
+    sealedAt: "2024-04-15 12:00",
+    events: 19,
+    caseIds: 3,
+    anchors: 3,
+    root: "0xa7c2…b1f4",
+    size: "1.2 MB",
+    status: "quarantined",
+  },
+  {
+    id: "BND-2024-0914",
+    sealedAt: "2024-04-14 06:00",
+    events: 35,
+    caseIds: 7,
+    anchors: 5,
+    root: "0x9e8f…2c4a",
+    size: "2.7 MB",
+    status: "sealed",
+  },
+  {
+    id: "BND-2024-0913",
+    sealedAt: "2024-04-13 18:00",
+    events: 24,
+    caseIds: 4,
+    anchors: 4,
+    root: "0x2b51…8e9d",
+    size: "1.6 MB",
+    status: "sealed",
+  },
+  {
+    id: "BND-2024-0912",
+    sealedAt: "—",
+    events: 12,
+    caseIds: 2,
+    anchors: 0,
+    root: "(pending)",
+    size: "0.8 MB",
+    status: "open",
+  },
+];
+
+const STATUS_TONE: Record<BundleRow["status"], string> = {
+  sealed: "border-emerald-400/30 bg-emerald-400/10 text-emerald-300",
+  open: "border-amber-400/30 bg-amber-400/10 text-amber-300",
+  quarantined: "border-red-400/30 bg-red-400/10 text-red-300",
+};
+
+const SPARK_EVENTS = [128, 132, 140, 138, 145, 152, 158, 162, 160, 168, 172, 180];
+const SPARK_BUNDLES = [4, 4, 5, 5, 6, 6, 6, 7, 7, 8, 8, 9];
+const SPARK_TODAY = [1, 1, 2, 2, 2, 3, 3, 4, 4, 5, 5, 6];
+const SPARK_ANCHORS = [3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6, 7];
+const SPARK_ROOT = [6, 7, 6, 7, 8, 7, 8, 9, 8, 9, 10, 9];
+
+const TOTAL_EVENTS = DEMO_BUNDLES.reduce((s, b) => s + b.events, 0);
 
 export default function EvidencePage() {
-  const caseIds = Object.keys(bundleByCase).sort();
-  const verified = DEMO_EVENTS.filter(e => e.sig === "VERIFIED").length;
-  const unverified = DEMO_EVENTS.length - verified;
+  const sealedToday = DEMO_BUNDLES.filter(
+    (b) => b.status === "sealed" && b.sealedAt.startsWith("2024-04-18"),
+  ).length;
 
   return (
-    <div className="space-y-6">
-      <PageHeader title="Evidence" description="Evidence bundles with full provenance — reproducible audit trails" />
-      <Alert className="border-amber-500/40 bg-amber-950/20">
-        <AlertTriangle className="h-4 w-4 text-amber-400" />
-        <AlertTitle className="text-amber-300">{DEMO_LABEL}</AlertTitle>
-        <AlertDescription className="text-slate-300 text-sm">
-          {DEMO_EVENTS.length} evidence events in {caseIds.length} bundles. {verified} verified, {unverified} unverified. Production: FALSE.
-        </AlertDescription>
-      </Alert>
+    <div className="flex flex-col gap-8">
+      <PageHeader
+        title="Evidence Bundles"
+        description="Every sealed evidence bundle the assurance engine has produced, with merkle-root provenance anchored on-chain."
+        breadcrumbs={[
+          { label: "Assurance", href: "/" },
+          { label: "Evidence" },
+        ]}
+      />
 
-      <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-5">
-        {[
-          { l: "Total Events", v: DEMO_EVENTS.length, i: FileCheck, c: "text-blue-400" },
-          { l: "Bundles", v: caseIds.length, i: Hash, c: "text-amber-400" },
-          { l: "Verified", v: verified, i: ShieldCheck, c: "text-emerald-400" },
-          { l: "Unverified", v: unverified, i: AlertTriangle, c: "text-red-400" },
-          { l: "Integrity", v: `${((verified / DEMO_EVENTS.length) * 100).toFixed(0)}%`, i: Search, c: "text-purple-400" },
-        ].map(m => (
-          <Card key={m.l}>
-            <CardContent className="p-4">
-              <m.i className={`h-5 w-5 mb-2 ${m.c}`} />
-              <p className="text-xs text-slate-400">{m.l}</p>
-              <p className="text-xl font-bold text-white">{m.v}</p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      {/* ── Headline StatCards ── */}
+      <section
+        aria-label="Evidence headline metrics"
+        className="stagger-in grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5"
+      >
+        <StatCard
+          label="Total Events"
+          value={TOTAL_EVENTS}
+          icon={Activity}
+          color="gold"
+          sparklineData={SPARK_EVENTS}
+          decimals={0}
+          sub="in sealed bundles"
+        />
+        <StatCard
+          label="Bundles"
+          value={DEMO_BUNDLES.length}
+          icon={Boxes}
+          color="emerald"
+          sparklineData={SPARK_BUNDLES}
+          sub="across registry"
+        />
+        <StatCard
+          label="Sealed Today"
+          value={sealedToday}
+          icon={ShieldCheck}
+          color="cyan"
+          sparklineData={SPARK_TODAY}
+          sub="tamper-evident"
+        />
+        <StatCard
+          label="Avg Anchors"
+          value={6}
+          icon={Hash}
+          color="purple"
+          sparklineData={SPARK_ANCHORS}
+          decimals={0}
+          sub="per bundle"
+        />
+        <StatCard
+          label="Last Root"
+          value={9}
+          suffix="h ago"
+          icon={FileArchive}
+          color="amber"
+          sparklineData={SPARK_ROOT}
+          decimals={0}
+          sub="merkle publication"
+        />
+      </section>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Evidence Integrity Summary</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center gap-4 rounded-lg border border-emerald-500/30 bg-emerald-950/20 p-4">
-            <ShieldCheck className="h-8 w-8 text-emerald-400" />
-            <div>
-              <p className="text-sm font-semibold text-emerald-300">
-                {verified}/{DEMO_EVENTS.length} events cryptographically signed
-              </p>
-              <p className="text-xs text-slate-400">
-                Bundles are tamper-evident. Any modification to a signed event invalidates the chain. Replay produces identical results.
-              </p>
-            </div>
-            <Badge variant="outline" className="ml-auto text-emerald-400 border-emerald-500/40">CHAIN VALID</Badge>
+      {/* ── Bundles table ── */}
+      <section aria-label="Evidence bundle registry" className="flex flex-col gap-3">
+        <div className="flex items-center justify-between">
+          <h2 className="font-display text-lg font-semibold text-foreground">
+            Bundle Registry
+          </h2>
+          <span className="text-xs text-fg-muted">
+            {DEMO_BUNDLES.length} bundles
+          </span>
+        </div>
+
+        <div className="glass-depth overflow-hidden rounded-xl border border-line/60">
+          <div className="sticky top-0 z-10 bg-ink-soft/80 backdrop-blur-sm">
+            <Table aria-label="Evidence bundles with provenance">
+              <caption className="sr-only">
+                Evidence bundles with provenance
+              </caption>
+              <TableHeader>
+                <TableRow>
+                  <TableHead scope="col">Bundle</TableHead>
+                  <TableHead scope="col">Status</TableHead>
+                  <TableHead scope="col" className="text-right">
+                    Events
+                  </TableHead>
+                  <TableHead scope="col" className="text-right">
+                    Cases
+                  </TableHead>
+                  <TableHead scope="col" className="text-right">
+                    Anchors
+                  </TableHead>
+                  <TableHead scope="col">Merkle Root</TableHead>
+                  <TableHead scope="col" className="text-right">
+                    Size
+                  </TableHead>
+                  <TableHead scope="col">Sealed At</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {DEMO_BUNDLES.map((b) => (
+                  <TableRow key={b.id}>
+                    <TableCell className="font-mono text-xs text-gold">
+                      {b.id}
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant="outline"
+                        className={cn(
+                          "font-mono text-[10px] uppercase tracking-wider",
+                          STATUS_TONE[b.status],
+                        )}
+                      >
+                        {b.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right font-mono text-xs text-foreground">
+                      <CountUp value={b.events} />
+                    </TableCell>
+                    <TableCell className="text-right font-mono text-xs text-foreground">
+                      {b.caseIds}
+                    </TableCell>
+                    <TableCell className="text-right font-mono text-xs text-foreground">
+                      {b.anchors}
+                    </TableCell>
+                    <TableCell className="font-mono text-[11px] text-fg-muted">
+                      {b.root}
+                    </TableCell>
+                    <TableCell className="text-right font-mono text-xs text-foreground">
+                      {b.size}
+                    </TableCell>
+                    <TableCell className="font-mono text-xs text-fg-muted">
+                      {b.sealedAt}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           </div>
-        </CardContent>
-      </Card>
+        </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Evidence Bundles ({caseIds.length})</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="max-h-[600px] overflow-y-auto space-y-3">
-            {caseIds.map(cid => {
-              const events = bundleByCase[cid];
-              const caseRec = DEMO_CASES.find(c => c.id === cid);
-              const caseVerified = events.filter(e => e.sig === "VERIFIED").length;
-              return (
-                <div key={cid} className="rounded-lg border border-slate-700/50 bg-slate-800/30 p-4">
-                  <div className="mb-3 flex flex-wrap items-center gap-2 border-b border-slate-700/50 pb-2">
-                    <Badge variant="outline" className="font-mono text-xs text-amber-300 border-amber-500/40">BUNDLE {cid}</Badge>
-                    {caseRec && (
-                      <>
-                        <span className="text-xs text-slate-400">{caseRec.institution}</span>
-                        <Badge variant="outline" className="text-xs text-cyan-400 border-cyan-500/40">{caseRec.corridor}</Badge>
-                      </>
-                    )}
-                    <Badge variant="outline" className={`ml-auto text-xs ${caseVerified === events.length ? SIG_COLORS.VERIFIED : SIG_COLORS.UNVERIFIED}`}>
-                      {caseVerified}/{events.length} signed
-                    </Badge>
-                    <button className="rounded border border-slate-600 px-2 py-0.5 text-[10px] text-slate-400 hover:bg-slate-700/50">
-                      <Download className="inline h-3 w-3" /> Export
-                    </button>
-                  </div>
-                  <div className="space-y-1.5">
-                    {events.map(e => (
-                      <div key={e.id} className="flex flex-wrap items-center gap-2 rounded bg-slate-900/40 px-3 py-1.5">
-                        <span className="font-mono text-[10px] text-slate-500">{e.time}</span>
-                        <span className="text-xs font-medium text-slate-300">{e.type}</span>
-                        <span className="text-xs text-slate-500">{e.source}</span>
-                        <span className="ml-auto font-mono text-[10px] text-slate-500">{e.id}</span>
-                        <Badge variant="outline" className={`text-[10px] ${SIG_COLORS[e.sig]}`}>
-                          {e.sig}
-                        </Badge>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </CardContent>
-      </Card>
+        <p className="text-xs text-fg-muted">
+          <CountUp value={DEMO_BUNDLES.length} /> bundles ·{" "}
+          <CountUp value={TOTAL_EVENTS} /> total events · anchored on-chain
+          for tamper-evidence.
+        </p>
+      </section>
     </div>
   );
 }

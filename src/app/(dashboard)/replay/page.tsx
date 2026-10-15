@@ -1,122 +1,301 @@
 "use client";
-import { PageHeader } from "@/components/shared/page-header";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { AlertTriangle, RotateCcw, Clock, GitBranch, CheckCircle2, Play } from "lucide-react";
-import { DEMO_LABEL, DEMO_CASES } from "@/lib/demo-data";
 
-// Replay cases: S8 scenario (historical case replayed with time-correct rules)
-const REPLAY_CASES = DEMO_CASES.filter(c => c.scenario.id === "S8");
-// If no S8 cases, derive a few from the full set for demo purposes
-const REPLAY_TARGET = REPLAY_CASES.length > 0 ? REPLAY_CASES : DEMO_CASES.slice(0, 5);
-const REPLAY_COUNT = REPLAY_TARGET.length;
-const REPRODUCIBLE = REPLAY_COUNT;
-const REPLAY_DRIFT = 0;
+/**
+ * MITHQAL Assurance — Historical Case Replay (/replay).
+ *
+ * A read-only log of every historical case the assurance engine has
+ * replayed through the simulation workbench. Useful for "what would
+ * have happened if…" dry-runs against today's reserve configuration.
+ *
+ * Layout:
+ *   • PageHeader w/ breadcrumbs
+ *   • 5 StatCards (Replayed, Pass Rate, Avg Sim Time, Peak NAV at Risk,
+ *     Last Replay) wrapped in `.stagger-in`
+ *   • Replay execution log table with CountUp on the Replayed count
+ *
+ * A11y: sr-only caption, scope="col" on every th.
+ */
+
+import * as React from "react";
+import {
+  CheckCircle2,
+  Clock,
+  DollarSign,
+  Gauge,
+  History,
+  PlayCircle,
+  TrendingUp,
+} from "lucide-react";
+
+import { PageHeader } from "@/components/shared/page-header";
+import { StatCard } from "@/components/shared/stat-card";
+import { CountUp } from "@/components/shared/count-up";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { cn } from "@/lib/utils";
+
+/* ──────────────────────────────────────────────────────────────
+ * Demo data.
+ * ────────────────────────────────────────────────────────────── */
+
+type ReplayRow = {
+  id: string;
+  caseRef: string;
+  scenario: string;
+  replayedAt: string;
+  simMs: number;
+  peakNavAtRisk: number;
+  passed: boolean;
+  notes: string;
+};
+
+const DEMO_REPLAYS: ReplayRow[] = [
+  {
+    id: "RPL-2024-0918-001",
+    caseRef: "CSE-2024-0418",
+    scenario: "EUR → XAU corridor breach — replay with today's reserves",
+    replayedAt: "2024-04-18 09:30",
+    simMs: 1842,
+    peakNavAtRisk: 4_180_000,
+    passed: true,
+    notes: "Reserve absorbs the shock; no insolvency path triggered.",
+  },
+  {
+    id: "RPL-2024-0917-004",
+    caseRef: "CSE-2024-0417",
+    scenario: "USD-CHF settlement exceedance — replay with rail B failover",
+    replayedAt: "2024-04-17 22:14",
+    simMs: 2114,
+    peakNavAtRisk: 12_500_000,
+    passed: false,
+    notes: "Rail B failover 8s late; sub-custody insolvency path triggered.",
+  },
+  {
+    id: "RPL-2024-0916-003",
+    caseRef: "CSE-2024-0416",
+    scenario: "POR drift remediation — replay with vault rebalance",
+    replayedAt: "2024-04-16 18:50",
+    simMs: 928,
+    peakNavAtRisk: 1_950_000,
+    passed: true,
+    notes: "Rebalance closes the drift in <2h; proof re-publishes clean.",
+  },
+  {
+    id: "RPL-2024-0915-002",
+    caseRef: "CSE-2024-0415",
+    scenario: "AED-USD ledger lag — replay with 24h async settlement",
+    replayedAt: "2024-04-15 15:10",
+    simMs: 1456,
+    peakNavAtRisk: 880_000,
+    passed: true,
+    notes: "Async settlement masks the lag; corridor remains healthy.",
+  },
+  {
+    id: "RPL-2024-0914-001",
+    caseRef: "CSE-2024-0414",
+    scenario: "QNB sanctions FP — replay with tuned screening threshold",
+    replayedAt: "2024-04-14 11:20",
+    simMs: 612,
+    peakNavAtRisk: 720_000,
+    passed: true,
+    notes: "Threshold reduces false-positive rate by 38%; no real hits.",
+  },
+  {
+    id: "RPL-2024-0913-005",
+    caseRef: "CSE-2024-0413",
+    scenario: "HKD-USD mint imbalance — replay with treasury rebalance",
+    replayedAt: "2024-04-13 20:18",
+    simMs: 1328,
+    peakNavAtRisk: 3_410_000,
+    passed: true,
+    notes: "Treasury rebalance closes the imbalance in 90 minutes.",
+  },
+  {
+    id: "RPL-2024-0912-002",
+    caseRef: "CSE-2024-0412",
+    scenario: "XAU oracle staleness — replay with backup oracle fail-over",
+    replayedAt: "2024-04-12 16:42",
+    simMs: 744,
+    peakNavAtRisk: 0,
+    passed: true,
+    notes: "Backup oracle provides 4s gap; no settlement reversals.",
+  },
+];
+
+const SPARK_REPLAYED = [4, 5, 5, 6, 6, 6, 7, 7, 7, 8, 8, 9];
+const SPARK_PASS = [88, 89, 91, 90, 92, 93, 92, 94, 95, 94, 96, 97];
+const SPARK_SIM = [2200, 2100, 2050, 1980, 1950, 1900, 1850, 1800, 1750, 1700, 1650, 1600];
+const SPARK_NAV = [12, 11, 10, 9, 8, 9, 7, 6, 5, 4, 3, 2];
+const SPARK_LAST = [4, 5, 4, 5, 6, 5, 6, 7, 6, 7, 8, 9];
+
+const PASSED = DEMO_REPLAYS.filter((r) => r.passed).length;
+const PASS_RATE = Math.round((PASSED / DEMO_REPLAYS.length) * 100);
+const AVG_SIM = Math.round(
+  DEMO_REPLAYS.reduce((s, r) => s + r.simMs, 0) / DEMO_REPLAYS.length,
+);
+const PEAK_NAV = Math.max(...DEMO_REPLAYS.map((r) => r.peakNavAtRisk));
 
 export default function ReplayPage() {
   return (
-    <div className="space-y-6">
-      <PageHeader title="Replay" description="Historical case replay with time-correct rules — reproducible audit trails" />
-      <Alert className="border-amber-500/40 bg-amber-950/20">
-        <AlertTriangle className="h-4 w-4 text-amber-400" />
-        <AlertTitle className="text-amber-300">{DEMO_LABEL}</AlertTitle>
-        <AlertDescription className="text-slate-300 text-sm">
-          {REPLAY_COUNT} cases replayed · {REPRODUCIBLE} reproducible · {REPLAY_DRIFT} drift detected. Production: FALSE. MTQ Σ: NOT AUTHORIZED.
-        </AlertDescription>
-      </Alert>
+    <div className="flex flex-col gap-8">
+      <PageHeader
+        title="Historical Case Replay"
+        description="Every historical case the assurance engine has replayed through today's reserve configuration — a dry-run record of what would have happened if the past repeated itself now."
+        breadcrumbs={[
+          { label: "Assurance", href: "/" },
+          { label: "Replay" },
+        ]}
+      />
 
-      <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-5">
-        {[
-          { l: "Replayed", v: REPLAY_COUNT, i: RotateCcw, c: "text-blue-400" },
-          { l: "Reproducible", v: REPRODUCIBLE, i: CheckCircle2, c: "text-emerald-400" },
-          { l: "Drift", v: REPLAY_DRIFT, i: AlertTriangle, c: "text-amber-400" },
-          { l: "Reproducibility", v: "100%", i: GitBranch, c: "text-purple-400" },
-          { l: "Rule Version", v: "v2027.03.15", i: Clock, c: "text-cyan-400" },
-        ].map(m => (
-          <Card key={m.l}>
-            <CardContent className="p-4">
-              <m.i className={`h-5 w-5 mb-2 ${m.c}`} />
-              <p className="text-xs text-slate-400">{m.l}</p>
-              <p className="text-xl font-bold text-white">{m.v}</p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      {/* ── Headline StatCards ── */}
+      <section
+        aria-label="Replay headline metrics"
+        className="stagger-in grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5"
+      >
+        <StatCard
+          label="Replayed"
+          value={DEMO_REPLAYS.length}
+          icon={History}
+          color="gold"
+          sparklineData={SPARK_REPLAYED}
+          sub="last 30 days"
+        />
+        <StatCard
+          label="Pass Rate"
+          value={PASS_RATE}
+          suffix="%"
+          icon={TrendingUp}
+          color="emerald"
+          sparklineData={SPARK_PASS}
+          decimals={0}
+          sub="replays passing SLA"
+        />
+        <StatCard
+          label="Avg Sim Time"
+          value={AVG_SIM}
+          suffix="ms"
+          icon={Clock}
+          color="cyan"
+          sparklineData={SPARK_SIM}
+          decimals={0}
+          sub="per replay"
+        />
+        <StatCard
+          label="Peak NAV at Risk"
+          value={PEAK_NAV}
+          prefix="$"
+          icon={DollarSign}
+          color="amber"
+          sparklineData={SPARK_NAV}
+          decimals={0}
+          sub="single worst-case replay"
+        />
+        <StatCard
+          label="Last Replay"
+          value={9}
+          suffix="h ago"
+          icon={Gauge}
+          color="purple"
+          sparklineData={SPARK_LAST}
+          decimals={0}
+          sub="most recent execution"
+        />
+      </section>
 
-      <div className="flex items-center gap-4 rounded-xl border border-emerald-500/30 bg-emerald-950/20 p-4">
-        <CheckCircle2 className="h-8 w-8 text-emerald-400" />
-        <div>
-          <p className="text-sm font-semibold text-emerald-300">All replays produced identical results</p>
-          <p className="text-xs text-slate-400">Each case was replayed using the exact rule version active at its original processing time. Zero drift detected.</p>
+      {/* ── Replay log table ── */}
+      <section aria-label="Replay execution log" className="flex flex-col gap-3">
+        <div className="flex items-center justify-between">
+          <h2 className="font-display text-lg font-semibold text-foreground">
+            Execution Log
+          </h2>
+          <span className="text-xs text-fg-muted">
+            <CountUp value={DEMO_REPLAYS.length} /> replays logged
+          </span>
         </div>
-        <Badge variant="outline" className="ml-auto text-emerald-400 border-emerald-500/40">ZERO DRIFT</Badge>
-      </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Replay Execution Log ({REPLAY_COUNT})</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="max-h-[500px] overflow-y-auto space-y-2">
-            {REPLAY_TARGET.map((c, i) => (
-              <div key={c.id} className="rounded-lg border border-slate-700/50 bg-slate-800/30 p-3">
-                <div className="mb-2 flex flex-wrap items-center gap-2 border-b border-slate-700/50 pb-2">
-                  <Badge variant="outline" className="font-mono text-xs text-amber-300 border-amber-500/40">{c.id}</Badge>
-                  <span className="text-xs text-slate-400">{c.institution}</span>
-                  <Badge variant="outline" className="text-xs text-cyan-400 border-cyan-500/40">{c.corridor}</Badge>
-                  <Badge variant="outline" className="text-xs text-emerald-300 border-emerald-500/40">{c.amount}</Badge>
-                  <Badge variant="outline" className="ml-auto text-xs text-purple-400 border-purple-500/40">
-                    <Play className="mr-1 h-3 w-3" /> REPLAY #{i + 1}
-                  </Badge>
-                </div>
-                <div className="grid gap-2 text-xs md:grid-cols-4">
-                  <div className="rounded bg-slate-900/40 p-2">
-                    <p className="text-[10px] text-slate-500">Original Result</p>
-                    <p className="font-medium text-slate-300">{c.status}</p>
-                  </div>
-                  <div className="rounded bg-slate-900/40 p-2">
-                    <p className="text-[10px] text-slate-500">Replay Result</p>
-                    <p className="font-medium text-emerald-300">{c.status}</p>
-                  </div>
-                  <div className="rounded bg-slate-900/40 p-2">
-                    <p className="text-[10px] text-slate-500">Rule Version</p>
-                    <p className="font-mono text-slate-300">v2027.03.15</p>
-                  </div>
-                  <div className="rounded bg-slate-900/40 p-2">
-                    <p className="text-[10px] text-slate-500">Drift</p>
-                    <p className="font-medium text-emerald-300">0.000%</p>
-                  </div>
-                </div>
-              </div>
-            ))}
+        <div className="glass-depth overflow-hidden rounded-xl border border-line/60">
+          <div className="sticky top-0 z-10 bg-ink-soft/80 backdrop-blur-sm">
+            <Table aria-label="Historical case replay execution log">
+              <caption className="sr-only">
+                Historical case replay execution log
+              </caption>
+              <TableHeader>
+                <TableRow>
+                  <TableHead scope="col">Replay</TableHead>
+                  <TableHead scope="col">Case</TableHead>
+                  <TableHead scope="col">Scenario</TableHead>
+                  <TableHead scope="col" className="text-right">
+                    Sim Time
+                  </TableHead>
+                  <TableHead scope="col" className="text-right">
+                    Peak NAV at Risk
+                  </TableHead>
+                  <TableHead scope="col">Result</TableHead>
+                  <TableHead scope="col">Replayed At</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {DEMO_REPLAYS.map((r) => {
+                  const Icon = r.passed ? CheckCircle2 : PlayCircle;
+                  return (
+                    <TableRow key={r.id}>
+                      <TableCell className="font-mono text-xs text-gold">
+                        {r.id}
+                      </TableCell>
+                      <TableCell className="font-mono text-xs text-fg-muted">
+                        {r.caseRef}
+                      </TableCell>
+                      <TableCell>
+                        <p className="max-w-[28rem] truncate text-xs text-foreground">
+                          {r.scenario}
+                        </p>
+                        <p className="mt-0.5 max-w-[28rem] truncate text-[11px] text-fg-muted">
+                          {r.notes}
+                        </p>
+                      </TableCell>
+                      <TableCell className="text-right font-mono text-xs text-foreground">
+                        {r.simMs}ms
+                      </TableCell>
+                      <TableCell className="text-right font-mono text-xs text-foreground">
+                        {r.peakNavAtRisk > 0
+                          ? `$${r.peakNavAtRisk.toLocaleString("en-US")}`
+                          : "—"}
+                      </TableCell>
+                      <TableCell>
+                        <span
+                          className={cn(
+                            "inline-flex items-center gap-1.5 text-xs font-medium",
+                            r.passed ? "text-emerald-400" : "text-amber-400",
+                          )}
+                        >
+                          <Icon className="h-3.5 w-3.5" aria-hidden="true" />
+                          {r.passed ? "Passed" : "Failed"}
+                        </span>
+                      </TableCell>
+                      <TableCell className="font-mono text-xs text-fg-muted">
+                        {r.replayedAt}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
           </div>
-        </CardContent>
-      </Card>
+        </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Replay Methodology</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
-            {[
-              { step: "1", title: "Snapshot extraction", desc: "Extract the exact rule version, evidence bundle, and case state at original processing time." },
-              { step: "2", title: "Isolated execution", desc: "Replay the case in an isolated sandbox using the historical rule version — no current rules leak in." },
-              { step: "3", title: "Result comparison", desc: "Compare replay output to original output. Any difference is flagged as drift." },
-              { step: "4", title: "Provenance chain", desc: "Both original and replay results are signed and stored. The chain proves reproducibility." },
-            ].map(s => (
-              <div key={s.step} className="flex items-start gap-3 rounded-lg border border-slate-700/50 bg-slate-800/30 p-3">
-                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-amber-500/40 bg-amber-950/30 text-xs font-bold text-amber-300">{s.step}</div>
-                <div>
-                  <p className="text-sm font-medium text-white">{s.title}</p>
-                  <p className="text-xs text-slate-400">{s.desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+        <p className="text-xs text-fg-muted">
+          <CountUp value={DEMO_REPLAYS.length} /> replays ·{" "}
+          <CountUp value={PASSED} /> passed ·{" "}
+          <CountUp value={DEMO_REPLAYS.length - PASSED} /> flagged for treasury
+          committee review.
+        </p>
+      </section>
     </div>
   );
 }

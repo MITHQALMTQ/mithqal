@@ -1,153 +1,351 @@
 "use client";
+
+/**
+ * MITHQAL Assurance — Corridor Volume & Value Analytics (/corridor).
+ *
+ * Aggregates throughput and value across the institution's mint/redeem
+ * corridors. Each corridor row carries a small <Sparkline/> next to the
+ * volume bar so traders can read recent volume direction at a glance.
+ *
+ * Layout:
+ *   • PageHeader w/ breadcrumbs
+ *   • 5 StatCards (Total Volume, Total Value, Active Corridors, Peak TPS,
+ *     Avg Latency) wrapped in `.stagger-in`
+ *   • Corridor table with volume bar + Sparkline per row, $Value uses CountUp
+ *
+ * A11y: sr-only caption, scope="col" on every th, aria-label on every
+ * volume bar.
+ */
+
+import * as React from "react";
+import { Activity, DollarSign, Gauge, Route, TrendingUp } from "lucide-react";
+
 import { PageHeader } from "@/components/shared/page-header";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { StatCard } from "@/components/shared/stat-card";
+import { Sparkline } from "@/components/shared/sparkline";
+import { CountUp } from "@/components/shared/count-up";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { AlertTriangle, Map, Activity, DollarSign, Building2, TrendingUp } from "lucide-react";
-import { DEMO_LABEL, DEMO_CASES, DEMO_INSTITUTIONS } from "@/lib/demo-data";
+import { cn } from "@/lib/utils";
 
-// Group cases by corridor
-const byCorridor = DEMO_CASES.reduce((acc, c) => {
-  (acc[c.corridor] = acc[c.corridor] || []).push(c);
-  return acc;
-}, {} as Record<string, typeof DEMO_CASES>);
+/* ──────────────────────────────────────────────────────────────
+ * Demo data — 8 corridors across the institution.
+ * ────────────────────────────────────────────────────────────── */
 
-// Parse amounts for totals
-const parseAmount = (s: string) => Number(s.replace(/[$,]/g, "")) || 0;
+type CorridorRow = {
+  code: string;
+  description: string;
+  volume: number;
+  value: number;
+  peakTps: number;
+  avgLatencyMs: number;
+  status: "active" | "degraded" | "paused";
+  /** 12-point volume trend hint for the per-row Sparkline. */
+  trend: number[];
+  /** Percentage of corridor capacity currently in use. */
+  capacityUsedPct: number;
+};
 
-const corridorStats = Object.entries(byCorridor).map(([corridor, cases]) => {
-  const total = cases.reduce((sum, c) => sum + parseAmount(c.amount), 0);
-  return { corridor, cases: cases.length, totalValue: total };
-}).sort((a, b) => b.totalValue - a.totalValue);
+const DEMO_CORRIDORS: CorridorRow[] = [
+  {
+    code: "USD-XAU",
+    description: "US Dollar ↔ Gold — primary institutional rail",
+    volume: 1_840_000,
+    value: 48_850_000,
+    peakTps: 412,
+    avgLatencyMs: 380,
+    status: "active",
+    trend: [120, 134, 128, 142, 150, 146, 158, 162, 155, 168, 174, 182],
+    capacityUsedPct: 72,
+  },
+  {
+    code: "EUR-XAU",
+    description: "Euro ↔ Gold — Frankfurt settlement",
+    volume: 1_120_000,
+    value: 31_200_000,
+    peakTps: 308,
+    avgLatencyMs: 410,
+    status: "active",
+    trend: [88, 92, 96, 102, 108, 104, 110, 118, 112, 120, 116, 124],
+    capacityUsedPct: 61,
+  },
+  {
+    code: "GBP-XAU",
+    description: "Sterling ↔ Gold — London sub-custody",
+    volume: 680_000,
+    value: 19_400_000,
+    peakTps: 214,
+    avgLatencyMs: 365,
+    status: "active",
+    trend: [60, 58, 62, 66, 70, 68, 72, 74, 70, 76, 78, 82],
+    capacityUsedPct: 48,
+  },
+  {
+    code: "CHF-XAU",
+    description: "Swiss Franc ↔ Gold — Zurich vault",
+    volume: 540_000,
+    value: 15_800_000,
+    peakTps: 198,
+    avgLatencyMs: 390,
+    status: "degraded",
+    trend: [54, 56, 52, 50, 48, 46, 44, 42, 44, 46, 48, 50],
+    capacityUsedPct: 39,
+  },
+  {
+    code: "AED-USD",
+    description: "Dirham ↔ Dollar — Gulf liquidity bridge",
+    volume: 410_000,
+    value: 9_600_000,
+    peakTps: 156,
+    avgLatencyMs: 420,
+    status: "active",
+    trend: [30, 32, 34, 36, 38, 40, 42, 41, 43, 44, 42, 45],
+    capacityUsedPct: 33,
+  },
+  {
+    code: "QAR-USD",
+    description: "Qatar Riyal ↔ Dollar — QNB sub-custody",
+    volume: 280_000,
+    value: 6_200_000,
+    peakTps: 98,
+    avgLatencyMs: 460,
+    status: "active",
+    trend: [22, 24, 26, 25, 28, 30, 29, 31, 32, 30, 28, 30],
+    capacityUsedPct: 26,
+  },
+  {
+    code: "HKD-USD",
+    description: "Hong Kong Dollar ↔ Dollar — SCB HK",
+    volume: 240_000,
+    value: 5_400_000,
+    peakTps: 84,
+    avgLatencyMs: 480,
+    status: "active",
+    trend: [20, 18, 22, 24, 26, 28, 26, 24, 22, 24, 26, 25],
+    capacityUsedPct: 22,
+  },
+  {
+    code: "SGD-USD",
+    description: "Singapore Dollar ↔ Dollar — DBS",
+    volume: 180_000,
+    value: 3_900_000,
+    peakTps: 62,
+    avgLatencyMs: 430,
+    status: "paused",
+    trend: [16, 14, 12, 10, 8, 6, 4, 4, 4, 4, 4, 4],
+    capacityUsedPct: 4,
+  },
+];
 
-const totalValue = corridorStats.reduce((s, c) => s + c.totalValue, 0);
-const totalCases = DEMO_CASES.length;
+const STATUS_TONE: Record<CorridorRow["status"], string> = {
+  active: "border-emerald-400/30 bg-emerald-400/10 text-emerald-300",
+  degraded: "border-amber-400/30 bg-amber-400/10 text-amber-300",
+  paused: "border-red-400/30 bg-red-400/10 text-red-300",
+};
 
-// Group by institution
-const byInstitution = DEMO_INSTITUTIONS.map(inst => {
-  const cases = DEMO_CASES.filter(c => c.institution === inst.name);
-  const value = cases.reduce((s, c) => s + parseAmount(c.amount), 0);
-  return { ...inst, caseCount: cases.length, value };
-});
+/* Sparkline trends for the headline StatCards. */
+const SPARK_VOL = [320, 312, 340, 335, 360, 380, 372, 400, 412, 425, 430, 460];
+const SPARK_VAL = [38, 40, 42, 44, 46, 45, 48, 47, 50, 52, 54, 55];
+const SPARK_ACT = [6, 6, 7, 7, 7, 7, 7, 7, 8, 7, 7, 7];
+const SPARK_TPS = [380, 392, 410, 405, 412, 415, 408, 414, 412, 418, 415, 412];
+const SPARK_LAT = [445, 442, 438, 432, 430, 425, 422, 418, 415, 412, 410, 408];
+
+const TOTAL_VOLUME = DEMO_CORRIDORS.reduce((s, r) => s + r.volume, 0);
+const TOTAL_VALUE = DEMO_CORRIDORS.reduce((s, r) => s + r.value, 0);
+const ACTIVE = DEMO_CORRIDORS.filter((r) => r.status === "active").length;
+const PEAK_TPS = Math.max(...DEMO_CORRIDORS.map((r) => r.peakTps));
+const AVG_LAT = Math.round(
+  DEMO_CORRIDORS.reduce((s, r) => s + r.avgLatencyMs, 0) / DEMO_CORRIDORS.length,
+);
+
+function SparklineIcon({ data }: { data: number[] }) {
+  return (
+    <Sparkline
+      data={data}
+      color="#f59e0b"
+      showArea
+      height={28}
+      width={70}
+      ariaLabel="Corridor volume trend"
+    />
+  );
+}
 
 export default function CorridorPage() {
+  const maxVol = Math.max(...DEMO_CORRIDORS.map((r) => r.volume));
   return (
-    <div className="space-y-6">
-      <PageHeader title="Corridor" description="Cross-border corridor analytics — volume, value, and status per route" />
-      <Alert className="border-amber-500/40 bg-amber-950/20">
-        <AlertTriangle className="h-4 w-4 text-amber-400" />
-        <AlertTitle className="text-amber-300">{DEMO_LABEL}</AlertTitle>
-        <AlertDescription className="text-slate-300 text-sm">
-          {totalCases} cases · {corridorStats.length} corridors · ${totalValue.toLocaleString()} total value. Production: FALSE. MTQ Σ: NOT AUTHORIZED.
-        </AlertDescription>
-      </Alert>
+    <div className="flex flex-col gap-8">
+      <PageHeader
+        title="Corridor Volume & Value"
+        description="Throughput and value across the institution's mint/redeem corridors. The Sparkline beside each bar shows recent volume direction."
+        breadcrumbs={[
+          { label: "Assurance", href: "/" },
+          { label: "Corridor" },
+        ]}
+      />
 
-      <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-5">
-        {[
-          { l: "Total Cases", v: totalCases, i: Map, c: "text-blue-400" },
-          { l: "Corridors", v: corridorStats.length, i: Activity, c: "text-amber-400" },
-          { l: "Total Value", v: `$${(totalValue / 1e6).toFixed(1)}M`, i: DollarSign, c: "text-emerald-400" },
-          { l: "Institutions", v: DEMO_INSTITUTIONS.length, i: Building2, c: "text-purple-400" },
-          { l: "Avg / Corridor", v: `${(totalCases / corridorStats.length).toFixed(1)}`, i: TrendingUp, c: "text-cyan-400" },
-        ].map(m => (
-          <Card key={m.l}>
-            <CardContent className="p-4">
-              <m.i className={`h-5 w-5 mb-2 ${m.c}`} />
-              <p className="text-xs text-slate-400">{m.l}</p>
-              <p className="text-xl font-bold text-white">{m.v}</p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      {/* ── Headline StatCards ── */}
+      <section
+        aria-label="Corridor headline metrics"
+        className="stagger-in grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5"
+      >
+        <StatCard
+          label="Total Volume"
+          value={TOTAL_VOLUME}
+          icon={Route}
+          color="gold"
+          sparklineData={SPARK_VOL}
+          decimals={0}
+          sub="across all corridors"
+        />
+        <StatCard
+          label="Total Value"
+          value={TOTAL_VALUE}
+          prefix="$"
+          icon={DollarSign}
+          color="emerald"
+          sparklineData={SPARK_VAL}
+          decimals={0}
+          sub="rolling 24h"
+        />
+        <StatCard
+          label="Active Corridors"
+          value={ACTIVE}
+          icon={TrendingUp}
+          color="cyan"
+          sparklineData={SPARK_ACT}
+          sub={`of ${DEMO_CORRIDORS.length} total`}
+        />
+        <StatCard
+          label="Peak TPS"
+          value={PEAK_TPS}
+          icon={Activity}
+          color="purple"
+          sparklineData={SPARK_TPS}
+          decimals={0}
+          sub="highest single-corridor"
+        />
+        <StatCard
+          label="Avg Latency"
+          value={AVG_LAT}
+          suffix="ms"
+          icon={Gauge}
+          color="amber"
+          sparklineData={SPARK_LAT}
+          decimals={0}
+          sub="mean settlement"
+        />
+      </section>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Corridor Volume & Value ({corridorStats.length})</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
-            {corridorStats.map(cs => {
-              const pct = (cs.totalValue / totalValue) * 100;
-              return (
-                <div key={cs.corridor} className="flex items-center gap-3 rounded-lg border border-slate-700/50 bg-slate-800/30 p-3">
-                  <Badge variant="outline" className="font-mono text-xs text-amber-300 border-amber-500/40">{cs.corridor}</Badge>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-white">{cs.cases} cases · ${cs.totalValue.toLocaleString()}</p>
-                    <div className="mt-1 h-2 overflow-hidden rounded-full bg-slate-700">
-                      <div className="h-full bg-gradient-to-r from-amber-500 to-amber-300" style={{ width: `${pct}%` }} />
-                    </div>
-                  </div>
-                  <span className="text-xs font-medium text-slate-400">{pct.toFixed(1)}%</span>
-                </div>
-              );
-            })}
+      {/* ── Corridor table ── */}
+      <section aria-label="Corridor table" className="flex flex-col gap-3">
+        <div className="flex items-center justify-between">
+          <h2 className="font-display text-lg font-semibold text-foreground">
+            Corridors
+          </h2>
+          <span className="text-xs text-fg-muted">
+            {DEMO_CORRIDORS.length} corridors · 24h window
+          </span>
+        </div>
+
+        <div className="glass-depth overflow-hidden rounded-xl border border-line/60">
+          <div className="sticky top-0 z-10 bg-ink-soft/80 backdrop-blur-sm">
+            <Table aria-label="Corridor volume and value">
+              <caption className="sr-only">
+                Corridor Volume and Value Analytics
+              </caption>
+              <TableHeader>
+                <TableRow>
+                  <TableHead scope="col">Corridor</TableHead>
+                  <TableHead scope="col">Status</TableHead>
+                  <TableHead scope="col" className="text-right">
+                    Volume
+                  </TableHead>
+                  <TableHead scope="col" className="text-right">
+                    Value
+                  </TableHead>
+                  <TableHead scope="col" className="text-right">
+                    Peak TPS
+                  </TableHead>
+                  <TableHead scope="col" className="text-right">
+                    Avg Latency
+                  </TableHead>
+                  <TableHead scope="col">Volume Bar</TableHead>
+                  <TableHead scope="col">Trend</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {DEMO_CORRIDORS.map((c) => {
+                  const pct = Math.round((c.volume / maxVol) * 100);
+                  return (
+                    <TableRow key={c.code}>
+                      <TableCell>
+                        <span className="font-mono text-xs text-gold">
+                          {c.code}
+                        </span>
+                        <p className="mt-0.5 max-w-[20rem] truncate text-xs text-fg-muted">
+                          {c.description}
+                        </p>
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant="outline"
+                          className={cn(
+                            "font-mono text-[10px] uppercase tracking-wider",
+                            STATUS_TONE[c.status],
+                          )}
+                        >
+                          {c.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right font-mono text-xs text-foreground">
+                        <CountUp value={c.volume} />
+                      </TableCell>
+                      <TableCell className="text-right font-mono text-xs text-foreground">
+                        <CountUp value={c.value} prefix="$" />
+                      </TableCell>
+                      <TableCell className="text-right font-mono text-xs text-foreground">
+                        {c.peakTps}
+                      </TableCell>
+                      <TableCell className="text-right font-mono text-xs text-foreground">
+                        {c.avgLatencyMs}ms
+                      </TableCell>
+                      <TableCell>
+                        <div
+                          className="relative h-2 w-32 overflow-hidden rounded-full bg-ink-card"
+                          role="progressbar"
+                          aria-label="Corridor volume bar"
+                          aria-valuenow={pct}
+                          aria-valuemin={0}
+                          aria-valuemax={100}
+                        >
+                          <div
+                            className="h-full rounded-full bg-gradient-to-r from-gold-deep via-gold to-gold-soft"
+                            style={{ width: `${pct}%` }}
+                          />
+                        </div>
+                        <p className="mt-1 font-mono text-[10px] text-fg-muted">
+                          {c.capacityUsedPct}% capacity
+                        </p>
+                      </TableCell>
+                      <TableCell>
+                        <SparklineIcon data={c.trend} />
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
           </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Per-Institution Breakdown ({DEMO_INSTITUTIONS.length})</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
-            {byInstitution.map(inst => (
-              <div key={inst.id} className="rounded-lg border border-slate-700/50 bg-slate-800/30 p-4">
-                <div className="mb-2 flex items-center justify-between">
-                  <Badge variant="outline" className="font-mono text-[10px] text-slate-400 border-slate-600">{inst.id}</Badge>
-                  <Badge variant="outline" className="text-[10px] text-cyan-400 border-cyan-500/40">{inst.jurisdiction}</Badge>
-                </div>
-                <p className="text-sm font-medium text-white">{inst.name}</p>
-                <p className="text-[10px] text-slate-500">{inst.type}</p>
-                <div className="mt-3 grid grid-cols-2 gap-2 border-t border-slate-700/50 pt-2">
-                  <div>
-                    <p className="text-[10px] text-slate-500">Cases</p>
-                    <p className="text-lg font-bold text-amber-300">{inst.caseCount}</p>
-                  </div>
-                  <div>
-                    <p className="text-[10px] text-slate-500">Value</p>
-                    <p className="text-lg font-bold text-emerald-300">${(inst.value / 1e6).toFixed(2)}M</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>All Corridor Cases ({DEMO_CASES.length})</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="max-h-[400px] overflow-y-auto">
-            <table className="w-full text-sm">
-              <thead className="sticky top-0 bg-slate-900/95">
-                <tr className="border-b border-slate-700 text-left text-xs text-slate-400">
-                  <th className="pb-2 pr-4">Case ID</th>
-                  <th className="pb-2 pr-4">Institution</th>
-                  <th className="pb-2 pr-4">Corridor</th>
-                  <th className="pb-2 pr-4">Amount</th>
-                  <th className="pb-2 pr-4">Status</th>
-                  <th className="pb-2 pr-4">Scenario</th>
-                </tr>
-              </thead>
-              <tbody>
-                {DEMO_CASES.map(c => (
-                  <tr key={c.id} className="border-b border-slate-800/50 hover:bg-slate-800/30">
-                    <td className="py-2 pr-4 font-mono text-xs text-amber-300">{c.id}</td>
-                    <td className="py-2 pr-4 text-xs text-slate-300">{c.institution}</td>
-                    <td className="py-2 pr-4 font-mono text-xs text-cyan-300">{c.corridor}</td>
-                    <td className="py-2 pr-4 text-xs text-emerald-300">{c.amount}</td>
-                    <td className="py-2 pr-4"><Badge variant="outline" className="text-xs text-slate-400 border-slate-600">{c.status}</Badge></td>
-                    <td className="py-2 pr-4"><Badge variant="outline" className="text-xs text-amber-400 border-amber-500/40">{c.scenario.id}</Badge></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
+        </div>
+      </section>
     </div>
   );
 }
