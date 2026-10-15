@@ -1,7 +1,26 @@
 "use client";
-import { LayoutDashboard, Clock, FileCheck, AlertTriangle, GitCompare, RotateCcw, Map, Settings, FlaskConical } from "lucide-react";
+import { useState } from "react";
+import {
+  LayoutDashboard,
+  Clock,
+  FileCheck,
+  AlertTriangle,
+  GitCompare,
+  RotateCcw,
+  Map,
+  Settings,
+  FlaskConical,
+  Menu,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
 
 const nav = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -15,7 +34,104 @@ const nav = [
   { name: "Settings", href: "/settings", icon: Settings },
 ];
 
+/**
+ * Desktop sidebar — visible at `md:` and above. Byte-identical to the
+ * original implementation (kept exactly as-is per BUILD-1 task contract).
+ */
 export function Sidebar() {
   const p = usePathname();
-  return (<nav className="w-60 shrink-0 border-r border-slate-800 bg-slate-900/50 p-3 hidden md:block" aria-label="Sidebar"><ul className="space-y-1">{nav.map(i => { const Icon = i.icon; const a = p === i.href; return (<li key={i.name}><Link href={i.href} className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors ${a ? "bg-amber-500/10 text-amber-300" : "text-slate-400 hover:bg-slate-800/50 hover:text-white"}`}><Icon className="h-4 w-4" /><span>{i.name}</span>{i.badge && <span className="ml-auto rounded-full bg-red-500/20 px-2 py-0.5 text-xs text-red-300">{i.badge}</span>}</Link></li>); })}</ul></nav>);
+  return (
+    <nav
+      className="w-60 shrink-0 border-r border-slate-800 bg-slate-900/50 p-3 hidden md:block"
+      aria-label="Sidebar"
+    >
+      <ul className="space-y-1">
+        {nav.map((i) => {
+          const Icon = i.icon;
+          const a = p === i.href;
+          return (
+            <li key={i.name}>
+              <Link
+                href={i.href}
+                className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors ${a ? "bg-amber-500/10 text-amber-300" : "text-slate-400 hover:bg-slate-800/50 hover:text-white"}`}
+              >
+                <Icon className="h-4 w-4" />
+                <span>{i.name}</span>
+                {i.badge && (
+                  <span className="ml-auto rounded-full bg-red-500/20 px-2 py-0.5 text-xs text-red-300">
+                    {i.badge}
+                  </span>
+                )}
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+    </nav>
+  );
+}
+
+/**
+ * MobileNav — mobile-only fallback for the desktop Sidebar.
+ *
+ * The dashboard Sidebar uses `hidden md:block`, so on screens below `md`
+ * (768px) it's invisible and mobile users had no way to navigate between
+ * dashboard tabs. This component renders a hamburger button (visible only
+ * below `md`) that opens a left-sliding Sheet containing the same nav items.
+ *
+ * The Sheet closes itself when a nav link is tapped (via `onOpenChange` +
+ * per-link `onClick`) so navigating doesn't leave a stale sheet open over
+ * the freshly-rendered page. The desktop sidebar is unaffected.
+ */
+export function MobileNav() {
+  const pathname = usePathname();
+  const [open, setOpen] = useState(false);
+
+  return (
+    <Sheet open={open} onOpenChange={setOpen}>
+      <SheetTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="md:hidden text-amber-300 hover:bg-amber-500/10 hover:text-amber-200"
+          aria-label="Open navigation menu"
+        >
+          <Menu className="h-5 w-5" />
+          <span className="sr-only">Open navigation menu</span>
+        </Button>
+      </SheetTrigger>
+      <SheetContent
+        side="left"
+        className="w-72 border-r border-slate-800 bg-slate-900/95 p-3"
+      >
+        <SheetTitle className="sr-only">Dashboard navigation</SheetTitle>
+        <nav aria-label="Mobile sidebar">
+          <ul className="space-y-1">
+            {nav.map((i) => {
+              const Icon = i.icon;
+              const a = pathname === i.href;
+              return (
+                <li key={i.name}>
+                  <Link
+                    href={i.href}
+                    onClick={() => setOpen(false)}
+                    aria-current={a ? "page" : undefined}
+                    className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors ${a ? "bg-amber-500/10 text-amber-300" : "text-slate-400 hover:bg-slate-800/50 hover:text-white"}`}
+                  >
+                    <Icon className="h-4 w-4" />
+                    <span>{i.name}</span>
+                    {i.badge && (
+                      <span className="ml-auto rounded-full bg-red-500/20 px-2 py-0.5 text-xs text-red-300">
+                        {i.badge}
+                      </span>
+                    )}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
+      </SheetContent>
+    </Sheet>
+  );
 }

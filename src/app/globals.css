@@ -289,6 +289,24 @@ html {
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(201, 162, 39, 0.1);
 }
 
+/* ===== Glass-gold variant =====
+ * Gold-tinted counterpart of `.glass` used for emphasis surfaces (the §54
+ * finality-invariant banner, the corridor summary cards, the OS-page static
+ * reminder, etc.). Same blur+saturate pipeline as `.glass` but with a gold
+ * gradient background and gold-tinted border. Built on the `--gold` CSS
+ * variable via `color-mix()` so it tracks the active theme (dark / light /
+ * cyber) automatically. */
+.glass-gold {
+  background: linear-gradient(
+    135deg,
+    color-mix(in oklch, var(--gold) 8%, transparent),
+    color-mix(in oklch, var(--gold) 3%, transparent)
+  );
+  border: 1px solid color-mix(in oklch, var(--gold) 25%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
 /* ===== Glow effects =====
  * UI-OVERHAUL-1: .glow-gold now has a transition + :hover state that
  * intensifies the halo on pointer-hover. Base halo is unchanged so all
