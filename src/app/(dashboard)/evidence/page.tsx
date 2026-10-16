@@ -1,4 +1,5 @@
-"use client";
+"use client"
+import { Suspense } from "react";
 
 /**
  * MITHQAL Assurance — Evidence Bundles with Provenance (/evidence) — LIVE.
@@ -157,7 +158,7 @@ function buildBundles(events: DemoEvent[]): Bundle[] {
   return bundles;
 }
 
-export default function EvidencePage() {
+function EvidenceContent() {
   const searchParams = useSearchParams();
   const caseId = searchParams.get("caseId") || undefined;
 
@@ -490,3 +491,12 @@ export default function EvidencePage() {
     </div>
   );
 }
+
+export default function EvidencePage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-slate-400">Loading…</div>}>
+      <EvidenceContent />
+    </Suspense>
+  );
+}
+

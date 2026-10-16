@@ -1,4 +1,5 @@
-"use client";
+"use client"
+import { Suspense } from "react";
 
 /**
  * MITHQAL Assurance — Dashboard (overview) — LIVE.
@@ -166,7 +167,7 @@ function LiveIndicator() {
  * Page
  * ────────────────────────────────────────────────────────────── */
 
-export default function DashboardPage() {
+function DashboardContent() {
   const searchParams = useSearchParams();
   const corridorParam = searchParams.get("corridor") || undefined;
 
@@ -653,3 +654,12 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+export default function DashboardPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-slate-400">Loading…</div>}>
+      <DashboardContent />
+    </Suspense>
+  );
+}
+

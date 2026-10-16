@@ -1,4 +1,5 @@
-"use client";
+"use client"
+import { Suspense } from "react";
 
 /**
  * MITHQAL Assurance — Cross-Source Reconciliation (/reconciliation).  [LIVE]
@@ -97,7 +98,7 @@ function isDrifted(c: DemoCase): boolean {
   return c.status !== "RESOLVED" && c.status !== "CLOSED";
 }
 
-export default function ReconciliationPage() {
+function ReconciliationContent() {
   // Read optional `corridor` URL filter — lets other tabs deep-link into
   // this view pre-filtered (e.g. /reconciliation?corridor=AED→INR).
   const searchParams = useSearchParams();
@@ -385,3 +386,12 @@ export default function ReconciliationPage() {
     </div>
   );
 }
+
+export default function ReconciliationPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-slate-400">Loading…</div>}>
+      <ReconciliationContent />
+    </Suspense>
+  );
+}
+

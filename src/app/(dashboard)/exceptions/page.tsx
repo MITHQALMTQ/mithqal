@@ -1,4 +1,5 @@
-"use client";
+"use client"
+import { Suspense } from "react";
 
 /**
  * MITHQAL Assurance — Exception Management Board (/exceptions) — LIVE.
@@ -144,7 +145,7 @@ interface FilterChip {
   active: boolean;
 }
 
-export default function ExceptionsPage() {
+function ExceptionsContent() {
   const searchParams = useSearchParams();
   const severityParam = searchParams.get("severity") || undefined;
   const statusParam = searchParams.get("status") || undefined;
@@ -490,3 +491,12 @@ export default function ExceptionsPage() {
     </div>
   );
 }
+
+export default function ExceptionsPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-slate-400">Loading…</div>}>
+      <ExceptionsContent />
+    </Suspense>
+  );
+}
+

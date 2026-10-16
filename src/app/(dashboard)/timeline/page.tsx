@@ -1,4 +1,5 @@
-"use client";
+"use client"
+import { Suspense } from "react";
 
 /**
  * MITHQAL Assurance — Evidence Timeline (/timeline) — LIVE.
@@ -109,7 +110,7 @@ function LiveIndicator() {
   );
 }
 
-export default function TimelinePage() {
+function TimelineContent() {
   const searchParams = useSearchParams();
   const caseId = searchParams.get("caseId") || undefined;
 
@@ -461,3 +462,12 @@ export default function TimelinePage() {
     </div>
   );
 }
+
+export default function TimelinePage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-slate-400">Loading…</div>}>
+      <TimelineContent />
+    </Suspense>
+  );
+}
+

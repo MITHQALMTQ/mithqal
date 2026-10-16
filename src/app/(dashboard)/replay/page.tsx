@@ -1,4 +1,5 @@
-"use client";
+"use client"
+import { Suspense } from "react";
 
 /**
  * MITHQAL Assurance — Historical Case Replay (/replay).  [LIVE]
@@ -105,7 +106,7 @@ function hashString(s: string): number {
   return Math.abs(h);
 }
 
-export default function ReplayPage() {
+function ReplayContent() {
   // Read optional `corridor` URL filter — lets other tabs deep-link into
   // this view pre-filtered (e.g. /replay?corridor=AED→INR).
   const searchParams = useSearchParams();
@@ -428,3 +429,12 @@ export default function ReplayPage() {
     </div>
   );
 }
+
+export default function ReplayPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-slate-400">Loading…</div>}>
+      <ReplayContent />
+    </Suspense>
+  );
+}
+
