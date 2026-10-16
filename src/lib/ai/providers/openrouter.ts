@@ -13,10 +13,10 @@ import type { AIProvider, AIRequest, AIResponse } from "./types";
 const OPENROUTER_ENDPOINT = "https://openrouter.ai/api/v1/chat/completions";
 
 const OPENROUTER_MODELS = [
-  "anthropic/claude-3.5-sonnet",
+  "meta-llama/llama-3.3-70b-instruct",
   "openai/gpt-4o-mini",
   "google/gemini-flash-1.5",
-  "meta-llama/llama-3.3-70b-instruct",
+  "anthropic/claude-3.5-sonnet",
 ] as const;
 
 const DEFAULT_MODEL = OPENROUTER_MODELS[0];
