@@ -61,7 +61,7 @@ export default function HomePage() {
       </div>
 
       {/* Hero */}
-      <section className="relative flex min-h-[45vh] flex-col items-center justify-center px-6 text-center overflow-hidden">
+      <section className="relative flex flex-col items-center justify-center px-6 py-10 text-center overflow-hidden">
         <div className="absolute inset-0 mesh-gradient opacity-30" />
         <div className="relative z-10 max-w-3xl">
           <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-black/40 px-4 py-1 mb-6">
