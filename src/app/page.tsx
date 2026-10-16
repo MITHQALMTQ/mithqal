@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import {
   ArrowRight, ShieldCheck, FileCheck, AlertTriangle,
@@ -15,6 +15,7 @@ interface DemoCase {
 
 export default function HomePage() {
   const [tab, setTab] = useState<"demo" | "dashboard">("demo");
+  const contentRef = useRef<HTMLDivElement>(null);
   const [cases, setCases] = useState<DemoCase[]>([]);
   const [loading, setLoading] = useState(true);
   const [aiLoading, setAiLoading] = useState(false);
@@ -60,7 +61,7 @@ export default function HomePage() {
       </div>
 
       {/* Hero */}
-      <section className="relative flex min-h-[70vh] flex-col items-center justify-center px-6 text-center overflow-hidden">
+      <section className="relative flex min-h-[45vh] flex-col items-center justify-center px-6 text-center overflow-hidden">
         <div className="absolute inset-0 mesh-gradient opacity-30" />
         <div className="relative z-10 max-w-3xl">
           <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-black/40 px-4 py-1 mb-6">
@@ -79,7 +80,7 @@ export default function HomePage() {
           {/* TWO TABS */}
           <div className="inline-flex rounded-full border border-white/10 bg-black/40 p-1 backdrop-blur">
             <button
-              onClick={() => setTab("demo")}
+              onClick={() => { setTab("demo"); setTimeout(() => contentRef.current?.scrollIntoView({behavior:"smooth",block:"start"}), 100); }
               className={`rounded-full px-6 py-2.5 text-sm font-semibold transition ${
                 tab === "demo"
                   ? "bg-gradient-to-r from-amber-400 to-amber-200 text-[#07090e]"
@@ -89,7 +90,7 @@ export default function HomePage() {
               <Play className="mr-2 inline h-4 w-4" /> See It Work Now
             </button>
             <button
-              onClick={() => setTab("dashboard")}
+              onClick={() => { setTab("dashboard"); setTimeout(() => contentRef.current?.scrollIntoView({behavior:"smooth",block:"start"}), 100); }
               className={`rounded-full px-6 py-2.5 text-sm font-semibold transition ${
                 tab === "dashboard"
                   ? "bg-gradient-to-r from-amber-400 to-amber-200 text-[#07090e]"
@@ -103,7 +104,7 @@ export default function HomePage() {
       </section>
 
       {/* TAB CONTENT */}
-      <section className="px-6 pb-20">
+      <section ref={contentRef} className="px-6 pb-20 scroll-mt-4">
         <div className="mx-auto max-w-5xl">
 
           {/* ─── TAB 1: SEE IT WORK (live demo) ─── */}
@@ -202,7 +203,7 @@ export default function HomePage() {
 
               {/* Switch to dashboard tab */}
               <div className="text-center">
-                <button onClick={() => setTab("dashboard")} className="text-xs text-amber-300 hover:underline">
+                <button onClick={() => { setTab("dashboard"); setTimeout(() => contentRef.current?.scrollIntoView({behavior:"smooth",block:"start"}), 100); } className="text-xs text-amber-300 hover:underline">
                   See the full dashboard →
                 </button>
               </div>
