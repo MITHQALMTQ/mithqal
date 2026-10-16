@@ -57,6 +57,7 @@ const NAV_SECTIONS: NavSection[] = [
     label: "Overview",
     items: [
       { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { name: "Demo Pilot", href: "/demo-pilot", icon: Play },
       { name: "Timeline", href: "/timeline", icon: Clock },
     ],
   },
