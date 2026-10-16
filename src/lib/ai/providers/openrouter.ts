@@ -50,7 +50,7 @@ export const openrouterProvider: AIProvider = {
       model,
       messages: req.messages.map((m) => ({ role: m.role, content: m.content })),
       temperature: req.temperature ?? 0.4,
-      max_tokens: req.maxTokens ?? 1024,
+      max_tokens: req.maxTokens ?? 100,
     };
 
     let resp: Response;
