@@ -10,6 +10,7 @@ import {
   FlaskConical,
   History,
   LayoutDashboard,
+  Play,
   Route,
   Scale,
   ScrollText,
