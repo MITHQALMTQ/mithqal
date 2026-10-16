@@ -20,4 +20,3 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     </html>
   );
 }
-<!-- P88: trigger rebuild to pick up Vercel env vars -->
