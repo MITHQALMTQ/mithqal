@@ -1,0 +1,7 @@
+test-providers.js
+audit-final.sh
+e2e-audit.sh
+phase-e-verify.sh
+screenshot-all.sh
+fix-and-verify.sh
+verify-tabs.sh
