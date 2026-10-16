@@ -1,21 +1,15 @@
 import { NextResponse } from "next/server";
-import ZAI from "z-ai-web-dev-sdk";
+import { runConsensus } from "@/lib/ai";
 
 /**
- * AI Exception Explanation endpoint (PHASE1D).
+ * AI Exception Explanation endpoint — uses multi-provider consensus.
  *
  *   POST /api/v1/explain   → Generate an AI-assisted root-cause analysis
  *                            for a payment validation exception.
  *   GET  /api/v1/explain   → Health-check stub.
  *
- * Backend-only — the z-ai-web-dev-sdk MUST stay server-side (runtime = "nodejs").
- * No caching (force-dynamic) so each request gets a fresh analysis.
- *
- * Trust model:
- *   - Validates required fields (code, severity).
- *   - Returns a structured JSON envelope: { ok, exceptionId, explanation, ... }.
- *   - Always includes the AI disclaimer (assisted analysis, not a diagnosis).
- *   - On error, returns a 500 with the disclaimer preserved.
+ * Uses the 5-provider consensus system (GROQ + OpenRouter + NVIDIA + Gemini + HuggingFace).
+ * If all providers fail, returns 503 with all error details.
  */
 
 export const dynamic = "force-dynamic";
@@ -30,16 +24,6 @@ interface ExplainRequest {
   owner?: string;
   reason?: string;
   action?: string;
-}
-
-interface ExplainResponse {
-  ok: boolean;
-  exceptionId?: string;
-  explanation?: string;
-  model?: string;
-  timestamp?: string;
-  disclaimer: string;
-  error?: string;
 }
 
 const DISCLAIMER =
@@ -83,10 +67,7 @@ Provide:
 (Your confidence level in this analysis: LOW/MEDIUM/HIGH and why)`;
 }
 
-function errorResponse(
-  message: string,
-  status = 500,
-): NextResponse<ExplainResponse> {
+function errorResponse(message: string, status = 500) {
   return NextResponse.json(
     {
       ok: false,
@@ -97,7 +78,7 @@ function errorResponse(
   );
 }
 
-export async function POST(request: Request): Promise<NextResponse<ExplainResponse>> {
+export async function POST(request: Request) {
   let body: ExplainRequest;
   try {
     body = (await request.json()) as ExplainRequest;
@@ -105,15 +86,10 @@ export async function POST(request: Request): Promise<NextResponse<ExplainRespon
     return errorResponse("Invalid JSON body.", 400);
   }
 
-  // Validate required fields
   if (!body.code || !body.severity) {
-    return errorResponse(
-      "Missing required fields: code, severity",
-      400,
-    );
+    return errorResponse("Missing required fields: code, severity", 400);
   }
 
-  // Coerce to required-shaped object for the prompt builder
   const payload = {
     exceptionId: body.exceptionId ?? "UNKNOWN",
     caseId: body.caseId ?? "UNKNOWN",
@@ -126,52 +102,57 @@ export async function POST(request: Request): Promise<NextResponse<ExplainRespon
   };
 
   try {
-    const zai = await ZAI.create();
-    const response = await zai.chat.completions.create({
+    const result = await runConsensus({
       messages: [
         { role: "system", content: SYSTEM_PROMPT },
         { role: "user", content: buildUserPrompt(payload) },
       ],
-      temperature: 0.4,
-      max_tokens: 800,
     });
 
-    // Defensive extraction — the SDK's return shape is `any`
-    const explanation: string | undefined =
-      response?.choices?.[0]?.message?.content ??
-      response?.choices?.[0]?.delta?.content ??
-      undefined;
-
-    if (!explanation) {
-      return errorResponse(
-        "Model returned an empty response.",
-        502,
+    if (!result.consensus) {
+      const errorDetail = result.errors
+        .map((e) => `${e.provider}: ${e.error.slice(0, 100)}`)
+        .join("; ");
+      return NextResponse.json(
+        {
+          ok: false,
+          exceptionId: payload.exceptionId,
+          error: `All AI providers failed. ${errorDetail}`,
+          providers: result.providersUsed,
+          strategy: result.strategy,
+          disclaimer: "AI explanation service unavailable.",
+        },
+        { status: 503 },
       );
     }
 
-    return NextResponse.json<ExplainResponse>({
+    return NextResponse.json({
       ok: true,
       exceptionId: payload.exceptionId,
-      explanation,
-      model: "z-ai",
+      explanation: result.consensus,
+      providers: result.providersUsed,
+      strategy: result.strategy,
+      responses: result.responses.map((r) => ({
+        provider: r.provider,
+        model: r.model,
+        latencyMs: r.latencyMs,
+        content: r.content.slice(0, 200),
+      })),
       timestamp: new Date().toISOString(),
       disclaimer: DISCLAIMER,
     });
   } catch (error) {
     console.error("[api/v1/explain] error:", error);
-    const message =
-      error instanceof Error ? error.message : "Unknown error";
+    const message = error instanceof Error ? error.message : "Unknown error";
     return errorResponse(message, 500);
   }
 }
 
-// Optional: GET endpoint returns a stub for health checks
-export async function GET(): Promise<NextResponse> {
+export async function GET() {
   return NextResponse.json({
     ok: true,
     endpoint: "/api/v1/explain",
     method: "POST",
-    description:
-      "AI-powered exception explanation using z-ai-web-dev-sdk",
+    description: "AI-powered exception explanation using multi-provider consensus (GROQ + OpenRouter + NVIDIA + Gemini + HuggingFace)",
   });
 }
