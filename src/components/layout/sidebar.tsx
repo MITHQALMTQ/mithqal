@@ -75,7 +75,7 @@ const NAV_SECTIONS: NavSection[] = [
     label: "Config",
     items: [
       { name: "Corridor", href: "/corridor", icon: Route },
-      { name: "MTQ Σ Research", href: "/research", icon: FlaskConical, badge: "Σ" },
+      { name: "MTQ Σ Research", href: "/mtq-sigma", icon: FlaskConical, badge: "Σ" },
       { name: "Settings", href: "/settings", icon: Settings },
     ],
   },
