@@ -13,14 +13,3 @@
 {"ts":"2026-09-28T22:01:37Z","local_ref":"refs/tags/v25.6","local_oid":"68b2f221bf7d9fb2da877c116dc7c361527ec8af","remote_ref":"refs/tags/v25.6","remote_oid":"0000000000000000000000000000000000000000","user":"z"}
 {"ts":"2026-10-16T10:07:43Z","local_ref":"refs/tags/backup-p95-ai-working","local_oid":"a89626ed0be31b5d9e395a2c0244291dbb2ef41b","remote_ref":"refs/tags/backup-p95-ai-working","remote_oid":"0000000000000000000000000000000000000000","user":"z"}
 {"ts":"2026-10-16T10:08:11Z","local_ref":"refs/tags/backup-p95-infra-complete","local_oid":"c2dbcb22e5acfb5892197236ffecec2b8deb4a9a","remote_ref":"refs/tags/backup-p95-infra-complete","remote_oid":"0000000000000000000000000000000000000000","user":"z"}
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-{"ts":"2026-10-16T10:31:13Z","local_ref":"refs/heads/main","local_oid":"fcd11362df3422cbb53c8a544363a3a0409f6885","remote_ref":"refs/heads/main","remote_oid":"0cf49e1983495aa4774f1a720941edb0d604a3b0","user":"z"}
-{"ts":"2026-10-16T10:36:22Z","local_ref":"refs/heads/main","local_oid":"af0e020f800044dfadd41902c36077e8c1a9791f","remote_ref":"refs/heads/main","remote_oid":"fcd11362df3422cbb53c8a544363a3a0409f6885","user":"z"}
-=======
->>>>>>> Stashed changes
-{"ts":"2026-10-16T11:06:33Z","local_ref":"refs/heads/main","local_oid":"172f867b160d75d5cbb3767f4dcc5ed384327d80","remote_ref":"refs/heads/main","remote_oid":"b19386f8d4b842e5015774ab599535126ed8d9a8","user":"z"}
-=======
->>>>>>> Stashed changes
-{"ts":"2026-10-16T12:31:43Z","local_ref":"refs/heads/main","local_oid":"ee30e1e1c5fad5883b2c1c23bde797369729dd2a","remote_ref":"refs/heads/main","remote_oid":"0f320fb81c4dfffa2545c666fcecd8c4192a0bc7","user":"z"}
-{"ts":"2026-10-16T12:32:12Z","local_ref":"refs/heads/main","local_oid":"014a9ab5cb26c02d0f867c47895308c4523b35b0","remote_ref":"refs/heads/main","remote_oid":"ee30e1e1c5fad5883b2c1c23bde797369729dd2a","user":"z"}
