@@ -14,7 +14,7 @@ interface DemoCase {
 }
 
 export default function HomePage() {
-  const [tab, setTab] = useState<"demo" | "dashboard">("demo");
+  const [tab, setTab] = useState<"demo">("demo");
   const [cases, setCases] = useState<DemoCase[]>([]);
   const [loading, setLoading] = useState(true);
   const [aiLoading, setAiLoading] = useState(false);
@@ -91,18 +91,13 @@ export default function HomePage() {
             <Play className="mr-1.5 inline h-4 w-4" />
             See It Work Now
           </button>
-          <button
-            onClick={() => setTab("dashboard")}
-            className={
-              "rounded-full px-5 py-2 text-sm font-semibold transition " +
-              (tab === "dashboard"
-                ? "bg-gradient-to-r from-amber-400 to-amber-200 text-[#07090e]"
-                : "text-slate-400 hover:text-white")
-            }
+          <Link
+            href="/dashboard"
+            className="rounded-full px-5 py-2 text-sm font-semibold transition text-slate-400 hover:text-white hover:bg-white/5"
           >
             <LayoutDashboard className="mr-1.5 inline h-4 w-4" />
             Enter Dashboard
-          </button>
+          </Link>
         </div>
       </header>
 
@@ -237,86 +232,14 @@ export default function HomePage() {
               </div>
 
               <div className="text-center">
-                <button
-                  onClick={() => setTab("dashboard")}
-                  className="text-xs text-amber-300 hover:underline"
-                >
-                  See the dashboard preview →
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* TAB 2: Dashboard preview */}
-          {tab === "dashboard" && (
-            <div className="space-y-5">
-              <div className="text-center">
-                <h2 className="text-xl font-bold">Dashboard Preview</h2>
-                <p className="mt-1 text-xs text-slate-400">
-                  9 connected tabs — all live with real data
-                </p>
-              </div>
-
-              {/* Stats */}
-              <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-                {[
-                  { label: "Cases", value: "20", icon: FileCheck, color: "text-blue-400" },
-                  { label: "Events", value: "30", icon: Clock, color: "text-purple-400" },
-                  { label: "Scenarios", value: "10", icon: Activity, color: "text-amber-400" },
-                  { label: "Drift", value: "0.000%", icon: CheckCircle2, color: "text-emerald-400" },
-                ].map((s) => (
-                  <div
-                    key={s.label}
-                    className="rounded-xl border border-white/10 bg-white/5 p-3 text-center"
-                  >
-                    <s.icon className={"mx-auto mb-1 h-4 w-4 " + s.color} />
-                    <p className="text-xl font-bold">{s.value}</p>
-                    <p className="text-[10px] text-slate-400">{s.label}</p>
-                  </div>
-                ))}
-              </div>
-
-              {/* Tab grid */}
-              <div className="grid gap-2 md:grid-cols-3">
-                {[
-                  { name: "Dashboard", href: "/dashboard", desc: "Overview + stress test", icon: LayoutDashboard },
-                  { name: "Timeline", href: "/timeline", desc: "Event provenance", icon: Clock },
-                  { name: "Evidence", href: "/evidence", desc: "Tamper-evident bundles", icon: ShieldCheck },
-                  { name: "Exceptions", href: "/exceptions", desc: "AI analysis ✨", icon: AlertTriangle },
-                  { name: "Reconciliation", href: "/reconciliation", desc: "Cross-source matching", icon: FileCheck },
-                  { name: "Replay", href: "/replay", desc: "Zero-drift replay", icon: Activity },
-                  { name: "Corridor", href: "/corridor", desc: "Cross-border analytics", icon: ArrowRight },
-                  { name: "Settings", href: "/settings", desc: "Platform config", icon: ShieldCheck },
-                  { name: "Demo Pilot", href: "/demo-pilot", desc: "8-step guided tour", icon: Play },
-                ].map((t) => (
-                  <Link
-                    key={t.name}
-                    href={t.href}
-                    className="group rounded-lg border border-white/10 bg-white/5 p-3 transition hover:border-amber-500/30 hover:bg-amber-500/5"
-                  >
-                    <div className="flex items-center gap-2">
-                      <t.icon className="h-4 w-4 text-amber-400" />
-                      <span className="text-xs font-semibold group-hover:text-amber-300">
-                        {t.name}
-                      </span>
-                    </div>
-                    <p className="mt-0.5 text-[10px] text-slate-400">{t.desc}</p>
-                  </Link>
-                ))}
-              </div>
-
-              {/* Launch */}
-              <div className="text-center pt-2">
-                <Link
-                  href="/dashboard"
-                  className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-amber-400 to-amber-200 px-7 py-2.5 text-sm font-bold text-[#07090e] shadow-lg transition hover:scale-105"
-                >
-                  Launch Full Dashboard
-                  <ArrowRight className="h-4 w-4" />
+                <Link href="/dashboard" className="text-xs text-amber-300 hover:underline">
+                  Enter the full dashboard →
                 </Link>
               </div>
             </div>
           )}
+
+          
         </div>
       </section>
 
