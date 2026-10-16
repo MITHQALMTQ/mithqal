@@ -9661,3 +9661,66 @@ Stage Summary:
 - Browser errors: none
 - Git: committed add3c44, pushed to origin/main
 - Vercel: auto-rebuilds from add3c44, READY
+
+---
+Task ID: REBUILD-DASHBOARD
+Agent: frontend-styling-expert (dashboard UI rebuild)
+Task: Completely rebuild the dashboard UI (sidebar + topbar + status-bar + layout + dashboard page) into a fresh "Glassmorphic Command Center" look — different background, glass cards, teal accent added alongside amber, flat sidebar (no section headers), minimal topbar, simpler static status bar, redesigned dashboard page layout.
+
+Work Log:
+- Step 1 (context): Read last 50 lines of worklog.md — confirmed prior audit (P86-FINAL-AUDIT, add3c44) verified all 9 dashboard tabs + 10 API routes + live Vercel site. Knew the live hooks (useCases/useExceptions/useScenarios/useStressMetrics/useStressResults) and shared components (StatCard/Sparkline/CountUp/PageHeader/Skeleton/EmptyState) existed and were used by the old dashboard page.
+- Step 2 (read existing): Read all 5 owned files (sidebar.tsx, topbar.tsx, status-bar.tsx, layout.tsx, dashboard/page.tsx) + 5 shared component APIs (stat-card, sparkline, count-up, page-header, skeleton) + sheet/button/table/badge UI primitives + use-demo-data.ts hook signatures. Confirmed:
+  * Sidebar was 3-section grouped (OVERVIEW/OPERATIONS/CONFIG) + collapse toggle + MobileNav Sheet
+  * Topbar had logo + DEMO/LIVE toggle + ⌘K search + theme toggle + mobile trigger
+  * StatusBar polled /api/health every 30s with 4 pills
+  * Layout had AnimatePresence + motion page transitions + mesh-gradient bg
+  * Dashboard page had 6 StatCards + 3 stress results tiles + scenarios table + cases table + exceptions table
+- Step 3 (rewrite sidebar.tsx): Flat list of 10 nav items (Dashboard, Demo Pilot, Timeline, Evidence, Exceptions, Reconciliation, Replay, Corridor, MTQ Σ Research, Settings). NO section headers, NO collapse toggle. Active item = 2px teal gradient bar (from-cyan-300 to-cyan-500 with glow shadow) + bg-white/5 + cyan-400 icon. Inactive = text-slate-500 hover:text-white hover:bg-white/5. Width w-56. MobileNav Sheet drawer preserved (different bg, gradient logo mark). "use client" kept for usePathname + Sheet state.
+- Step 4 (rewrite topbar.tsx): Stripped down to brand mark (amber gradient square with "M") + "Assurance" wordmark (left), DEMO amber badge + "← Home" link (right). Height h-14. Sticky top z-40, backdrop-blur-xl, border-b border-white/5. Removed: search trigger, theme toggle, mode toggle, MobileNav trigger, CommandPalette. "use client" kept for Link.
+- Step 5 (rewrite status-bar.tsx): Single centered line "System: Healthy · DB: Connected · Updated: just now". Removed ALL polling logic, fetchHealth, useEffect, useState, HealthState type. Removed 4 pills → kept just 1 pulse dot + 3 labels. text-[10px] text-slate-500, py-1, border-t border-white/5. Server component (NO "use client") — pure static render.
+- Step 6 (rewrite layout.tsx): Removed AnimatePresence + motion + pageVariants + pageTransition. Removed usePathname. Kept QueryClientProvider (with module-level browserQueryClient singleton — SSR-safe). New background: bg-gradient-to-b from-[#0a0e1a] to-[#07090e] (deep navy → black — DIFFERENT from flat #07090e). main: flex-1 overflow-y-auto p-6, wraps children in max-w-7xl mx-auto. Renders Topbar + (Sidebar | main) + StatusBar.
+- Step 7 (rewrite dashboard/page.tsx): New layout per spec:
+  1. PageHeader title="Dashboard" description="Stress Test Simulation — Full Platform" with breadcrumbs
+  2. Inline DEMO alert (styled div, not Alert component) — amber border, amber text, includes live stress-results summary when loaded
+  3. 6 StatCards in grid-cols-2 md:grid-cols-3 lg:grid-cols-6 with stagger-in animation; each with sparklineData
+     - Cases (metrics.totalCases), Total Value (parseNum($48.85M)), Exception Rate (%), Avg Resolution (min), P95 (min), Scenarios (scenariosCovered)
+  4. Scenario Coverage: grid-cols-2 lg:grid-cols-5, each card shows scenario ID (cyan-400 font-mono) + name (line-clamp-2) + status Badge, hover lift + cyan border glow
+  5. Validation Cases table: 5 rows, cols Case ID (link → /timeline?caseId=) + Institution + Corridor + Amount + Status + Scenario. scope="col" on every th, sr-only caption
+  6. Exceptions table: 3 rows, cols Case ID (link → /evidence?caseId=) + Code + Severity + Status
+  7. StatCardSkeleton while metrics load; TableSkeleton while tables load; shimmer placeholders for scenario tiles
+  8. stagger-in animation kept on stat card grid
+- Step 8 (lint): `bun run lint` → exit 0. Only the unrelated `.eslintignore` deprecation warning. No errors in my files.
+- Step 9 (typecheck): `bunx tsc --noEmit` → ZERO TypeScript errors in any of my 5 owned files (verified by grep filter). All pre-existing errors are in src/lib/* and next.config.ts which I did NOT touch.
+- Step 10 (verification): Confirmed via grep:
+  * Sidebar NAV_ITEMS array has exactly 10 entries with correct hrefs (/dashboard, /demo-pilot, /timeline, /evidence, /exceptions, /reconciliation, /replay, /corridor, /mtq-sigma, /settings)
+  * Topbar has h-14, "DEMO" badge (amber), "← Home" Link to "/", backdrop-blur-xl, border-b border-white/5
+  * StatusBar has "System: Healthy", "DB: Connected", "Updated: just now", text-[10px], py-1, border-t, NO "use client"
+  * Layout imports QueryClient + QueryClientProvider from @tanstack/react-query + has bg-gradient-to-b from-[#0a0e1a] to-[#07090e] + renders Topbar/Sidebar/StatusBar
+  * Dashboard page imports useStressMetrics/useStressResults/useScenarios/useCases/useExceptions + StatCard + StatCardSkeleton + TableSkeleton + PageHeader + Link; uses stagger-in; 6 StatCards in lg:grid-cols-6
+
+Stage Summary:
+- Files rewritten: 5/5 ✅ (sidebar 167 LOC, topbar 59 LOC, status-bar 44 LOC, layout 81 LOC, dashboard page 549 LOC — total 900 LOC)
+- Design transformation:
+  * Background: flat #07090e → gradient from-[#0a0e1a] to-[#07090e] (navy → black) ✅
+  * Cards: glass-depth utility → bg-white/[0.02] + backdrop-blur-sm + border-white/5 (new glassmorphic recipe) ✅
+  * Accent colors: amber-only → amber + teal/cyan (new from-cyan-300 to-cyan-500 active bar with glow shadow, text-cyan-400 on active icons/links) ✅
+  * Sidebar: 3 grouped sections + collapse toggle → flat 10-item list, no sections, no toggle, w-56 ✅
+  * Topbar: complex (logo + mode + search + theme + mobile trigger) → minimal (logo + DEMO badge + Home link) ✅
+  * StatusBar: 4 polled health pills → static single line ✅
+  * Layout: AnimatePresence + motion + mesh-gradient → QueryProvider + simple flex + navy gradient ✅
+  * Dashboard page: 6 stat cards + 3 stress tiles + scenarios table + cases table + exceptions table → 6 stat cards (lg:grid-cols-6) + scenario coverage grid + cases table (5 rows) + exceptions table (3 rows) + inline DEMO alert with live stress results ✅
+- Live data preserved: all 5 React Query hooks still in use (useStressMetrics, useStressResults, useScenarios, useCases, useExceptions); auto-refetch every 30s intact via the hook configs; QueryClientProvider kept in layout
+- Cross-tab navigation preserved:
+  * Case IDs in cases table → /timeline?caseId=${id} (cyan-400 links)
+  * Case IDs in exceptions table → /evidence?caseId=${caseId} (cyan-400 links)
+  * "View all" links → /timeline + /exceptions
+- Accessibility preserved:
+  * aria-current="page" on active sidebar link
+  * scope="col" on every <th> in both tables
+  * sr-only <caption> on both tables
+  * aria-label on tables, sections, footer
+  * aria-hidden on decorative icons/dots
+  * sr-only "Loading…" on skeletons
+- Lint: clean (exit 0, no errors in my files)
+- TypeScript: clean (0 errors in my 5 files; pre-existing errors in src/lib/* untouched)
+- Files NOT touched (per ownership rules): src/app/page.tsx, src/app/(dashboard)/*/page.tsx (other tabs), globals.css, src/components/shared/*, src/hooks/*, API routes, src/components/layout/command-palette.tsx (orphaned but not in my list — left alone)
